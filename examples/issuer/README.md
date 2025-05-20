@@ -4,7 +4,7 @@ This example showcases a **Credential Issuer** for [ACK-ID](https://www.agentcom
 
 The API allows for the issuance, verification, and revocation of the following credential types:
 
-- `ControllerCredential`: ACK-ID credentials that prove DID ownership heirarchies.
+- `ControllerCredential`: ACK-ID credentials that prove DID ownership hierarchies.
 - `PaymentReceiptCredential`: ACK-Pay creddentials that provide proof of payment that satisfies a given Payment Request.
 
 This issuer supports credential revocation using [StatusList2021](https://www.w3.org/community/reports/credentials/CG-FINAL-vc-status-list-2021-20230102/), which is a privacy-preserving, space-efficient mechanism for maintaining a credential revocation list.
