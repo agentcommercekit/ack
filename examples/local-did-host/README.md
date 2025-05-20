@@ -8,7 +8,7 @@ When someone attempts to resolve a `did:web` document, the resolver fetches `.we
 
 This example is a basic [Hono](https://hono.dev) server with dynamic `.well-known/did.json` routes, served at subpaths, by default on the host `0.0.0.0:3458`. There are 2 identities, `agent` and `controller`, served from the subpaths `/agent/.well-known/did.json` and `/controller/.well-known/did.json`, respectively.
 
-Per the `did:web` spec, the `did.json` file is a full DID Document. By its nature, the document does not chane often, and should typically be served as a static file from the server. In this example, we are building the DID Document dynamically per-request, which is not suitable for production environments.
+Per the `did:web` spec, the `did.json` file is a full DID Document. By its nature, the document does not change often, and should typically be served as a static file from the server. In this example, we are building the DID Document dynamically per-request, which is not suitable for production environments.
 
 ## Getting Started
 
