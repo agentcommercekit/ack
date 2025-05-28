@@ -3,7 +3,7 @@
 This example showcases a **Credential Verifier** for [ACK-ID](https://www.agentcommercekit.com/ack-id) and [ACK-Pay](https://www.agentcommercekit.com/ack-pay) Verifiable Credentials. This API is built with [Hono](https://hono.dev).
 
 - `ControllerCredential`: ACK-ID credentials that prove DID ownership heirarchies.
-- `PaymentReceiptCredential`: ACK-Pay creddentials that provide proof of payment that satisfies a given Payment Request.
+- `PaymentReceiptCredential`: ACK-Pay credentials that provide proof of payment that satisfies a given Payment Request.
 
 This verifier uses [StatusList2021](https://www.w3.org/community/reports/credentials/CG-FINAL-vc-status-list-2021-20230102/), to check if a credential is revoked.# Installation
 
