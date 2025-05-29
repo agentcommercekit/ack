@@ -1,6 +1,12 @@
 import { serve } from "@hono/node-server"
 import { logger } from "@repo/api-utils/middleware/logger"
-import { colors, errorMessage, log, successMessage } from "@repo/cli-tools"
+import {
+  colors,
+  errorMessage,
+  log,
+  logJson,
+  successMessage
+} from "@repo/cli-tools"
 import {
   createPaymentReceipt,
   getDidResolver,
@@ -77,10 +83,8 @@ app.post("/", async (c) => {
 
   const paymentDetails = v.parse(paymentDetailsSchema, parsed.payload)
 
-  log(
-    colors.dim("Payment details:"),
-    colors.cyan(JSON.stringify(paymentDetails, null, 2))
-  )
+  log(colors.dim("Payment details:"))
+  logJson(paymentDetails, colors.cyan)
 
   log(colors.dim("Verifying payment token..."))
   // Verify the payment token is not expired, etc.

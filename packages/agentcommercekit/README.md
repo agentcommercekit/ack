@@ -8,7 +8,7 @@ To learn more about the Agent Commerce Kit, check out the [documentation](https:
 
 ## Installation
 
-We recommend installing the `agentcommercekit` package, which is tree-shakeable and contains everything you need to build for the ACK protiocol, even if you choose to only target ACK-ID or ACK-Pay. This is the simplest way to get started, prevent version conflicts or duplication, and makes it easy to manage updates.
+We recommend installing the `agentcommercekit` package, which is tree-shakeable and contains everything you need to build for the ACK protocol, even if you choose to only target ACK-ID or ACK-Pay. This is the simplest way to get started, prevent version conflicts or duplication, and makes it easy to manage updates.
 
 ```sh
 npm i agentcommercekit
