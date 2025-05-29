@@ -18,11 +18,20 @@ const keyTypeMap = {
   Ed25519: "Ed25519VerificationKey2018"
 } as const
 
+const formatMap = {
+  hex: "multibase",
+  jwk: "jwk",
+  multibase: "multibase",
+  base58: "multibase",
+  base64: "multibase"
+}
+
 const formatToPropertyMap = {
-  hex: "publicKeyHex",
+  hex: "publicKeyMultibase",
   jwk: "publicKeyJwk",
   multibase: "publicKeyMultibase",
-  base58: "publicKeyBase58"
+  base58: "publicKeyMultibase",
+  base64: "publicKeyMultibase"
 } as const
 
 describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
@@ -93,9 +102,19 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
               }
             })
             break
+          case "base64":
+            document = createDidDocument({
+              did,
+              publicKey: {
+                format: "base64",
+                algorithm,
+                value: formatPublicKey(keypair, "base64")
+              }
+            })
+            break
         }
 
-        const keyId = `${did}#${format}-1`
+        const keyId = `${did}#${formatMap[format]}-1`
         const expectedDocument = {
           "@context": [
             "https://www.w3.org/ns/did/v1",

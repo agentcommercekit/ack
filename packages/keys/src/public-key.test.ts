@@ -7,6 +7,7 @@ import { generateKeypair } from "./keypair"
 import {
   formatPublicKey,
   formatPublicKeyBase58,
+  formatPublicKeyBase64,
   formatPublicKeyHex,
   formatPublicKeyJwk,
   formatPublicKeyMultibase,
@@ -60,6 +61,9 @@ describe("public key encoding", () => {
           case "base58":
             expect(isBase58(result)).toBe(true)
             break
+          case "base64":
+            expect(isBase64(result)).toBe(true)
+            break
         }
       })
     })
@@ -102,6 +106,12 @@ describe("public key encoding", () => {
         const keypair = await generateKeypair(algorithm)
         const base58 = formatPublicKeyBase58(keypair)
         expect(isBase58(base58)).toBe(true)
+      })
+
+      test("formats to base64", async () => {
+        const keypair = await generateKeypair(algorithm)
+        const base64 = formatPublicKeyBase64(keypair)
+        expect(isBase64(base64)).toBe(true)
       })
     })
   })

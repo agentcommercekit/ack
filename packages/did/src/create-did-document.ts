@@ -1,4 +1,10 @@
 import { formatPublicKey } from "@agentcommercekit/keys"
+import {
+  base58ToBytes,
+  base64ToBytes,
+  bytesToMultibase,
+  hexStringToBytes
+} from "@agentcommercekit/keys/encoding"
 import type { DidDocument } from "./did-document"
 import type { DidUri } from "./did-uri"
 import type {
@@ -23,13 +29,23 @@ export const keyConfig = {
   }
 } as const
 
-type PublicKeyWithFormat = {
+export type PublicKeyWithFormat = {
   [K in PublicKeyFormat]: {
     format: K
     algorithm: KeypairAlgorithm
     value: PublicKeyTypeMap[K]
   }
 }[PublicKeyFormat]
+
+type LegacyPublicKeyFormat = "hex" | "base58" | "base64"
+
+type DidDocumentPublicKey = {
+  [K in Exclude<PublicKeyFormat, LegacyPublicKeyFormat>]: {
+    format: K
+    algorithm: KeypairAlgorithm
+    value: PublicKeyTypeMap[K]
+  }
+}[Exclude<PublicKeyFormat, LegacyPublicKeyFormat>]
 
 interface CreateVerificationMethodOptions {
   did: DidUri
@@ -43,29 +59,55 @@ export function createVerificationMethod({
   did,
   publicKey
 }: CreateVerificationMethodOptions): VerificationMethod {
+  const { format, algorithm, value } =
+    convertLegacyPublicKeyToMultibase(publicKey)
+
   const verificationMethod: VerificationMethod = {
-    id: `${did}#${publicKey.format}-1`,
-    type: keyConfig[publicKey.algorithm].type,
+    id: `${did}#${format}-1`,
+    type: keyConfig[algorithm].type,
     controller: did
   }
 
   // Add public key in the requested format
-  switch (publicKey.format) {
-    case "hex":
-      verificationMethod.publicKeyHex = publicKey.value
-      break
+  switch (format) {
     case "jwk":
-      verificationMethod.publicKeyJwk = publicKey.value
+      verificationMethod.publicKeyJwk = value
       break
     case "multibase":
-      verificationMethod.publicKeyMultibase = publicKey.value
-      break
-    case "base58":
-      verificationMethod.publicKeyBase58 = publicKey.value
+      verificationMethod.publicKeyMultibase = value
       break
   }
 
   return verificationMethod
+}
+
+function convertLegacyPublicKeyToMultibase(
+  publicKey: PublicKeyWithFormat
+): DidDocumentPublicKey {
+  switch (publicKey.format) {
+    case "hex":
+      return {
+        format: "multibase",
+        algorithm: publicKey.algorithm,
+        value: bytesToMultibase(
+          hexStringToBytes(publicKey.value.replace(/^0x/, ""))
+        )
+      }
+    case "base58":
+      return {
+        format: "multibase",
+        algorithm: publicKey.algorithm,
+        value: bytesToMultibase(base58ToBytes(publicKey.value))
+      }
+    case "base64":
+      return {
+        format: "multibase",
+        algorithm: publicKey.algorithm,
+        value: bytesToMultibase(base64ToBytes(publicKey.value))
+      }
+    default:
+      return publicKey
+  }
 }
 
 /**
@@ -212,6 +254,15 @@ export function createDidDocumentFromKeypair({
           format: "base58",
           algorithm: keypair.algorithm,
           value: formatPublicKey(keypair, "base58")
+        }
+      })
+    case "base64":
+      return createDidDocument({
+        ...options,
+        publicKey: {
+          format: "base64",
+          algorithm: keypair.algorithm,
+          value: formatPublicKey(keypair, "base64")
         }
       })
     default:

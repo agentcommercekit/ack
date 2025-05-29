@@ -1,5 +1,9 @@
 import { generateKeypair } from "@agentcommercekit/keys"
-import { bytesToHexString } from "@agentcommercekit/keys/encoding"
+import {
+  bytesToHexString,
+  bytesToJwk,
+  bytesToMultibase
+} from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
 import { createDidWebDocument, createDidWebUri } from "./did-web"
 
@@ -24,9 +28,44 @@ describe("createDidWeb", () => {
 })
 
 describe("createDidWebDocument", () => {
-  it("generates a valid Did and Did document", async () => {
+  it("generates a valid DidUri and DidDocument with JWK", async () => {
+    const keypair = await generateKeypair("secp256k1")
+    const publicKeyJwk = bytesToJwk(keypair.publicKey, keypair.algorithm)
+
+    const { did, didDocument } = createDidWebDocument({
+      publicKey: {
+        format: "jwk",
+        value: publicKeyJwk,
+        algorithm: keypair.algorithm
+      },
+      baseUrl: "https://example.com"
+    })
+
+    expect(did).toEqual("did:web:example.com")
+
+    expect(didDocument).toEqual({
+      "@context": [
+        "https://www.w3.org/ns/did/v1",
+        "https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"
+      ],
+      id: "did:web:example.com",
+      verificationMethod: [
+        {
+          id: "did:web:example.com#jwk-1",
+          type: "EcdsaSecp256k1VerificationKey2019",
+          controller: "did:web:example.com",
+          publicKeyJwk
+        }
+      ],
+      authentication: ["did:web:example.com#jwk-1"],
+      assertionMethod: ["did:web:example.com#jwk-1"]
+    })
+  })
+
+  it("generates a valid DidUri and DidDocument, upgrading legacy hex to multibase", async () => {
     const keypair = await generateKeypair("secp256k1")
     const publicKeyHex = bytesToHexString(keypair.publicKey)
+    const publicKeyMultibase = bytesToMultibase(keypair.publicKey)
 
     const { did, didDocument } = createDidWebDocument({
       publicKey: {
@@ -47,14 +86,14 @@ describe("createDidWebDocument", () => {
       id: "did:web:example.com",
       verificationMethod: [
         {
-          id: "did:web:example.com#hex-1",
+          id: "did:web:example.com#multibase-1",
           type: "EcdsaSecp256k1VerificationKey2019",
           controller: "did:web:example.com",
-          publicKeyHex: publicKeyHex.replace(/^0x/, "")
+          publicKeyMultibase
         }
       ],
-      authentication: ["did:web:example.com#hex-1"],
-      assertionMethod: ["did:web:example.com#hex-1"]
+      authentication: ["did:web:example.com#multibase-1"],
+      assertionMethod: ["did:web:example.com#multibase-1"]
     })
   })
 })
