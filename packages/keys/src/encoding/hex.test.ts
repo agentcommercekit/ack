@@ -14,6 +14,12 @@ describe("hex encoding and decoding", () => {
     expect(bytes).toEqual(new Uint8Array([1, 2, 3, 4]))
   })
 
+  test("handles hex strings in caps", () => {
+    const hex = "0XABCDEF"
+    const bytes = hexStringToBytes(hex)
+    expect(bytes).toEqual(new Uint8Array([171, 205, 239]))
+  })
+
   test("converts hex string without 0x prefix to bytes", () => {
     const hex = "01020304"
     const bytes = hexStringToBytes(hex)

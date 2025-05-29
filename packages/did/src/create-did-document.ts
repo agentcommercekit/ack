@@ -89,9 +89,7 @@ function convertLegacyPublicKeyToMultibase(
       return {
         format: "multibase",
         algorithm: publicKey.algorithm,
-        value: bytesToMultibase(
-          hexStringToBytes(publicKey.value.replace(/^0x/, ""))
-        )
+        value: bytesToMultibase(hexStringToBytes(publicKey.value))
       }
     case "base58":
       return {

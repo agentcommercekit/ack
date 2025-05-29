@@ -24,8 +24,10 @@ export function bytesToHexString(bytes: Uint8Array): string {
  * ```
  */
 export function hexStringToBytes(hex: string): Uint8Array {
-  const hexWithoutPrefix = hex.startsWith("0x") ? hex.slice(2) : hex
-  return fromString(hexWithoutPrefix, "base16")
+  const hexWithoutPrefix = hex.toLowerCase().startsWith("0x")
+    ? hex.slice(2)
+    : hex
+  return fromString(hexWithoutPrefix.toLowerCase(), "base16")
 }
 
 /**
