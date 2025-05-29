@@ -85,7 +85,7 @@ const did = createDidKeyUri(keypair)
 const didDocument = createDidDocumentFromKeypair({
   did,
   keypair,
-  format: "hex", // Optional, defaults to "jwk"
+  encoding: "jwk", // Optional, defaults to "jwk"
   controller: "did:web:controller.example.com" // Optional
 })
 

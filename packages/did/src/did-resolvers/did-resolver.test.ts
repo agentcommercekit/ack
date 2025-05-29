@@ -8,7 +8,7 @@ describe("DidResolver", () => {
   const didDocument = createDidDocument({
     did,
     publicKey: {
-      format: "hex",
+      encoding: "hex",
       algorithm: "secp256k1",
       value: "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     }

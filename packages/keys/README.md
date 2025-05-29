@@ -17,21 +17,19 @@ pnpm add @agentcommercekit/keys
 ```ts
 import {
   generateKeypair,
-  keypairToBase58,
   keypairToJwk,
-  formatPublicKey
+  encodePublicKeyFromKeypair
 } from "@agentcommercekit/keys"
 
 // Generate and format keypairs
 const keypair = await generateKeypair("secp256k1")
-const base58Keypair = keypairToBase58(keypair)
 const jwkKeypair = keypairToJwk(keypair)
 
 // Format public keys
-const hexPublicKey = formatPublicKey(keypair, "hex")
-const jwkPublicKey = formatPublicKey(keypair, "jwk")
-const multibasePublicKey = formatPublicKey(keypair, "multibase")
-const base58PublicKey = formatPublicKey(keypair, "base58")
+const hexPublicKey = encodePublicKeyFromKeypair("hex", keypair)
+const jwkPublicKey = encodePublicKeyFromKeypair("jwk", keypair)
+const multibasePublicKey = encodePublicKeyFromKeypair("multibase", keypair)
+const base58PublicKey = encodePublicKeyFromKeypair("base58", keypair)
 ```
 
 ## API
@@ -39,18 +37,12 @@ const base58PublicKey = formatPublicKey(keypair, "base58")
 ### Keypair Operations
 
 - `generateKeypair(algorithm: KeypairAlgorithm, privateKeyBytes?: Uint8Array): Promise<Keypair>`
-- `keypairToBase58(keypair: Keypair): KeypairBase58`
-- `keypairFromBase58(base58: KeypairBase58): Keypair`
 - `keypairToJwk(keypair: Keypair): PrivateKeyJwk`
 - `jwkToKeypair(jwk: PrivateKeyJwk): Keypair`
 
 ### Public Key Formatting
 
-- `formatPublicKey<T extends PublicKeyFormat>(keypair: Keypair, format: T): PublicKeyTypeMap[T]`
-- `formatPublicKeyHex(keypair: Keypair): string`
-- `formatPublicKeyJwk(keypair: Keypair): PublicKeyJwk`
-- `formatPublicKeyMultibase(keypair: Keypair): string`
-- `formatPublicKeyBase58(keypair: Keypair): string`
+- `encodePublicKeyFromKeypair<T extends PublicKeyEncoding>(encoding: T, keypair: Keypair): PublicKeyTypeMap[T]`
 - `getCompressedPublicKey(keypair: Keypair): Uint8Array`
 
 ### Additional Exports

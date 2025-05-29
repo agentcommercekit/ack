@@ -1,31 +1,39 @@
 import { compressPublicKey } from "./curves/secp256k1"
 import { bytesToBase58 } from "./encoding/base58"
-import { bytesToBase64 } from "./encoding/base64"
 import { bytesToHexString } from "./encoding/hex"
 import { bytesToJwk } from "./encoding/jwk"
 import { bytesToMultibase } from "./encoding/multibase"
 import type { PublicKeyJwk } from "./encoding/jwk"
-import type { Keypair } from "./types"
+import type { Keypair, KeypairAlgorithm } from "./types"
 
 /**
  * Public key format types
  */
-export const publicKeyFormats = [
-  "hex",
-  "jwk",
-  "multibase",
-  "base58",
-  "base64"
-] as const
-export type PublicKeyFormat = (typeof publicKeyFormats)[number]
+export const publicKeyEncodings = ["hex", "jwk", "multibase", "base58"] as const
+export type PublicKeyEncoding = (typeof publicKeyEncodings)[number]
 export type PublicKeyTypeMap = {
   hex: string
   jwk: PublicKeyJwk
   multibase: string
   base58: string
-  base64: string
 }
 
+/**
+ * A type that represents a PublicKey with its encoding format and algorithm
+ */
+export type PublicKeyWithEncoding = {
+  [K in PublicKeyEncoding]: {
+    encoding: K
+    algorithm: KeypairAlgorithm
+    value: PublicKeyTypeMap[K]
+  }
+}[PublicKeyEncoding]
+
+/**
+ * Get the compressed public key for a given keypair
+ * @param keypair - The keypair to get the compressed public key for
+ * @returns The compressed public key
+ */
 export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
   if (keypair.algorithm === "secp256k1") {
     return compressPublicKey(keypair)
@@ -36,65 +44,92 @@ export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
 
 /**
  * Convert a public key to a multibase string (used for DID:key)
- * @param keypair - The Keypair containing the public key
- * @returns A multibase string representation of the public key
  */
-export function formatPublicKeyMultibase(keypair: Keypair): string {
-  return bytesToMultibase(keypair.publicKey)
+function encodePublicKeyMultibase(
+  publicKey: Uint8Array,
+  algorithm: KeypairAlgorithm
+): PublicKeyWithEncoding & { encoding: "multibase" } {
+  return {
+    encoding: "multibase",
+    algorithm,
+    value: bytesToMultibase(publicKey)
+  }
 }
 
 /**
  * Convert a public key to a JWK format
- * @param keypair - The Keypair containing the public key
- * @returns A JSON Web Key representation of the public key
  */
-export function formatPublicKeyJwk(keypair: Keypair): PublicKeyJwk {
-  return bytesToJwk(keypair.publicKey, keypair.algorithm)
+function encodePublicKeyJwk(
+  publicKey: Uint8Array,
+  algorithm: KeypairAlgorithm
+): PublicKeyWithEncoding & { encoding: "jwk" } {
+  return {
+    encoding: "jwk",
+    algorithm,
+    value: bytesToJwk(publicKey, algorithm)
+  }
 }
 
 /**
  * Convert a public key to a hex string
- * @param keypair - The Keypair containing the public key
- * @returns A hex string representation of the public key
  */
-export function formatPublicKeyHex(keypair: Keypair): string {
-  return bytesToHexString(keypair.publicKey)
+function encodePublicKeyHex(
+  publicKey: Uint8Array,
+  algorithm: KeypairAlgorithm
+): PublicKeyWithEncoding & { encoding: "hex" } {
+  return {
+    encoding: "hex",
+    algorithm,
+    value: bytesToHexString(publicKey)
+  }
 }
 
 /**
  * Convert a public key to a base58 string
- * @param keypair - The Keypair containing the public key
- * @returns A base58 string representation of the public key
  */
-export function formatPublicKeyBase58(keypair: Keypair): string {
-  return bytesToBase58(keypair.publicKey)
+function encodePublicKeyBase58(
+  publicKey: Uint8Array,
+  algorithm: KeypairAlgorithm
+): PublicKeyWithEncoding & { encoding: "base58" } {
+  return {
+    encoding: "base58",
+    algorithm,
+    value: bytesToBase58(publicKey)
+  }
 }
 
 /**
- * Convert a public key to a base64 string
- * @param keypair - The Keypair containing the public key
- * @returns A base64 string representation of the public key
+ * A map of public key encoders
  */
-export function formatPublicKeyBase64(keypair: Keypair): string {
-  return bytesToBase64(keypair.publicKey)
-}
-
-export const publicKeyFormatters = {
-  hex: (keypair: Keypair) => formatPublicKeyHex(keypair),
-  jwk: (keypair: Keypair) => formatPublicKeyJwk(keypair),
-  multibase: (keypair: Keypair) => formatPublicKeyMultibase(keypair),
-  base58: (keypair: Keypair) => formatPublicKeyBase58(keypair),
-  base64: (keypair: Keypair) => formatPublicKeyBase64(keypair)
+const publicKeyEncoders: {
+  [K in PublicKeyEncoding]: (
+    publicKey: Uint8Array,
+    algorithm: KeypairAlgorithm
+  ) => PublicKeyWithEncoding & { encoding: K }
+} = {
+  hex: encodePublicKeyHex,
+  jwk: encodePublicKeyJwk,
+  multibase: encodePublicKeyMultibase,
+  base58: encodePublicKeyBase58
 } as const
 
 /**
- * Convert a public key to the specified format with correct type inference
+ * Encode a raw public key to the specified format
  */
-export function formatPublicKey<T extends PublicKeyFormat>(
-  keypair: Keypair,
-  format: T
-): ReturnType<(typeof publicKeyFormatters)[T]> {
-  return publicKeyFormatters[format](keypair) as ReturnType<
-    (typeof publicKeyFormatters)[T]
-  >
+export function encodePublicKey<T extends PublicKeyEncoding>(
+  encoding: T,
+  publicKey: Uint8Array,
+  algorithm: KeypairAlgorithm
+): PublicKeyWithEncoding & { encoding: T } {
+  return publicKeyEncoders[encoding](publicKey, algorithm)
+}
+
+/**
+ * Encode a public key from a keypair to the specified format
+ */
+export function encodePublicKeyFromKeypair<T extends PublicKeyEncoding>(
+  encoding: T,
+  keypair: Keypair
+): PublicKeyWithEncoding & { encoding: T } {
+  return encodePublicKey(encoding, keypair.publicKey, keypair.algorithm)
 }

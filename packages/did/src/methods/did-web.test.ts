@@ -34,7 +34,7 @@ describe("createDidWebDocument", () => {
 
     const { did, didDocument } = createDidWebDocument({
       publicKey: {
-        format: "jwk",
+        encoding: "jwk",
         value: publicKeyJwk,
         algorithm: keypair.algorithm
       },
@@ -69,7 +69,7 @@ describe("createDidWebDocument", () => {
 
     const { did, didDocument } = createDidWebDocument({
       publicKey: {
-        format: "hex",
+        encoding: "hex",
         value: publicKeyHex,
         algorithm: keypair.algorithm
       },

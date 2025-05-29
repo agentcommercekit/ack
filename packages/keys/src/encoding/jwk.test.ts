@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { bytesToBase64, isBase64 } from "./base64"
+import { bytesToBase64url, isBase64url } from "./base64"
 import { bytesToJwk, isPrivateKeyJwk, isPublicKeyJwk, jwkToBytes } from "./jwk"
 import type { PublicKeyJwkEd25519, PublicKeyJwkSecp256k1 } from "./jwk"
 
@@ -12,8 +12,8 @@ describe("JWK encoding", () => {
   secp256k1Bytes.fill(2, 33) // y-coordinate (32 bytes)
 
   // Generate the actual base64url encoded strings from our test data
-  const base64String = bytesToBase64(Ed25519Bytes) // base64url of 32 bytes of 1s
-  const base64String2 = bytesToBase64(secp256k1Bytes.slice(33)) // base64url of 32 bytes of 2s
+  const base64String = bytesToBase64url(Ed25519Bytes) // base64url of 32 bytes of 1s
+  const base64String2 = bytesToBase64url(secp256k1Bytes.slice(33)) // base64url of 32 bytes of 2s
 
   describe("bytesToJwk", () => {
     test("converts Ed25519 public key to JWK", () => {
@@ -23,7 +23,7 @@ describe("JWK encoding", () => {
         crv: "Ed25519",
         x: expect.any(String) as unknown
       })
-      expect(isBase64(jwk.x)).toBe(true)
+      expect(isBase64url(jwk.x)).toBe(true)
     })
 
     test("converts secp256k1 public key to JWK", () => {
@@ -37,8 +37,8 @@ describe("JWK encoding", () => {
         x: expect.any(String) as unknown,
         y: expect.any(String) as unknown
       })
-      expect(isBase64(jwk.x)).toBe(true)
-      expect(isBase64(jwk.y)).toBe(true)
+      expect(isBase64url(jwk.x)).toBe(true)
+      expect(isBase64url(jwk.y)).toBe(true)
     })
   })
 

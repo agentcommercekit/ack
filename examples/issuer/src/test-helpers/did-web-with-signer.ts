@@ -27,7 +27,7 @@ export async function createDidWebWithSigner(
     keypair,
     baseUrl,
     controller,
-    format: "jwk"
+    encoding: "jwk"
   })
   const signer = createJwtSigner(keypair)
 

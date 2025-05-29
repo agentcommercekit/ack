@@ -12,7 +12,7 @@ async function generateDid(baseUrl: string, controller?: DidUri) {
 
   return createDidWebDocument({
     publicKey: {
-      format: "hex",
+      encoding: "hex",
       value: bytesToHexString(keypair.publicKey),
       algorithm: keypair.algorithm
     },

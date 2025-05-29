@@ -1,4 +1,4 @@
-import { base64ToBytes, bytesToBase64 } from "./base64"
+import { base64urlToBytes, bytesToBase64url } from "./base64"
 import type { KeypairAlgorithm } from "../types"
 
 /**
@@ -26,21 +26,16 @@ export type PrivateKeyJwk = PublicKeyJwk & {
   d: string // base64url encoded private key
 }
 
-/**
- * Check if an object is a valid public key JWK
- */
-export function isPublicKeyJwk(jwk: unknown): jwk is PublicKeyJwk {
+export function isPublicKeyJwkSecp256k1(
+  jwk: unknown
+): jwk is PublicKeyJwkSecp256k1 {
   if (typeof jwk !== "object" || jwk === null) {
     return false
   }
 
   const obj = jwk as Record<string, unknown>
 
-  if (obj.kty !== "EC" && obj.kty !== "OKP") {
-    return false
-  }
-
-  if (obj.crv !== "secp256k1" && obj.crv !== "Ed25519") {
+  if (obj.kty !== "EC" || obj.crv !== "secp256k1") {
     return false
   }
 
@@ -48,19 +43,42 @@ export function isPublicKeyJwk(jwk: unknown): jwk is PublicKeyJwk {
     return false
   }
 
-  // For secp256k1, y coordinate is required
-  if (obj.crv === "secp256k1") {
-    if (typeof obj.y !== "string" || obj.y.length === 0) {
-      return false
-    }
-  }
-
-  // For Ed25519, y coordinate should not be present
-  if (obj.crv === "Ed25519" && "y" in obj) {
+  if (typeof obj.y !== "string" || obj.y.length === 0) {
     return false
   }
 
   return true
+}
+
+export function isPublicKeyJwkEd25519(
+  jwk: unknown
+): jwk is PublicKeyJwkEd25519 {
+  if (typeof jwk !== "object" || jwk === null) {
+    return false
+  }
+
+  const obj = jwk as Record<string, unknown>
+
+  if (obj.kty !== "OKP" || obj.crv !== "Ed25519") {
+    return false
+  }
+
+  if (typeof obj.x !== "string" || obj.x.length === 0) {
+    return false
+  }
+
+  if ("y" in obj) {
+    return false
+  }
+
+  return true
+}
+
+/**
+ * Check if an object is a valid public key JWK
+ */
+export function isPublicKeyJwk(jwk: unknown): jwk is PublicKeyJwk {
+  return isPublicKeyJwkSecp256k1(jwk) || isPublicKeyJwkEd25519(jwk)
 }
 
 /**
@@ -86,7 +104,7 @@ export function bytesToJwk(
     return {
       kty: "OKP",
       crv: "Ed25519",
-      x: bytesToBase64(bytes)
+      x: bytesToBase64url(bytes)
     } as const
   }
 
@@ -100,8 +118,8 @@ export function bytesToJwk(
   return {
     kty: "EC",
     crv: "secp256k1",
-    x: bytesToBase64(xBytes),
-    y: bytesToBase64(yBytes)
+    x: bytesToBase64url(xBytes),
+    y: bytesToBase64url(yBytes)
   } as const
 }
 
@@ -109,14 +127,14 @@ export function bytesToJwk(
  * Convert a JWK to public key bytes
  */
 export function jwkToBytes(jwk: PublicKeyJwk): Uint8Array {
-  const xBytes = base64ToBytes(jwk.x)
+  const xBytes = base64urlToBytes(jwk.x)
 
   // For secp256k1, we need to reconstruct the full public key
   if (jwk.crv === "secp256k1") {
     const fullKey = new Uint8Array(65)
     fullKey[0] = 0x04 // Add the prefix byte
     fullKey.set(xBytes, 1) // Add the x-coordinate
-    fullKey.set(base64ToBytes(jwk.y), 33) // Add the y-coordinate
+    fullKey.set(base64urlToBytes(jwk.y), 33) // Add the y-coordinate
     return fullKey
   }
 

@@ -213,7 +213,7 @@ export function createDidPkhDocument({
       did,
       keypair,
       controller,
-      format: "hex",
+      encoding: "hex",
       additionalContexts,
       verificationMethod: {
         id: `${did}#blockchainAccountId`,
@@ -230,7 +230,7 @@ export function createDidPkhDocument({
     did,
     keypair,
     controller,
-    format: "jwk",
+    encoding: "jwk",
     additionalContexts
   })
 

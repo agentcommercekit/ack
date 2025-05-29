@@ -1,68 +1,64 @@
 import { describe, expect, test } from "vitest"
 import { isBase58 } from "./encoding/base58"
-import { base64ToBytes, isBase64 } from "./encoding/base64"
+import { base64urlToBytes, isBase64url } from "./encoding/base64"
 import { isHexString } from "./encoding/hex"
+import { isPublicKeyJwkEd25519, isPublicKeyJwkSecp256k1 } from "./encoding/jwk"
 import { isMultibase } from "./encoding/multibase"
 import { generateKeypair } from "./keypair"
-import {
-  formatPublicKey,
-  formatPublicKeyBase58,
-  formatPublicKeyBase64,
-  formatPublicKeyHex,
-  formatPublicKeyJwk,
-  formatPublicKeyMultibase,
-  publicKeyFormats
-} from "./public-key"
-import type { PublicKeyJwkEd25519, PublicKeyJwkSecp256k1 } from "./encoding/jwk"
+import { encodePublicKeyFromKeypair, publicKeyEncodings } from "./public-key"
 
 const keypairAlgorithms = ["secp256k1", "Ed25519"] as const
 
 describe("public key encoding", () => {
   describe.each(keypairAlgorithms)("algorithm: %s", (algorithm) => {
-    describe.each(publicKeyFormats)("format: %s", (format) => {
-      test("formats public key correctly", async () => {
+    describe.each(publicKeyEncodings)("format: %s", (format) => {
+      test("encodes public key correctly", async () => {
         const keypair = await generateKeypair(algorithm)
-        const result = formatPublicKey(keypair, format)
+        const publicKey = encodePublicKeyFromKeypair(format, keypair)
+        const publicKeyValue = publicKey.value
 
         switch (format) {
           case "hex":
-            expect(isHexString(result)).toBe(true)
+            expect(isHexString(publicKeyValue)).toBe(true)
             break
           case "jwk":
             if (algorithm === "secp256k1") {
-              const jwk = result as PublicKeyJwkSecp256k1
-              expect(jwk).toEqual({
+              if (!isPublicKeyJwkSecp256k1(publicKeyValue)) {
+                throw new Error("Invalid JWK")
+              }
+
+              expect(publicKeyValue).toEqual({
                 kty: "EC",
                 crv: "secp256k1",
                 x: expect.any(String) as unknown,
                 y: expect.any(String) as unknown
               })
-              expect(isBase64(jwk.x)).toBe(true)
-              expect(isBase64(jwk.y)).toBe(true)
-              const xBytes = base64ToBytes(jwk.x)
+              expect(isBase64url(publicKeyValue.x)).toBe(true)
+              expect(isBase64url(publicKeyValue.y)).toBe(true)
+              const xBytes = base64urlToBytes(publicKeyValue.x)
               expect(xBytes.length).toBe(32)
-              const yBytes = base64ToBytes(jwk.y)
+              const yBytes = base64urlToBytes(publicKeyValue.y)
               expect(yBytes.length).toBe(32)
             } else {
-              const jwk = result as PublicKeyJwkEd25519
-              expect(jwk).toEqual({
+              if (!isPublicKeyJwkEd25519(publicKeyValue)) {
+                throw new Error("Invalid JWK")
+              }
+
+              expect(publicKeyValue).toEqual({
                 kty: "OKP",
                 crv: "Ed25519",
                 x: expect.any(String) as unknown
               })
-              expect(isBase64(jwk.x)).toBe(true)
-              const xBytes = base64ToBytes(jwk.x)
+              expect(isBase64url(publicKeyValue.x)).toBe(true)
+              const xBytes = base64urlToBytes(publicKeyValue.x)
               expect(xBytes.length).toBe(32)
             }
             break
           case "multibase":
-            expect(isMultibase(result)).toBe(true)
+            expect(isMultibase(publicKeyValue)).toBe(true)
             break
           case "base58":
-            expect(isBase58(result)).toBe(true)
-            break
-          case "base64":
-            expect(isBase64(result)).toBe(true)
+            expect(isBase58(publicKeyValue)).toBe(true)
             break
         }
       })
@@ -73,22 +69,22 @@ describe("public key encoding", () => {
     describe.each(keypairAlgorithms)("algorithm: %s", (algorithm) => {
       test("formats to multibase", async () => {
         const keypair = await generateKeypair(algorithm)
-        const multibase = formatPublicKeyMultibase(keypair)
-        expect(isMultibase(multibase)).toBe(true)
+        const multibase = encodePublicKeyFromKeypair("multibase", keypair)
+        expect(isMultibase(multibase.value)).toBe(true)
       })
 
       test("formats to JWK", async () => {
         const keypair = await generateKeypair(algorithm)
-        const jwk = formatPublicKeyJwk(keypair)
+        const jwk = encodePublicKeyFromKeypair("jwk", keypair)
         if (algorithm === "secp256k1") {
-          expect(jwk).toEqual({
+          expect(jwk.value).toEqual({
             kty: "EC",
             crv: "secp256k1",
             x: expect.any(String) as unknown,
             y: expect.any(String) as unknown
           })
         } else {
-          expect(jwk).toEqual({
+          expect(jwk.value).toEqual({
             kty: "OKP",
             crv: "Ed25519",
             x: expect.any(String) as unknown
@@ -98,20 +94,14 @@ describe("public key encoding", () => {
 
       test("formats to hex", async () => {
         const keypair = await generateKeypair(algorithm)
-        const hex = formatPublicKeyHex(keypair)
-        expect(isHexString(hex)).toBe(true)
+        const hex = encodePublicKeyFromKeypair("hex", keypair)
+        expect(isHexString(hex.value)).toBe(true)
       })
 
       test("formats to base58", async () => {
         const keypair = await generateKeypair(algorithm)
-        const base58 = formatPublicKeyBase58(keypair)
-        expect(isBase58(base58)).toBe(true)
-      })
-
-      test("formats to base64", async () => {
-        const keypair = await generateKeypair(algorithm)
-        const base64 = formatPublicKeyBase64(keypair)
-        expect(isBase64(base64)).toBe(true)
+        const base58 = encodePublicKeyFromKeypair("base58", keypair)
+        expect(isBase58(base58.value)).toBe(true)
       })
     })
   })
