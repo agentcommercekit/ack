@@ -32,6 +32,7 @@ function isVerifiable(
 ): credential is Verifiable<W3CCredential> {
   return (
     "proof" in credential &&
+    credential.proof !== null &&
     typeof credential.proof === "object" &&
     "type" in credential.proof
   )
