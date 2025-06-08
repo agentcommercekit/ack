@@ -1,6 +1,7 @@
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
 import {
   array,
+  boolean,
   number,
   object,
   optional,
@@ -15,7 +16,7 @@ import {
 export const agentCapabilitiesSchema = object({
   protocols: array(string()),
   serviceTypes: array(string()),
-  attributes: record(string(), unknown())
+  attributes: record(string(), string())
 })
 
 /**
@@ -34,7 +35,7 @@ export const agentRegistrationSchema = object({
 export const discoveryFilterSchema = object({
   protocols: optional(array(string())),
   serviceTypes: optional(array(string())),
-  attributes: optional(record(string(), unknown()))
+  attributes: optional(record(string(), string()))
 })
 
 /**

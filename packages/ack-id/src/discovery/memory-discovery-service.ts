@@ -72,7 +72,8 @@ export class MemoryDiscoveryService extends BaseDiscoveryService {
    * Get a specific agent's registration
    */
   get(did: DidUri): Promise<AgentRegistration | undefined> {
-    return Promise.resolve(this.agents.get(did))
+    const agent = this.agents.get(did)
+    return Promise.resolve(agent ?? undefined)
   }
 
   /**
