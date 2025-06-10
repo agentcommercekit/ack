@@ -6,9 +6,9 @@ import {
 import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { expect, test } from "vitest"
-import { signCredential } from "../sign-credential"
 import { parseJwtCredential } from "./parse-jwt-credential"
 import { createCredential } from "../create-credential"
+import { signCredential } from "../signing/sign-credential"
 
 test("parseJwtCredential should parse a valid credential", async () => {
   const resolver = getDidResolver()

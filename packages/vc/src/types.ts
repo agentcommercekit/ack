@@ -24,5 +24,15 @@ type W3CCredential = {
   termsOfUse?: any
 }
 
+type W3CPresentation = {
+  "@context": string[]
+  type: string[]
+  id?: string
+  verifiableCredential?: Verifiable<W3CCredential>[]
+  holder: string
+  issuanceDate?: string
+  expirationDate?: string
+}
+
 export type CredentialSubject = W3CCredential["credentialSubject"]
-export type { JwtCredentialPayload, Verifiable, W3CCredential }
+export type { JwtCredentialPayload, Verifiable, W3CCredential, W3CPresentation }

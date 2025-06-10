@@ -1,27 +1,8 @@
 import { isJwtString, resolveJwtAlgorithm } from "@agentcommercekit/jwt"
 import { createVerifiableCredentialJwt, verifyCredential } from "did-jwt-vc"
-import type { Verifiable, W3CCredential } from "./types"
-import type { Resolvable } from "@agentcommercekit/did"
-import type { JwtAlgorithm, JwtSigner, JwtString } from "@agentcommercekit/jwt"
-
-interface SignCredentialOptions {
-  /**
-   * The algorithm to use for the JWT
-   */
-  alg?: JwtAlgorithm
-  /**
-   * The DID of the credential issuer
-   */
-  did: string
-  /**
-   * The signer to use for the JWT
-   */
-  signer: JwtSigner
-  /**
-   * A resolver to use for parsing the signed credential
-   */
-  resolver: Resolvable
-}
+import type { SignOptions } from "./types"
+import type { Verifiable, W3CCredential } from "../types"
+import type { JwtString } from "@agentcommercekit/jwt"
 
 type SignedCredential<T extends W3CCredential> = {
   /**
@@ -43,7 +24,7 @@ type SignedCredential<T extends W3CCredential> = {
  */
 export async function signCredential<T extends W3CCredential>(
   credential: T,
-  options: SignCredentialOptions
+  options: SignOptions
 ): Promise<SignedCredential<T>> {
   options.alg = options.alg ? resolveJwtAlgorithm(options.alg) : options.alg
   const jwt = await createVerifiableCredentialJwt(credential, options)
