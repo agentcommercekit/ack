@@ -2,11 +2,29 @@ import type { Verifiable, W3CCredential, W3CPresentation } from "./types"
 import type { DidUri } from "@agentcommercekit/did"
 
 export type CreatePresentationParams = {
-  credentials: Verifiable<W3CCredential>[]
-  holder: DidUri
+  /**
+   * The ID of the presentation.
+   */
   id?: string
+  /**
+   * The type of the presentation.
+   */
   type?: string | string[]
+  /**
+   * The holder of the presentation.
+   */
+  holder: DidUri
+  /**
+   * The credentials to include in the presentation.
+   */
+  credentials: Verifiable<W3CCredential>[]
+  /**
+   * The issuance date of the presentation.
+   */
   issuanceDate?: Date
+  /**
+   * The expiration date of the presentation.
+   */
   expirationDate?: Date
 }
 

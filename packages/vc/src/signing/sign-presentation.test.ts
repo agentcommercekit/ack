@@ -31,11 +31,7 @@ test("signPresentation creates a valid JWT and verifiable presentation", async (
     credentialSubject: { id: "did:example:subject" },
     issuanceDate: new Date().toISOString(),
     proof: {
-      type: "Ed25519Signature2018",
-      created: new Date().toISOString(),
-      verificationMethod: "did:example:issuer#key-1",
-      proofPurpose: "assertionMethod",
-      jws: "mock-jws-signature"
+      type: "Ed25519Signature2018"
     }
   }
 

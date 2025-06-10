@@ -12,11 +12,7 @@ describe("createPresentation", () => {
     credentialSubject: { id: "did:example:subject" },
     issuanceDate: new Date().toISOString(),
     proof: {
-      type: "Ed25519Signature2018",
-      created: new Date().toISOString(),
-      verificationMethod: "did:example:issuer#key-1",
-      proofPurpose: "assertionMethod",
-      jws: "mock-jws-signature"
+      type: "Ed25519Signature2018"
     }
   }
 
@@ -44,7 +40,6 @@ describe("createPresentation", () => {
       holder: mockHolder
     })
 
-    expect(presentation.verifiableCredential).toHaveLength(2)
     expect(presentation.verifiableCredential).toEqual([
       mockCredential,
       secondCredential
