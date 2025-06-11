@@ -1,0 +1,24 @@
+[package]
+version = "0.1.0"
+name = "script"
+edition = "2021"
+
+[[bin]]
+name = "zk-controller-prover"
+path = "src/bin/zk-controller-prover.rs"
+
+[dependencies]
+anyhow = "1.0.75"
+clap = { version = "4.4.6", features = ["derive"] }
+dotenv = "0.15.0"
+hex = "0.4.3"
+serde = { version = "1.0.188", features = ["derive"] }
+serde_json = "1.0.107"
+sp1-sdk = "4.2.0"
+tokio = { version = "1.32.0", features = ["full"] }
+tracing = "0.1.37"
+sha2 = "0.10"
+chrono = "0.4"
+
+[build-dependencies]
+sp1-build = "4.2.0"
