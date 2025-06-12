@@ -1,0 +1,77 @@
+{
+  "name": "@agentcommercekit/ack-zk",
+  "version": "0.1.0",
+  "homepage": "https://github.com/agentcommercekit/ack#readme",
+  "bugs": "https://github.com/agentcommercekit/ack/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "packages/ack-zk"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Catena Labs, Inc",
+    "url": "https://catenalabs.com"
+  },
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "src",
+    "!**/*.test.*"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./schemas/zod": {
+      "types": "./dist/schemas/zod.d.ts",
+      "default": "./dist/schemas/zod.js"
+    },
+    "./schemas/valibot": {
+      "types": "./dist/schemas/valibot.d.ts",
+      "default": "./dist/schemas/valibot.js"
+    }
+  },
+  "scripts": {
+    "build": "tsdown src/index.ts src/schemas/zod.ts src/schemas/valibot.ts --dts --silent",
+    "build:prover": "bash scripts/build-prover.sh",
+    "clean": "rm -rf ./dist",
+    "dev": "pnpm build --watch --no-clean",
+    "lint": "eslint .",
+    "test": "NODE_ENV=test vitest",
+    "test:watch": "NODE_ENV=test vitest --watch",
+    "test:integration": "tsx src/zk-integration.ts"
+  },
+  "dependencies": {
+    "@agentcommercekit/ack-id": "workspace:*",
+    "@agentcommercekit/did": "workspace:*",
+    "@agentcommercekit/vc": "workspace:*",
+    "@agentcommercekit/keys": "workspace:*",
+    "valibot": "^1.1.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "^22.15.19",
+    "eslint": "^9.27.0",
+    "tsdown": "^0.11.12",
+    "tsx": "^4.19.4",
+    "typescript": "^5.8.3",
+    "vitest": "^3.1.4",
+    "zod": "^3.25.4"
+  },
+  "peerDependencies": {
+    "zod": "^3.0.0"
+  },
+  "peerDependenciesMeta": {
+    "zod": {
+      "optional": true
+    }
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

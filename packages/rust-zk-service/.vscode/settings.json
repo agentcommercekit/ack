@@ -1,0 +1,37 @@
+{
+    "rust-analyzer.linkedProjects": [
+        "program/Cargo.toml",
+        "script/Cargo.toml"
+    ],
+    "rust-analyzer.check.overrideCommand": [
+        "cargo",
+        "clippy",
+        "--workspace",
+        "--message-format=json",
+        "--all-features",
+        "--all-targets",
+        "--",
+        "-A",
+        "incomplete-features"
+    ],
+    "rust-analyzer.runnables.extraEnv": {
+        "RUST_LOG": "debug",
+        "RUSTFLAGS": "-Ctarget-cpu=native"
+    },
+    "rust-analyzer.runnables.extraArgs": [
+        "--release",
+        "+nightly"
+    ],
+    "rust-analyzer.diagnostics.disabled": [
+        "unresolved-proc-macro"
+    ],
+    "editor.rulers": [
+        100
+    ],
+    "editor.inlineSuggest.enabled": true,
+    "[rust]": {
+        "editor.defaultFormatter": "rust-lang.rust-analyzer",
+        "editor.formatOnSave": true,
+        "editor.hover.enabled": true
+    },
+}

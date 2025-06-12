@@ -1,0 +1,9 @@
+[package]
+version = "0.1.0"
+name = "controller-claim-program"
+edition = "2021"
+
+[dependencies]
+sp1-zkvm = "4.2.0"
+alloy-sol-types = "0.7.7"
+sha2 = "0.10"
