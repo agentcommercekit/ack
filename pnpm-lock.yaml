@@ -401,6 +401,52 @@ importers:
         specifier: ^3.25.4
         version: 3.25.4
 
+  packages/ack-zk:
+    dependencies:
+      '@agentcommercekit/ack-id':
+        specifier: workspace:*
+        version: link:../ack-id
+      '@agentcommercekit/did':
+        specifier: workspace:*
+        version: link:../did
+      '@agentcommercekit/keys':
+        specifier: workspace:*
+        version: link:../keys
+      '@agentcommercekit/vc':
+        specifier: workspace:*
+        version: link:../vc
+      valibot:
+        specifier: ^1.1.0
+        version: 1.1.0(typescript@5.8.3)
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../tools/eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../tools/typescript-config
+      '@types/node':
+        specifier: ^22.15.19
+        version: 22.15.19
+      eslint:
+        specifier: ^9.27.0
+        version: 9.27.0(jiti@2.4.2)
+      tsdown:
+        specifier: ^0.11.12
+        version: 0.11.12(typescript@5.8.3)
+      tsx:
+        specifier: ^4.19.4
+        version: 4.19.4
+      typescript:
+        specifier: ^5.8.3
+        version: 5.8.3
+      vitest:
+        specifier: ^3.1.4
+        version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)(tsx@4.19.4)(yaml@2.8.0)
+      zod:
+        specifier: ^3.25.4
+        version: 3.25.4
+
   packages/agentcommercekit:
     dependencies:
       '@agentcommercekit/ack-id':
