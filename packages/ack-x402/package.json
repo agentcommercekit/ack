@@ -1,0 +1,61 @@
+{
+  "name": "@agentcommercekit/ack-x402",
+  "version": "0.1.0",
+  "homepage": "https://github.com/agentcommercekit/ack#readme",
+  "bugs": "https://github.com/agentcommercekit/ack/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "packages/ack-x402"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Catena Labs",
+    "url": "https://catenalabs.com"
+  },
+  "type": "module",
+  "exports": {
+    "./package.json": "./package.json",
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown src/index.ts --dts --silent",
+    "check:types": "tsc --noEmit",
+    "clean": "git clean -fdX .turbo dist",
+    "dev": "pnpm build --watch --no-clean",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@agentcommercekit/ack-pay": "workspace:*",
+    "@agentcommercekit/did": "workspace:*",
+    "@agentcommercekit/jwt": "workspace:*",
+    "@agentcommercekit/keys": "workspace:*",
+    "@agentcommercekit/vc": "workspace:*",
+    "x402-next": "^0.4.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "eslint": "^9.27.0",
+    "tsdown": "^0.11.12",
+    "typescript": "^5",
+    "vitest": "^3.1.4",
+    "x402-fetch": "^0.3.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
