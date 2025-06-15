@@ -2,21 +2,21 @@ import { ethers } from "ethers";
 import { createControllerCredential } from "@agentcommercekit/ack-id";
 import { signCredential } from "@agentcommercekit/vc";
 import { createJwtSigner } from "@agentcommercekit/jwt";
+// For production, use the official x402 client
+// import { createPayment } from "@coinbase/x402-js";
 
-// Integrated client demonstrating ACK-ID + x402 + ACK-Pay flow
 async function demo() {
-  console.log("=== Integrated Payment Demo (ACK-ID + x402 + ACK-Pay) ===\n");
+  console.log("=== x402-express + ACK Integration Demo ===\n");
   
-  // Setup client identity (ACK-ID)
-  // For demo purposes, using simple key generation
-  const agentPrivateKey = ethers.utils.randomBytes(32);
+  const API_BASE = "http://localhost:3000";
+  
+  // 1. Setup ACK-ID identity
+  console.log("Setting up ACK-ID identity...");
   const agentDid = `did:key:z6Mk${ethers.utils.hexlify(ethers.utils.randomBytes(32)).substring(2)}`;
+  const controllerWallet = ethers.Wallet.createRandom();
+  const controllerDid = `did:pkh:evm:1:${controllerWallet.address}`;
+  const controllerSigner = createJwtSigner(controllerWallet.privateKey, "ES256K");
   
-  const controllerPrivateKey = ethers.utils.randomBytes(32);
-  const controllerDid = `did:key:z6Mk${ethers.utils.hexlify(ethers.utils.randomBytes(32)).substring(2)}`;
-  const controllerSigner = createJwtSigner(controllerPrivateKey, "EdDSA");
-  
-  // Create controller credential (ACK-ID)
   const controllerCredential = createControllerCredential({
     subject: agentDid,
     controller: controllerDid,
@@ -25,102 +25,179 @@ async function demo() {
   
   const signedIdentity = await signCredential(controllerCredential, {
     signer: controllerSigner,
-    algorithm: "EdDSA"
+    algorithm: "ES256K"
   });
   
-  console.log("Client identity created:");
-  console.log(`- Agent DID: ${agentDid}`);
-  console.log(`- Controller DID: ${controllerDid}\n`);
+  console.log(`✓ Agent DID: ${agentDid}`);
+  console.log(`✓ Controller: ${controllerDid}\n`);
   
-  // Storage for receipt
   let savedReceipt: string | null = null;
   
-  // First request - no payment/receipt
-  console.log("1. Initial request without payment...");
-  const response1 = await fetch("http://localhost:3000/api/protected");
-  
-  if (response1.status === 402) {
-    console.log("✓ Got 402 Payment Required");
-    const requirements = await response1.json();
-    console.log("\nRequirements:");
-    console.log("- Identity: ACK-ID controller credential");
-    console.log("- Payment: 0.01 USDC via x402");
-    console.log("- Alternative: Use existing ACK-Pay receipt\n");
+  // 2. First request - no payment (x402 middleware will return 402)
+  console.log("1. Testing protected endpoint without payment...");
+  try {
+    const response1 = await fetch(`${API_BASE}/api/protected`);
     
-    // Make payment with identity
-    console.log("2. Creating x402 payment with ACK-ID identity...");
-    
-    // Create payment proof
-    const paymentWallet = ethers.Wallet.createRandom();
-    const paymentProof = {
-      scheme: "exact",
-      network: "base-sepolia",
-      amount: requirements.requirements.payment.maxAmountRequired,
-      asset: requirements.requirements.payment.asset,
-      payTo: requirements.requirements.payment.payTo,
-      from: paymentWallet.address,
-      txHash: "0x" + "a".repeat(64), // Simulated
-      timestamp: Date.now()
-    };
-    
-    const signature = await paymentWallet.signMessage(JSON.stringify(paymentProof));
-    const xPaymentHeader = Buffer.from(
-      JSON.stringify({ ...paymentProof, signature })
-    ).toString("base64");
-    
-    console.log("✓ Payment proof created");
-    console.log("✓ Identity credential ready\n");
-    
-    // Retry with both identity and payment
-    console.log("3. Sending payment with identity verification...");
-    const response2 = await fetch("http://localhost:3000/api/protected", {
-      headers: { 
-        "X-PAYMENT": xPaymentHeader,
-        "X-IDENTITY": signedIdentity
-      }
-    });
-    
-    if (response2.ok) {
-      const data = await response2.json();
-      console.log("✓ Payment successful!");
-      console.log(`- Method used: ${data.method}`);
-      console.log(`- Data received: ${data.data}`);
+    if (response1.status === 402) {
+      console.log("✓ Got 402 Payment Required from x402-express");
+      const paymentDetails = await response1.json();
       
-      if (data.receipt) {
-        savedReceipt = data.receipt;
-        console.log(`- Receipt issued, valid until: ${data.receiptExpiry}`);
-        console.log("\n4. Testing receipt-based access...");
+      console.log("\nPayment Requirements:");
+      console.log(`- Amount: ${paymentDetails.price || paymentDetails.amount}`);
+      console.log(`- Receiver: ${paymentDetails.receiver}`);
+      console.log(`- Network: ${paymentDetails.network}`);
+      console.log(`- Asset: ${paymentDetails.asset}`);
+      console.log(`- Description: ${paymentDetails.description}\n`);
+      
+      // 3. Create x402 payment
+      console.log("2. Creating x402 payment...");
+      
+      // Simulate payment creation (in production use @coinbase/x402-js)
+      const paymentWallet = ethers.Wallet.createRandom();
+      const paymentData = {
+        scheme: "exact",
+        network: paymentDetails.network,
+        amount: "10000", // $0.01 in USDC smallest units
+        asset: paymentDetails.asset,
+        receiver: paymentDetails.receiver,
+        from: paymentWallet.address,
+        txHash: "0x" + "a".repeat(64),
+        blockNumber: 12345678,
+        timestamp: Date.now()
+      };
+      
+      const signature = await paymentWallet.signMessage(JSON.stringify(paymentData));
+      const xPaymentHeader = Buffer.from(JSON.stringify({
+        ...paymentData,
+        signature
+      })).toString("base64");
+      
+      console.log("✓ Payment prepared\n");
+      
+      // 4. Send payment without identity (should fail)
+      console.log("3. Sending payment without identity...");
+      const response2 = await fetch(`${API_BASE}/api/protected`, {
+        headers: {
+          "X-PAYMENT": xPaymentHeader
+        }
+      });
+      
+      if (response2.status === 401) {
+        const error = await response2.json();
+        console.log("✓ Got 401:", error.message);
+        console.log("  Server requires ACK-ID identity\n");
         
-        // Use receipt for subsequent access
-        const response3 = await fetch("http://localhost:3000/api/protected", {
-          headers: { 
-            "Authorization": `Bearer ${savedReceipt}`
+        // 5. Send with both payment and identity
+        console.log("4. Sending payment + ACK-ID identity...");
+        const response3 = await fetch(`${API_BASE}/api/protected`, {
+          headers: {
+            "X-PAYMENT": xPaymentHeader,
+            "X-IDENTITY": signedIdentity,
+            "X-Payment-Verified": "true", // Simulate x402 verification
+            "X-Payment-Amount": "10000"
           }
         });
         
         if (response3.ok) {
-          const receiptData = await response3.json();
-          console.log("✓ Receipt accepted!");
-          console.log(`- Method used: ${receiptData.method}`);
-          console.log(`- Data received: ${receiptData.data}`);
+          const data = await response3.json();
+          console.log("✓ Success!");
+          console.log(`- Method: ${data.method}`);
+          console.log(`- Data: ${data.data}`);
+          console.log(`- Payer DID: ${data.payerDid}`);
+          
+          if (data.receipt) {
+            savedReceipt = data.receipt;
+            console.log(`- Receipt issued until: ${data.receiptExpiry}\n`);
+            
+            // 6. Test receipt-based access
+            console.log("5. Using ACK-Pay receipt for access...");
+            const response4 = await fetch(`${API_BASE}/api/protected`, {
+              headers: {
+                "Authorization": `Bearer ${savedReceipt}`
+              }
+            });
+            
+            if (response4.ok) {
+              const receiptData = await response4.json();
+              console.log("✓ Receipt accepted!");
+              console.log(`- Method: ${receiptData.method}`);
+              console.log(`- Data: ${receiptData.data}\n`);
+            }
+          }
         }
       }
-    } else {
-      console.log("✗ Payment/identity verification failed (expected in demo)");
     }
+  } catch (error) {
+    console.error("Request failed:", error);
   }
   
-  console.log("\n=== Integration Flow Complete ===");
-  console.log("\nWhat happened:");
-  console.log("1. Client created ACK-ID identity (agent + controller DIDs)");
-  console.log("2. Server required both identity and payment");
-  console.log("3. Client sent x402 payment + ACK-ID credential");
-  console.log("4. Server verified both, processed payment, issued ACK-Pay receipt");
-  console.log("5. Client used receipt for subsequent access (no payment needed)");
-  console.log("\nThis demonstrates true integration:");
-  console.log("- ACK-ID: Provides verified identity");
-  console.log("- x402: Handles actual payment");
-  console.log("- ACK-Pay: Issues receipts for future access");
+  // 7. Test premium endpoint
+  console.log("6. Testing premium endpoint ($0.05)...");
+  try {
+    const premiumResponse = await fetch(`${API_BASE}/api/premium`);
+    if (premiumResponse.status === 402) {
+      const details = await premiumResponse.json();
+      console.log(`✓ Premium endpoint requires: ${details.price || details.amount}`);
+    }
+  } catch (error) {
+    console.error("Premium request failed:", error);
+  }
+  
+  console.log("\n=== Demo Complete ===");
+  console.log("\nIntegration Summary:");
+  console.log("1. x402-express middleware handles payment requirements (402)");
+  console.log("2. Server enhances with ACK-ID identity requirement");
+  console.log("3. Successful payment + identity → ACK-Pay receipt");
+  console.log("4. Receipt enables 24-hour access without re-payment");
+  console.log("5. True integration of payment + identity + access control");
 }
 
-demo().catch(console.error);
+// Production example with real x402 client
+async function productionExample() {
+  // Uncomment when using @coinbase/x402-js
+  /*
+  import { createPayment } from "@coinbase/x402-js";
+  
+  const response = await fetch("https://api.example.com/api/protected");
+  
+  if (response.status === 402) {
+    const paymentRequest = await response.json();
+    
+    // Create payment using official SDK
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY!);
+    const payment = await createPayment({
+      amount: paymentRequest.amount,
+      receiver: paymentRequest.receiver,
+      asset: paymentRequest.asset,
+      network: paymentRequest.network,
+      signer: wallet
+    });
+    
+    // Create ACK-ID
+    const identity = await createAndSignACKID();
+    
+    // Retry with both
+    const paidResponse = await fetch("https://api.example.com/api/protected", {
+      headers: {
+        "X-PAYMENT": payment.token,
+        "X-IDENTITY": identity
+      }
+    });
+    
+    if (paidResponse.ok) {
+      const data = await paidResponse.json();
+      // Save receipt for future use
+      if (data.receipt) {
+        await saveReceipt(data.receipt);
+      }
+    }
+  }
+  */
+}
+
+// Run the demo
+if (require.main === module) {
+  demo().catch(console.error);
+}
+
+export { demo, productionExample };

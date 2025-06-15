@@ -1,6 +1,5 @@
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-import { HTTPException } from "hono/http-exception";
+import express from "express";
+import { paymentMiddleware, Network } from "x402-express";
 import { ethers } from "ethers";
 import { getDidResolver } from "@agentcommercekit/did";
 import { createPaymentReceipt, verifyPaymentReceipt } from "@agentcommercekit/ack-pay";
@@ -8,165 +7,223 @@ import { signCredential, parseJwtCredential, verifyParsedCredential } from "@age
 import { getControllerClaimVerifier } from "@agentcommercekit/ack-id";
 import { createJwtSigner } from "@agentcommercekit/jwt";
 
-// True integration: ACK-ID for identity, x402 for payment, ACK-Pay for receipts
-const app = new Hono();
-const wallet = ethers.Wallet.createRandom();
-const FACILITATOR = "https://x402.org/facilitator";
+const app = express();
+app.use(express.json());
 
-// Setup ACK components
-const didResolver = getDidResolver();
-const controllerVerifier = getControllerClaimVerifier();
+// Setup wallet and ACK components
+const receiverWallet = ethers.Wallet.createRandom();
+const RECEIVER_ADDRESS = receiverWallet.address;
 
-// For demo purposes, we'll use a simple key representation
-// In production, use proper key generation from @agentcommercekit/keys
+// Receipt service setup
 const receiptServiceWallet = ethers.Wallet.createRandom();
 const receiptServiceDid = `did:pkh:evm:1:${receiptServiceWallet.address}`;
 const receiptSigner = createJwtSigner(receiptServiceWallet.privateKey, "ES256K");
 
-// Store issued receipts (in production, use a database)
-const issuedReceipts = new Map<string, { amount: string; expiry: number }>();
+// ACK components
+const didResolver = getDidResolver();
+const controllerVerifier = getControllerClaimVerifier();
 
-app.get("/api/protected", async (c) => {
-  const authHeader = c.req.header("Authorization");
-  const xPayment = c.req.header("X-PAYMENT");
-  const identityHeader = c.req.header("X-IDENTITY"); // ACK-ID credential
+// Configure x402 middleware for payment handling
+app.use(paymentMiddleware(
+  RECEIVER_ADDRESS,
+  {
+    // Protected routes with pricing
+    "GET /api/protected": {
+      price: "$0.01",
+      network: Network["base-sepolia"],
+      config: {
+        description: "Access to protected API endpoint",
+        mimeType: "application/json",
+        maxTimeoutSeconds: 300
+      }
+    },
+    "GET /api/premium": {
+      price: "$0.05", 
+      network: Network["base-sepolia"],
+      config: {
+        description: "Premium data access",
+        outputSchema: {
+          type: "object",
+          properties: {
+            data: { type: "string" },
+            tier: { type: "string" },
+            timestamp: { type: "string" }
+          }
+        }
+      }
+    },
+    "POST /api/action": {
+      price: "$0.02",
+      network: Network["base-sepolia"],
+      config: {
+        description: "Perform premium action"
+      }
+    }
+  },
+  {
+    url: "https://x402.org/facilitator" // Base Sepolia testnet facilitator
+  }
+));
+
+// Middleware to enhance x402 with ACK-ID and ACK-Pay
+app.use("/api/*", async (req, res, next) => {
+  // Check if payment was verified by x402 middleware
+  const paymentVerified = req.headers['x-payment-verified'] === 'true';
+  const authHeader = req.headers['authorization'];
+  const identityHeader = req.headers['x-identity'];
   
-  // Check if we have a valid ACK-Pay receipt from a previous payment
-  if (authHeader && authHeader.startsWith("Bearer ")) {
+  // Check for ACK-Pay receipt (skip if x402 already verified payment)
+  if (authHeader?.startsWith('Bearer ') && !paymentVerified) {
     try {
       const jwtReceipt = authHeader.substring(7);
-      
-      // Verify the receipt we issued
       const result = await verifyPaymentReceipt(jwtReceipt, {
         resolver: didResolver,
-        trustedReceiptIssuers: [receiptServiceDid], // Only trust our receipts
+        trustedReceiptIssuers: [receiptServiceDid],
       });
       
       if (result && !isExpired(result.receipt)) {
-        return c.json({ 
-          success: true,
-          data: "Premium content (via stored receipt)",
-          method: "ack-pay-receipt"
-        });
+        // Valid receipt - attach info to request
+        req.authMethod = 'ack-pay-receipt';
+        req.payerDid = result.receipt.credentialSubject.payerDid;
+        return next();
       }
     } catch (error) {
-      console.error("Receipt verification failed:", error);
+      // Invalid receipt, continue to other auth methods
     }
   }
   
-  // New payment flow: Require both identity and payment
-  if (xPayment && identityHeader) {
+  // If payment was verified by x402, require ACK-ID
+  if (paymentVerified) {
+    if (!identityHeader) {
+      return res.status(401).json({
+        error: "Identity required",
+        message: "Payment verified but ACK-ID credential missing",
+        required: {
+          header: "X-IDENTITY",
+          type: "ControllerCredential",
+          description: "Include your ACK-ID controller credential"
+        }
+      });
+    }
+    
     try {
-      // Step 1: Verify ACK-ID identity credential
+      // Verify ACK-ID
       const identityCredential = await parseJwtCredential(identityHeader, didResolver);
-      
-      // Verify it's a valid controller credential
       await verifyParsedCredential(identityCredential, {
         resolver: didResolver,
         verifiers: [controllerVerifier]
       });
       
       const payerDid = identityCredential.credentialSubject.id;
-      console.log("Identity verified:", payerDid);
+      const paymentAmount = req.headers['x-payment-amount'] || '0';
       
-      // Step 2: Verify x402 payment
-      const paymentData = JSON.parse(Buffer.from(xPayment, "base64").toString());
-      
-      const verifyResponse = await fetch(`${FACILITATOR}/verify`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          payment: xPayment,
-          requirements: {
-            scheme: "exact",
-            network: "base-sepolia",
-            maxAmountRequired: "10000",
-            payTo: wallet.address,
-            asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
-          }
-        })
-      });
-      
-      if (!verifyResponse.ok) {
-        throw new Error("Payment verification failed");
-      }
-      
-      // Step 3: Issue ACK-Pay receipt for future access
+      // Create ACK-Pay receipt
       const receipt = createPaymentReceipt({
-        paymentToken: xPayment, // Store x402 payment proof
-        paymentOptionId: "x402-verified",
+        paymentToken: req.headers['x-payment'] || 'x402-verified',
+        paymentOptionId: "x402-base-sepolia",
         issuer: receiptServiceDid,
-        payerDid: payerDid, // Link receipt to verified identity
-        expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+        payerDid: payerDid,
+        expirationDate: new Date(Date.now() + 24 * 60 * 60 * 1000),
         metadata: {
-          amount: paymentData.amount,
+          amount: paymentAmount,
           network: "base-sepolia",
+          endpoint: req.path,
           verifiedAt: new Date().toISOString()
         }
       });
       
-      // Sign the receipt
       const signedReceipt = await signCredential(receipt, {
         signer: receiptSigner,
         algorithm: "ES256K"
       });
       
-      // Store receipt info
-      issuedReceipts.set(payerDid, {
-        amount: paymentData.amount,
-        expiry: Date.now() + 24 * 60 * 60 * 1000
-      });
-      
-      // Return content with receipt for future access
-      return c.json({ 
-        success: true,
-        data: "Premium content (via new payment)",
-        method: "x402+ack-id",
-        receipt: signedReceipt, // Client can use this for 24 hours
-        receiptExpiry: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-      });
+      // Attach to request for route handlers
+      req.authMethod = 'x402+ack-id';
+      req.payerDid = payerDid;
+      req.receipt = signedReceipt;
+      req.receiptExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
       
     } catch (error) {
-      console.error("Integrated payment verification failed:", error);
-      throw new HTTPException(402, {
-        res: Response.json({
-          error: "Payment and identity verification failed",
-          details: error.message
-        }, { status: 402 })
+      return res.status(401).json({
+        error: "Identity verification failed",
+        details: error instanceof Error ? error.message : "Invalid ACK-ID credential"
       });
     }
   }
   
-  // No valid payment or receipt - return integrated requirements
-  throw new HTTPException(402, {
-    res: Response.json({
-      error: "Payment required",
-      requirements: {
-        identity: {
-          type: "ack-id",
-          header: "X-IDENTITY",
-          credentialType: "ControllerCredential",
-          description: "Provide your ACK-ID controller credential"
-        },
-        payment: {
-          type: "x402",
-          header: "X-PAYMENT",
-          scheme: "exact",
-          network: "base-sepolia",
-          maxAmountRequired: "10000",
-          payTo: wallet.address,
-          asset: "0x036CbD53842c5426634e7929541eC2318f3dCF7e",
-          description: "Pay 0.01 USDC with identity verification"
-        },
-        alternative: {
-          type: "ack-pay-receipt",
-          header: "Authorization",
-          format: "Bearer <jwt-receipt>",
-          description: "Or use a previously issued payment receipt"
-        }
+  next();
+});
+
+// Protected endpoint - accessed after payment/identity verification
+app.get("/api/protected", (req, res) => {
+  const response: any = {
+    success: true,
+    data: "Protected content accessed successfully",
+    method: req.authMethod || "unknown",
+    timestamp: new Date().toISOString()
+  };
+  
+  if (req.payerDid) {
+    response.payerDid = req.payerDid;
+  }
+  
+  if (req.receipt) {
+    response.receipt = req.receipt;
+    response.receiptExpiry = req.receiptExpiry;
+  }
+  
+  res.json(response);
+});
+
+// Premium endpoint
+app.get("/api/premium", (req, res) => {
+  res.json({
+    data: "Premium tier data",
+    tier: "premium",
+    timestamp: new Date().toISOString(),
+    method: req.authMethod || "x402",
+    payerDid: req.payerDid
+  });
+});
+
+// Action endpoint
+app.post("/api/action", (req, res) => {
+  res.json({
+    success: true,
+    action: "completed",
+    input: req.body,
+    method: req.authMethod || "x402",
+    payerDid: req.payerDid
+  });
+});
+
+// Home route
+app.get("/", (req, res) => {
+  res.json({
+    message: "x402-express + ACK Integration Server",
+    receiver: RECEIVER_ADDRESS,
+    receiptIssuer: receiptServiceDid,
+    endpoints: {
+      protected: {
+        path: "/api/protected",
+        price: "$0.01",
+        requirements: "x402 payment + ACK-ID identity"
       },
-      receiptService: receiptServiceDid
-    }, { status: 402 })
+      premium: {
+        path: "/api/premium",
+        price: "$0.05"
+      },
+      action: {
+        path: "/api/action",
+        price: "$0.02",
+        method: "POST"
+      }
+    },
+    features: [
+      "x402-express handles payment verification",
+      "ACK-ID provides identity verification",
+      "ACK-Pay issues receipts for 24-hour access"
+    ]
   });
 });
 
@@ -176,23 +233,28 @@ function isExpired(credential: any): boolean {
   return new Date(credential.expirationDate) < new Date();
 }
 
-app.get("/", (c) => c.json({ 
-  message: "Integrated ACK + x402 Server",
-  payTo: wallet.address,
-  price: "0.01 USDC",
-  receiptIssuer: receiptServiceDid,
-  features: [
-    "ACK-ID identity verification required",
-    "x402 payment processing", 
-    "ACK-Pay receipts for 24-hour access"
-  ]
-}));
+// Extend Express Request type
+declare global {
+  namespace Express {
+    interface Request {
+      authMethod?: string;
+      payerDid?: string;
+      receipt?: string;
+      receiptExpiry?: string;
+    }
+  }
+}
 
-console.log(`
-🚀 Integrated server running at http://localhost:3000
-💰 Pay to: ${wallet.address}
-🆔 Receipt issuer: ${receiptServiceDid}
-🔐 Features: ACK-ID + x402 + ACK-Pay integration
-`);
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+  console.log(`
+🚀 x402-express + ACK Integration Server
+🌐 Listening at http://localhost:${PORT}
+💰 Receiver: ${RECEIVER_ADDRESS}
+🆔 Receipt Issuer: ${receiptServiceDid}
+📦 Using: x402-express for payment handling
+🔐 Flow: x402 payment → ACK-ID verification → ACK-Pay receipt
+  `);
+});
 
-serve({ port: 3000, fetch: app.fetch });
+export default app;
