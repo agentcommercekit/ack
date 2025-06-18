@@ -1,6 +1,6 @@
-import type { DIDDocument as DidDocument } from "did-resolver"
+import type { DIDDocument as DidDocument, Service } from "did-resolver"
 
-export type { DidDocument }
+export type { DidDocument, Service }
 
 /**
  * Check if a value is a did document
