@@ -42,7 +42,7 @@
     "README.md"
   ],
   "scripts": {
-    "build": "tsdown src/index.ts src/encoding/index.ts src/curves/ed25519.ts src/curves/secp256k1.ts --dts --silent",
+    "build": "tsdown",
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
