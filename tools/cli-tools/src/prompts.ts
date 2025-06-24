@@ -22,6 +22,15 @@ type LogOptions = {
 /**
  * Prints messages to the console, automatically wrapping them to
  * the default width. Each message will be printed on a new line.
+ *
+ * @example
+ * ```
+ * log("Hello, world!")
+ * log("Hello, world!", { wrap: false })
+ * log("Hello, world!", { width: 40 })
+ * log("Hello, world!", { spacing: 2 })
+ * log("Hello, world!", { wrap: false, width: 40, spacing: 2 })
+ * ```
  */
 export function log(...args: (string | LogOptions)[]) {
   let options: Required<LogOptions> = {

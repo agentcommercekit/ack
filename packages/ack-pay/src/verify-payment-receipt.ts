@@ -99,18 +99,15 @@ export async function verifyPaymentReceipt(
     throw new InvalidCredentialSubjectError("Payment token is not a JWT")
   }
 
-  const { paymentRequest, parsed } = await verifyPaymentToken(paymentToken, {
+  const { paymentRequest } = await verifyPaymentToken(paymentToken, {
     resolver,
     // We don't want to fail Receipt Verification if the paymentToken has
     // expired, since the receipt lives longer than that
-    verifyExpiry: false
+    verifyExpiry: false,
+    // If the paymentRequestIssuer is provided, we want to verify that the
+    // payment token was issued by the same issuer.
+    issuer: paymentRequestIssuer
   })
-
-  if (paymentRequestIssuer && parsed.issuer !== paymentRequestIssuer) {
-    throw new InvalidCredentialSubjectError(
-      "Payment token issuer does not match"
-    )
-  }
 
   return {
     receipt: parsedCredential,

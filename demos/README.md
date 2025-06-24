@@ -2,7 +2,7 @@
 
 In this directory you'll find several Demos walking you through different parts of the Agent Commerce Kit.
 
-We recommend running the demos from the root of the project with the command below, but each demo can also be run directly from its project directory with `pnpm start`.
+We recommend running the demos from the root of the project with the command below, but each demo can also be run directly from its project directory with `pnpm run demo`.
 
 ## Demos
 

@@ -5,14 +5,11 @@ import {
 } from "@agentcommercekit/did"
 import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
-import {
-  InvalidCredentialError,
-  InvalidCredentialSubjectError,
-  signCredential
-} from "@agentcommercekit/vc"
+import { InvalidCredentialError, signCredential } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createPaymentRequestBody } from "./create-payment-request-body"
+import { InvalidPaymentTokenError } from "./errors"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 import type { PaymentRequestInit } from "./payment-request"
 import type { DidUri, Resolvable } from "@agentcommercekit/did"
@@ -139,7 +136,7 @@ describe("verifyPaymentReceipt()", () => {
         resolver,
         paymentRequestIssuer: "did:example:wrong-issuer"
       })
-    ).rejects.toThrow(InvalidCredentialSubjectError)
+    ).rejects.toThrow(InvalidPaymentTokenError)
   })
 
   it("validates trusted receipt issuers", async () => {

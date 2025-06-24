@@ -1,6 +1,7 @@
 export { default as figlet } from "figlet"
-export { default as colors } from "yoctocolors"
 export * from "@inquirer/prompts"
+export * from "./colors"
+export * from "./logger"
 export * from "./prompts"
 export * from "./formatters"
 export * from "./update-env-file"

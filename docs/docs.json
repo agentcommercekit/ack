@@ -95,7 +95,8 @@
               "demos/demos",
               "demos/demo-identity",
               "demos/demo-payments",
-              "demos/demo-e2e"
+              "demos/demo-e2e",
+              "demos/demo-identity-a2a"
             ]
           },
           {

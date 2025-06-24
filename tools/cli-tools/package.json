@@ -16,7 +16,6 @@
   },
   "type": "module",
   "exports": {
-    "./package.json": "./package.json",
     ".": {
       "types": "./src/index.ts",
       "import": "./src/index.ts"

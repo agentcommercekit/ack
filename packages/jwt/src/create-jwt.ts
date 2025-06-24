@@ -5,11 +5,14 @@ import type { JwtAlgorithm } from "./jwt-algorithm"
 import type { JwtString } from "./jwt-string"
 import type { JWTHeader, JWTOptions, JWTPayload } from "did-jwt"
 
+export type JwtPayload = JWTPayload
+export type JwtOptions = JWTOptions
+
 /**
  * Allow alternative names for the algorithm (adds `secp256k1` and `Ed25519`,
  * which map to `ES256K` and `EdDSA` respectively)
  */
-type JwtHeader = Omit<JWTHeader, "alg"> & {
+export type JwtHeader = Omit<JWTHeader, "alg"> & {
   alg: JwtAlgorithm
 }
 
@@ -25,8 +28,8 @@ type JwtHeader = Omit<JWTHeader, "alg"> & {
  * @returns The JWT
  */
 export async function createJwt(
-  payload: Partial<JWTPayload>,
-  options: JWTOptions,
+  payload: Partial<JwtPayload>,
+  options: JwtOptions,
   { alg = "ES256K", ...header }: Partial<JwtHeader> = {}
 ): Promise<JwtString> {
   const result = await baseCreateJWT(payload, options, {

@@ -94,6 +94,107 @@ import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod"
 import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/valibot"
 ```
 
+## A2A Support
+
+This package includes utilities for building secure, mutually authenticated agent-to-agent (A2A) flows using DIDs and JWTs, as demonstrated in the [demo-identity-a2a](../docs/demos/demo-identity-a2a.mdx).
+
+### Key Exports from `@agentcommercekit/ack-id/a2a`
+
+- `createA2AHandshakeMessage` – Create a signed handshake message (JWT in A2A message body) for authentication.
+- `verifyA2AHandshakeMessage` – Verify a handshake message and extract the payload.
+- `createSignedA2AMessage` – Sign any A2A message, embedding a JWT signature in the metadata.
+- `verifyA2ASignedMessage` – Verify the signature of a signed A2A message.
+- `generateRandomNonce`, `generateRandomJti` – Generate secure random values for nonces and JWT IDs.
+- `createAgentCardServiceEndpoint` – Helper for DID service endpoints.
+
+### Example: Mutual Authentication Flow
+
+#### 1. Customer Agent initiates handshake
+
+```ts
+import {
+  createA2AHandshakeMessage,
+  generateRandomNonce
+} from "@agentcommercekit/ack-id/a2a"
+
+const handshake = await createA2AHandshakeMessage(
+  "user", // role
+  "did:web:bank.example.com", // recipient DID
+  {
+    did: "did:web:customer.example.com" // sender DID
+    // ...
+  }
+)
+
+// Send handshake message to the other agent
+```
+
+#### 2. Counterparty Agent verifies and responds
+
+```ts
+import { verifyA2AHandshakeMessage, createA2AHandshakeMessage } from "@agentcommercekit/ack-id/a2a"
+
+// On receiving handshake message from customer
+const payload = await verifyA2AHandshakeMessage(handshake.message, {
+  did: "did:web:bank.example.com",
+  counterparty: "did:web:customer.example.com"
+})
+// payload.nonce is the customer's nonce
+
+// Respond with a handshake message including the received nonce
+t const response = await createA2AHandshakeMessage(
+  "agent",
+  "did:web:customer.example.com",
+  {
+    did: "did:web:bank.example.com",
+    requestNonce: payload.nonce,
+    // ...
+
+  }
+)
+// Send response to the customer
+```
+
+#### 3. Signed Messaging after Authentication
+
+```ts
+import {
+  createSignedA2AMessage,
+  verifyA2ASignedMessage
+} from "@agentcommercekit/ack-id/a2a"
+
+// To send a signed message:
+const signed = await createSignedA2AMessage(
+  {
+    role: "user",
+    parts: [
+      { type: "text", text: "Please check the balance for account #12345" }
+    ]
+    // metadata will be filled in
+  },
+  {
+    did: "did:web:customer.example.com"
+    // ...
+  }
+)
+// Send signed.message
+
+// To verify a signed message:
+const verified = await verifyA2ASignedMessage(signed.message, {
+  did: "did:web:bank.example.com",
+  counterparty: "did:web:customer.example.com"
+})
+// verified.payload.message matches the message content
+```
+
+### Utility Methods
+
+- `generateRandomNonce()` – Generate a secure random nonce for challenge/response.
+- `generateRandomJti()` – Generate a secure random JWT ID.
+- `createAgentCardServiceEndpoint(did, url)` – Create a DID service endpoint for agent discovery.
+
+These methods enable robust, replay-resistant, mutually authenticated A2A flows using DIDs and JWTs. See the [identity-a2a demo](../../demos/identity-a2a) for a full walkthrough.
+
 ## Agent Commerce Kit Version
 
 This SDK supports Agent Commerce Kit version `2025-05-04`.

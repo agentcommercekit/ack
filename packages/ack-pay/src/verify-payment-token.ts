@@ -15,6 +15,10 @@ interface ValidatePaymentTokenOptions {
    * Whether to verify the expiry of the payment token
    */
   verifyExpiry?: boolean
+  /**
+   * The issuer to verify the payment token against
+   */
+  issuer?: string
 }
 
 /**
@@ -33,6 +37,7 @@ export async function verifyPaymentToken(
   try {
     parsedPaymentToken = await verifyJwt(token, {
       resolver: options.resolver,
+      issuer: options.issuer,
       policies: {
         aud: false,
         exp: options.verifyExpiry ?? true

@@ -42,7 +42,7 @@ pnpm run demo:payments
 Alternatively, you can run the demo from this directory with:
 
 ```sh
-pnpm start
+pnpm run demo
 ```
 
 ## Overview of the Demo

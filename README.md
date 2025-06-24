@@ -61,6 +61,18 @@ As you can see from the demo, DIDs and Verifiable Credentials can be extremely p
 
 By providing a standardized way to prove ownership chains, agents can securely verify that their counterparty is who they claim to be, such as an e-commerce store. By also exposing service endpoints, agents can broadcast how and where they want to be contacted, as well as other key endpoints they may offer, such as secure KYC exchange APIs.
 
+#### A2A (Agent2Agent)
+
+The ACK-ID protocol works seamlessly with Google's A2A (Agent2Agent) protocol. You can see a demo of two agents securely exchanging identity information in our `identity-a2a` demo.
+
+To use this demo, run the following command:
+
+```sh
+pnpm demo:identity-a2a
+```
+
+You can see the code for this demo in [`./demos/identity-a2a`](./demos/identity-a2a).
+
 #### Going Forward
 
 The ACK-ID primitives provide the building blocks for a robust future for agentic Identity. We imagine protocol extensions to support Agent Discovery via registries, reputation scoring, secure end-to-end encrypted communication between agents, controlled authorization, and much more.

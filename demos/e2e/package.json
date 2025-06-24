@@ -19,9 +19,9 @@
   "scripts": {
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
+    "demo": "tsx ./src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "start": "tsx ./src/index.ts",
     "test": "vitest"
   },
   "dependencies": {

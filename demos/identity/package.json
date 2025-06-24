@@ -19,10 +19,10 @@
   "scripts": {
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
+    "demo": "dotenv -e .env -- tsx ./src/index.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "setup": "./bin/setup",
-    "start": "dotenv -e .env -- tsx ./src/index.ts",
     "test": "vitest"
   },
   "dependencies": {

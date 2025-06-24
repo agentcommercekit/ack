@@ -1,5 +1,5 @@
 {
-  "name": "@demos/payments",
+  "name": "@demos/identity-a2a",
   "version": "0.0.1",
   "private": true,
   "homepage": "https://github.com/agentcommercekit/ack#readme",
@@ -7,7 +7,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agentcommercekit/ack.git",
-    "directory": "demos/payments"
+    "directory": "demos/identity-a2a"
   },
   "license": "MIT",
   "author": {
@@ -15,30 +15,29 @@
     "url": "https://catenalabs.com"
   },
   "type": "module",
-  "main": "./src/index.ts",
   "scripts": {
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
-    "demo": "dotenv -e .env -- tsx ./src/index.ts",
+    "demo": "tsx ./src/run-demo.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "setup": "./bin/setup",
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.2",
-    "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
+    "a2a-js": "^0.2.0",
     "agentcommercekit": "workspace:*",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0",
-    "viem": "^2.29.4"
+    "jose": "^6.0.11",
+    "safe-stable-stringify": "^2.5.0",
+    "uuid": "^11.1.0",
+    "valibot": "^1.1.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@types/express": "^5.0.3",
     "@types/node": "^22",
-    "dotenv-cli": "^8.0.0",
     "eslint": "^9.27.0",
     "tsx": "^4.19.4",
     "typescript": "^5",

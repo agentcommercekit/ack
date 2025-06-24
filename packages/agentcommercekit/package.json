@@ -20,6 +20,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./a2a": {
+      "types": "./dist/a2a/index.d.ts",
+      "default": "./dist/a2a/index.js"
+    },
     "./schemas/zod": {
       "types": "./dist/schemas/zod.d.ts",
       "default": "./dist/schemas/zod.js"
@@ -57,6 +61,7 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "a2a-js": "^0.2.0",
     "eslint": "^9.27.0",
     "tsdown": "^0.11.12",
     "typescript": "^5",
@@ -65,10 +70,14 @@
     "zod": "^3.25.4"
   },
   "peerDependencies": {
+    "a2a-js": "^0.2.0",
     "valibot": "^1.0.0",
     "zod": "^3.0.0"
   },
   "peerDependenciesMeta": {
+    "a2a-js": {
+      "optional": true
+    },
     "valibot": {
       "optional": true
     },

@@ -92,6 +92,18 @@ isControllerCredential(credential)
 isControllerClaim(credential.credentialSubject)
 ```
 
+#### A2A Methods
+
+Additionally, the ACK-ID package exposes methods to allow for identity exchange over A2A. See the [A2A section](../ack-id/README.md#a2a-support) of the ACK-ID README for more information.
+
+These methods are exported from `agentcommercekit/a2a`. For example:
+
+```ts
+import { createA2AHandshakeMessage } from "agentcommercekit/a2a"
+
+// ...
+```
+
 ### ACK-Pay methods
 
 #### Creating a Payment Request

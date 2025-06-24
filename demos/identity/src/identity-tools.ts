@@ -58,14 +58,11 @@ async function verifyIdentity(
 
   const parsed = await verifyJwt(signedChallenge, {
     resolver,
+    issuer: did,
     policies: {
       aud: false
     }
   })
-
-  if (parsed.issuer !== did) {
-    throw new Error("Challenge issuer does not match agent did")
-  }
 
   if (parsed.payload.sub !== challenge) {
     throw new Error("Challenge response does not match challenge")
