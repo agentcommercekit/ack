@@ -20,17 +20,25 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
-    "./a2a": {
-      "types": "./dist/a2a/index.d.ts",
-      "default": "./dist/a2a/index.js"
+    "./schemas/valibot": {
+      "types": "./dist/schemas/valibot.d.ts",
+      "default": "./dist/schemas/valibot.js"
     },
     "./schemas/zod": {
       "types": "./dist/schemas/zod.d.ts",
       "default": "./dist/schemas/zod.js"
     },
-    "./schemas/valibot": {
-      "types": "./dist/schemas/valibot.d.ts",
-      "default": "./dist/schemas/valibot.js"
+    "./a2a": {
+      "types": "./dist/a2a/index.d.ts",
+      "default": "./dist/a2a/index.js"
+    },
+    "./a2a/schemas/valibot": {
+      "types": "./dist/a2a/schemas/valibot.d.ts",
+      "default": "./dist/a2a/schemas/valibot.js"
+    },
+    "./a2a/schemas/zod": {
+      "types": "./dist/a2a/schemas/zod.d.ts",
+      "default": "./dist/a2a/schemas/zod.js"
     }
   },
   "main": "./dist/index.js",

@@ -8,11 +8,11 @@ import {
   createSignedA2AMessage,
   verifyA2AHandshakeMessage
 } from "agentcommercekit/a2a"
+import { messageSchema } from "agentcommercekit/a2a/schemas/valibot"
 import { v4 as uuidV4 } from "uuid"
 import * as v from "valibot"
 import { Agent } from "./agent"
 import { fetchUrlFromAgentCardUrl } from "./utils/fetch-agent-card"
-import { messageSchema } from "./utils/schemas"
 import { startAgentServer } from "./utils/server-utils"
 import type { AgentCard, Message } from "a2a-js"
 import type { DidUri } from "agentcommercekit"
