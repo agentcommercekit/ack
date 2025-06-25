@@ -1,12 +1,13 @@
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import { Role } from "a2a-js"
-import { isDidUri } from "agentcommercekit"
+import { isDidUri, verifyParsedCredential } from "agentcommercekit"
 import {
   createA2AHandshakeMessage,
   verifyA2AHandshakeMessage,
   verifyA2ASignedMessage
 } from "agentcommercekit/a2a"
 import { Agent } from "./agent"
+import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { startAgentServer } from "./utils/server-utils"
 import type {
   AgentCard,
@@ -117,10 +118,18 @@ class BankTellerAgent extends Agent {
         "Press Enter to verify customer's cryptographic proof..."
       )
 
-      const { nonce: clientNonce, iss: clientDid } =
-        await verifyA2AHandshakeMessage(request.params.message, {
-          did: this.did
-        })
+      const {
+        nonce: clientNonce,
+        iss: clientDid,
+        vc: clientVc
+      } = await verifyA2AHandshakeMessage(request.params.message, {
+        did: this.did
+      })
+
+      await verifyParsedCredential(clientVc, {
+        resolver: didResolverWithIssuer,
+        trustedIssuers: [issuerDid]
+      })
 
       console.log(
         colors.yellow(
@@ -144,7 +153,8 @@ class BankTellerAgent extends Agent {
           requestNonce: clientNonce,
           did: this.did,
           jwtSigner: this.jwtSigner,
-          alg: this.keypair.algorithm
+          alg: this.keypair.algorithm,
+          vc: this.vc
         }
       )
 
@@ -220,7 +230,7 @@ const agentCard: AgentCard = {
   }
 }
 
-export async function startServer() {
+export async function startTellerServer() {
   // Create bank teller agent with did:web instead of did:key
   const bankTellerAgent = await BankTellerAgent.create(agentCard, "secp256k1")
 
@@ -228,13 +238,5 @@ export async function startServer() {
   return startAgentServer(bankTellerAgent, {
     logger,
     port: 3001
-  })
-}
-
-// Only start server if this file is run directly
-if (import.meta.url === `file://${process.argv[1]}`) {
-  startServer().catch((error: unknown) => {
-    logger.log("Error starting bank teller server:", error as Error)
-    process.exit(1)
   })
 }

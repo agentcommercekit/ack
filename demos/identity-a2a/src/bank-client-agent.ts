@@ -2,7 +2,11 @@
 
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import { A2AClient, Role } from "a2a-js"
-import { getDidResolver, resolveDid } from "agentcommercekit"
+import {
+  getDidResolver,
+  resolveDid,
+  verifyParsedCredential
+} from "agentcommercekit"
 import {
   createA2AHandshakeMessage,
   createSignedA2AMessage,
@@ -12,6 +16,7 @@ import { messageSchema } from "agentcommercekit/a2a/schemas/valibot"
 import { v4 as uuidV4 } from "uuid"
 import * as v from "valibot"
 import { Agent } from "./agent"
+import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { fetchUrlFromAgentCardUrl } from "./utils/fetch-agent-card"
 import { startAgentServer } from "./utils/server-utils"
 import type { AgentCard, Message } from "a2a-js"
@@ -286,7 +291,8 @@ export class BankClientAgent extends Agent {
           did: this.did,
           jwtSigner: this.jwtSigner,
           alg: this.keypair.algorithm,
-          expiresIn: 5 * 60
+          expiresIn: 5 * 60,
+          vc: this.vc
         }
       )
 
@@ -299,7 +305,7 @@ export class BankClientAgent extends Agent {
       const authResponse = await client.sendTask(identityParams)
 
       // Step 3: Verify bank teller response
-      const { nonce: bankNonce } = await verifyA2AHandshakeMessage(
+      const { nonce: bankNonce, vc: bankVc } = await verifyA2AHandshakeMessage(
         authResponse,
         {
           // Validate that this is intended for our DID
@@ -308,6 +314,11 @@ export class BankClientAgent extends Agent {
           counterparty: serverDid
         }
       )
+
+      await verifyParsedCredential(bankVc, {
+        resolver: didResolverWithIssuer,
+        trustedIssuers: [issuerDid]
+      })
 
       // Check that bank teller included our nonce
       if (bankNonce !== nonce) {
@@ -403,13 +414,6 @@ const agentCard: AgentCard = {
   skills: []
 }
 
-if (import.meta.url === `file://${process.argv[1]}`) {
-  BankClientAgent.create(agentCard, "Ed25519")
-    .then(async (agent) => {
-      await agent.requestBankingServices()
-    })
-    .catch((error: unknown) => {
-      logger.log("Error:", error as Error)
-      process.exit(1)
-    })
+export async function getClientAgent() {
+  return BankClientAgent.create(agentCard, "Ed25519")
 }

@@ -1,6 +1,7 @@
 import { getDidResolver } from "@agentcommercekit/did"
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
 import { verifyJwt } from "@agentcommercekit/jwt"
+import { credentialSchema } from "@agentcommercekit/vc/schemas/valibot"
 import { stringify } from "safe-stable-stringify"
 import * as v from "valibot"
 import { dataPartSchema, messageSchema } from "./schemas/valibot"
@@ -29,7 +30,8 @@ const messageWithSignatureSchema = v.looseObject({
 
 const handshakePayloadSchema = v.object({
   iss: didUriSchema,
-  nonce: v.string()
+  nonce: v.string(),
+  vc: credentialSchema
 })
 
 type VerifyA2AHandshakeOptions = {

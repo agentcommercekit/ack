@@ -18,6 +18,7 @@ import {
   generateKeypair
 } from "agentcommercekit"
 import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
+import { issueCredential } from "./issuer"
 import type {
   AgentCard,
   AgentExecutor,
@@ -35,7 +36,9 @@ import type {
   DidUri,
   JwtSigner,
   Keypair,
-  KeypairAlgorithm
+  KeypairAlgorithm,
+  Verifiable,
+  W3CCredential
 } from "agentcommercekit"
 
 export abstract class Agent implements AgentExecutor {
@@ -44,7 +47,8 @@ export abstract class Agent implements AgentExecutor {
     public keypair: Keypair,
     public did: DidUri,
     public jwtSigner: JwtSigner,
-    public didDocument: DidDocument
+    public didDocument: DidDocument,
+    public vc: Verifiable<W3CCredential>
   ) {}
 
   static async create<T extends Agent>(
@@ -53,7 +57,8 @@ export abstract class Agent implements AgentExecutor {
       keypair: Keypair,
       did: DidUri,
       jwtSigner: JwtSigner,
-      didDocument: DidDocument
+      didDocument: DidDocument,
+      vc: Verifiable<W3CCredential>
     ) => T,
     agentCard: AgentCard,
     algorithm: KeypairAlgorithm = "secp256k1"
@@ -78,7 +83,15 @@ export abstract class Agent implements AgentExecutor {
       colors.dim(Buffer.from(keypair.publicKey).toString("hex"))
     )
 
-    return new this(agentCard, keypair, did, jwtSigner, didDocument)
+    const vc = await issueCredential({
+      subject: did,
+      controller: "did:web:builder.ack.com"
+    })
+
+    console.log("Generated sample VC for ownership attestation")
+    console.log("VC:", colors.dim(JSON.stringify(vc, null, 2)))
+
+    return new this(agentCard, keypair, did, jwtSigner, didDocument, vc)
   }
 
   async onMessageSend(

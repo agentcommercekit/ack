@@ -7,6 +7,7 @@ import type {
   JwtSigner,
   JwtString
 } from "@agentcommercekit/jwt"
+import type { Verifiable, W3CCredential } from "@agentcommercekit/vc"
 import type { Message, Role } from "a2a-js"
 
 type SignMessageOptions = {
@@ -54,6 +55,10 @@ export async function createSignedA2AMessage(
 
 type A2AHandshakeOptions = SignMessageOptions & {
   /**
+   * The verifiable credential to include in the message
+   */
+  vc: Verifiable<W3CCredential>
+  /**
    * The nonce of the message we're replying to, if any
    */
   requestNonce?: string
@@ -61,12 +66,12 @@ type A2AHandshakeOptions = SignMessageOptions & {
 
 export function createA2AHandshakePayload(
   recipient: DidUri,
-  requestNonce?: string
+  options: A2AHandshakeOptions
 ) {
   const nonce = generateRandomNonce()
-  const nonces = requestNonce
+  const nonces = options.requestNonce
     ? {
-        nonce: requestNonce,
+        nonce: options.requestNonce,
         replyNonce: nonce
       }
     : {
@@ -75,7 +80,8 @@ export function createA2AHandshakePayload(
 
   return {
     aud: recipient,
-    ...nonces
+    ...nonces,
+    vc: options.vc
   }
 }
 
@@ -106,39 +112,16 @@ export async function createA2AHandshakeMessage(
   recipient: DidUri,
   options: A2AHandshakeOptions
 ): Promise<A2AHandshakeMessage> {
-  const nonce = generateRandomNonce()
-  const nonces = options.requestNonce
-    ? {
-        nonce: options.requestNonce,
-        replyNonce: nonce
-      }
-    : {
-        nonce: nonce
-      }
-
-  const payload = {
-    aud: recipient,
-    ...nonces
-  }
+  const payload = createA2AHandshakePayload(recipient, options)
 
   const { jwt, jti } = await createMessageSignature(payload, options)
 
-  const message: Message = {
-    role,
-    parts: [
-      {
-        type: "data",
-        data: {
-          jwt
-        }
-      }
-    ]
-  }
+  const message = createA2AHandshakeMessageFromJwt(role, jwt)
 
   return {
     sig: jwt,
     jti,
-    nonce,
+    nonce: payload.nonce,
     message
   }
 }

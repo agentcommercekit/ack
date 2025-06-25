@@ -1,6 +1,6 @@
-import { spawn } from "child_process"
 import { colors, waitForEnter } from "@repo/cli-tools"
-import type { ChildProcess } from "child_process"
+import { getClientAgent } from "./bank-client-agent"
+import { startTellerServer } from "./bank-teller-agent"
 
 async function main() {
   console.log("🚀 Starting A2A Bank Identity Verification Demo...\n")
@@ -32,9 +32,7 @@ async function main() {
     )
   )
   console.log("")
-  const server: ChildProcess = spawn("tsx", ["./src/bank-teller-agent.ts"], {
-    stdio: "inherit"
-  })
+  const server = await startTellerServer()
 
   await new Promise((resolve) => setTimeout(resolve, 1000))
 
@@ -48,50 +46,12 @@ async function main() {
   console.log("")
   await waitForEnter("Press Enter to start the customer agent...")
   console.log("")
-  const client: ChildProcess = spawn("tsx", ["./src/bank-client-agent.ts"], {
-    stdio: "inherit"
-  })
 
-  client.on("close", (code: number | null) => {
-    console.log("")
-    console.log(
-      colors.yellow(
-        "🎉 DEMO COMPLETE: Secure Agent-to-Agent Communication Established!"
-      )
-    )
-    console.log(colors.yellow("   Key achievements:"))
-    console.log(colors.yellow("   ✓ No passwords or shared secrets were used"))
-    console.log(
-      colors.yellow("   ✓ Cross-algorithm compatibility (secp256k1 ↔ Ed25519)")
-    )
-    console.log(colors.yellow("   ✓ Cryptographic proof of identity ownership"))
-    console.log(
-      colors.yellow(
-        "   ✓ Decentralized identity verification via DID documents"
-      )
-    )
-    console.log("\n✅ Banking demo completed!")
-    server.kill()
-    process.exit(code ?? 0)
-  })
+  const bankClientAgent = await getClientAgent()
 
-  client.on("error", (err: Error) => {
-    console.error("Client error:", err)
-    server.kill()
-    process.exit(1)
-  })
+  await bankClientAgent.requestBankingServices()
 
-  server.on("error", (err: Error) => {
-    console.error("Server error:", err)
-    process.exit(1)
-  })
-
-  // Handle cleanup
-  process.on("SIGINT", () => {
-    console.log("\n🛑 Shutting down...")
-    server.kill()
-    process.exit(0)
-  })
+  server.close()
 }
 
 // Start the demo
