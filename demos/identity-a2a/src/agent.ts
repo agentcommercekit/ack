@@ -41,6 +41,11 @@ import type {
   W3CCredential
 } from "agentcommercekit"
 
+type AgentConfig = {
+  agentCard: AgentCard
+  algorithm: KeypairAlgorithm
+  controller: DidUri
+}
 export abstract class Agent implements AgentExecutor {
   constructor(
     public agentCard: AgentCard,
@@ -60,9 +65,10 @@ export abstract class Agent implements AgentExecutor {
       didDocument: DidDocument,
       vc: Verifiable<W3CCredential>
     ) => T,
-    agentCard: AgentCard,
-    algorithm: KeypairAlgorithm = "secp256k1"
+    config: AgentConfig
   ) {
+    const { agentCard, algorithm, controller } = config
+
     const baseUrl = agentCard.url
     const agentCardUrl = `${baseUrl}/.well-known/agent.json`
     const keypair = await generateKeypair(algorithm)
@@ -85,7 +91,7 @@ export abstract class Agent implements AgentExecutor {
 
     const vc = await issueCredential({
       subject: did,
-      controller: "did:web:builder.ack.com"
+      controller
     })
 
     console.log("Generated sample VC for ownership attestation")

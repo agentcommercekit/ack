@@ -415,5 +415,9 @@ const agentCard: AgentCard = {
 }
 
 export async function getClientAgent() {
-  return BankClientAgent.create(agentCard, "Ed25519")
+  return BankClientAgent.create({
+    agentCard,
+    algorithm: "Ed25519",
+    controller: "did:web:builder.ack.com"
+  })
 }

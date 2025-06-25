@@ -232,7 +232,11 @@ const agentCard: AgentCard = {
 
 export async function startTellerServer() {
   // Create bank teller agent with did:web instead of did:key
-  const bankTellerAgent = await BankTellerAgent.create(agentCard, "secp256k1")
+  const bankTellerAgent = await BankTellerAgent.create({
+    agentCard,
+    algorithm: "secp256k1",
+    controller: "did:web:bank.com"
+  })
 
   // Start the server using shared utility
   return startAgentServer(bankTellerAgent, {
