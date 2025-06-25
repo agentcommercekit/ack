@@ -21,7 +21,6 @@
     "demo": "tsx ./src/run-demo.ts",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "setup": "./bin/setup",
     "test": "vitest"
   },
   "dependencies": {

@@ -1,9 +1,0 @@
-# #!/usr/bin/env sh
-
-
-#
-# This file initializes the repository for local development and CI.
-#
-# This file should be run after cloning the repository for the first time, but
-# is safe to run multiple times.
-#
