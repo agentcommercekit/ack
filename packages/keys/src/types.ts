@@ -1,4 +1,4 @@
-export const keypairAlgorithms = ["secp256k1", "Ed25519"] as const
+export const keypairAlgorithms = ["secp256k1", "secp256r1", "Ed25519"] as const
 export type KeypairAlgorithm = (typeof keypairAlgorithms)[number]
 
 export interface Keypair {

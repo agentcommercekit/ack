@@ -7,14 +7,15 @@ import {
 import { beforeEach, describe, expect, test } from "vitest"
 import {
   createDidDocument,
-  createDidDocumentFromKeypair,
-  keyConfig
+  createDidDocumentFromKeypair
 } from "./create-did-document"
 import type { Keypair, PublicKeyEncoding } from "@agentcommercekit/keys"
 
 const keyTypeMap = {
-  secp256k1: "EcdsaSecp256k1VerificationKey2019",
-  Ed25519: "Ed25519VerificationKey2018"
+  jwk: "JsonWebKey2020",
+  multibase: "Multikey",
+  hex: "Multikey",
+  base58: "Multikey"
 } as const
 
 const encodingMap = {
@@ -22,6 +23,13 @@ const encodingMap = {
   jwk: "jwk",
   multibase: "multibase",
   base58: "multibase"
+}
+
+const contextMap = {
+  jwk: "https://w3id.org/security/jwk/v1",
+  multibase: "https://w3id.org/security/multikey/v1",
+  hex: "https://w3id.org/security/multikey/v1",
+  base58: "https://w3id.org/security/multikey/v1"
 }
 
 const encodingToPropertyMap = {
@@ -34,15 +42,18 @@ const encodingToPropertyMap = {
 describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
   const did = "did:web:example.com"
   let secp256k1Keypair: Keypair
+  let secp256r1Keypair: Keypair
   let ed25519Keypair: Keypair
 
   beforeEach(async () => {
     secp256k1Keypair = await generateKeypair("secp256k1")
+    secp256r1Keypair = await generateKeypair("secp256r1")
     ed25519Keypair = await generateKeypair("Ed25519")
   })
 
   const keypairMap = {
     secp256k1: () => secp256k1Keypair,
+    secp256r1: () => secp256r1Keypair,
     Ed25519: () => ed25519Keypair
   } as const
 
@@ -66,15 +77,12 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
 
           const keyId = `${did}#${encodingMap[encoding]}-1`
           const expectedDocument = {
-            "@context": [
-              "https://www.w3.org/ns/did/v1",
-              ...keyConfig[algorithm].context
-            ],
+            "@context": ["https://www.w3.org/ns/did/v1", contextMap[encoding]],
             id: did,
             verificationMethod: [
               {
                 id: keyId,
-                type: keyTypeMap[algorithm],
+                type: keyTypeMap[encoding],
                 controller: did,
                 [encodingToPropertyMap[encoding]]: expect.any(
                   encoding === "jwk" ? Object : String
@@ -112,14 +120,14 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
     const expectedDocument = {
       "@context": [
         "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"
+        "https://w3id.org/security/jwk/v1"
       ],
       id: did,
       controller,
       verificationMethod: [
         {
           id: `${did}#jwk-1`,
-          type: "EcdsaSecp256k1VerificationKey2019",
+          type: "JsonWebKey2020",
           controller: did,
           publicKeyJwk: expect.any(Object) as unknown
         }

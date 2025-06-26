@@ -31,6 +31,10 @@
     "./secp256k1": {
       "types": "./dist/curves/secp256k1.d.ts",
       "default": "./dist/curves/secp256k1.js"
+    },
+    "./secp256r1": {
+      "types": "./dist/curves/secp256r1.d.ts",
+      "default": "./dist/curves/secp256r1.js"
     }
   },
   "main": "./dist/index.js",

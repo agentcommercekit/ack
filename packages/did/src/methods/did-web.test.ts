@@ -46,13 +46,13 @@ describe("createDidWebDocument", () => {
     expect(didDocument).toEqual({
       "@context": [
         "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"
+        "https://w3id.org/security/jwk/v1"
       ],
       id: "did:web:example.com",
       verificationMethod: [
         {
           id: "did:web:example.com#jwk-1",
-          type: "EcdsaSecp256k1VerificationKey2019",
+          type: "JsonWebKey2020",
           controller: "did:web:example.com",
           publicKeyJwk
         }
@@ -81,13 +81,13 @@ describe("createDidWebDocument", () => {
     expect(didDocument).toEqual({
       "@context": [
         "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"
+        "https://w3id.org/security/multikey/v1"
       ],
       id: "did:web:example.com",
       verificationMethod: [
         {
           id: "did:web:example.com#multibase-1",
-          type: "EcdsaSecp256k1VerificationKey2019",
+          type: "Multikey",
           controller: "did:web:example.com",
           publicKeyMultibase
         }

@@ -71,13 +71,13 @@ Here is a minimal `did:key` DID Document:
 {
   "@context": [
     "https://www.w3.org/ns/did/v1",
-    "https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"
+    "https://w3id.org/security/jwk/v1"
   ],
   "id": "did:key:zQ3shg46zUAVeEV8pwAYtx4oKj3PvM8vAfpUM1bGKmx3Zibrz",
   "verificationMethod": [
     {
       "id": "did:key:zQ3shg46zUAVeEV8pwAYtx4oKj3PvM8vAfpUM1bGKmx3Zibrz#jwk-1",
-      "type": "EcdsaSecp256k1VerificationKey2019",
+      "type": "JsonWebKey2020",
       "controller": "did:key:zQ3shg46zUAVeEV8pwAYtx4oKj3PvM8vAfpUM1bGKmx3Zibrz",
       "publicKeyJwk": {
         "kty": "EC",
@@ -104,13 +104,13 @@ Here is a more complete `did:web`-based DID Document with those claims:
 {
   "@context": [
     "https://www.w3.org/ns/did/v1",
-    "https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"
+    "https://w3id.org/security/jwk/v1"
   ],
   "id": "did:web:agent.example.com",
   "verificationMethod": [
     {
       "id": "did:web:agent.example.com#jwk-1",
-      "type": "EcdsaSecp256k1VerificationKey2019",
+      "type": "JsonWebKey2020",
       "controller": "did:web:agent.example.com",
       "publicKeyJwk": {
         "kty": "EC",

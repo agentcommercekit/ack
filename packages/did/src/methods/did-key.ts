@@ -22,6 +22,10 @@ export const KEY_CONFIG = {
     multicodecPrefix: 0xe7,
     keyLength: 33
   },
+  secp256r1: {
+    multicodecPrefix: 0x1200,
+    keyLength: 33
+  },
   Ed25519: {
     multicodecPrefix: 0xed,
     keyLength: 32

@@ -15,20 +15,6 @@ import type {
 } from "@agentcommercekit/keys"
 import type { VerificationMethod } from "did-resolver"
 
-/**
- * Combined verification method configuration
- */
-export const keyConfig = {
-  secp256k1: {
-    type: "EcdsaSecp256k1VerificationKey2019",
-    context: ["https://w3id.org/security#EcdsaSecp256k1VerificationKey2019"]
-  },
-  Ed25519: {
-    type: "Ed25519VerificationKey2018",
-    context: ["https://w3id.org/security#Ed25519VerificationKey2018"]
-  }
-} as const
-
 type LegacyPublicKeyEncoding = "hex" | "base58"
 
 type DidDocumentPublicKey = {
@@ -51,21 +37,22 @@ export function createVerificationMethod({
   did,
   publicKey
 }: CreateVerificationMethodOptions): VerificationMethod {
-  const { encoding, algorithm, value } =
-    convertLegacyPublicKeyToMultibase(publicKey)
+  const { encoding, value } = convertLegacyPublicKeyToMultibase(publicKey)
 
   const verificationMethod: VerificationMethod = {
     id: `${did}#${encoding}-1`,
-    type: keyConfig[algorithm].type,
+    type: "Multikey",
     controller: did
   }
 
   // Add public key in the requested format
   switch (encoding) {
     case "jwk":
+      verificationMethod.type = "JsonWebKey2020"
       verificationMethod.publicKeyJwk = value
       break
     case "multibase":
+      verificationMethod.type = "Multikey"
       verificationMethod.publicKeyMultibase = value
       break
   }
@@ -149,9 +136,14 @@ export function createDidDocument({
     publicKey
   })
 
+  const verificationMethodContext =
+    verificationMethod.type === "Multikey"
+      ? "https://w3id.org/security/multikey/v1"
+      : "https://w3id.org/security/jwk/v1"
+
   const contexts = [
     "https://www.w3.org/ns/did/v1",
-    ...keyConfig[publicKey.algorithm].context,
+    verificationMethodContext,
     ...(additionalContexts ?? [])
   ]
 

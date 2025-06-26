@@ -1,4 +1,4 @@
-import { ES256KSigner, EdDSASigner } from "did-jwt"
+import { ES256KSigner, ES256Signer, EdDSASigner } from "did-jwt"
 import type { Keypair } from "@agentcommercekit/keys"
 import type { Signer } from "did-jwt"
 
@@ -18,6 +18,8 @@ export function createJwtSigner(keypair: Keypair): JwtSigner {
   switch (keypair.algorithm) {
     case "secp256k1":
       return ES256KSigner(keypair.privateKey)
+    case "secp256r1":
+      return ES256Signer(keypair.privateKey)
     case "Ed25519":
       return EdDSASigner(keypair.privateKey)
     default:

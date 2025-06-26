@@ -4,6 +4,7 @@ import { keypairAlgorithms } from "@agentcommercekit/keys"
  * The base algorithms supported by the JWT library
  */
 export const strictJwtAlgorithms = [
+  "ES256",
   "ES256K",
   "ES256K-R",
   "Ed25519",
@@ -36,13 +37,15 @@ export function isJwtAlgorithm(algorithm: unknown): algorithm is JwtAlgorithm {
 /**
  * Resolve the JWT algorithm to the base algorithm
  */
-export function resolveJwtAlgorithm(algorithm: unknown): JwtAlgorithm {
+export function resolveJwtAlgorithm(algorithm: unknown): StrictJwtAlgorithm {
   if (!isJwtAlgorithm(algorithm)) {
     throw new Error(`Unsupported algorithm: '${algorithm}'`)
   }
 
   if (algorithm === "secp256k1") {
     return "ES256K"
+  } else if (algorithm === "secp256r1") {
+    return "ES256"
   } else if (algorithm === "Ed25519") {
     return "EdDSA"
   }

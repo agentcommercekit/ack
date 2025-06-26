@@ -51,7 +51,7 @@ describe("verifyJwt()", () => {
       issuer: "did:example:issuer",
       signer: {
         id: "did:example:issuer#key-1",
-        type: "EcdsaSecp256k1VerificationKey2019",
+        type: "Multikey",
         controller: "did:example:issuer",
         publicKeyHex: "02..."
       },
@@ -93,7 +93,7 @@ describe("verifyJwt()", () => {
       issuer: "did:example:issuer",
       signer: {
         id: "did:example:issuer#key-1",
-        type: "EcdsaSecp256k1VerificationKey2019",
+        type: "Multikey",
         controller: "did:example:issuer",
         publicKeyHex: "02..."
       },
@@ -135,7 +135,7 @@ describe("verifyJwt()", () => {
       issuer: "did:example:issuer",
       signer: {
         id: "did:example:issuer#key-1",
-        type: "EcdsaSecp256k1VerificationKey2019",
+        type: "Multikey",
         controller: "did:example:issuer",
         publicKeyHex: "02..."
       },

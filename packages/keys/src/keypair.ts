@@ -1,5 +1,6 @@
 import { generateKeypair as ed25519 } from "./curves/ed25519"
 import { generateKeypair as secp256k1 } from "./curves/secp256k1"
+import { generateKeypair as secp256r1 } from "./curves/secp256r1"
 import { base64urlToBytes, bytesToBase64url } from "./encoding/base64"
 import { bytesToJwk, jwkToBytes } from "./encoding/jwk"
 import type { PrivateKeyJwk } from "./encoding/jwk"
@@ -18,6 +19,10 @@ export async function generateKeypair(
 ): Promise<Keypair> {
   if (algorithm === "secp256k1") {
     return secp256k1(privateKeyBytes)
+  }
+
+  if (algorithm === "secp256r1") {
+    return secp256r1(privateKeyBytes)
   }
 
   return ed25519(privateKeyBytes)

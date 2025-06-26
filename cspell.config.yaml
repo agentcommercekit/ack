@@ -8,6 +8,8 @@ words:
   - keypair
   - multibase
   - multicodec
+  - multikey
+  - secp256
   - solana
   - valibot
   - varint

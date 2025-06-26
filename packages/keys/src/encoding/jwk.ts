@@ -11,13 +11,23 @@ export type PublicKeyJwkSecp256k1 = {
   y: string // base64url encoded y-coordinate
 }
 
+export type PublicKeyJwkSecp256r1 = {
+  kty: "EC"
+  crv: "secp256r1"
+  x: string // base64url encoded x-coordinate
+  y: string // base64url encoded y-coordinate
+}
+
 export type PublicKeyJwkEd25519 = {
   kty: "OKP"
   crv: "Ed25519"
   x: string // base64url encoded x-coordinate
 }
 
-export type PublicKeyJwk = PublicKeyJwkSecp256k1 | PublicKeyJwkEd25519
+export type PublicKeyJwk =
+  | PublicKeyJwkSecp256k1
+  | PublicKeyJwkSecp256r1
+  | PublicKeyJwkEd25519
 
 /**
  * JWK-encoding for private keys
@@ -26,16 +36,17 @@ export type PrivateKeyJwk = PublicKeyJwk & {
   d: string // base64url encoded private key
 }
 
-export function isPublicKeyJwkSecp256k1(
-  jwk: unknown
-): jwk is PublicKeyJwkSecp256k1 {
+function isPublicKeyJwkSecp256(
+  jwk: unknown,
+  crv: "secp256k1" | "secp256r1"
+): jwk is PublicKeyJwkSecp256k1 | PublicKeyJwkSecp256r1 {
   if (typeof jwk !== "object" || jwk === null) {
     return false
   }
 
   const obj = jwk as Record<string, unknown>
 
-  if (obj.kty !== "EC" || obj.crv !== "secp256k1") {
+  if (obj.kty !== "EC" || obj.crv !== crv) {
     return false
   }
 
@@ -48,6 +59,18 @@ export function isPublicKeyJwkSecp256k1(
   }
 
   return true
+}
+
+export function isPublicKeyJwkSecp256k1(
+  jwk: unknown
+): jwk is PublicKeyJwkSecp256k1 {
+  return isPublicKeyJwkSecp256(jwk, "secp256k1")
+}
+
+export function isPublicKeyJwkSecp256r1(
+  jwk: unknown
+): jwk is PublicKeyJwkSecp256k1 {
+  return isPublicKeyJwkSecp256(jwk, "secp256r1")
 }
 
 export function isPublicKeyJwkEd25519(
