@@ -127,6 +127,9 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 ### Schema Validation
 
 ```ts
+// Zod v4 schemas
+import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v4"
+
 // Zod v3 schemas
 import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
 

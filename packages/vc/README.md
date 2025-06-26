@@ -107,6 +107,9 @@ const revoked = await isRevoked(credential)
 ### Schema Validation
 
 ```ts
+// Zod v4 schemas
+import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v4"
+
 // Zod v3 schemas
 import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v3"
 

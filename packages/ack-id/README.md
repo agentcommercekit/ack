@@ -87,6 +87,9 @@ isControllerClaim(credential.credentialSubject)
 ### Schema Validation
 
 ```ts
+// Zod v4 schema
+import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v4"
+
 // Zod v3 schema
 import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v3"
 

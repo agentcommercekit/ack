@@ -1,7 +1,7 @@
 import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
 import { resolveDid, verifyJwt } from "agentcommercekit"
-import { credentialSchema } from "agentcommercekit/schemas/zod/v3"
+import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import { tool } from "ai"
 import * as v from "valibot"
 import type { CredentialVerifier } from "./credential-verifier"
@@ -71,7 +71,7 @@ async function verifyIdentity(
   // Fetch the agent's ownership credential
   const vcResponse = await fetch(`${identityServiceEndpoint}/vc`)
 
-  const vc = credentialSchema.parse(await vcResponse.json())
+  const vc = v.parse(credentialSchema, await vcResponse.json())
 
   // Verify the ownership credential
   await verifier.verifyCredential(vc)

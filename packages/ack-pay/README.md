@@ -122,6 +122,9 @@ isPaymentReceiptClaim(credential.credentialSubject)
 ### Schema Validation
 
 ```ts
+// Zod v4 schema
+import { paymentRequestSchema } from "@agentcommercekit/ack-pay/schemas/zod/v4"
+
 // Zod v3 schema
 import { paymentRequestSchema } from "@agentcommercekit/ack-pay/schemas/zod/v3"
 

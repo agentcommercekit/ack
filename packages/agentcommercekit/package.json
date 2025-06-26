@@ -32,6 +32,10 @@
       "types": "./dist/schemas/zod/v3.d.ts",
       "default": "./dist/schemas/zod/v3.js"
     },
+    "./schemas/zod/v4": {
+      "types": "./dist/schemas/zod/v4.d.ts",
+      "default": "./dist/schemas/zod/v4.js"
+    },
     "./a2a": {
       "types": "./dist/a2a/index.d.ts",
       "default": "./dist/a2a/index.js"
@@ -47,6 +51,10 @@
     "./a2a/schemas/zod/v3": {
       "types": "./dist/a2a/schemas/zod/v3.d.ts",
       "default": "./dist/a2a/schemas/zod/v3.js"
+    },
+    "./a2a/schemas/zod/v4": {
+      "types": "./dist/a2a/schemas/zod/v4.d.ts",
+      "default": "./dist/a2a/schemas/zod/v4.js"
     }
   },
   "main": "./dist/index.js",

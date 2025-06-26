@@ -28,6 +28,10 @@
       "types": "./dist/schemas/zod/v3.d.ts",
       "default": "./dist/schemas/zod/v3.js"
     },
+    "./schemas/zod/v4": {
+      "types": "./dist/schemas/zod/v4.d.ts",
+      "default": "./dist/schemas/zod/v4.js"
+    },
     "./schemas/valibot": {
       "types": "./dist/schemas/valibot.d.ts",
       "default": "./dist/schemas/valibot.js"
