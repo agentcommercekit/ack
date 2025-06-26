@@ -8,7 +8,7 @@ import {
   verifyParsedCredential
 } from "agentcommercekit"
 import {
-  createA2AHandshakeMessageFactory,
+  createA2AHandshakeMessage,
   createSignedA2AMessage,
   verifyA2AHandshakeMessage
 } from "agentcommercekit/a2a"
@@ -284,17 +284,19 @@ export class BankClientAgent extends Agent {
     try {
       logger.log("🔐 Starting identity verification with bank teller...")
 
-      const createHandshakeMessage = createA2AHandshakeMessageFactory({
-        did: this.did,
-        jwtSigner: this.jwtSigner,
-        alg: this.keypair.algorithm,
-        expiresIn: 5 * 60
-      })
-
-      const { nonce, message } = await createHandshakeMessage(Role.User, {
-        recipient: serverDid,
-        vc: this.vc
-      })
+      const { nonce, message } = await createA2AHandshakeMessage(
+        Role.User,
+        {
+          recipient: serverDid,
+          vc: this.vc
+        },
+        {
+          did: this.did,
+          jwtSigner: this.jwtSigner,
+          alg: this.keypair.algorithm,
+          expiresIn: 5 * 60
+        }
+      )
 
       const identityParams = {
         id: uuidV4(),

@@ -54,7 +54,7 @@ export async function createSignedA2AMessage(
   }
 }
 
-type A2AHandshakeOptions = {
+type A2AHandshakeParams = {
   /**
    * The recipient of the message
    */
@@ -69,11 +69,11 @@ type A2AHandshakeOptions = {
   requestNonce?: string
 }
 
-export function createA2AHandshakePayload(options: A2AHandshakeOptions) {
+export function createA2AHandshakePayload(params: A2AHandshakeParams) {
   const nonce = generateRandomNonce()
-  const nonces = options.requestNonce
+  const nonces = params.requestNonce
     ? {
-        nonce: options.requestNonce,
+        nonce: params.requestNonce,
         replyNonce: nonce
       }
     : {
@@ -81,9 +81,9 @@ export function createA2AHandshakePayload(options: A2AHandshakeOptions) {
       }
 
   return {
-    aud: options.recipient,
+    aud: params.recipient,
     ...nonces,
-    vc: options.vc
+    vc: params.vc
   }
 }
 
@@ -105,29 +105,26 @@ export function createA2AHandshakeMessageFromJwt(
 }
 
 /**
- * Factory function that returns a function for creating signed handshake messages for A2A Authentication
+ * Creates a signed handshake message for A2A Authentication
  *
- * @param options - The options for signing the message
- * @returns A function that creates a signed handshake message for A2A Authentication
+ * @returns An object containing signed A2A handshake message, as well as the newly generated nonce
  */
-export function createA2AHandshakeMessageFactory(
+export async function createA2AHandshakeMessage(
+  role: Role,
+  params: A2AHandshakeParams,
   signOptions: SignMessageOptions
-) {
-  return async (
-    role: Role,
-    options: A2AHandshakeOptions
-  ): Promise<A2AHandshakeMessage> => {
-    const payload = createA2AHandshakePayload(options)
+): Promise<A2AHandshakeMessage> {
+  const payload = createA2AHandshakePayload(params)
 
-    const { jwt, jti } = await createMessageSignature(payload, signOptions)
-    const message = createA2AHandshakeMessageFromJwt(role, jwt)
+  const { jwt, jti } = await createMessageSignature(payload, signOptions)
 
-    return {
-      sig: jwt,
-      jti,
-      nonce: payload.nonce,
-      message
-    }
+  const message = createA2AHandshakeMessageFromJwt(role, jwt)
+
+  return {
+    sig: jwt,
+    jti,
+    nonce: payload.nonce,
+    message
   }
 }
 
