@@ -12,7 +12,8 @@ export type JwtOptions = JWTOptions
  * Allow alternative names for the algorithm (adds `secp256k1` and `Ed25519`,
  * which map to `ES256K` and `EdDSA` respectively)
  */
-export type JwtHeader = Omit<JWTHeader, "alg"> & {
+export interface JwtHeader extends Omit<JWTHeader, "alg" | "typ"> {
+  typ: "JWT"
   alg: JwtAlgorithm
 }
 
