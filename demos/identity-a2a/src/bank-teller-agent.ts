@@ -2,7 +2,7 @@ import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import { Role } from "a2a-js"
 import { isDidUri, verifyParsedCredential } from "agentcommercekit"
 import {
-  createA2AHandshakeMessage,
+  createA2AHandshakeMessageFactory,
   verifyA2AHandshakeMessage,
   verifyA2ASignedMessage
 } from "agentcommercekit/a2a"
@@ -146,17 +146,18 @@ class BankTellerAgent extends Agent {
 
       logger.log("✅ Customer identity verified:", colors.dim(clientDid))
 
-      const { message } = await createA2AHandshakeMessage(
-        Role.Agent,
-        clientDid,
-        {
-          requestNonce: clientNonce,
-          did: this.did,
-          jwtSigner: this.jwtSigner,
-          alg: this.keypair.algorithm,
-          vc: this.vc
-        }
-      )
+      const createHandshakeMessage = createA2AHandshakeMessageFactory({
+        did: this.did,
+        jwtSigner: this.jwtSigner,
+        alg: this.keypair.algorithm,
+        expiresIn: 5 * 60
+      })
+
+      const { message } = await createHandshakeMessage(Role.Agent, {
+        recipient: clientDid,
+        requestNonce: clientNonce,
+        vc: this.vc
+      })
 
       // Add client to authenticated list
       this.authenticatedClients.add(clientDid)
