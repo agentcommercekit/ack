@@ -1,4 +1,4 @@
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod"
+import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
 import { z } from "zod"
 
 const urlOrDidUri = z.union([z.string().url(), didUriSchema])

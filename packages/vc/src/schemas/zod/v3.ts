@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { W3CCredential } from "../types"
+import type { W3CCredential } from "../../types"
 
 export const credentialSchema = z
   .object({

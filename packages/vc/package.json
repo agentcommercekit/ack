@@ -21,8 +21,12 @@
       "default": "./dist/index.js"
     },
     "./schemas/zod": {
-      "types": "./dist/schemas/zod.d.ts",
-      "default": "./dist/schemas/zod.js"
+      "types": "./dist/schemas/zod/v3.d.ts",
+      "default": "./dist/schemas/zod/v3.js"
+    },
+    "./schemas/zod/v3": {
+      "types": "./dist/schemas/zod/v3.d.ts",
+      "default": "./dist/schemas/zod/v3.js"
     },
     "./schemas/valibot": {
       "types": "./dist/schemas/valibot.d.ts",

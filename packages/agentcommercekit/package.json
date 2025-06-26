@@ -25,8 +25,12 @@
       "default": "./dist/schemas/valibot.js"
     },
     "./schemas/zod": {
-      "types": "./dist/schemas/zod.d.ts",
-      "default": "./dist/schemas/zod.js"
+      "types": "./dist/schemas/zod/v3.d.ts",
+      "default": "./dist/schemas/zod/v3.js"
+    },
+    "./schemas/zod/v3": {
+      "types": "./dist/schemas/zod/v3.d.ts",
+      "default": "./dist/schemas/zod/v3.js"
     },
     "./a2a": {
       "types": "./dist/a2a/index.d.ts",
@@ -37,8 +41,12 @@
       "default": "./dist/a2a/schemas/valibot.js"
     },
     "./a2a/schemas/zod": {
-      "types": "./dist/a2a/schemas/zod.d.ts",
-      "default": "./dist/a2a/schemas/zod.js"
+      "types": "./dist/a2a/schemas/zod/v3.d.ts",
+      "default": "./dist/a2a/schemas/zod/v3.js"
+    },
+    "./a2a/schemas/zod/v3": {
+      "types": "./dist/a2a/schemas/zod/v3.d.ts",
+      "default": "./dist/a2a/schemas/zod/v3.js"
     }
   },
   "main": "./dist/index.js",

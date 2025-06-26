@@ -1,7 +1,7 @@
 import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
 import { resolveDid, verifyJwt } from "agentcommercekit"
-import { credentialSchema } from "agentcommercekit/schemas/zod"
+import { credentialSchema } from "agentcommercekit/schemas/zod/v3"
 import { tool } from "ai"
 import * as v from "valibot"
 import type { CredentialVerifier } from "./credential-verifier"

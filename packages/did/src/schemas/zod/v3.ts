@@ -1,6 +1,6 @@
 import { z } from "zod"
-import { isDidUri } from "../did-uri"
-import type { DidUri } from "../did-uri"
+import { isDidUri } from "../../did-uri"
+import type { DidUri } from "../../did-uri"
 
 export const didUriSchema = z.custom<DidUri>(isDidUri, "Invalid DID format")
 
