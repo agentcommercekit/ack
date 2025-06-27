@@ -1,0 +1,40 @@
+{
+  "name": "@demos/skyfire-kya",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/agentcommercekit/ack#readme",
+  "bugs": "https://github.com/agentcommercekit/ack/issues",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "demos/skyfire-kya"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Catena Labs",
+    "url": "https://catenalabs.com"
+  },
+  "type": "module",
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "clean": "git clean -fdX .turbo",
+    "demo": "tsx ./src/index.ts",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@repo/cli-tools": "workspace:*",
+    "agentcommercekit": "workspace:*",
+    "jose": "^6.0.11",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "eslint": "^9.27.0",
+    "tsx": "^4.19.4",
+    "typescript": "^5",
+    "vitest": "^3.1.4"
+  }
+}

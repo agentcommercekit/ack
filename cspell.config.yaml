@@ -10,6 +10,7 @@ words:
   - multicodec
   - multikey
   - secp256
+  - skyfire
   - solana
   - valibot
   - varint
