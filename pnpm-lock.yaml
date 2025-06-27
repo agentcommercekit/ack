@@ -223,6 +223,40 @@ importers:
         specifier: ^3.1.4
         version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)(tsx@4.20.3)(yaml@2.8.0)
 
+  demos/skyfire-kya:
+    dependencies:
+      '@repo/cli-tools':
+        specifier: workspace:*
+        version: link:../../tools/cli-tools
+      agentcommercekit:
+        specifier: workspace:*
+        version: link:../../packages/agentcommercekit
+      jose:
+        specifier: ^6.0.11
+        version: 6.0.11
+      zod:
+        specifier: ^3.25.0
+        version: 3.25.4
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../tools/eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../tools/typescript-config
+      eslint:
+        specifier: ^9.27.0
+        version: 9.27.0(jiti@2.4.2)
+      tsx:
+        specifier: ^4.19.4
+        version: 4.20.3
+      typescript:
+        specifier: ^5
+        version: 5.8.3
+      vitest:
+        specifier: ^3.1.4
+        version: 3.1.4(@types/debug@4.1.12)(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)(tsx@4.20.3)(yaml@2.8.0)
+
   docs:
     devDependencies:
       mintlify:
