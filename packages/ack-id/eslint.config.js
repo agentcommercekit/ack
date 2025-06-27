@@ -2,6 +2,14 @@
 
 import { config } from "@repo/eslint-config/base"
 
-export default config({
-  root: import.meta.dirname
-})
+export default [
+  ...config({
+    root: import.meta.dirname
+  }),
+  {
+    files: ["**/*.test.ts"],
+    rules: {
+      "@cspell/spellchecker": "off"
+    }
+  }
+]
