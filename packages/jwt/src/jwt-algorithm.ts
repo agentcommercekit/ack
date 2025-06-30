@@ -1,26 +1,22 @@
-import { keypairAlgorithms } from "@agentcommercekit/keys"
+import { isKeyCurve } from "@agentcommercekit/keys"
+import type { KeyCurve } from "@agentcommercekit/keys"
 
 /**
- * The base algorithms supported by the JWT library
+ * JWT signing algorithms supported by the JWT library
+ *
+ * The did-jwt library also supports non-standard "ES256K-R" for
  */
-export const strictJwtAlgorithms = [
-  "ES256",
-  "ES256K",
-  "ES256K-R",
-  "Ed25519",
-  "EdDSA"
-] as const
-export type StrictJwtAlgorithm = (typeof strictJwtAlgorithms)[number]
-
-/**
- * Allow alternative names for the algorithm (adds `secp256k1` and `Ed25519`,
- * which map to `ES256K` and `EdDSA` respectively)
- */
-export const jwtAlgorithms = [
-  ...strictJwtAlgorithms,
-  ...keypairAlgorithms
-] as const
+export const jwtAlgorithms = ["ES256", "ES256K", "EdDSA"] as const
 export type JwtAlgorithm = (typeof jwtAlgorithms)[number]
+
+/**
+ * Mapping from key curves to JWT algorithms
+ */
+export const CURVE_TO_ALGORITHM: Record<KeyCurve, JwtAlgorithm> = {
+  secp256k1: "ES256K",
+  secp256r1: "ES256",
+  Ed25519: "EdDSA"
+}
 
 /**
  * Check if an algorithm is a valid JWT algorithm
@@ -35,20 +31,14 @@ export function isJwtAlgorithm(algorithm: unknown): algorithm is JwtAlgorithm {
 }
 
 /**
- * Resolve the JWT algorithm to the base algorithm
+ * Convert a key curve to its corresponding JWT algorithm
+ * @param curve - The key curve
+ * @returns The corresponding JWT algorithm
  */
-export function resolveJwtAlgorithm(algorithm: unknown): StrictJwtAlgorithm {
-  if (!isJwtAlgorithm(algorithm)) {
-    throw new Error(`Unsupported algorithm: '${algorithm}'`)
+export function curveToJwtAlgorithm(curve: KeyCurve): JwtAlgorithm {
+  if (!isKeyCurve(curve)) {
+    throw new Error(`Unsupported curve: '${curve}'`)
   }
 
-  if (algorithm === "secp256k1") {
-    return "ES256K"
-  } else if (algorithm === "secp256r1") {
-    return "ES256"
-  } else if (algorithm === "Ed25519") {
-    return "EdDSA"
-  }
-
-  return algorithm
+  return CURVE_TO_ALGORITHM[curve]
 }

@@ -40,7 +40,7 @@ export async function issueCredential({
   const { verifiableCredential } = await signCredential(credential, {
     did: issuerDid,
     signer,
-    alg: "Ed25519",
+    alg: "EdDSA",
     resolver
   })
 

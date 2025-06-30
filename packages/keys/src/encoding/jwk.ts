@@ -1,5 +1,5 @@
 import { base64urlToBytes, bytesToBase64url } from "./base64"
-import type { KeypairAlgorithm } from "../types"
+import type { KeyCurve } from "../key-curves"
 
 /**
  * JWK-encoding, specifically limited to public keys
@@ -69,7 +69,7 @@ export function isPublicKeyJwkSecp256k1(
 
 export function isPublicKeyJwkSecp256r1(
   jwk: unknown
-): jwk is PublicKeyJwkSecp256k1 {
+): jwk is PublicKeyJwkSecp256r1 {
   return isPublicKeyJwkSecp256(jwk, "secp256r1")
 }
 
@@ -101,7 +101,11 @@ export function isPublicKeyJwkEd25519(
  * Check if an object is a valid public key JWK
  */
 export function isPublicKeyJwk(jwk: unknown): jwk is PublicKeyJwk {
-  return isPublicKeyJwkSecp256k1(jwk) || isPublicKeyJwkEd25519(jwk)
+  return (
+    isPublicKeyJwkSecp256k1(jwk) ||
+    isPublicKeyJwkSecp256r1(jwk) ||
+    isPublicKeyJwkEd25519(jwk)
+  )
 }
 
 /**
@@ -119,31 +123,35 @@ export function isPrivateKeyJwk(jwk: unknown): jwk is PrivateKeyJwk {
 /**
  * Convert public key bytes to a JWK format
  */
-export function bytesToJwk(
-  bytes: Uint8Array,
-  algorithm: KeypairAlgorithm
-): PublicKeyJwk {
-  if (algorithm === "Ed25519") {
-    return {
-      kty: "OKP",
-      crv: "Ed25519",
-      x: bytesToBase64url(bytes)
-    } as const
-  }
+export function bytesToJwk(bytes: Uint8Array, curve: KeyCurve): PublicKeyJwk {
+  switch (curve) {
+    case "Ed25519":
+      return {
+        kty: "OKP",
+        crv: "Ed25519",
+        x: bytesToBase64url(bytes)
+      } as const
 
-  if (bytes.length !== 65) {
-    throw new Error("Invalid secp256k1 public key length")
-  }
+    case "secp256k1":
+    case "secp256r1": {
+      if (bytes.length !== 65) {
+        throw new Error(`Invalid ${curve} public key length`)
+      }
 
-  // Skip the first byte (0x04) and take 32 bytes for x, then 32 bytes for y
-  const xBytes = bytes.slice(1, 33)
-  const yBytes = bytes.slice(33)
-  return {
-    kty: "EC",
-    crv: "secp256k1",
-    x: bytesToBase64url(xBytes),
-    y: bytesToBase64url(yBytes)
-  } as const
+      // Skip the first byte (0x04) and take 32 bytes for x, then 32 bytes for y
+      const xBytes = bytes.slice(1, 33)
+      const yBytes = bytes.slice(33)
+      return {
+        kty: "EC",
+        crv: curve,
+        x: bytesToBase64url(xBytes),
+        y: bytesToBase64url(yBytes)
+      } as const
+    }
+
+    default:
+      throw new Error(`Unsupported curve: ${curve}`)
+  }
 }
 
 /**
@@ -152,13 +160,16 @@ export function bytesToJwk(
 export function jwkToBytes(jwk: PublicKeyJwk): Uint8Array {
   const xBytes = base64urlToBytes(jwk.x)
 
-  // For secp256k1, we need to reconstruct the full public key
-  if (jwk.crv === "secp256k1") {
-    const fullKey = new Uint8Array(65)
-    fullKey[0] = 0x04 // Add the prefix byte
-    fullKey.set(xBytes, 1) // Add the x-coordinate
-    fullKey.set(base64urlToBytes(jwk.y), 33) // Add the y-coordinate
-    return fullKey
+  // For secp256k1 and secp256r1, we need to reconstruct the full public key
+  if (jwk.crv === "secp256k1" || jwk.crv === "secp256r1") {
+    if ("y" in jwk && jwk.y) {
+      const fullKey = new Uint8Array(65)
+      fullKey[0] = 0x04 // Add the prefix byte
+      fullKey.set(xBytes, 1) // Add the x-coordinate
+      fullKey.set(base64urlToBytes(jwk.y), 33) // Add the y-coordinate
+      return fullKey
+    }
+    throw new Error(`Missing y coordinate for ${jwk.crv} key`)
   }
 
   // For Ed25519, the x field is the complete public key

@@ -4,6 +4,7 @@ import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
   createPaymentRequestBody,
+  curveToJwtAlgorithm,
   generateKeypair
 } from "agentcommercekit"
 import { PaymentRequiredError } from "./payment-required-error"
@@ -222,7 +223,7 @@ ${colors.bold(otherAgent.did)}
         {
           issuer: this.did,
           signer: this.signer,
-          algorithm: this.keypair.algorithm
+          algorithm: curveToJwtAlgorithm(this.keypair.curve)
         }
       )
 

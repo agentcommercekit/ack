@@ -8,12 +8,7 @@ import {
 import { privateKeyToAccount } from "viem/accounts"
 import { publicKeyToAddress } from "viem/utils"
 import { chainId } from "@/constants"
-import type {
-  DidUri,
-  JwtSigner,
-  Keypair,
-  KeypairAlgorithm
-} from "agentcommercekit"
+import type { DidUri, JwtSigner, KeyCurve, Keypair } from "agentcommercekit"
 import type { Account } from "viem/accounts"
 
 export type KeypairInfo = {
@@ -36,9 +31,9 @@ export type KeypairInfo = {
  */
 export async function getKeypairInfo(
   privateKeyHex: string,
-  alg: KeypairAlgorithm = "secp256k1"
+  curve: KeyCurve = "secp256k1"
 ): Promise<KeypairInfo> {
-  const keypair = await generateKeypair(alg, hexStringToBytes(privateKeyHex))
+  const keypair = await generateKeypair(curve, hexStringToBytes(privateKeyHex))
   const address = publicKeyToAddress(`0x${bytesToHexString(keypair.publicKey)}`)
   const account = privateKeyToAccount(
     `0x${bytesToHexString(keypair.privateKey)}`

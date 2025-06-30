@@ -30,13 +30,13 @@ describe("createDidWeb", () => {
 describe("createDidWebDocument", () => {
   it("generates a valid DidUri and DidDocument with JWK", async () => {
     const keypair = await generateKeypair("secp256k1")
-    const publicKeyJwk = bytesToJwk(keypair.publicKey, keypair.algorithm)
+    const publicKeyJwk = bytesToJwk(keypair.publicKey, keypair.curve)
 
     const { did, didDocument } = createDidWebDocument({
       publicKey: {
         encoding: "jwk",
         value: publicKeyJwk,
-        algorithm: keypair.algorithm
+        curve: keypair.curve
       },
       baseUrl: "https://example.com"
     })
@@ -71,7 +71,7 @@ describe("createDidWebDocument", () => {
       publicKey: {
         encoding: "hex",
         value: publicKeyHex,
-        algorithm: keypair.algorithm
+        curve: keypair.curve
       },
       baseUrl: "https://example.com"
     })

@@ -1,6 +1,10 @@
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import { Role } from "a2a-js"
-import { isDidUri, verifyParsedCredential } from "agentcommercekit"
+import {
+  curveToJwtAlgorithm,
+  isDidUri,
+  verifyParsedCredential
+} from "agentcommercekit"
 import {
   createA2AHandshakeMessage,
   verifyA2AHandshakeMessage,
@@ -156,7 +160,7 @@ class BankTellerAgent extends Agent {
         {
           did: this.did,
           jwtSigner: this.jwtSigner,
-          alg: this.keypair.algorithm,
+          alg: curveToJwtAlgorithm(this.keypair.curve),
           expiresIn: 5 * 60
         }
       )
@@ -237,7 +241,7 @@ export async function startTellerServer() {
   // Create bank teller agent with did:web instead of did:key
   const bankTellerAgent = await BankTellerAgent.create({
     agentCard,
-    algorithm: "secp256k1",
+    curve: "secp256k1",
     controller: "did:web:bank.com"
   })
 

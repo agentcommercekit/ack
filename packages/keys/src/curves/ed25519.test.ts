@@ -10,7 +10,7 @@ describe("Ed25519", () => {
       expect(keypair).toBeDefined()
       expect(keypair.privateKey).toBeInstanceOf(Uint8Array)
       expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
-      expect(keypair.algorithm).toBe("Ed25519")
+      expect(keypair.curve).toBe("Ed25519")
     })
 
     test("generates a unique `Keypair`s", async () => {
@@ -19,8 +19,8 @@ describe("Ed25519", () => {
 
       expect(keypair1.privateKey).not.toEqual(keypair2.privateKey)
       expect(keypair1.publicKey).not.toEqual(keypair2.publicKey)
-      expect(keypair1.algorithm).toBe("Ed25519")
-      expect(keypair2.algorithm).toBe("Ed25519")
+      expect(keypair1.curve).toBe("Ed25519")
+      expect(keypair2.curve).toBe("Ed25519")
     })
   })
 
@@ -34,7 +34,7 @@ describe("Ed25519", () => {
     expect(keypair).toBeDefined()
     expect(keypair.privateKey).toEqual(privateKeyBytes)
     expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(keypair.algorithm).toBe("Ed25519")
+    expect(keypair.curve).toBe("Ed25519")
   })
 
   test("throws error for invalid private key format", async () => {

@@ -20,14 +20,14 @@ export function identities(): MiddlewareHandler<Env> {
     const controller = await getIdentity({
       baseUrl: buildUrl(HOSTNAME, PORT, "/controller"),
       privateKey: CONTROLLER_PRIVATE_KEY,
-      alg: "Ed25519"
+      curve: "Ed25519"
     })
 
     const agent = await getIdentity({
       baseUrl: buildUrl(HOSTNAME, PORT, "/agent"),
       privateKey: AGENT_PRIVATE_KEY,
       controller: controller.did,
-      alg: "secp256k1"
+      curve: "secp256k1"
     })
 
     c.set("identities", {

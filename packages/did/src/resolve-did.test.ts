@@ -14,7 +14,7 @@ async function generateDid(baseUrl: string, controller?: DidUri) {
     publicKey: {
       encoding: "hex",
       value: bytesToHexString(keypair.publicKey),
-      algorithm: keypair.algorithm
+      curve: keypair.curve
     },
     baseUrl,
     controller

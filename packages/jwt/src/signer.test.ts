@@ -6,7 +6,7 @@ describe("createJwtSigner", () => {
   test("creates a secp256k1 JWT signer", async () => {
     // Generate a secp256k1 key pair
     const keypair = await generateKeypair("secp256k1")
-    expect(keypair.algorithm).toBe("secp256k1")
+    expect(keypair.curve).toBe("secp256k1")
 
     // Create the JWT signer
     const signer = createJwtSigner(keypair)
@@ -26,7 +26,7 @@ describe("createJwtSigner", () => {
   test("creates an Ed25519 JWT signer", async () => {
     // Generate an Ed25519 key pair
     const keypair = await generateKeypair("Ed25519")
-    expect(keypair.algorithm).toBe("Ed25519")
+    expect(keypair.curve).toBe("Ed25519")
 
     // Create the JWT signer
     const signer = createJwtSigner(keypair)

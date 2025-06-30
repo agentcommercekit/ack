@@ -3,7 +3,7 @@ import {
   createDidPkhUri,
   getDidResolver
 } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
+import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { InvalidCredentialError, signCredential } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
@@ -51,7 +51,7 @@ describe("verifyPaymentReceipt()", () => {
       {
         issuer: paymentRequestIssuerDid,
         signer: createJwtSigner(paymentRequestIssuerKeypair),
-        algorithm: paymentRequestIssuerKeypair.algorithm
+        algorithm: curveToJwtAlgorithm(paymentRequestIssuerKeypair.curve)
       }
     )
 
@@ -68,7 +68,6 @@ describe("verifyPaymentReceipt()", () => {
     const signed = await signCredential(unsignedReceipt, {
       did: receiptIssuerDid,
       signer: createJwtSigner(receiptIssuerKeypair),
-      alg: receiptIssuerKeypair.algorithm,
       resolver
     })
 

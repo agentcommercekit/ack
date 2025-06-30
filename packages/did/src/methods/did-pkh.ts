@@ -188,7 +188,7 @@ export function createDidPkhDocument({
 }: CreateDidPkhDocumentOptions): DidUriWithDocument {
   // Validate that the keypair algorithm matches the chain
   const algorithm = chainId.startsWith("solana") ? "Ed25519" : "secp256k1"
-  if (keypair.algorithm !== algorithm) {
+  if (keypair.curve !== algorithm) {
     throw new Error(
       `Invalid keypair algorithm. Expected ${algorithm} for chain ${chainId}`
     )

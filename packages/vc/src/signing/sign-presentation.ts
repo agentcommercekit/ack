@@ -1,4 +1,4 @@
-import { isJwtString, resolveJwtAlgorithm } from "@agentcommercekit/jwt"
+import { isJwtString } from "@agentcommercekit/jwt"
 import { createVerifiablePresentationJwt, verifyPresentation } from "did-jwt-vc"
 import type { SignOptions } from "./types"
 import type { Verifiable, W3CPresentation } from "../types"
@@ -26,7 +26,7 @@ export async function signPresentation(
   presentation: W3CPresentation,
   options: SignOptions
 ): Promise<SignedPresentation> {
-  options.alg = options.alg ? resolveJwtAlgorithm(options.alg) : options.alg
+  // options.alg is already a JwtAlgorithm, no conversion needed
   const jwt = await createVerifiablePresentationJwt(presentation, options)
 
   if (!isJwtString(jwt)) {

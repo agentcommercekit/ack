@@ -1,5 +1,5 @@
 import { createDidKeyUri } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
+import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys/ed25519"
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
 import { createPaymentReceipt } from "./create-payment-receipt"
@@ -34,7 +34,7 @@ describe("createPaymentReceipt", () => {
     const paymentRequiredBody = await createPaymentRequestBody(paymentRequest, {
       issuer: createDidKeyUri(keypair),
       signer: createJwtSigner(keypair),
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     paymentToken = paymentRequiredBody.paymentToken

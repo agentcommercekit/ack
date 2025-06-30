@@ -36,7 +36,7 @@ const base58PublicKey = encodePublicKeyFromKeypair("base58", keypair)
 
 ### Keypair Operations
 
-- `generateKeypair(algorithm: KeypairAlgorithm, privateKeyBytes?: Uint8Array): Promise<Keypair>`
+- `generateKeypair(curve: KeyCurve, privateKeyBytes?: Uint8Array): Promise<Keypair>`
 - `keypairToJwk(keypair: Keypair): PrivateKeyJwk`
 - `jwkToKeypair(jwk: PrivateKeyJwk): Keypair`
 

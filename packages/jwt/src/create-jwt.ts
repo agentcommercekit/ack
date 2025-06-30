@@ -1,5 +1,4 @@
 import { createJWT as baseCreateJWT } from "did-jwt"
-import { resolveJwtAlgorithm } from "./jwt-algorithm"
 import { isJwtString } from "./jwt-string"
 import type { JwtAlgorithm } from "./jwt-algorithm"
 import type { JwtString } from "./jwt-string"
@@ -9,8 +8,7 @@ export type JwtPayload = JWTPayload
 export type JwtOptions = JWTOptions
 
 /**
- * Allow alternative names for the algorithm (adds `secp256k1` and `Ed25519`,
- * which map to `ES256K` and `EdDSA` respectively)
+ * JWT header that only contains valid JWT algorithms
  */
 export interface JwtHeader extends Omit<JWTHeader, "alg" | "typ"> {
   typ: "JWT"
@@ -35,7 +33,7 @@ export async function createJwt(
 ): Promise<JwtString> {
   const result = await baseCreateJWT(payload, options, {
     ...header,
-    alg: resolveJwtAlgorithm(alg)
+    alg
   })
 
   if (!isJwtString(result)) {

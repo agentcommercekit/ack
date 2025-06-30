@@ -56,12 +56,12 @@ export function isDidKeyUri(did: unknown): did is DidKeyUri {
  * @returns A did:key URI
  */
 export function createDidKeyUri(keypair: Keypair): DidKeyUri {
-  const keyConfig = KEY_CONFIG[keypair.algorithm]
+  const keyConfig = KEY_CONFIG[keypair.curve]
   const publicKey = getCompressedPublicKey(keypair)
 
   if (publicKey.length !== keyConfig.keyLength) {
     throw new Error(
-      `Invalid key length for ${keypair.algorithm}. Expected ${keyConfig.keyLength} bytes, got ${publicKey.length}`
+      `Invalid key length for ${keypair.curve}. Expected ${keyConfig.keyLength} bytes, got ${publicKey.length}`
     )
   }
 

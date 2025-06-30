@@ -7,13 +7,13 @@ import { isMultibase } from "./encoding/multibase"
 import { generateKeypair } from "./keypair"
 import { encodePublicKeyFromKeypair, publicKeyEncodings } from "./public-key"
 
-const keypairAlgorithms = ["secp256k1", "Ed25519"] as const
+const keyCurves = ["secp256k1", "Ed25519"] as const
 
 describe("public key encoding", () => {
-  describe.each(keypairAlgorithms)("algorithm: %s", (algorithm) => {
+  describe.each(keyCurves)("curve: %s", (curve) => {
     describe.each(publicKeyEncodings)("format: %s", (format) => {
       test("encodes public key correctly", async () => {
-        const keypair = await generateKeypair(algorithm)
+        const keypair = await generateKeypair(curve)
         const publicKey = encodePublicKeyFromKeypair(format, keypair)
         const publicKeyValue = publicKey.value
 
@@ -22,7 +22,7 @@ describe("public key encoding", () => {
             expect(isHexString(publicKeyValue)).toBe(true)
             break
           case "jwk":
-            if (algorithm === "secp256k1") {
+            if (curve === "secp256k1") {
               if (!isPublicKeyJwkSecp256k1(publicKeyValue)) {
                 throw new Error("Invalid JWK")
               }
@@ -66,17 +66,17 @@ describe("public key encoding", () => {
   })
 
   describe("individual format functions", () => {
-    describe.each(keypairAlgorithms)("algorithm: %s", (algorithm) => {
+    describe.each(keyCurves)("curve: %s", (curve) => {
       test("formats to multibase", async () => {
-        const keypair = await generateKeypair(algorithm)
+        const keypair = await generateKeypair(curve)
         const multibase = encodePublicKeyFromKeypair("multibase", keypair)
         expect(isMultibase(multibase.value)).toBe(true)
       })
 
       test("formats to JWK", async () => {
-        const keypair = await generateKeypair(algorithm)
+        const keypair = await generateKeypair(curve)
         const jwk = encodePublicKeyFromKeypair("jwk", keypair)
-        if (algorithm === "secp256k1") {
+        if (curve === "secp256k1") {
           expect(jwk.value).toEqual({
             kty: "EC",
             crv: "secp256k1",
@@ -93,13 +93,13 @@ describe("public key encoding", () => {
       })
 
       test("formats to hex", async () => {
-        const keypair = await generateKeypair(algorithm)
+        const keypair = await generateKeypair(curve)
         const hex = encodePublicKeyFromKeypair("hex", keypair)
         expect(isHexString(hex.value)).toBe(true)
       })
 
       test("formats to base58", async () => {
-        const keypair = await generateKeypair(algorithm)
+        const keypair = await generateKeypair(curve)
         const base58 = encodePublicKeyFromKeypair("base58", keypair)
         expect(isBase58(base58.value)).toBe(true)
       })

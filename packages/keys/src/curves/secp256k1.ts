@@ -1,5 +1,5 @@
 import { secp256k1 } from "@noble/curves/secp256k1"
-import type { Keypair } from "../types"
+import type { Keypair } from "../keypair"
 
 /**
  * Generate a random private key using the secp256k1 curve
@@ -29,6 +29,6 @@ export async function generateKeypair(
   return Promise.resolve({
     publicKey: publicKeyBytes,
     privateKey: privateKeyBytes,
-    algorithm: "secp256k1"
+    curve: "secp256k1"
   })
 }

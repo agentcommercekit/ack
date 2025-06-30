@@ -10,8 +10,7 @@ export const jwtPayloadSchema = v.pipe(
     aud: v.optional(v.union([v.string(), v.array(v.string())])),
     iat: v.optional(v.number()),
     nbf: v.optional(v.number()),
-    exp: v.optional(v.number()),
-    rexp: v.optional(v.number())
+    exp: v.optional(v.number())
   }),
   v.custom<JwtPayload>(() => true)
 )

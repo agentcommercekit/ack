@@ -7,8 +7,8 @@ import {
 import type { DidDocument } from "./did-document"
 import type { DidUri } from "./did-uri"
 import type {
+  KeyCurve,
   Keypair,
-  KeypairAlgorithm,
   PublicKeyEncoding,
   PublicKeyTypeMap,
   PublicKeyWithEncoding
@@ -20,7 +20,7 @@ type LegacyPublicKeyEncoding = "hex" | "base58"
 type DidDocumentPublicKey = {
   [E in Exclude<PublicKeyEncoding, LegacyPublicKeyEncoding>]: {
     encoding: E
-    algorithm: KeypairAlgorithm
+    curve: KeyCurve
     value: PublicKeyTypeMap[E]
   }
 }[Exclude<PublicKeyEncoding, LegacyPublicKeyEncoding>]
@@ -67,13 +67,13 @@ function convertLegacyPublicKeyToMultibase(
     case "hex":
       return {
         encoding: "multibase",
-        algorithm: publicKey.algorithm,
+        curve: publicKey.curve,
         value: bytesToMultibase(hexStringToBytes(publicKey.value))
       }
     case "base58":
       return {
         encoding: "multibase",
-        algorithm: publicKey.algorithm,
+        curve: publicKey.curve,
         value: bytesToMultibase(base58ToBytes(publicKey.value))
       }
     default:

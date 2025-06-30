@@ -9,7 +9,7 @@ describe("generateKeypair()", () => {
     expect(keypair).toBeDefined()
     expect(keypair.privateKey).toBeInstanceOf(Uint8Array)
     expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(keypair.algorithm).toBe("secp256k1")
+    expect(keypair.curve).toBe("secp256k1")
   })
 
   test("generates Ed25519 Keypair", async () => {
@@ -18,7 +18,7 @@ describe("generateKeypair()", () => {
     expect(keypair).toBeDefined()
     expect(keypair.privateKey).toBeInstanceOf(Uint8Array)
     expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(keypair.algorithm).toBe("Ed25519")
+    expect(keypair.curve).toBe("Ed25519")
   })
 
   test("generates unique `Keypair`s for each algorithm", async () => {
@@ -43,11 +43,11 @@ describe("generateKeypair()", () => {
 
     expect(secpKeypair.privateKey).toEqual(privateKeyBytes)
     expect(secpKeypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(secpKeypair.algorithm).toBe("secp256k1")
+    expect(secpKeypair.curve).toBe("secp256k1")
 
     expect(edKeypair.privateKey).toEqual(privateKeyBytes)
     expect(edKeypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(edKeypair.algorithm).toBe("Ed25519")
+    expect(edKeypair.curve).toBe("Ed25519")
   })
 
   test("throws an error for invalid private key format for both algorithms", async () => {
@@ -76,7 +76,7 @@ describe("keypairToJwk and jwkToKeypair", () => {
     expect(jwk.d).toBeDefined()
 
     const reconstructedKeypair = jwkToKeypair(jwk)
-    expect(reconstructedKeypair.algorithm).toBe("secp256k1")
+    expect(reconstructedKeypair.curve).toBe("secp256k1")
     expect(reconstructedKeypair.publicKey).toEqual(keypair.publicKey)
     expect(reconstructedKeypair.privateKey).toEqual(keypair.privateKey)
   })
@@ -91,7 +91,7 @@ describe("keypairToJwk and jwkToKeypair", () => {
     expect(jwk.d).toBeDefined()
 
     const reconstructedKeypair = jwkToKeypair(jwk)
-    expect(reconstructedKeypair.algorithm).toBe("Ed25519")
+    expect(reconstructedKeypair.curve).toBe("Ed25519")
     expect(reconstructedKeypair.publicKey).toEqual(keypair.publicKey)
     expect(reconstructedKeypair.privateKey).toEqual(keypair.privateKey)
   })

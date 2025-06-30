@@ -9,7 +9,7 @@ describe("DidResolver", () => {
     did,
     publicKey: {
       encoding: "hex",
-      algorithm: "secp256k1",
+      curve: "secp256k1",
       value: "0xc0ffee254729296a45a3885639AC7E10F9d54979"
     }
   })

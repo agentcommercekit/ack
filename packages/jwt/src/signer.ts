@@ -15,7 +15,7 @@ export type JwtSigner = Signer
  * @returns A JWT-compatible signer
  */
 export function createJwtSigner(keypair: Keypair): JwtSigner {
-  switch (keypair.algorithm) {
+  switch (keypair.curve) {
     case "secp256k1":
       return ES256KSigner(keypair.privateKey)
     case "secp256r1":
@@ -23,6 +23,6 @@ export function createJwtSigner(keypair: Keypair): JwtSigner {
     case "Ed25519":
       return EdDSASigner(keypair.privateKey)
     default:
-      throw new Error("Unsupported algorithm", keypair.algorithm)
+      throw new Error("Unsupported algorithm", keypair.curve)
   }
 }

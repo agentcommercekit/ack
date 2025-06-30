@@ -1,5 +1,5 @@
 import { createDidKeyUri, getDidResolver } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
+import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { InvalidCredentialSubjectError } from "@agentcommercekit/vc"
 import * as v from "valibot"
@@ -55,7 +55,7 @@ describe("getReceiptClaimVerifier", () => {
     const paymentToken = await createPaymentToken(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
     const receiptSubject: v.InferOutput<typeof paymentReceiptClaimSchema> = {
       paymentOptionId: paymentRequest.paymentOptions[0].id,

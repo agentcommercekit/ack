@@ -4,6 +4,7 @@ import {
   createJwt,
   createPaymentReceipt,
   createPaymentRequestBody,
+  curveToJwtAlgorithm,
   getDidResolver,
   verifyPaymentToken
 } from "agentcommercekit"
@@ -99,7 +100,7 @@ async function generatePayload(
     {
       issuer: resourceServer.did,
       signer: resourceServer.signer,
-      algorithm: resourceServer.keypair.algorithm
+      algorithm: curveToJwtAlgorithm(resourceServer.keypair.curve)
     }
   )
 

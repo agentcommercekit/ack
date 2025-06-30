@@ -3,7 +3,12 @@ import {
   createDidKeyUri,
   getDidResolver
 } from "@agentcommercekit/did"
-import { createJwtSigner, isJwtString, verifyJwt } from "@agentcommercekit/jwt"
+import {
+  createJwtSigner,
+  curveToJwtAlgorithm,
+  isJwtString,
+  verifyJwt
+} from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
@@ -43,7 +48,7 @@ describe("createPaymentToken()", () => {
     const paymentToken = await createPaymentToken(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     expect(isJwtString(paymentToken)).toBe(true)
@@ -53,7 +58,7 @@ describe("createPaymentToken()", () => {
     const paymentToken = await createPaymentToken(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     const resolver = getDidResolver()

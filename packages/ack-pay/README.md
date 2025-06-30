@@ -24,7 +24,7 @@ import {
   createPaymentRequestResponse
 } from "@agentcommercekit/ack-pay"
 import { createDidWebUri } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
+import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 
 // Create a payment request
@@ -49,14 +49,14 @@ const keypair = await generateKeypair("secp256k1")
 const paymentBody = await createPaymentRequestBody(paymentRequest, {
   issuer: createDidWebUri("https://server.example.com"),
   signer: createJwtSigner(keypair),
-  algorithm: keypair.algorithm
+  algorithm: curveToJwtAlgorithm(keypair.curve)
 })
 
 // Create a 402 Payment Required response
 const response = await createPaymentRequestResponse(paymentRequest, {
   issuer: createDidWebUri("https://server.example.com"),
   signer: createJwtSigner(keypair),
-  algorithm: keypair.algorithm
+  algorithm: curveToJwtAlgorithm(keypair.curve)
 })
 ```
 

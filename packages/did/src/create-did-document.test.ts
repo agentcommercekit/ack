@@ -1,7 +1,7 @@
 import {
   encodePublicKeyFromKeypair,
   generateKeypair,
-  keypairAlgorithms,
+  keyCurves,
   publicKeyEncodings
 } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, test } from "vitest"
@@ -57,12 +57,12 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
     Ed25519: () => ed25519Keypair
   } as const
 
-  describe.each(keypairAlgorithms)("algorithm: %s", (algorithm) => {
+  describe.each(keyCurves)("curve: %s", (curve) => {
     describe.each(publicKeyEncodings)(
       "encoding: %s",
       (encoding: PublicKeyEncoding) => {
-        test(`generates matching documents with ${algorithm} and ${encoding} encoding`, () => {
-          const keypair = keypairMap[algorithm]()
+        test(`generates matching documents with ${curve} and ${encoding} encoding`, () => {
+          const keypair = keypairMap[curve]()
 
           const documentFromKeypair = createDidDocumentFromKeypair({
             did,

@@ -72,14 +72,31 @@ import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/valibot"
 - `createJwtSigner(keypair)`: Creates a JWT signer from a keypair
 - `isJwtString(value)`: Checks if a value is a valid JWT string
 - `isJwtAlgorithm(algorithm)`: Checks if a value is a valid JWT algorithm
-- `resolveJwtAlgorithm(algorithm)`: Resolves alternate algorithm names to standard ones
+- `curveToJwtAlgorithm(curve)`: Converts a cryptographic curve to its corresponding JWT algorithm
 
 ### Types
 
 - `JwtString`: Type for a valid JWT string
-- `JwtAlgorithm`: Supported JWT algorithms (`ES256K`, `ES256K-R`, `Ed25519`, `EdDSA`, `secp256k1`)
+- `JwtAlgorithm`: Supported JWT algorithms (`ES256`, `ES256K`, `EdDSA`)
 - `JwtSigner`: Type for a JWT signer
 - `JwtVerified`: Type for a verified JWT result
+
+### Algorithm Mapping
+
+This package distinguishes between cryptographic curves and JWT algorithms:
+
+- **KeyCurve**: The underlying cryptographic curve (`secp256k1`, `secp256r1`, `Ed25519`)
+- **JwtAlgorithm**: The corresponding JWT signing algorithm (`ES256K`, `ES256`, `EdDSA`)
+
+Use `curveToJwtAlgorithm()` to convert between them:
+
+```ts
+import { curveToJwtAlgorithm } from "@agentcommercekit/jwt"
+import { generateKeypair } from "@agentcommercekit/keys"
+
+const keypair = await generateKeypair("secp256k1")
+const algorithm = curveToJwtAlgorithm(keypair.curve) // "ES256K"
+```
 
 ## License (MIT)
 

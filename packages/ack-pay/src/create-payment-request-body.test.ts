@@ -3,7 +3,11 @@ import {
   createDidKeyUri,
   getDidResolver
 } from "@agentcommercekit/did"
-import { createJwtSigner, isJwtString } from "@agentcommercekit/jwt"
+import {
+  createJwtSigner,
+  curveToJwtAlgorithm,
+  isJwtString
+} from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentRequestBody } from "./create-payment-request-body"
@@ -41,7 +45,7 @@ describe("createPaymentRequestBody()", () => {
     const result = await createPaymentRequestBody(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     expect(result.paymentRequest).toEqual({
@@ -64,7 +68,7 @@ describe("createPaymentRequestBody()", () => {
     const body = await createPaymentRequestBody(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     const resolver = getDidResolver()
@@ -95,7 +99,7 @@ describe("createPaymentRequestBody()", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: keypair.algorithm
+        algorithm: curveToJwtAlgorithm(keypair.curve)
       }
     )
 

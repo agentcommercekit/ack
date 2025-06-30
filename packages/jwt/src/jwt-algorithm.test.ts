@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 import {
+  curveToJwtAlgorithm,
   isJwtAlgorithm,
-  jwtAlgorithms,
-  resolveJwtAlgorithm
+  jwtAlgorithms
 } from "./jwt-algorithm"
 
 describe("isJwtAlgorithm", () => {
@@ -17,22 +17,23 @@ describe("isJwtAlgorithm", () => {
   })
 })
 
-describe("resolveJwtAlgorithm", () => {
-  it("returns the correct JWT algorithm", () => {
-    expect(resolveJwtAlgorithm("ES256K")).toBe("ES256K")
+describe("curveToJwtAlgorithm", () => {
+  it("returns the correct JWT algorithm for secp256k1", () => {
+    expect(curveToJwtAlgorithm("secp256k1")).toBe("ES256K")
   })
 
-  it("returns the correct aliased algorithm for secp256k1", () => {
-    expect(resolveJwtAlgorithm("secp256k1")).toBe("ES256K")
+  it("returns the correct JWT algorithm for secp256r1", () => {
+    expect(curveToJwtAlgorithm("secp256r1")).toBe("ES256")
   })
 
-  it("returns the correct aliased algorithm for Ed25519", () => {
-    expect(resolveJwtAlgorithm("Ed25519")).toBe("EdDSA")
+  it("returns the correct JWT algorithm for Ed25519", () => {
+    expect(curveToJwtAlgorithm("Ed25519")).toBe("EdDSA")
   })
 
-  it("throws an error for an unsupported algorithm", () => {
-    expect(() => resolveJwtAlgorithm("invalid")).toThrow(
-      "Unsupported algorithm: 'invalid'"
+  it("throws an error for an unsupported curve", () => {
+    // @ts-expect-error - invalid curve
+    expect(() => curveToJwtAlgorithm("invalid")).toThrow(
+      "Unsupported curve: 'invalid'"
     )
   })
 })

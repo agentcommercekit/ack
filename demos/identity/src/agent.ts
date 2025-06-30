@@ -4,6 +4,7 @@ import {
   createDidWebUri,
   createJwt,
   createJwtSigner,
+  curveToJwtAlgorithm,
   generateKeypair
 } from "agentcommercekit"
 import type { CredentialVerifier } from "./credential-verifier"
@@ -109,7 +110,7 @@ export abstract class Agent {
         signer: this.signer
       },
       {
-        alg: this.keypair.algorithm
+        alg: curveToJwtAlgorithm(this.keypair.curve)
       }
     )
 

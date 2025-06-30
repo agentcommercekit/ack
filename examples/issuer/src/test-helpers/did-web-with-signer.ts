@@ -3,11 +3,11 @@ import {
   createJwtSigner,
   generateKeypair
 } from "agentcommercekit"
-import type { DidResolver, DidUri, KeypairAlgorithm } from "agentcommercekit"
+import type { DidResolver, DidUri, KeyCurve } from "agentcommercekit"
 
 interface GenerateDidWebWithSignerOptions {
   controller?: DidUri
-  algorithm?: KeypairAlgorithm
+  curve?: KeyCurve
   /**
    * An optional DidResolver. If provided, the didDocument will be added to the cache.
    */
@@ -19,10 +19,10 @@ export async function createDidWebWithSigner(
   {
     controller,
     resolver,
-    algorithm = "secp256k1"
+    curve = "secp256k1"
   }: GenerateDidWebWithSignerOptions = {}
 ) {
-  const keypair = await generateKeypair(algorithm)
+  const keypair = await generateKeypair(curve)
   const { did, didDocument } = createDidWebDocumentFromKeypair({
     keypair,
     baseUrl,

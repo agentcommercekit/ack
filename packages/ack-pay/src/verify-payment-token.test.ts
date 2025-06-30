@@ -3,7 +3,11 @@ import {
   createDidKeyUri,
   getDidResolver
 } from "@agentcommercekit/did"
-import { createJwt, createJwtSigner } from "@agentcommercekit/jwt"
+import {
+  createJwt,
+  createJwtSigner,
+  curveToJwtAlgorithm
+} from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentRequestBody } from "./create-payment-request-body"
@@ -56,7 +60,7 @@ describe("verifyPaymentToken", () => {
     const body = await createPaymentRequestBody(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     const resolver = getDidResolver()
@@ -99,7 +103,7 @@ describe("verifyPaymentToken", () => {
         signer
       },
       {
-        alg: keypair.algorithm
+        alg: curveToJwtAlgorithm(keypair.curve)
       }
     )
 
@@ -128,7 +132,7 @@ describe("verifyPaymentToken", () => {
         signer
       },
       {
-        alg: keypair.algorithm
+        alg: curveToJwtAlgorithm(keypair.curve)
       }
     )
 
@@ -149,7 +153,7 @@ describe("verifyPaymentToken", () => {
     const body = await createPaymentRequestBody(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: keypair.algorithm
+      algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
     // Create a resolver with a different public key to make signature verification fail

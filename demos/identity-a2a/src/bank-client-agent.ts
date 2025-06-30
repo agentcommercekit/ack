@@ -3,6 +3,7 @@
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import { A2AClient, Role } from "a2a-js"
 import {
+  curveToJwtAlgorithm,
   getDidResolver,
   resolveDid,
   verifyParsedCredential
@@ -211,7 +212,7 @@ export class BankClientAgent extends Agent {
         {
           did: this.did,
           jwtSigner: this.jwtSigner,
-          alg: this.keypair.algorithm,
+          alg: curveToJwtAlgorithm(this.keypair.curve),
           expiresIn: 5 * 60
         }
       )
@@ -293,7 +294,7 @@ export class BankClientAgent extends Agent {
         {
           did: this.did,
           jwtSigner: this.jwtSigner,
-          alg: this.keypair.algorithm,
+          alg: curveToJwtAlgorithm(this.keypair.curve),
           expiresIn: 5 * 60
         }
       )
@@ -419,7 +420,7 @@ const agentCard: AgentCard = {
 export async function getClientAgent() {
   return BankClientAgent.create({
     agentCard,
-    algorithm: "Ed25519",
+    curve: "Ed25519",
     controller: "did:web:builder.ack.com"
   })
 }

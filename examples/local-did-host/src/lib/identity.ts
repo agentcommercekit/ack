@@ -2,12 +2,12 @@ import {
   createDidWebDocumentFromKeypair,
   createDidWebUri
 } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
+import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { hexStringToBytes } from "@agentcommercekit/keys/encoding"
 import type { DidDocument, DidUri } from "@agentcommercekit/did"
 import type { JwtAlgorithm, JwtSigner } from "@agentcommercekit/jwt"
-import type { KeypairAlgorithm } from "@agentcommercekit/keys"
+import type { KeyCurve } from "@agentcommercekit/keys"
 
 export interface Identity {
   did: DidUri
@@ -24,16 +24,16 @@ interface GetIdentityOptions {
   baseUrl: string
   privateKey: `0x${string}`
   controller?: DidUri
-  alg?: KeypairAlgorithm
+  curve?: KeyCurve
 }
 
 export async function getIdentity({
   baseUrl,
   privateKey,
   controller,
-  alg = "secp256k1"
+  curve = "secp256k1"
 }: GetIdentityOptions): Promise<Identity> {
-  const keypair = await generateKeypair(alg, hexStringToBytes(privateKey))
+  const keypair = await generateKeypair(curve, hexStringToBytes(privateKey))
   const signer = createJwtSigner(keypair)
 
   const { did, didDocument } = createDidWebDocumentFromKeypair({
@@ -46,6 +46,6 @@ export async function getIdentity({
     did,
     didDocument,
     signer,
-    alg
+    alg: curveToJwtAlgorithm(curve)
   }
 }

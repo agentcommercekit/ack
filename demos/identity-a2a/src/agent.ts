@@ -35,15 +35,15 @@ import type {
   DidDocument,
   DidUri,
   JwtSigner,
+  KeyCurve,
   Keypair,
-  KeypairAlgorithm,
   Verifiable,
   W3CCredential
 } from "agentcommercekit"
 
 type AgentConfig = {
   agentCard: AgentCard
-  algorithm: KeypairAlgorithm
+  curve: KeyCurve
   controller: DidUri
 }
 export abstract class Agent implements AgentExecutor {
@@ -67,11 +67,11 @@ export abstract class Agent implements AgentExecutor {
     ) => T,
     config: AgentConfig
   ) {
-    const { agentCard, algorithm, controller } = config
+    const { agentCard, curve, controller } = config
 
     const baseUrl = agentCard.url
     const agentCardUrl = `${baseUrl}/.well-known/agent.json`
-    const keypair = await generateKeypair(algorithm)
+    const keypair = await generateKeypair(curve)
     const jwtSigner = createJwtSigner(keypair)
     const did = createDidWebUri(baseUrl)
     const didDocument = createDidDocumentFromKeypair({
@@ -80,9 +80,7 @@ export abstract class Agent implements AgentExecutor {
       service: [createAgentCardServiceEndpoint(did, agentCardUrl)]
     })
 
-    console.log(
-      `🌐 Generated ${algorithm} keypair with did:web for ${this.name}`
-    )
+    console.log(`🌐 Generated ${curve} keypair with did:web for ${this.name}`)
     console.log("   DID:", colors.dim(did))
     console.log(
       "   Public key:",

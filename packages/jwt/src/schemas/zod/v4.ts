@@ -10,8 +10,7 @@ export const jwtPayloadSchema = z
     aud: z.optional(z.union([z.string(), z.array(z.string())])),
     iat: z.optional(z.number()),
     nbf: z.optional(z.number()),
-    exp: z.optional(z.number()),
-    rexp: z.optional(z.number())
+    exp: z.optional(z.number())
   })
   .refine((val): val is JwtPayload => true)
 

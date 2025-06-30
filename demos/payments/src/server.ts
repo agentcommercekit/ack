@@ -3,6 +3,7 @@ import { logger } from "@repo/api-utils/middleware/logger"
 import { colors, errorMessage, log, successMessage } from "@repo/cli-tools"
 import {
   createPaymentRequestResponse,
+  curveToJwtAlgorithm,
   getDidResolver,
   verifyPaymentReceipt
 } from "agentcommercekit"
@@ -87,7 +88,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
       {
         issuer: serverIdentity.did,
         signer: serverIdentity.jwtSigner,
-        algorithm: serverIdentity.keypair.algorithm
+        algorithm: curveToJwtAlgorithm(serverIdentity.keypair.curve)
       }
     )
 

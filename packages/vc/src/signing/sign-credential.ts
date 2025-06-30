@@ -1,4 +1,4 @@
-import { isJwtString, resolveJwtAlgorithm } from "@agentcommercekit/jwt"
+import { isJwtString } from "@agentcommercekit/jwt"
 import { createVerifiableCredentialJwt, verifyCredential } from "did-jwt-vc"
 import type { SignOptions } from "./types"
 import type { Verifiable, W3CCredential } from "../types"
@@ -26,7 +26,7 @@ export async function signCredential<T extends W3CCredential>(
   credential: T,
   options: SignOptions
 ): Promise<SignedCredential<T>> {
-  options.alg = options.alg ? resolveJwtAlgorithm(options.alg) : options.alg
+  // options.alg is already a JwtAlgorithm, no conversion needed
   const jwt = await createVerifiableCredentialJwt(credential, options)
 
   if (!isJwtString(jwt)) {
