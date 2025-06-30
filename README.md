@@ -5,7 +5,7 @@
 <p align="center">
   <a href="https://www.agentcommercekit.com">Documentation</a> |
   <a href="#getting-started">Demos</a> |
-  <a href="https://join.slack.com/t/catenalabscommunity/shared_invite/zt-35o31b0r8-RvnEPFaGHqYIkFs6k5QjTA">Slack Community</a>
+  <a href="https://discord.gg/3V34SmdHPq">Discord Community</a>
 </p>
 
 **Agent Commerce Kit (ACK)** provides vendor-neutral protocols, patterns, and open source components that enable AI agents to participate in commerce through:
