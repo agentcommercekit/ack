@@ -1,8 +1,8 @@
 import { generateKeypair } from "@agentcommercekit/keys"
 import {
   bytesToHexString,
-  bytesToJwk,
-  bytesToMultibase
+  bytesToMultibase,
+  publicKeyBytesToJwk
 } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
 import { createDidWebDocument, createDidWebUri } from "./did-web"
@@ -30,7 +30,7 @@ describe("createDidWeb", () => {
 describe("createDidWebDocument", () => {
   it("generates a valid DidUri and DidDocument with JWK", async () => {
     const keypair = await generateKeypair("secp256k1")
-    const publicKeyJwk = bytesToJwk(keypair.publicKey, keypair.curve)
+    const publicKeyJwk = publicKeyBytesToJwk(keypair.publicKey, keypair.curve)
 
     const { did, didDocument } = createDidWebDocument({
       publicKey: {

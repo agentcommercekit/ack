@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vitest"
 import { bytesToBase64url, isBase64url } from "./base64"
-import { bytesToJwk, isPrivateKeyJwk, isPublicKeyJwk, jwkToBytes } from "./jwk"
+import {
+  isPrivateKeyJwk,
+  isPublicKeyJwk,
+  publicKeyBytesToJwk,
+  publicKeyJwkToBytes
+} from "./jwk"
 import type { PublicKeyJwkEd25519, PublicKeyJwkSecp256k1 } from "./jwk"
 
 describe("JWK encoding", () => {
@@ -15,9 +20,12 @@ describe("JWK encoding", () => {
   const base64String = bytesToBase64url(Ed25519Bytes) // base64url of 32 bytes of 1s
   const base64String2 = bytesToBase64url(secp256k1Bytes.slice(33)) // base64url of 32 bytes of 2s
 
-  describe("bytesToJwk", () => {
+  describe("publicKeyBytesToJwk", () => {
     test("converts Ed25519 public key to JWK", () => {
-      const jwk = bytesToJwk(Ed25519Bytes, "Ed25519") as PublicKeyJwkEd25519
+      const jwk = publicKeyBytesToJwk(
+        Ed25519Bytes,
+        "Ed25519"
+      ) as PublicKeyJwkEd25519
       expect(jwk).toEqual({
         kty: "OKP",
         crv: "Ed25519",
@@ -27,7 +35,7 @@ describe("JWK encoding", () => {
     })
 
     test("converts secp256k1 public key to JWK", () => {
-      const jwk = bytesToJwk(
+      const jwk = publicKeyBytesToJwk(
         secp256k1Bytes,
         "secp256k1"
       ) as PublicKeyJwkSecp256k1
@@ -42,14 +50,14 @@ describe("JWK encoding", () => {
     })
   })
 
-  describe("jwkToBytes", () => {
+  describe("publicKeyJwkToBytes", () => {
     test("converts Ed25519 JWK to bytes", () => {
       const jwk: PublicKeyJwkEd25519 = {
         kty: "OKP",
         crv: "Ed25519",
         x: base64String
       }
-      const bytes = jwkToBytes(jwk)
+      const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(Ed25519Bytes)
     })
 
@@ -60,7 +68,7 @@ describe("JWK encoding", () => {
         x: base64String,
         y: base64String2
       }
-      const bytes = jwkToBytes(jwk)
+      const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(secp256k1Bytes)
     })
   })
@@ -165,17 +173,20 @@ describe("JWK encoding", () => {
 
   describe("roundtrip", () => {
     test("roundtrips Ed25519 public key through JWK", () => {
-      const jwk = bytesToJwk(Ed25519Bytes, "Ed25519") as PublicKeyJwkEd25519
-      const bytes = jwkToBytes(jwk)
+      const jwk = publicKeyBytesToJwk(
+        Ed25519Bytes,
+        "Ed25519"
+      ) as PublicKeyJwkEd25519
+      const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(Ed25519Bytes)
     })
 
     test("roundtrips secp256k1 public key through JWK", () => {
-      const jwk = bytesToJwk(
+      const jwk = publicKeyBytesToJwk(
         secp256k1Bytes,
         "secp256k1"
       ) as PublicKeyJwkSecp256k1
-      const bytes = jwkToBytes(jwk)
+      const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(secp256k1Bytes)
     })
   })

@@ -1,4 +1,4 @@
-import { getCompressedPublicKey } from "@agentcommercekit/keys"
+import { getPublicKeyFromPrivateKey } from "@agentcommercekit/keys"
 import { bytesToMultibase } from "@agentcommercekit/keys/encoding"
 import * as varint from "varint"
 import type { Keypair } from "@agentcommercekit/keys"
@@ -57,7 +57,11 @@ export function isDidKeyUri(did: unknown): did is DidKeyUri {
  */
 export function createDidKeyUri(keypair: Keypair): DidKeyUri {
   const keyConfig = KEY_CONFIG[keypair.curve]
-  const publicKey = getCompressedPublicKey(keypair)
+  const publicKey = getPublicKeyFromPrivateKey(
+    keypair.privateKey,
+    keypair.curve,
+    true
+  )
 
   if (publicKey.length !== keyConfig.keyLength) {
     throw new Error(

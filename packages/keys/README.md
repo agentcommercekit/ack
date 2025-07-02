@@ -43,7 +43,6 @@ const base58PublicKey = encodePublicKeyFromKeypair("base58", keypair)
 ### Public Key Formatting
 
 - `encodePublicKeyFromKeypair<T extends PublicKeyEncoding>(encoding: T, keypair: Keypair): PublicKeyTypeMap[T]`
-- `getCompressedPublicKey(keypair: Keypair): Uint8Array`
 
 ### Additional Exports
 

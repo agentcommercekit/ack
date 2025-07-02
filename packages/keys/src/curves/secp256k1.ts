@@ -4,17 +4,18 @@ import type { Keypair } from "../keypair"
 /**
  * Generate a random private key using the secp256k1 curve
  */
-function generatePrivateKeyBytes(): Promise<Uint8Array> {
+export function generatePrivateKey(): Promise<Uint8Array> {
   return Promise.resolve(secp256k1.utils.randomPrivateKey())
 }
 
 /**
- * Convert an uncompressed public key to compressed format
- * @param publicKey - The uncompressed public key (65 bytes)
- * @returns The compressed public key (33 bytes)
+ * Get the public key from a private key
  */
-export function compressPublicKey(keypair: Keypair): Uint8Array {
-  return secp256k1.getPublicKey(keypair.privateKey, true)
+export function getPublicKeyBytes(
+  privateKeyBytes: Uint8Array,
+  compressed = false
+): Uint8Array {
+  return secp256k1.getPublicKey(privateKeyBytes, compressed)
 }
 
 /**
@@ -23,8 +24,8 @@ export function compressPublicKey(keypair: Keypair): Uint8Array {
 export async function generateKeypair(
   privateKeyBytes?: Uint8Array
 ): Promise<Keypair> {
-  privateKeyBytes ??= await generatePrivateKeyBytes()
-  const publicKeyBytes = secp256k1.getPublicKey(privateKeyBytes, false)
+  privateKeyBytes ??= await generatePrivateKey()
+  const publicKeyBytes = getPublicKeyBytes(privateKeyBytes, false)
 
   return Promise.resolve({
     publicKey: publicKeyBytes,

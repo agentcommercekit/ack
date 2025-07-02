@@ -1,7 +1,9 @@
-import { compressPublicKey } from "./curves/secp256k1"
+import { getPublicKeyBytes as getEd25519PublicKeyBytes } from "./curves/ed25519"
+import { getPublicKeyBytes as getSecp256k1PublicKeyBytes } from "./curves/secp256k1"
+import { getPublicKeyBytes as getSecp256r1PublicKeyBytes } from "./curves/secp256r1"
 import { bytesToBase58 } from "./encoding/base58"
 import { bytesToHexString } from "./encoding/hex"
-import { bytesToJwk } from "./encoding/jwk"
+import { publicKeyBytesToJwk } from "./encoding/jwk"
 import { bytesToMultibase } from "./encoding/multibase"
 import type { PublicKeyJwk } from "./encoding/jwk"
 import type { KeyCurve } from "./key-curves"
@@ -31,16 +33,34 @@ export type PublicKeyWithEncoding = {
 }[PublicKeyEncoding]
 
 /**
- * Get the compressed public key for a given keypair
+ * Get the public key for a given keypair, in either compressed or uncompressed
+ * format
+ *
  * @param keypair - The keypair to get the compressed public key for
+ * @param compressed - Whether to return the public key in compressed format
  * @returns The compressed public key
  */
-export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
-  if (keypair.curve === "secp256k1") {
-    return compressPublicKey(keypair)
+export function getPublicKeyFromPrivateKey(
+  privateKey: Uint8Array,
+  curve: KeyCurve,
+  compressed = false
+): Uint8Array {
+  if (curve === "secp256k1") {
+    return getSecp256k1PublicKeyBytes(privateKey, compressed)
   }
 
-  return keypair.publicKey
+  if (curve === "secp256r1") {
+    return getSecp256r1PublicKeyBytes(privateKey, compressed)
+  }
+
+  return getEd25519PublicKeyBytes(privateKey)
+}
+
+/**
+ * @deprecated Use `getPublicKeyFromPrivateKey` instead
+ */
+export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
+  return getPublicKeyFromPrivateKey(keypair.privateKey, keypair.curve, true)
 }
 
 /**
@@ -67,7 +87,7 @@ function encodePublicKeyJwk(
   return {
     encoding: "jwk",
     curve,
-    value: bytesToJwk(publicKey, curve)
+    value: publicKeyBytesToJwk(publicKey, curve)
   }
 }
 

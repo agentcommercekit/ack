@@ -1,8 +1,8 @@
-import { generateKeypair as ed25519 } from "./curves/ed25519"
-import { generateKeypair as secp256k1 } from "./curves/secp256k1"
-import { generateKeypair as secp256r1 } from "./curves/secp256r1"
-import { base64urlToBytes, bytesToBase64url } from "./encoding/base64"
-import { bytesToJwk, jwkToBytes } from "./encoding/jwk"
+import * as ed25519 from "./curves/ed25519"
+import * as secp256k1 from "./curves/secp256k1"
+import * as secp256r1 from "./curves/secp256r1"
+import { base64urlToBytes } from "./encoding/base64"
+import { privateKeyBytesToJwk, publicKeyJwkToBytes } from "./encoding/jwk"
 import type { PrivateKeyJwk } from "./encoding/jwk"
 import type { KeyCurve } from "./key-curves"
 
@@ -12,10 +12,19 @@ export interface Keypair {
   curve: KeyCurve
 }
 
-export interface KeypairBase58 {
-  publicKey: string
-  privateKey: string
-  curve: KeyCurve
+export async function keypairFromPrivateKeyBytes(
+  curve: KeyCurve,
+  privateKeyBytes: Uint8Array
+): Promise<Keypair> {
+  if (curve === "secp256k1") {
+    return secp256k1.generateKeypair(privateKeyBytes)
+  }
+
+  if (curve === "secp256r1") {
+    return secp256r1.generateKeypair(privateKeyBytes)
+  }
+
+  return ed25519.generateKeypair(privateKeyBytes)
 }
 
 /**
@@ -30,14 +39,17 @@ export async function generateKeypair(
   privateKeyBytes?: Uint8Array
 ): Promise<Keypair> {
   if (curve === "secp256k1") {
-    return secp256k1(privateKeyBytes)
+    privateKeyBytes ??= await secp256k1.generatePrivateKey()
+    return keypairFromPrivateKeyBytes(curve, privateKeyBytes)
   }
 
   if (curve === "secp256r1") {
-    return secp256r1(privateKeyBytes)
+    privateKeyBytes ??= await secp256r1.generatePrivateKey()
+    return keypairFromPrivateKeyBytes(curve, privateKeyBytes)
   }
 
-  return ed25519(privateKeyBytes)
+  privateKeyBytes ??= await ed25519.generatePrivateKey()
+  return keypairFromPrivateKeyBytes(curve, privateKeyBytes)
 }
 
 /**
@@ -47,11 +59,7 @@ export async function generateKeypair(
  * @returns A JSON Web Key representation of the Keypair
  */
 export function keypairToJwk(keypair: Keypair): PrivateKeyJwk {
-  const publicKeyJwk = bytesToJwk(keypair.publicKey, keypair.curve)
-  return {
-    ...publicKeyJwk,
-    d: bytesToBase64url(keypair.privateKey)
-  }
+  return privateKeyBytesToJwk(keypair.privateKey, keypair.curve)
 }
 
 /**
@@ -62,7 +70,7 @@ export function keypairToJwk(keypair: Keypair): PrivateKeyJwk {
  */
 export function jwkToKeypair(jwk: PrivateKeyJwk): Keypair {
   return {
-    publicKey: jwkToBytes(jwk),
+    publicKey: publicKeyJwkToBytes(jwk),
     privateKey: base64urlToBytes(jwk.d),
     curve: jwk.crv
   }

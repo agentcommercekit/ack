@@ -1,4 +1,4 @@
-import { bytesToJwk, generateKeypair } from "agentcommercekit"
+import { generateKeypair, publicKeyBytesToJwk } from "agentcommercekit"
 
 /**
  * Generate a keypair and an associated JWKS
@@ -8,7 +8,7 @@ import { bytesToJwk, generateKeypair } from "agentcommercekit"
 export async function generateJwks() {
   const keypair = await generateKeypair("secp256r1")
   const publicKeyJwk = {
-    ...bytesToJwk(keypair.publicKey, "secp256r1"),
+    ...publicKeyBytesToJwk(keypair.publicKey, "secp256r1"),
     crv: "P-256",
     use: "sig",
     kid: "skyfire-key-1",

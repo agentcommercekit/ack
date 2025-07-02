@@ -1,4 +1,5 @@
 import { base64urlToBytes, bytesToBase64url } from "./base64"
+import { getPublicKeyFromPrivateKey } from "../public-key"
 import type { KeyCurve } from "../key-curves"
 
 /**
@@ -123,7 +124,10 @@ export function isPrivateKeyJwk(jwk: unknown): jwk is PrivateKeyJwk {
 /**
  * Convert public key bytes to a JWK format
  */
-export function bytesToJwk(bytes: Uint8Array, curve: KeyCurve): PublicKeyJwk {
+export function publicKeyBytesToJwk(
+  bytes: Uint8Array,
+  curve: KeyCurve
+): PublicKeyJwk {
   switch (curve) {
     case "Ed25519":
       return {
@@ -154,10 +158,24 @@ export function bytesToJwk(bytes: Uint8Array, curve: KeyCurve): PublicKeyJwk {
   }
 }
 
+export function privateKeyBytesToJwk(
+  bytes: Uint8Array,
+  curve: KeyCurve
+): PrivateKeyJwk {
+  const publicKeyBytes = getPublicKeyFromPrivateKey(bytes, curve)
+  const publicKeyJwk = publicKeyBytesToJwk(publicKeyBytes, curve)
+
+  return {
+    ...publicKeyJwk,
+    d: bytesToBase64url(bytes)
+  }
+}
+
 /**
+ * }
  * Convert a JWK to public key bytes
  */
-export function jwkToBytes(jwk: PublicKeyJwk): Uint8Array {
+export function publicKeyJwkToBytes(jwk: PublicKeyJwk): Uint8Array {
   const xBytes = base64urlToBytes(jwk.x)
 
   // For secp256k1 and secp256r1, we need to reconstruct the full public key
@@ -175,3 +193,13 @@ export function jwkToBytes(jwk: PublicKeyJwk): Uint8Array {
   // For Ed25519, the x field is the complete public key
   return xBytes
 }
+
+/**
+ * @deprecated Use `publicKeyBytesToJwk` instead
+ */
+export const bytesToJwk = publicKeyBytesToJwk
+
+/**
+ * @deprecated Use `publicKeyJwkToBytes` instead
+ */
+export const jwkToBytes = publicKeyJwkToBytes
