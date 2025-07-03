@@ -12,19 +12,16 @@ export interface Keypair {
   curve: KeyCurve
 }
 
-export async function keypairFromPrivateKeyBytes(
-  curve: KeyCurve,
-  privateKeyBytes: Uint8Array
-): Promise<Keypair> {
+export function generatePrivateKeyBytes(curve: KeyCurve): Uint8Array {
   if (curve === "secp256k1") {
-    return secp256k1.generateKeypair(privateKeyBytes)
+    return secp256k1.generatePrivateKeyBytes()
   }
 
   if (curve === "secp256r1") {
-    return secp256r1.generateKeypair(privateKeyBytes)
+    return secp256r1.generatePrivateKeyBytes()
   }
 
-  return ed25519.generateKeypair(privateKeyBytes)
+  return ed25519.generatePrivateKeyBytes()
 }
 
 /**
@@ -39,17 +36,14 @@ export async function generateKeypair(
   privateKeyBytes?: Uint8Array
 ): Promise<Keypair> {
   if (curve === "secp256k1") {
-    privateKeyBytes ??= await secp256k1.generatePrivateKey()
-    return keypairFromPrivateKeyBytes(curve, privateKeyBytes)
+    return secp256k1.generateKeypair(privateKeyBytes)
   }
 
   if (curve === "secp256r1") {
-    privateKeyBytes ??= await secp256r1.generatePrivateKey()
-    return keypairFromPrivateKeyBytes(curve, privateKeyBytes)
+    return secp256r1.generateKeypair(privateKeyBytes)
   }
 
-  privateKeyBytes ??= await ed25519.generatePrivateKey()
-  return keypairFromPrivateKeyBytes(curve, privateKeyBytes)
+  return ed25519.generateKeypair(privateKeyBytes)
 }
 
 /**

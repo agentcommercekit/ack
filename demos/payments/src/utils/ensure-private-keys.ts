@@ -10,7 +10,7 @@ export async function ensurePrivateKey(name: string) {
   }
 
   log(colors.dim(`Generating ${name}...`))
-  const newPrivateKeyHex = await generatePrivateKeyHex()
+  const newPrivateKeyHex = generatePrivateKeyHex()
   await updateEnvFile({ [name]: newPrivateKeyHex }, envFilePath)
   return newPrivateKeyHex
 }

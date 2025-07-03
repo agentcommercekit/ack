@@ -4,8 +4,8 @@ import type { Keypair } from "../keypair"
 /**
  * Generate a random private key using the secp256k1 curve
  */
-export function generatePrivateKey(): Promise<Uint8Array> {
-  return Promise.resolve(secp256k1.utils.randomPrivateKey())
+export function generatePrivateKeyBytes(): Uint8Array {
+  return secp256k1.utils.randomPrivateKey()
 }
 
 /**
@@ -22,9 +22,8 @@ export function getPublicKeyBytes(
  * Generate a keypair
  */
 export async function generateKeypair(
-  privateKeyBytes?: Uint8Array
+  privateKeyBytes = generatePrivateKeyBytes()
 ): Promise<Keypair> {
-  privateKeyBytes ??= await generatePrivateKey()
   const publicKeyBytes = getPublicKeyBytes(privateKeyBytes, false)
 
   return Promise.resolve({

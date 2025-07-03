@@ -3,6 +3,7 @@ import {
   createDidPkhUri,
   createJwtSigner,
   generateKeypair,
+  generatePrivateKeyBytes,
   hexStringToBytes
 } from "agentcommercekit"
 import { privateKeyToAccount } from "viem/accounts"
@@ -56,7 +57,7 @@ export async function getKeypairInfo(
 /**
  * Generates a new private key, and returns it in hex string format.
  */
-export async function generatePrivateKeyHex() {
-  const { privateKey } = await generateKeypair("secp256k1")
+export function generatePrivateKeyHex() {
+  const privateKey = generatePrivateKeyBytes("secp256k1")
   return `0x${bytesToHexString(privateKey)}`
 }
