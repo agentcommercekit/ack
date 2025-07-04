@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
+import { A2AClient } from "@a2a-js/sdk"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
-import { A2AClient, Role } from "a2a-js"
 import {
   curveToJwtAlgorithm,
   getDidResolver,
@@ -14,13 +14,18 @@ import {
   verifyA2AHandshakeMessage
 } from "agentcommercekit/a2a"
 import { messageSchema } from "agentcommercekit/a2a/schemas/valibot"
-import { v4 as uuidV4 } from "uuid"
+import { v4 } from "uuid"
 import * as v from "valibot"
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { fetchUrlFromAgentCardUrl } from "./utils/fetch-agent-card"
+import {
+  isFailedTaskResponse,
+  isMessageResponse,
+  isRpcErrorResponse
+} from "./utils/response-parsers"
 import { startAgentServer } from "./utils/server-utils"
-import type { AgentCard, Message } from "a2a-js"
+import type { AgentCard, Message, TextPart } from "@a2a-js/sdk"
 import type { DidUri } from "agentcommercekit"
 import type { Server } from "node:http"
 
@@ -95,8 +100,7 @@ export class BankClientAgent extends Agent {
 
     // Step 2: Create A2A client using the discovered service endpoint
     const client = new A2AClient(this.a2aServerUrl)
-
-    logger.log("🏦 Bank Client: Hello, I need to access my banking services.")
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
     console.log(
       colors.yellow(
@@ -116,22 +120,31 @@ export class BankClientAgent extends Agent {
     // Try to access banking services without authentication first
     try {
       const unauthenticatedMessage: Message = {
-        role: Role.User,
+        kind: "message",
+        messageId: v4(),
+        role: "user",
         parts: [
           {
-            type: "text",
+            kind: "text",
             text: "I would like to check my account balance please."
           }
         ]
       }
 
       const unauthenticatedParams = {
-        id: uuidV4(),
+        id: v4(),
         message: unauthenticatedMessage
       }
 
       logger.log("🚨 Sending unauthenticated request to bank...")
-      const unauthResponse = await client.sendTask(unauthenticatedParams)
+      const unauthResponse = await client.sendMessage(unauthenticatedParams)
+
+      if (
+        isRpcErrorResponse(unauthResponse) ||
+        isFailedTaskResponse(unauthResponse)
+      ) {
+        throw new Error("Bank rejected unauthenticated request")
+      }
 
       // This should not happen, but just in case
       logger.log("⚠️ Unexpected success:", JSON.stringify(unauthResponse))
@@ -201,10 +214,12 @@ export class BankClientAgent extends Agent {
       // Step 4: Send signed message for banking services
       const { message } = await createSignedA2AMessage(
         {
-          role: Role.User,
+          kind: "message",
+          messageId: v4(),
+          role: "user",
           parts: [
             {
-              type: "text",
+              kind: "text",
               text: "I would like to access my banking services. Please verify my identity."
             }
           ]
@@ -217,13 +232,20 @@ export class BankClientAgent extends Agent {
         }
       )
 
-      const response = await client.sendTask({
-        id: uuidV4(),
+      const response = await client.sendMessage({
         message
       })
 
+      if (isRpcErrorResponse(response)) {
+        throw new Error("❌ Failed to send message")
+      }
+
+      if (!isMessageResponse(response)) {
+        throw new Error("❌ Failed to send message")
+      }
+
       // Validate response using Valibot
-      const parseResult = v.safeParse(messageSchema, response)
+      const parseResult = v.safeParse(messageSchema, response.result)
       if (!parseResult.success) {
         logger.log(
           "❌ Invalid bank response format:",
@@ -234,9 +256,7 @@ export class BankClientAgent extends Agent {
 
       const { parts } = parseResult.output
       const bankResponse = parts
-        .filter(
-          (part): part is { type: "text"; text: string } => part.type === "text"
-        )
+        .filter((part): part is TextPart => part.kind === "text")
         .map((part) => part.text)
         .join("")
 
@@ -273,7 +293,6 @@ export class BankClientAgent extends Agent {
       // Cleanup server
       if (this.server) {
         this.server.close()
-        logger.log("🏦 Bank Client: Server stopped")
       }
     }
   }
@@ -286,7 +305,7 @@ export class BankClientAgent extends Agent {
       logger.log("🔐 Starting identity verification with bank teller...")
 
       const { nonce, message } = await createA2AHandshakeMessage(
-        Role.User,
+        "user",
         {
           recipient: serverDid,
           vc: this.vc
@@ -299,17 +318,27 @@ export class BankClientAgent extends Agent {
         }
       )
 
-      const identityParams = {
-        id: uuidV4(),
+      logger.log(
+        "Sending identity verification challenge...\n",
+        colors.dim(JSON.stringify(message, null, 2))
+      )
+      const authResponse = await client.sendMessage({
         message
+      })
+
+      if ("error" in authResponse) {
+        throw new Error("❌ Failed to send identity verification challenge")
       }
 
-      logger.log("🔐 Sending identity verification challenge...")
-      const authResponse = await client.sendTask(identityParams)
+      if (authResponse.result.kind !== "message") {
+        throw new Error(
+          "❌ Failed to send identity verification challenge: Did not receive message response"
+        )
+      }
 
       // Step 3: Verify bank teller response
       const { nonce: bankNonce, vc: bankVc } = await verifyA2AHandshakeMessage(
-        authResponse,
+        authResponse.result,
         {
           // Validate that this is intended for our DID
           did: this.did,
@@ -359,7 +388,10 @@ export class BankClientAgent extends Agent {
 
       logger.log("✅ Bank teller DID document resolved successfully")
       logger.log("   DID Document ID:", colors.dim(didDocument.id))
-      logger.log("   Services:", didDocument.service?.length ?? 0)
+      logger.log(
+        "   Services:",
+        colors.dim(JSON.stringify(didDocument.service, null, 2))
+      )
 
       // Look for AgentCard service in the DID document
       if (didDocument.service && didDocument.service.length > 0) {

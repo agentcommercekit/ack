@@ -10,7 +10,6 @@
  */
 
 import { colors } from "@repo/cli-tools"
-import { Role } from "a2a-js"
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
@@ -18,19 +17,15 @@ import {
   generateKeypair
 } from "agentcommercekit"
 import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
+import { v4 } from "uuid"
 import { issueCredential } from "./issuer"
 import type {
   AgentCard,
   AgentExecutor,
-  CancelTaskRequest,
-  CancelTaskResponse,
+  ExecutionEventBus,
   Message,
-  SendMessageRequest,
-  SendMessageResponse,
-  SendMessageStreamingRequest,
-  SendMessageStreamingResponse,
-  TaskResubscriptionRequest
-} from "a2a-js"
+  RequestContext
+} from "@a2a-js/sdk"
 import type {
   DidDocument,
   DidUri,
@@ -98,37 +93,30 @@ export abstract class Agent implements AgentExecutor {
     return new this(agentCard, keypair, did, jwtSigner, didDocument, vc)
   }
 
-  async onMessageSend(
-    request: SendMessageRequest
-  ): Promise<SendMessageResponse> {
-    const response: Message = {
-      role: Role.Agent,
-      parts: [{ type: "text", text: "Message received and processed" }]
+  async execute(
+    requestContext: RequestContext,
+    eventBus: ExecutionEventBus
+  ): Promise<void> {
+    const message: Message = {
+      kind: "message",
+      messageId: v4(),
+      role: "agent",
+      parts: [
+        {
+          kind: "text",
+          text: `User message ${requestContext.userMessage.messageId} received and processed`
+        }
+      ]
     }
 
-    return {
-      jsonrpc: "2.0",
-      id: request.id,
-      result: response
-    }
+    eventBus.publish(message)
   }
 
-  async onCancel(request: CancelTaskRequest): Promise<CancelTaskResponse> {
-    return {
-      jsonrpc: "2.0",
-      id: request.id,
-      error: { code: -32601, message: "Operation not supported" }
-    }
-  }
-
-  onMessageStream(
-    _request: SendMessageStreamingRequest
-  ): AsyncGenerator<SendMessageStreamingResponse, void, unknown> {
-    throw new Error("Method not implemented.")
-  }
-  onResubscribe(
-    _request: TaskResubscriptionRequest
-  ): AsyncGenerator<SendMessageStreamingResponse, void, unknown> {
-    throw new Error("Method not implemented.")
+  async cancelTask(
+    _taskId: string,
+    _eventBus: ExecutionEventBus
+  ): Promise<void> {
+    // Task canceled
+    return Promise.resolve()
   }
 }

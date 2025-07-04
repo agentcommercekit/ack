@@ -1,8 +1,12 @@
+import {
+  A2AExpressApp,
+  DefaultRequestHandler,
+  InMemoryTaskStore
+} from "@a2a-js/sdk"
 import { colors, createLogger } from "@repo/cli-tools"
-import { A2AServer, DefaultA2ARequestHandler } from "a2a-js"
+import express from "express"
 import type { Agent } from "../agent"
 import type { Logger } from "@repo/cli-tools"
-import type { Application } from "express"
 
 type Options = {
   logger?: Logger
@@ -31,11 +35,16 @@ export function startAgentServer(
 
   // Create A2A server with the original AgentCard
   // The DID is now the top-level identifier, referenced in the DID document services
-  const requestHandler = new DefaultA2ARequestHandler(agent)
-  const server = new A2AServer(agent.agentCard, requestHandler)
+  const requestHandler = new DefaultRequestHandler(
+    agent.agentCard,
+    new InMemoryTaskStore(),
+    agent
+  )
+  const appBuilder = new A2AExpressApp(requestHandler)
 
   // Get the Express app and store it to ensure we use the same instance
-  const app = server.app() as Application
+  const app = appBuilder.setupRoutes(express(), "")
+
   // Add DID document endpoint for did:web resolution
   app.get("/.well-known/did.json", (req, res) => {
     logger.log("🔍 Request for DID document:", colors.dim(req.url.toString()))
