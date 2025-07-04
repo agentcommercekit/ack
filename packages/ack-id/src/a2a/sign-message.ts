@@ -1,5 +1,7 @@
 import { createJwt } from "@agentcommercekit/jwt"
+import { v4 } from "uuid"
 import { generateRandomJti, generateRandomNonce } from "./random"
+import type { Message } from "@a2a-js/sdk"
 import type { DidUri } from "@agentcommercekit/did"
 import type {
   JwtAlgorithm,
@@ -8,7 +10,6 @@ import type {
   JwtString
 } from "@agentcommercekit/jwt"
 import type { W3CCredential } from "@agentcommercekit/vc"
-import type { Message, Role } from "a2a-js"
 
 type SignMessageOptions = {
   did: DidUri
@@ -88,14 +89,16 @@ export function createA2AHandshakePayload(params: A2AHandshakeParams) {
 }
 
 export function createA2AHandshakeMessageFromJwt(
-  role: Role,
+  role: "agent" | "user",
   jwt: string
 ): Message {
   return {
+    kind: "message" as const,
+    messageId: v4(),
     role,
     parts: [
       {
-        type: "data" as const,
+        kind: "data" as const,
         data: {
           jwt
         }
@@ -110,22 +113,24 @@ export function createA2AHandshakeMessageFromJwt(
  * @returns An object containing signed A2A handshake message, as well as the newly generated nonce
  */
 export async function createA2AHandshakeMessage(
-  role: Role,
+  role: "agent" | "user",
   params: A2AHandshakeParams,
   signOptions: SignMessageOptions
-): Promise<A2AHandshakeMessage> {
+) {
   const payload = createA2AHandshakePayload(params)
 
   const { jwt, jti } = await createMessageSignature(payload, signOptions)
 
   const message = createA2AHandshakeMessageFromJwt(role, jwt)
 
-  return {
+  const a2aHandshakeMessage: A2AHandshakeMessage = {
     sig: jwt,
     jti,
     nonce: payload.nonce,
     message
   }
+
+  return a2aHandshakeMessage
 }
 
 async function createMessageSignature(

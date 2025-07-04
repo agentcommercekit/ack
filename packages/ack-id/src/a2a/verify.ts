@@ -5,9 +5,9 @@ import { credentialSchema } from "@agentcommercekit/vc/schemas/valibot"
 import { stringify } from "safe-stable-stringify"
 import * as v from "valibot"
 import { dataPartSchema, messageSchema } from "./schemas/valibot"
+import type { Message } from "@a2a-js/sdk"
 import type { DidResolver, DidUri } from "@agentcommercekit/did"
 import type { JwtVerified } from "@agentcommercekit/jwt"
-import type { Message, Task } from "a2a-js"
 
 const jwtDataPartSchema = v.object({
   ...dataPartSchema.entries,
@@ -41,7 +41,7 @@ type VerifyA2AHandshakeOptions = {
 }
 
 export async function verifyA2AHandshakeMessage(
-  message: Message | Task | null,
+  message: Message | null,
   { did, counterparty, resolver = getDidResolver() }: VerifyA2AHandshakeOptions
 ): Promise<v.InferOutput<typeof handshakePayloadSchema>> {
   // Ensure the message is a valid A2A handshake message
@@ -62,10 +62,11 @@ export async function verifyA2ASignedMessage(
   { did, counterparty, resolver = getDidResolver() }: VerifyA2AHandshakeOptions
 ): Promise<JwtVerified> {
   // Ensure the message is a valid A2A signed message
-  const { metadata, ...parsedMessage } = v.parse(
-    messageWithSignatureSchema,
-    message
-  )
+  const {
+    metadata,
+    contextId: _contextId,
+    ...parsedMessage
+  } = v.parse(messageWithSignatureSchema, message)
 
   // Parse the signature from the message metadata, ensuring it is
   // signed by the counterparty and intended for the provided DID

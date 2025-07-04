@@ -1,5 +1,5 @@
+import { A2AError } from "@a2a-js/sdk"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
-import { Role } from "a2a-js"
 import {
   curveToJwtAlgorithm,
   isDidUri,
@@ -10,80 +10,83 @@ import {
   verifyA2AHandshakeMessage,
   verifyA2ASignedMessage
 } from "agentcommercekit/a2a"
+import { v4 } from "uuid"
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { startAgentServer } from "./utils/server-utils"
 import type {
   AgentCard,
+  ExecutionEventBus,
   Message,
-  SendMessageRequest,
-  SendMessageResponse
-} from "a2a-js"
+  RequestContext
+} from "@a2a-js/sdk"
 
 const logger = createLogger("Bank Teller", colors.blue)
 
 class BankTellerAgent extends Agent {
   private authenticatedClients = new Set<string>()
 
-  async onMessageSend(
-    request: SendMessageRequest
-  ): Promise<SendMessageResponse> {
+  async execute(
+    requestContext: RequestContext,
+    eventBus: ExecutionEventBus
+  ): Promise<void> {
+    // Access message from request params
+    const userMessage = requestContext.userMessage
+    const taskId = requestContext.taskId
+    // Check if this is an authentication request
+    if (this.isAuthRequest(userMessage)) {
+      logger.log("🔐 Received authentication request")
+      const message = await this.handleAuthentication(requestContext)
+      eventBus.publish(message)
+      return
+    }
+
     try {
-      // Access message from request params
-      const requestMessage = request.params.message
-
-      // Check if this is an authentication request
-      if (this.isAuthRequest(requestMessage)) {
-        return await this.handleAuthentication(request)
-      }
-
-      const { issuer: clientDid } = await verifyA2ASignedMessage(
-        requestMessage,
-        {
-          did: this.did
-        }
+      logger.log(
+        "🔐 Verifying authentication request\n",
+        colors.dim(JSON.stringify(userMessage, null, 2))
       )
+
+      const { issuer: clientDid } = await verifyA2ASignedMessage(userMessage, {
+        did: this.did
+      })
 
       if (!isDidUri(clientDid)) {
         throw new Error("Invalid issuer")
       }
 
       if (!this.authenticatedClients.has(clientDid)) {
-        return {
-          jsonrpc: "2.0",
-          id: request.id,
-          error: { code: -32001, message: "Authentication required" }
-        }
+        throw new A2AError(-32001, "Authentication required", {}, taskId)
       }
 
       // Proceed with banking service response
-
-      const result = `Verified ${clientDid}.  You can now access your account.`
       const message: Message = {
-        role: Role.Agent,
-        parts: [{ type: "text", text: result }]
+        kind: "message",
+        messageId: v4(),
+        role: "agent",
+        parts: [
+          {
+            kind: "text",
+            text: `Verified ${clientDid}.  You can now access your account.`
+          }
+        ]
       }
-      return {
-        jsonrpc: "2.0",
-        id: request.id,
-        result: message
-      }
+
+      eventBus.publish(message)
     } catch (_error: unknown) {
-      return {
-        jsonrpc: "2.0",
-        id: request.id,
-        error: { code: -32603, message: "Internal error" }
-      }
+      throw new A2AError(-32001, "Authentication required", {}, taskId)
     }
   }
 
   private isAuthRequest(message: Message): boolean {
-    return message.parts.some((part) => "data" in part && "jwt" in part.data)
+    return message.parts.some(
+      (part) => part.kind === "data" && "jwt" in part.data
+    )
   }
 
   private async handleAuthentication(
-    request: SendMessageRequest
-  ): Promise<SendMessageResponse> {
+    requestContext: RequestContext
+  ): Promise<Message> {
     try {
       console.log("")
       console.log(
@@ -102,31 +105,11 @@ class BankTellerAgent extends Agent {
 
       logger.log("🔐 Processing customer identity verification request...")
 
-      console.log(
-        colors.yellow(
-          "🔍 VERIFICATION PROCESS: Resolving customer's DID document"
-        )
-      )
-      console.log(
-        colors.yellow(
-          "   Bank extracts customer DID from JWT and resolves their public keys"
-        )
-      )
-      console.log(
-        colors.yellow(
-          "   Cryptographically verifies JWT signature against customer's public key"
-        )
-      )
-      console.log("")
-      await waitForEnter(
-        "Press Enter to verify customer's cryptographic proof..."
-      )
-
       const {
         nonce: clientNonce,
         iss: clientDid,
         vc: clientVc
-      } = await verifyA2AHandshakeMessage(request.params.message, {
+      } = await verifyA2AHandshakeMessage(requestContext.userMessage, {
         did: this.did
       })
 
@@ -151,7 +134,7 @@ class BankTellerAgent extends Agent {
       logger.log("✅ Customer identity verified:", colors.dim(clientDid))
 
       const { message } = await createA2AHandshakeMessage(
-        Role.Agent,
+        "agent",
         {
           recipient: clientDid,
           requestNonce: clientNonce,
@@ -193,18 +176,17 @@ class BankTellerAgent extends Agent {
         colors.dim(clientDid)
       )
 
-      return {
-        jsonrpc: "2.0",
-        id: request.id,
-        result: message
-      }
+      logger.log(colors.dim(JSON.stringify(message, null, 2)))
+
+      return message
     } catch (error) {
       logger.log("❌ Identity verification error:", error as Error)
-      return {
-        jsonrpc: "2.0",
-        id: request.id,
-        error: { code: -32603, message: "Identity verification failed" }
-      }
+      throw new A2AError(
+        -32603,
+        "Identity verification failed",
+        {},
+        requestContext.taskId
+      )
     }
   }
 }
@@ -231,10 +213,7 @@ const agentCard: AgentCard = {
         "access my account"
       ]
     }
-  ],
-  authentication: {
-    schemes: ["public"]
-  }
+  ]
 }
 
 export async function startTellerServer() {
