@@ -123,14 +123,12 @@ export async function createA2AHandshakeMessage(
 
   const message = createA2AHandshakeMessageFromJwt(role, jwt)
 
-  const a2aHandshakeMessage: A2AHandshakeMessage = {
+  return {
     sig: jwt,
     jti,
     nonce: payload.nonce,
     message
   }
-
-  return a2aHandshakeMessage
 }
 
 async function createMessageSignature(
