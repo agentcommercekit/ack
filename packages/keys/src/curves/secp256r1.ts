@@ -32,3 +32,22 @@ export async function generateKeypair(
     curve: "secp256r1"
   })
 }
+
+/**
+ * Check if a public key is a valid secp256k1 public key (either compressed or
+ * uncompressed)
+ * @param pubkey - The public key bytes to check
+ * @returns true if the public key is valid, false otherwise
+ */
+export function isValidPublicKey(pubkey: Uint8Array): boolean {
+  if (![33, 65].includes(pubkey.length)) {
+    return false
+  }
+
+  try {
+    secp256r1.ProjectivePoint.fromHex(pubkey)
+    return true
+  } catch {
+    return false
+  }
+}

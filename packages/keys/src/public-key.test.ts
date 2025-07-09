@@ -2,16 +2,36 @@ import { describe, expect, test } from "vitest"
 import { isBase58 } from "./encoding/base58"
 import { base64urlToBytes, isBase64url } from "./encoding/base64"
 import { isHexString } from "./encoding/hex"
-import { isPublicKeyJwkEd25519, isPublicKeyJwkSecp256k1 } from "./encoding/jwk"
+import {
+  isPublicKeyJwkEd25519,
+  isPublicKeyJwkSecp256k1,
+  isPublicKeyJwkSecp256r1
+} from "./encoding/jwk"
 import { isMultibase } from "./encoding/multibase"
+import { keyCurves } from "./key-curves"
 import { generateKeypair } from "./keypair"
-import { encodePublicKeyFromKeypair, publicKeyEncodings } from "./public-key"
+import {
+  encodePublicKeyFromKeypair,
+  isValidPublicKey,
+  publicKeyEncodings
+} from "./public-key"
 
-const keyCurves = ["secp256k1", "Ed25519"] as const
-
-describe("public key encoding", () => {
+describe("public-key methods", () => {
   describe.each(keyCurves)("curve: %s", (curve) => {
-    describe.each(publicKeyEncodings)("format: %s", (format) => {
+    describe("isValidPublicKey()", () => {
+      test("validates public keys correctly", async () => {
+        const keypair = await generateKeypair(curve)
+        expect(isValidPublicKey(keypair.publicKey, curve)).toBe(true)
+
+        const tooShort = keypair.publicKey.slice(
+          0,
+          keypair.publicKey.length - 1
+        )
+        expect(isValidPublicKey(tooShort, curve)).toBe(false)
+      })
+    })
+
+    describe.each(publicKeyEncodings)("encoding: %s", (format) => {
       test("encodes public key correctly", async () => {
         const keypair = await generateKeypair(curve)
         const publicKey = encodePublicKeyFromKeypair(format, keypair)
@@ -22,14 +42,19 @@ describe("public key encoding", () => {
             expect(isHexString(publicKeyValue)).toBe(true)
             break
           case "jwk":
-            if (curve === "secp256k1") {
-              if (!isPublicKeyJwkSecp256k1(publicKeyValue)) {
-                throw new Error("Invalid JWK")
+            if (curve === "secp256k1" || curve === "secp256r1") {
+              if (
+                !isPublicKeyJwkSecp256k1(publicKeyValue) &&
+                !isPublicKeyJwkSecp256r1(publicKeyValue)
+              ) {
+                throw new Error(
+                  `Invalid JWK: ${JSON.stringify(publicKeyValue)}`
+                )
               }
 
               expect(publicKeyValue).toEqual({
                 kty: "EC",
-                crv: "secp256k1",
+                crv: curve,
                 x: expect.any(String) as unknown,
                 y: expect.any(String) as unknown
               })
@@ -76,10 +101,10 @@ describe("public key encoding", () => {
       test("formats to JWK", async () => {
         const keypair = await generateKeypair(curve)
         const jwk = encodePublicKeyFromKeypair("jwk", keypair)
-        if (curve === "secp256k1") {
+        if (curve === "secp256k1" || curve === "secp256r1") {
           expect(jwk.value).toEqual({
             kty: "EC",
-            crv: "secp256k1",
+            crv: curve,
             x: expect.any(String) as unknown,
             y: expect.any(String) as unknown
           })

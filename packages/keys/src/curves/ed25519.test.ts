@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest"
-import { generateKeypair } from "./ed25519"
+import {
+  generateKeypair,
+  generatePrivateKeyBytes,
+  isValidPublicKey
+} from "./ed25519"
 import { base58ToBytes } from "../encoding/base58"
 
 describe("Ed25519", () => {
@@ -13,7 +17,7 @@ describe("Ed25519", () => {
       expect(keypair.curve).toBe("Ed25519")
     })
 
-    test("generates a unique `Keypair`s", async () => {
+    test("generates unique `Keypair`s", async () => {
       const keypair1 = await generateKeypair()
       const keypair2 = await generateKeypair()
 
@@ -22,23 +26,33 @@ describe("Ed25519", () => {
       expect(keypair1.curve).toBe("Ed25519")
       expect(keypair2.curve).toBe("Ed25519")
     })
+
+    test("generates keypair from valid private key", async () => {
+      // Using a Solana-like base58 private key
+      const privateKeyBase58 = "4dmKkXNHJmR1XNXbQwJhUT8Vo3PjU1GcJmZkQFRW3aqb"
+      const privateKeyBytes = base58ToBytes(privateKeyBase58)
+
+      const keypair = await generateKeypair(privateKeyBytes)
+
+      expect(keypair).toBeDefined()
+      expect(keypair.privateKey).toEqual(privateKeyBytes)
+      expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
+      expect(keypair.curve).toBe("Ed25519")
+    })
+
+    test("throws error for invalid private key format", async () => {
+      const invalidPrivateKey = new Uint8Array([1, 2, 3]) // Too short for Ed25519
+      await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow()
+    })
   })
 
-  test("generates keypair from valid private key", async () => {
-    // Using a Solana-like base58 private key
-    const privateKeyBase58 = "4dmKkXNHJmR1XNXbQwJhUT8Vo3PjU1GcJmZkQFRW3aqb"
-    const privateKeyBytes = base58ToBytes(privateKeyBase58)
+  describe("isValidPublicKey()", () => {
+    test("validates ed25519 public keys correctly", async () => {
+      const keypair = await generateKeypair()
+      expect(isValidPublicKey(keypair.publicKey)).toBe(true)
 
-    const keypair = await generateKeypair(privateKeyBytes)
-
-    expect(keypair).toBeDefined()
-    expect(keypair.privateKey).toEqual(privateKeyBytes)
-    expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(keypair.curve).toBe("Ed25519")
-  })
-
-  test("throws error for invalid private key format", async () => {
-    const invalidPrivateKey = new Uint8Array([1, 2, 3]) // Too short for Ed25519
-    await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow()
+      const invalid = keypair.publicKey.slice(0, keypair.publicKey.length - 1)
+      expect(isValidPublicKey(invalid)).toBe(false)
+    })
   })
 })

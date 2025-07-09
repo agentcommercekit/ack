@@ -29,3 +29,21 @@ export async function generateKeypair(
     curve: "Ed25519"
   })
 }
+
+/**
+ * Check if a public key is a valid ed25519 public key
+ * @param pubkey - The public key bytes to check
+ * @returns true if the public key is valid, false otherwise
+ */
+export function isValidPublicKey(pubkey: Uint8Array): boolean {
+  if (pubkey.length !== 32) {
+    return false
+  }
+
+  try {
+    ed25519.ExtendedPoint.fromHex(pubkey)
+    return true
+  } catch {
+    return false
+  }
+}

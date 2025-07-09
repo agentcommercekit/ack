@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest"
-import { generateKeypair } from "./secp256r1"
+import {
+  generateKeypair,
+  getPublicKeyBytes,
+  isValidPublicKey
+} from "./secp256r1"
 import { hexStringToBytes } from "../encoding/hex"
 
 describe("secp256r1", () => {
@@ -22,23 +26,36 @@ describe("secp256r1", () => {
       expect(keypair1.curve).toBe("secp256r1")
       expect(keypair2.curve).toBe("secp256r1")
     })
+
+    test("generates a Keypair from valid private key", async () => {
+      const privateKeyBytes = hexStringToBytes(
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      )
+
+      const keypair = await generateKeypair(privateKeyBytes)
+
+      expect(keypair).toBeDefined()
+      expect(keypair.privateKey).toEqual(privateKeyBytes)
+      expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
+      expect(keypair.curve).toBe("secp256r1")
+    })
+
+    test("throws an error for invalid private key format", async () => {
+      const invalidPrivateKey = new Uint8Array([1, 2, 3]) // Too short for secp256r1
+      await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow()
+    })
   })
 
-  test("generates a Keypair from valid private key", async () => {
-    const privateKeyBytes = hexStringToBytes(
-      "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
-    )
+  describe("isValidPublicKey()", () => {
+    test("validates secp256r1 public keys correctly", async () => {
+      const keypair = await generateKeypair()
+      expect(isValidPublicKey(keypair.publicKey)).toBe(true)
 
-    const keypair = await generateKeypair(privateKeyBytes)
+      const compressed = getPublicKeyBytes(keypair.privateKey, true)
+      expect(isValidPublicKey(compressed)).toBe(true)
 
-    expect(keypair).toBeDefined()
-    expect(keypair.privateKey).toEqual(privateKeyBytes)
-    expect(keypair.publicKey).toBeInstanceOf(Uint8Array)
-    expect(keypair.curve).toBe("secp256r1")
-  })
-
-  test("throws an error for invalid private key format", async () => {
-    const invalidPrivateKey = new Uint8Array([1, 2, 3]) // Too short for secp256r1
-    await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow()
+      const invalid = keypair.publicKey.slice(0, keypair.publicKey.length - 1)
+      expect(isValidPublicKey(invalid)).toBe(false)
+    })
   })
 })

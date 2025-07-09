@@ -1,6 +1,6 @@
-import { getPublicKeyBytes as getEd25519PublicKeyBytes } from "./curves/ed25519"
-import { getPublicKeyBytes as getSecp256k1PublicKeyBytes } from "./curves/secp256k1"
-import { getPublicKeyBytes as getSecp256r1PublicKeyBytes } from "./curves/secp256r1"
+import * as ed25519 from "./curves/ed25519"
+import * as secp256k1 from "./curves/secp256k1"
+import * as secp256r1 from "./curves/secp256r1"
 import { bytesToBase58 } from "./encoding/base58"
 import { bytesToHexString } from "./encoding/hex"
 import { publicKeyBytesToJwk } from "./encoding/jwk"
@@ -46,14 +46,14 @@ export function getPublicKeyFromPrivateKey(
   compressed = false
 ): Uint8Array {
   if (curve === "secp256k1") {
-    return getSecp256k1PublicKeyBytes(privateKey, compressed)
+    return secp256k1.getPublicKeyBytes(privateKey, compressed)
   }
 
   if (curve === "secp256r1") {
-    return getSecp256r1PublicKeyBytes(privateKey, compressed)
+    return secp256r1.getPublicKeyBytes(privateKey, compressed)
   }
 
-  return getEd25519PublicKeyBytes(privateKey)
+  return ed25519.getPublicKeyBytes(privateKey)
 }
 
 /**
@@ -61,6 +61,24 @@ export function getPublicKeyFromPrivateKey(
  */
 export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
   return getPublicKeyFromPrivateKey(keypair.privateKey, keypair.curve, true)
+}
+
+/**
+ * Check if a public key is valid for a given curve
+ */
+export function isValidPublicKey(
+  publicKey: Uint8Array,
+  curve: KeyCurve
+): boolean {
+  if (curve === "secp256k1") {
+    return secp256k1.isValidPublicKey(publicKey)
+  }
+
+  if (curve === "secp256r1") {
+    return secp256r1.isValidPublicKey(publicKey)
+  }
+
+  return ed25519.isValidPublicKey(publicKey)
 }
 
 /**
