@@ -1,19 +1,19 @@
-import type { statusList2021ClaimSchema } from "../schemas/valibot"
+import type { bitstringStatusListCredentialSchema } from "../schemas/valibot"
 import type { W3CCredential } from "../types"
 import type * as v from "valibot"
 
-type StatusList2021Entry = {
+type BitstringStatusListEntry = {
   id: string
-  type: "StatusList2021Entry"
+  type: "BitstringStatusListEntry"
   statusPurpose: string
   statusListIndex: string
   statusListCredential: string
 }
 
-export type StatusList2021Credential = W3CCredential & {
-  credentialSubject: v.InferOutput<typeof statusList2021ClaimSchema>
+export type BitstringStatusListCredential = W3CCredential & {
+  credentialSubject: v.InferOutput<typeof bitstringStatusListCredentialSchema>
 }
 
 export type Revocable<T extends W3CCredential> = T & {
-  credentialStatus: StatusList2021Entry
+  credentialStatus: BitstringStatusListEntry
 }

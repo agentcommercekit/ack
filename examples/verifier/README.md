@@ -5,7 +5,9 @@ This example showcases a **Credential Verifier** for [ACK-ID](https://www.agentc
 - `ControllerCredential`: ACK-ID credentials that prove DID ownership hierarchies.
 - `PaymentReceiptCredential`: ACK-Pay credentials that provide proof of payment that satisfies a given Payment Request.
 
-This verifier uses [StatusList2021](https://www.w3.org/community/reports/credentials/CG-FINAL-vc-status-list-2021-20230102/), to check if a credential is revoked.# Installation
+This verifier uses [Bitstring Status List](https://www.w3.org/TR/vc-bitstring-status-list/), to check if a credential is revoked.
+
+# Installation
 
 ## Getting Started
 
@@ -98,7 +100,7 @@ curl --request POST \
       },
       "credentialStatus": {
         "id": "http://localhost:3456/status/0#0",
-        "type": "StatusList2021Entry",
+        "type": "BitstringStatusListEntry",
         "statusPurpose": "revocation",
         "statusListIndex": "0",
         "statusListCredential": "http://localhost:3456/status/0"

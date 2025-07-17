@@ -36,9 +36,9 @@ export const jwtProofSchema = v.object({
   jwt: v.string()
 })
 
-export const statusList2021ClaimSchema = v.object({
+export const bitstringStatusListCredentialSchema = v.object({
   id: v.string(),
-  type: v.literal("StatusList2021"),
+  type: v.literal("BitstringStatusList"),
   statusPurpose: v.string(),
   encodedList: v.string()
 })

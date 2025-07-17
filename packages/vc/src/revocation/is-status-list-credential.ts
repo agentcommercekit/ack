@@ -1,13 +1,15 @@
 import * as v from "valibot"
 import { isCredential } from "../is-credential"
-import { statusList2021ClaimSchema } from "../schemas/valibot"
-import type { StatusList2021Credential } from "./types"
+import { bitstringStatusListCredentialSchema } from "../schemas/valibot"
+import type { BitstringStatusListCredential } from "./types"
 import type { CredentialSubject } from "../types"
 
-function isStatusList2021Claim(
+function isStatusListClaim(
   credentialSubject: CredentialSubject
-): credentialSubject is v.InferOutput<typeof statusList2021ClaimSchema> {
-  return v.is(statusList2021ClaimSchema, credentialSubject)
+): credentialSubject is v.InferOutput<
+  typeof bitstringStatusListCredentialSchema
+> {
+  return v.is(bitstringStatusListCredentialSchema, credentialSubject)
 }
 
 /**
@@ -18,9 +20,9 @@ function isStatusList2021Claim(
  */
 export function isStatusListCredential(
   credential: unknown
-): credential is StatusList2021Credential {
+): credential is BitstringStatusListCredential {
   if (!isCredential(credential)) {
     return false
   }
-  return isStatusList2021Claim(credential.credentialSubject)
+  return isStatusListClaim(credential.credentialSubject)
 }

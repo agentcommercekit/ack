@@ -1,6 +1,9 @@
 import { BitBuffer } from "bit-buffers"
 import { isStatusListCredential } from "../revocation/is-status-list-credential"
-import type { Revocable, StatusList2021Credential } from "../revocation/types"
+import type {
+  BitstringStatusListCredential,
+  Revocable
+} from "../revocation/types"
 import type { W3CCredential } from "../types"
 
 /**
@@ -21,7 +24,7 @@ export function isRevocable<T extends W3CCredential>(
 
 async function fetchStatusList(
   credential: Revocable<W3CCredential>
-): Promise<StatusList2021Credential | undefined> {
+): Promise<BitstringStatusListCredential | undefined> {
   const statusListUrl = credential.credentialStatus.statusListCredential
 
   try {

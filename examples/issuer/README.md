@@ -7,7 +7,7 @@ The API allows for the issuance, verification, and revocation of the following c
 - `ControllerCredential`: ACK-ID credentials that prove DID ownership hierarchies.
 - `PaymentReceiptCredential`: ACK-Pay credentials that provide proof of payment that satisfies a given Payment Request.
 
-This issuer supports credential revocation using [StatusList2021](https://www.w3.org/community/reports/credentials/CG-FINAL-vc-status-list-2021-20230102/), which is a privacy-preserving, space-efficient mechanism for maintaining a credential revocation list.
+This issuer supports credential revocation using [Bitstring Status List](https://www.w3.org/TR/vc-bitstring-status-list/), which is a privacy-preserving, space-efficient mechanism for maintaining a credential revocation list.
 
 ## Getting Started
 
@@ -269,7 +269,7 @@ curl --request DELETE \
 
 #### GET /status/:listId
 
-Retrieve a StatusList2021 credential for checking revocation status
+Retrieve a Bitstring Status List credential for checking revocation status
 
 **Response Body**
 

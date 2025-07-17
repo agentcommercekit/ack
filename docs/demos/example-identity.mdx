@@ -12,7 +12,7 @@ The API supports issuing, verifying, and revoking two primary credential types:
 - **`ControllerCredential`**: proves ownership of DIDs (part of ACK-ID).
 - **`PaymentReceiptCredential`**: provides proof of payment meeting a Payment Request (part of ACK-Pay).
 
-The issuer implements credential revocation using [StatusList2021](https://www.w3.org/community/reports/credentials/CG-FINAL-vc-status-list-2021-20230102/), a privacy-preserving and efficient revocation list method.
+The issuer implements credential revocation using [Bitstring Status List](https://www.w3.org/TR/vc-bitstring-status-list/), a privacy-preserving and efficient revocation list method.
 
 ## Installation and Setup
 
@@ -158,7 +158,7 @@ curl --request DELETE \
 
 #### `GET /status/:listId`
 
-Retrieve StatusList2021 credential for revocation checks.
+Retrieve Bitstring Status List credential for revocation checks.
 
 **Sample cURL:**
 

@@ -1,5 +1,5 @@
 import { createCredential } from "../create-credential"
-import type { StatusList2021Credential } from "./types"
+import type { BitstringStatusListCredential } from "./types"
 
 type CreateStatusListCredentialParams = {
   /**
@@ -20,20 +20,20 @@ type CreateStatusListCredentialParams = {
  * Generates a status list credential.
  *
  * @param params - The {@link CreateStatusListCredentialParams} to use
- * @returns A {@link StatusList2021Credential}
+ * @returns A {@link BitstringStatusListCredential}
  */
 export function createStatusListCredential({
   url,
   encodedList,
   issuer
-}: CreateStatusListCredentialParams): StatusList2021Credential {
+}: CreateStatusListCredentialParams): BitstringStatusListCredential {
   return createCredential({
     id: url,
-    type: "StatusList2021Credential",
+    type: "BitstringStatusListCredential",
     issuer,
     subject: `${url}#list`,
     attestation: {
-      type: "StatusList2021",
+      type: "BitstringStatusList",
       statusPurpose: "revocation",
       encodedList
     }

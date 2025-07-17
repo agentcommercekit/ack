@@ -31,7 +31,7 @@ export function makeRevocable<T extends W3CCredential>(
     ...credential,
     credentialStatus: {
       id,
-      type: "StatusList2021Entry",
+      type: "BitstringStatusListEntry",
       statusPurpose: "revocation",
       statusListIndex: statusListIndex.toString(),
       statusListCredential: statusListUrl

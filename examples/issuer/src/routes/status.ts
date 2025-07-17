@@ -9,7 +9,10 @@ import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"
 import type { ApiResponse } from "@repo/api-utils/api-response"
-import type { StatusList2021Credential, Verifiable } from "agentcommercekit"
+import type {
+  BitstringStatusListCredential,
+  Verifiable
+} from "agentcommercekit"
 import type { Env } from "hono"
 
 const app = new Hono<Env>()
@@ -21,16 +24,18 @@ app.use("*", didResolver())
 /**
  * GET /status/:listId
  *
- * @description Retrieves a StatusList2021 credential for checking revocation status
+ * @description Retrieves a BitstringStatusListCredential for checking revocation status
  *
  * URL Parameters:
  * - listId: string - ID of the status list to retrieve
  *
- * @returns Signed StatusList2021 credential with compressed bit string
+ * @returns Signed BitstringStatusListCredential with compressed bit string
  */
 app.get(
   "/:listId",
-  async (c): Promise<ApiResponse<Verifiable<StatusList2021Credential>>> => {
+  async (
+    c
+  ): Promise<ApiResponse<Verifiable<BitstringStatusListCredential>>> => {
     const listId = c.req.param("listId")
     const db = c.get("db")
     const issuer = c.get("issuer")

@@ -24,7 +24,7 @@ describe("makeRevocable", () => {
 
     expect(revocableCredential.credentialStatus).toEqual({
       id: mockStatusListId,
-      type: "StatusList2021Entry",
+      type: "BitstringStatusListEntry",
       statusPurpose: "revocation",
       statusListIndex: mockStatusListIndex.toString(),
       statusListCredential: mockStatusListUrl
