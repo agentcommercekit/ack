@@ -7,8 +7,6 @@ This example showcases a **Credential Verifier** for [ACK-ID](https://www.agentc
 
 This verifier uses [Bitstring Status List](https://www.w3.org/TR/vc-bitstring-status-list/), to check if a credential is revoked.
 
-# Installation
-
 ## Getting Started
 
 ```sh

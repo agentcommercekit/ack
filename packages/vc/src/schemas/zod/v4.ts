@@ -36,7 +36,7 @@ export const jwtProofSchema = z.object({
   jwt: z.string()
 })
 
-export const bitstringStatusListCredentialSchema = z.object({
+export const bitstringStatusListClaimSchema = z.object({
   id: z.string(),
   type: z.literal("BitstringStatusList"),
   statusPurpose: z.string(),
