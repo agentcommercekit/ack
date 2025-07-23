@@ -12,6 +12,7 @@ export async function ensureNonZeroBalances(
   usdcAddress: `0x${string}`
 ) {
   // 2. Make sure the client wallet has been funded
+  console.log("ADDRESS: " + address)
   let balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
   let balanceEth = await getEthBalance(chain, address)
 
@@ -27,7 +28,7 @@ export async function ensureNonZeroBalances(
       "USDC: https://faucet.circle.com/"
     )
     console.log("Once funded, press enter to check balance again")
-    await waitForEnter()
+    // await waitForEnter()
     console.log("Attempting to fetch USDC balance...")
     balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
     console.log("USDC balance fetched:", balanceUsdc)
@@ -85,6 +86,8 @@ async function getErc20Balance(
       }
     ]
   })
+
+  console.log(balance)
 
   if (balance.status !== "success" || decimals.status !== "success") {
     throw new Error("Failed to fetch token data")

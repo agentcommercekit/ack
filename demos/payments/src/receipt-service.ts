@@ -1,12 +1,7 @@
-import { serve } from "@hono/node-server"
-import { logger } from "@repo/api-utils/middleware/logger"
-import {
-  colors,
-  errorMessage,
-  log,
-  logJson,
-  successMessage
-} from "@repo/cli-tools"
+import {serve} from "@hono/node-server"
+import {logger} from "@repo/api-utils/middleware/logger"
+
+import {colors, errorMessage, log, logJson, successMessage} from "@repo/cli-tools"
 import {
   createPaymentReceipt,
   getDidResolver,
@@ -15,24 +10,51 @@ import {
   verifyJwt,
   verifyPaymentToken
 } from "agentcommercekit"
-import { didPkhChainIdSchema } from "agentcommercekit/schemas/valibot"
-import { Hono } from "hono"
-import { env } from "hono/adapter"
-import { HTTPException } from "hono/http-exception"
+import type {paymentOptionSchema} from "agentcommercekit/schemas/valibot"
+import {didPkhChainIdSchema} from "agentcommercekit/schemas/valibot"
+import type {Context, Env} from "hono"
+import {Hono} from "hono"
+import {HTTPException} from "hono/http-exception"
 import * as v from "valibot"
-import { erc20Abi, isAddressEqual } from "viem"
-import { parseEventLogs } from "viem/utils"
-import { chainId, publicClient, usdcAddress } from "./constants"
-import { asAddress } from "./utils/as-address"
-import { getKeypairInfo } from "./utils/keypair-info"
-import type { paymentOptionSchema } from "agentcommercekit/schemas/valibot"
-import type { Env } from "hono"
+import {erc20Abi, isAddressEqual} from "viem"
+import {parseEventLogs} from "viem/utils"
+import {chainId, publicClient, usdcAddress} from "./constants"
+import {asAddress} from "./utils/as-address"
+import {getKeypairInfo} from "./utils/keypair-info"
+import {cors} from "hono/cors";
+import 'dotenv/config';
 
 const app = new Hono<Env>()
 app.use(logger())
+app.use('*', cors());
+
+type Env = {
+  Variables: {
+    SERVER_PRIVATE_KEY_HEX: string;
+    CLIENT_PRIVATE_KEY_HEX: string;
+    RECEIPT_SERVICE_PRIVATE_KEY_HEX: string;
+    PAYMENT_SERVICE_PRIVATE_KEY_HEX: string;
+  };
+};
+
+app.use('*', async (c, next) => {
+  c.env = {
+    ...c.env,
+    SERVER_PRIVATE_KEY_HEX: process.env.SERVER_PRIVATE_KEY_HEX!,
+    CLIENT_PRIVATE_KEY_HEX: process.env.CLIENT_PRIVATE_KEY_HEX!,
+    RECEIPT_SERVICE_PRIVATE_KEY_HEX: process.env.RECEIPT_SERVICE_PRIVATE_KEY_HEX!,
+    PAYMENT_SERVICE_PRIVATE_KEY_HEX: process.env.PAYMENT_SERVICE_PRIVATE_KEY_HEX!,
+  };
+  await next();
+});
+
+const env = (c: Context) => c.env;
+
+
 
 const bodySchema = v.object({
-  payload: v.string()
+  payload: v.string(),
+  smartWalletAddress: v.string()
 })
 
 const paymentDetailsSchema = v.object({
@@ -62,7 +84,7 @@ app.post("/", async (c) => {
   )
   const didResolver = getDidResolver()
 
-  const { payload } = v.parse(bodySchema, await c.req.json())
+  const { payload , smartWalletAddress } = v.parse(bodySchema, await c.req.json())
 
   log(colors.bold("\nReceipt Service: Processing payment proof"))
   log(colors.dim("Verifying JWT payload..."))
@@ -109,7 +131,7 @@ app.post("/", async (c) => {
   if (paymentOption.network === "stripe") {
     await verifyStripePayment(parsed.issuer, paymentDetails, paymentOption)
   } else if (paymentOption.network === chainId) {
-    await verifyOnChainPayment(parsed.issuer, paymentDetails, paymentOption)
+    await verifyOnChainPayment(parsed.issuer, paymentDetails, paymentOption, smartWalletAddress)
   } else {
     log(errorMessage("Invalid network"))
     throw new HTTPException(400, {
@@ -155,7 +177,8 @@ async function verifyStripePayment(
 async function verifyOnChainPayment(
   issuer: string,
   paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
-  paymentOption: v.InferOutput<typeof paymentOptionSchema>
+  paymentOption: v.InferOutput<typeof paymentOptionSchema>,
+  smartWalletAddress: string
 ) {
   if (paymentDetails.metadata.network !== chainId) {
     log(errorMessage("Invalid network"))
@@ -163,6 +186,8 @@ async function verifyOnChainPayment(
       message: "Invalid network"
     })
   }
+
+  log("Issuer: ", issuer)
 
   const senderAddress = asAddress(issuer)
   const txHash = paymentDetails.metadata.txHash as `0x${string}`
@@ -223,7 +248,9 @@ async function verifyOnChainPayment(
     })
   }
 
-  if (!isAddressEqual(transferEvent.args.from, senderAddress)) {
+  log(transferEvent.args.from, senderAddress)
+
+  if (!isAddressEqual(transferEvent.args.from, smartWalletAddress)) {
     log(errorMessage("Invalid sender address"))
     throw new HTTPException(400, {
       message: "Invalid sender address"

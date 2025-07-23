@@ -18,32 +18,84 @@ import {
   getDidResolver,
   isDidPkhUri,
   isJwtString,
-  parseJwtCredential
+  parseJwtCredential,
+  verifyPaymentToken
 } from "agentcommercekit"
-import { paymentRequestBodySchema } from "agentcommercekit/schemas/valibot"
-import * as v from "valibot"
-import { isAddress } from "viem"
+import { isAddress, getAddress, erc20Abi as viemErc20Abi, encodeFunctionData, Hex, createWalletClient, http, toHex } from "viem"
+import { signTypedData } from "viem/actions"
 import {
   SERVER_URL,
   chain,
   chainId,
   publicClient,
-  usdcAddress
+  usdcAddress,
+  X402_FACILITATOR_URL,
+  X402_FACILITATOR_SPENDER_ADDRESS
 } from "./constants"
 import { ensureNonZeroBalances } from "./utils/ensure-balances"
 import { ensurePrivateKey } from "./utils/ensure-private-keys"
 import { getKeypairInfo } from "./utils/keypair-info"
-import { transferUsdc } from "./utils/usdc-contract"
 import type { KeypairInfo } from "./utils/keypair-info"
 import type {
   JwtString,
   PaymentReceiptCredential,
-  PaymentRequest,
   Verifiable
 } from "agentcommercekit"
 import "./server"
 import "./receipt-service"
 import "./payment-service"
+import { randomBytes } from "crypto"
+
+// Define constants for payment option IDs
+const LOGISTICS_PAYMENT_OPTION_ID = "usdc-logistics-check-v1"
+const WARRANTY_PAYMENT_OPTION_ID = "usdc-warranty-check-v1"
+const PURCHASE_PAYMENT_OPTION_ID = "stripe-watch-purchase-v1"
+
+// Initialize variables for receipts with empty strings
+let logisticsReceipt: string = ""
+let warrantyReceipt: string = ""
+let purchaseReceipt: string = ""
+
+// Helper to convert network format
+// Ideally, this mapping should be imported or derived from the x402 package if possible,
+// but for now, we'll define it based on the observed schema.
+const chainIdToX402Network = (caip2Id: string): "base-sepolia" | "base" | "avalanche-fuji" | "avalanche" | undefined => {
+  const numericId = parseInt(caip2Id.split(":")[1], 10);
+  const mapping: Record<number, "base-sepolia" | "base" | "avalanche-fuji" | "avalanche"> = {
+    84532: "base-sepolia",
+    8453: "base",
+    43113: "avalanche-fuji",
+    43114: "avalanche"
+  };
+  return mapping[numericId];
+};
+
+// Define an ABI that includes the 'nonces' function for EIP-2612 permit
+const usdcPermitAbi = [
+  ...viemErc20Abi, // Includes standard ERC20 functions like name, symbol, decimals, balanceOf, etc.
+  {
+    inputs: [{ name: "owner", type: "address", internalType: "address" }],
+    name: "nonces",
+    outputs: [{ name: "", type: "uint256", internalType: "uint256" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "name", // Or "NAME" if that's what your USDC contract uses for permit domain
+    outputs: [{ name: "", type: "string", internalType: "string" }],
+    stateMutability: "view",
+    type: "function"
+  },
+  // Add 'version' if your USDC contract exposes it via a view function for the domain separator
+  // {
+  //   inputs: [],
+  //   name: "version", // Or "VERSION"
+  //   outputs: [{ name: "", type: "string", internalType: "string" }],
+  //   stateMutability: "view",
+  //   type: "function"
+  // }
+] as const;
 
 /**
  * Example showcasing payments using the ACK-Pay protocol.
@@ -52,16 +104,16 @@ async function main() {
   console.clear()
   log(demoHeader("ACK-Pay"), { wrap: false })
   log(
-    colors.bold(
-      colors.magenta("\n✨ === Agent-Native Payments Protocol Demo === ✨")
-    ),
-    colors.cyan(`
+      colors.bold(
+          colors.magenta("\n✨ === Agent-Native Payments Protocol Demo === ✨")
+      ),
+      colors.cyan(`
 This demo will guide you through a typical payment flow between a Client and a Server. ACK-Pay enables secure, verifiable, and interoperable financial transactions among autonomous agents, services, and human participants. You can find more information at ${link("https://www.agentcommercekit.com")}.
 
 This demo illustrates a common "paywall" use case: A server protecting a resource and requiring payment for access. The Server uses ACK-Pay to allow the Client to pay via several different payment methods. In this example the Server accepts ${colors.bold("Credit Card payments via Stripe")} as well as ${colors.bold("USDC on the Base Sepolia testnet")} for the payment.
 
 The demo involves the following key components from the ACK-Pay protocol:`),
-    colors.blue(`
+      colors.blue(`
 1. ${colors.bold("Client:")} An application (this script) that wants to access a protected resource and needs to make a payment.
 2. ${colors.bold("Server:")} An API that protects a resource and requires payment for access, initiating the payment request.
 3. ${colors.bold("Payment Service:")} An intermediary that handles compliant payment execution. In this demo, the payment service is used for Credit Card payments, and is bypassed for on-chain payments using a crypto wallet and the Base Sepolia network to transfer USDC. In a full ACK-Pay deployment, a dedicated Payment Service offers more features like payment method abstraction (e.g., paying with different currencies or even credit cards), currency conversion, and enhanced compliance.
@@ -73,389 +125,498 @@ The demo involves the following key components from the ACK-Pay protocol:`),
 
   log(`
 Before we begin, we need to make sure all entities have public/private key pairs to sign messages. These can be defined as Environment variables or in your local .env file. If they are not present, we will generate new ones for you.\n
-
 ${colors.dim("Checking for existing keys ...")}
 `)
 
   const [clientPrivateKeyHex, serverPrivateKeyHex, ..._rest] =
-    await Promise.all([
-      ensurePrivateKey("CLIENT_PRIVATE_KEY_HEX"),
-      ensurePrivateKey("SERVER_PRIVATE_KEY_HEX"),
-      ensurePrivateKey("RECEIPT_SERVICE_PRIVATE_KEY_HEX"),
-      ensurePrivateKey("PAYMENT_SERVICE_PRIVATE_KEY_HEX")
-    ])
+      await Promise.all([
+        ensurePrivateKey("CLIENT_PRIVATE_KEY_HEX"),
+        ensurePrivateKey("SERVER_PRIVATE_KEY_HEX"),
+        ensurePrivateKey("RECEIPT_SERVICE_PRIVATE_KEY_HEX"),
+        ensurePrivateKey("PAYMENT_SERVICE_PRIVATE_KEY_HEX")
+      ])
 
   const clientKeypairInfo = await getKeypairInfo(clientPrivateKeyHex)
   const serverKeypairInfo = await getKeypairInfo(serverPrivateKeyHex)
 
   log(
-    `
+      `
 Using the following public keys:
 
 ${colors.bold("Client:")} ${colors.dim(clientKeypairInfo.publicKeyHex)}
 ${colors.bold("Server:")} ${colors.dim(serverKeypairInfo.publicKeyHex)}
 `,
-    { wrap: false }
+      { wrap: false }
   )
 
-  log(sectionHeader("🚪 Client Requests Protected Resource"))
-  log(
-    colors.dim(
-      `${colors.bold("Client Agent 👤 -> Server Agent 🖥️")}
-
-The Client attempts to access a protected resource on the Server. Since no valid payment receipt is presented, the Server will respond with an HTTP 402 'Payment Required' status. This response includes a cryptographically signed Payment Request (as a JWT), specifying the required amount, currency, and recipient for the payment.`
-    )
-  )
-
-  await waitForEnter("Press Enter to make the request...")
-
-  log(colors.dim("📡 Initiating GET request to the Server Agent..."))
-  const response1 = await fetch(SERVER_URL, {
-    method: "GET"
+  // Step 1: Logistics Check
+  log(sectionHeader("🚚 Logistics Check"))
+  log(colors.dim("Client requests logistics quote from Server..."))
+  const logisticsResponse = await fetch(`${SERVER_URL}/logistics/quote`, {
+    method: "POST"
   })
 
-  if (response1.status !== 402) {
-    throw new Error("Server did not respond with 402")
-  }
+  if (logisticsResponse.status === 402) {
+    const { paymentToken } = await logisticsResponse.json()
+    log(successMessage("Logistics payment required. Proceeding with payment..."))
+    const logisticsResult = await performOnChainPayment(clientKeypairInfo, paymentToken, LOGISTICS_PAYMENT_OPTION_ID)
+    logisticsReceipt = logisticsResult.receipt
+    log(successMessage("Logistics payment completed and receipt obtained."))
 
-  const { paymentToken, paymentRequest } = v.parse(
-    paymentRequestBodySchema,
-    await response1.json()
-  )
+    // Now, make the request again with the receipt to get the success message
+    log(colors.dim("\nClient re-requesting logistics quote with receipt..."))
+    const logisticsResponseWithReceipt = await fetch(`${SERVER_URL}/logistics/quote`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${logisticsReceipt}`
+      }
+    })
+    if (logisticsResponseWithReceipt.ok) {
+      const quoteData = await logisticsResponseWithReceipt.json()
+      log(successMessage("Server response for logistics quote:"))
+      log(colors.green(`  -> ${quoteData.message}`))
+    } else {
+      log(errorMessage("Failed to get logistics quote even with receipt. Status: " + logisticsResponseWithReceipt.status))
+      const errorData = await logisticsResponseWithReceipt.text()
+      log(colors.red(errorData))
+    }
 
-  // This demo uses JWT strings for the payment token, but this is not a requirement of the protocol.
-  if (!isJwtString(paymentToken)) {
-    throw new Error(errorMessage("Invalid payment token"))
-  }
-
-  log(
-    successMessage(
-      "Successfully received 402 Payment Required response from Server Agent. 🛑"
-    )
-  )
-  log(colors.bold("\n📜 Payment Request Details (from Server Agent):"))
-  logJson(paymentRequest as Record<string, unknown>, colors.dim)
-  log(
-    colors.magenta(
-      wordWrap(
-        "\n💡 The 'paymentToken' is a JWT signed by the Server, ensuring the integrity and authenticity of the payment request. The Client will include this token when requesting a receipt, along with the payment option id and metadata."
-      )
-    )
-  )
-
-  const paymentOptions = paymentRequest.paymentOptions
-  const selectedPaymentOptionId = await select({
-    message: "Select which payment option to use",
-    choices: paymentOptions.map((option) => ({
-      name: option.network === "stripe" ? "Stripe" : "Base Sepolia",
-      value: option.id,
-      description: `Pay on ${option.network === "stripe" ? "Stripe" : "Base Sepolia"} using ${option.currency}`
-    }))
-  })
-
-  const selectedPaymentOption = paymentOptions.find(
-    (option) => option.id === selectedPaymentOptionId
-  )
-
-  if (!selectedPaymentOption) {
-    throw new Error(errorMessage("Invalid payment option"))
-  }
-
-  let receipt: string
-  let details: Verifiable<PaymentReceiptCredential>
-
-  if (selectedPaymentOption.network === "stripe") {
-    const paymentResult = await performStripePayment(
-      clientKeypairInfo,
-      selectedPaymentOption,
-      paymentToken
-    )
-    receipt = paymentResult.receipt
-    details = paymentResult.details
-  } else if (selectedPaymentOption.network === chainId) {
-    const paymentResult = await performOnChainPayment(
-      clientKeypairInfo,
-      selectedPaymentOption,
-      paymentToken
-    )
-    receipt = paymentResult.receipt
-    details = paymentResult.details
   } else {
-    throw new Error(errorMessage("Invalid payment option"))
+    throw new Error("Unexpected response from logistics endpoint.")
   }
 
-  log(
-    successMessage(
-      "Verifiable Payment Receipt (VC) issued successfully by the Receipt Service! 🎉"
-    ),
-    colors.bold("📄 Receipt Details (Verifiable Credential):")
-  )
-  const resolver = getDidResolver()
-  const parsedDetails =
-    typeof details === "string"
-      ? await parseJwtCredential(details, resolver)
-      : details
-  logJson(parsedDetails, colors.dim)
-  log(
-    colors.magenta(
-      "💡 This receipt is a Verifiable Credential (VC) in JWT format. It's cryptographically signed by the Receipt Service, making it tamper-proof and independently verifiable. It links the original payment request from the Server to the confirmed on-chain transaction and the Client's identity."
-    )
-  )
+  // Step 2: Warranty Check
+  log(sectionHeader("🔍 Warranty Check"))
+  log(colors.dim("Client requests warranty check from Server..."))
+  const warrantyResponse = await fetch(`${SERVER_URL}/warranty/check`, {
+    method: "POST"
+  })
 
-  log(
-    sectionHeader(
-      "✅ Access Protected Resource with Receipt (Client Agent -> Server Agent)"
-    )
-  )
-  log(
-    colors.dim(
-      `${colors.bold("Client Agent 👤 -> Server Agent 🖥️")}
+  if (warrantyResponse.status === 402) {
+    const { paymentToken } = await warrantyResponse.json()
+    log(successMessage("Warranty payment required. Proceeding with payment..."))
+    const warrantyResult = await performOnChainPayment(clientKeypairInfo, paymentToken, WARRANTY_PAYMENT_OPTION_ID)
+    warrantyReceipt = warrantyResult.receipt
+    log(successMessage("Warranty payment completed and receipt obtained."))
 
-The Client Agent now retries the original request to the Server Agent, this time presenting the Verifiable Payment Receipt (the VC obtained in Step 3) as a Bearer token in the Authorization header.
+    // Now, make the request again with the receipt to get the success message
+    log(colors.dim("\nClient re-requesting warranty check with receipt..."))
+    const warrantyResponseWithReceipt = await fetch(`${SERVER_URL}/warranty/check`, {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${warrantyReceipt}`
+      }
+    })
+    if (warrantyResponseWithReceipt.ok) {
+      const checkData = await warrantyResponseWithReceipt.json()
+      log(successMessage("Server response for warranty check:"))
+      log(colors.green(`  -> ${checkData.message}`))
+    } else {
+      log(errorMessage("Failed to get warranty check even with receipt. Status: " + warrantyResponseWithReceipt.status))
+      const errorData = await warrantyResponseWithReceipt.text()
+      log(colors.red(errorData))
+    }
 
-${colors.bold("The Server Agent then performs its own verifications:")}
-1. Validates the receipt's signature (ensuring it was issued by a trusted Receipt Service and hasn't been tampered with).
-2. Checks the receipt's claims: Confirms the receipt is for the correct payment (e.g., matches the 'paymentToken' it originally issued), is not expired, and meets any other criteria for accessing the resource.
+  } else {
+    throw new Error("Unexpected response from warranty endpoint.")
+  }
 
-If the receipt is valid, the Server grants access to the protected resource.`
-    )
-  )
-
-  await waitForEnter(
-    "Press Enter to present the receipt to the Server and access the resource..."
-  )
-
-  log(
-    colors.dim(
-      "🔐 Making authenticated GET request to the Server Agent with the receipt..."
-    )
-  )
-
-  const response3 = await fetch(SERVER_URL, {
-    method: "GET",
+  // Step 3: Purchase Order
+  log(sectionHeader("🛒 Purchase Order"))
+  log(colors.dim("Client requests to purchase the watch from Server..."))
+  const purchaseResponse = await fetch(`${SERVER_URL}/purchase/order`, {
+    method: "POST",
     headers: {
-      Authorization: `Bearer ${receipt}`
+      "X-Logistics-Receipt": logisticsReceipt,
+      "X-Warranty-Receipt": warrantyReceipt
     }
   })
 
-  if (response3.status !== 200) {
-    throw new Error(errorMessage("Server did not respond with 200"))
+  if (purchaseResponse.status === 402) {
+    const { paymentToken } = await purchaseResponse.json()
+    log(successMessage("Purchase payment required. Proceeding with payment..."))
+    const purchaseResult = await performStripePayment(clientKeypairInfo, paymentToken, PURCHASE_PAYMENT_OPTION_ID)
+    purchaseReceipt = purchaseResult.receipt
+    log(successMessage("Purchase payment completed and receipt obtained."))
+  } else {
+    throw new Error("Unexpected response from purchase endpoint.")
   }
 
-  const result = (await response3.json()) as Record<string, unknown>
-  log(colors.bold("🚪 Server Response (Protected Resource):"))
-  logJson(result, colors.dim)
-  log(
-    successMessage("Access granted to protected resource! 🔓"),
-    colors.bold(colors.magenta("\n🎉 === ACK-Pay Demo Complete === 🎉\n")),
-    colors.cyan(
-      "Congratulations! You've successfully completed the ACK-Pay payment flow. This demonstrates how agents can programmatically negotiate and settle payments, obtaining verifiable proof for services or data access."
-    ),
-    colors.yellow(
-      `This demo was created by Catena Labs. For more information on ACK-Pay and other tools for the agent economy, please visit ${link("https://www.agentcommercekit.com")} 🌐.`
-    ),
-    demoFooter("Thank You!"),
-    { wrap: false }
-  )
+  log(successMessage("All steps completed successfully!"))
 }
 
 async function performOnChainPayment(
-  client: KeypairInfo,
-  paymentOption: PaymentRequest["paymentOptions"][number],
-  paymentToken: JwtString
+    client: KeypairInfo,
+    paymentRequestJwt: JwtString,
+    selectedPaymentOptionId: string
 ) {
+  const didResolver = getDidResolver()
+  const { paymentRequest } = await verifyPaymentToken(paymentRequestJwt, {
+    resolver: didResolver
+  })
+
+  const paymentOption = paymentRequest.paymentOptions.find(
+      (option) => option.id === selectedPaymentOptionId
+  )
+
+  if (!paymentOption) {
+    throw new Error(
+        errorMessage(
+            `Payment option with ID "${selectedPaymentOptionId}" not found in payment token.`
+        )
+    )
+  }
+  if (paymentOption.network !== chainId) {
+    throw new Error(errorMessage(`This function only supports on-chain payments for the demo's configured chainId (${chainId}). Selected option is for ${paymentOption.network}.`))
+  }
+
   const receiptServiceUrl = paymentOption.receiptService
   if (!receiptServiceUrl) {
-    throw new Error(errorMessage("Receipt service URL is required"))
+    throw new Error(
+        errorMessage(
+            "Receipt service URL is required in the selected payment option."
+        )
+    )
   }
 
-  log(colors.dim("🔍 Checking client wallet balances..."))
+  log(colors.dim("🔍 Checking client wallet balances for USDC (gas will be paid by facilitator)..."))
   await ensureNonZeroBalances(chain, client.crypto.address, usdcAddress)
   log(
-    successMessage(
-      "Balances verified! Client has sufficient ETH for gas and USDC for payment. ✅\n\n"
-    )
+      successMessage(
+          "USDC balance verified! Client has sufficient USDC for payment. ✅\n"
+      )
   )
 
-  log(
-    sectionHeader(
-      "💸 Execute Payment (Client Agent -> Payment Service / Blockchain)"
-    )
-  )
-  log(
-    colors.dim(
-      `${colors.bold("Client Agent 👤 -> Blockchain 🔗 (acting as Payment Service)")}
-
-The Client Agent now uses the details from the Payment Request to make the payment. In this demo, the Client transfers the specified amount of USDC to the Server's address on the Base Sepolia testnet. The resulting transaction hash serves as a preliminary proof of payment. This interaction implicitly uses the blockchain as a Settlement Network and the wallet interaction as a form of Payment Service.`
-    )
-  )
-
-  await waitForEnter("Press Enter to proceed with the on-chain USDC payment...")
-
-  const payToAddress = isDidPkhUri(paymentOption.recipient)
-    ? addressFromDidPkhUri(paymentOption.recipient)
-    : paymentOption.recipient
-
-  if (!isAddress(payToAddress)) {
-    throw new Error(errorMessage(`Invalid recipient address: ${payToAddress}`))
+  // --- Resolve recipient address before signing ---
+  const payToAddressUri = paymentOption.recipient
+  let finalRecipientAddress: string
+  if (isDidPkhUri(payToAddressUri)) {
+    finalRecipientAddress = addressFromDidPkhUri(payToAddressUri)
+  } else if (isAddress(payToAddressUri)) {
+    finalRecipientAddress = payToAddressUri
+  } else {
+    throw new Error(errorMessage(`Invalid recipient address format: ${payToAddressUri}`))
   }
 
-  if (paymentOption.currency !== "USDC") {
-    throw new Error(
-      errorMessage(`Unsupported currency: ${paymentOption.currency}`)
-    )
-  }
-
-  log(colors.dim("Initiating USDC transfer..."))
-
-  const hash = await transferUsdc(
-    client.crypto.account,
-    payToAddress,
-    BigInt(paymentOption.amount)
-  )
-
   log(
-    successMessage("Payment transaction submitted to the blockchain. 🚀"),
-    "Transaction hash:"
+      sectionHeader(
+          "✍️ Client Prepares & Signs Authorization (Authorizing Facilitator)"
+      )
   )
-  log(colors.cyan(hash), { wrap: false })
-  log(colors.dim("View on BaseScan:"))
-  log(link(`https://sepolia.basescan.org/tx/${hash}`), {
-    wrap: false
+  log(
+      colors.dim(
+          `${colors.bold("Client Agent 👤 -> Signs EIP-712 Message (TransferWithAuthorization)")}
+
+The Client Agent will now create and sign an EIP-712 'TransferWithAuthorization' message. This message authorizes the x402 Facilitator (spender: ${X402_FACILITATOR_SPENDER_ADDRESS}) to use its funds for the payment of ${paymentOption.amount / (10 ** paymentOption.decimals)} USDC from the client's wallet (${client.crypto.address}). This signature does NOT initiate a transaction or cost gas for the client.
+It's an off-chain authorization that will be submitted to the blockchain by the Facilitator.`
+      )
+  )
+
+  await waitForEnter("Press Enter to sign the authorization message...")
+
+  // The nonce for `transferWithAuthorization` must be a unique `bytes32` value to prevent replay attacks.
+  // We generate a random one here. This is different from the sequential `uint256` nonce used by the `permit` function.
+  const nonceForSigning = `0x${randomBytes(32).toString("hex")}` as Hex;
+  log(colors.dim(`Generated random nonce for signing: ${nonceForSigning}`))
+
+  // Facilitator logs indicate it expects domain name 'USDC'
+  const tokenNameForDomain = "USDC";
+
+  const domain = {
+    name: tokenNameForDomain,
+    version: "2", // Ensure this version matches what the USDC contract expects for this type of signature
+    chainId: BigInt(publicClient.chain.id),
+    verifyingContract: usdcAddress
+  } as const
+
+  // EIP-712 types expected by the facilitator for TransferWithAuthorization
+  const transferAuthorisationTypes = {
+    TransferWithAuthorization: [
+      { name: "from", type: "address" },
+      { name: "to", type: "address" },
+      { name: "value", type: "uint256" },
+      { name: "validAfter", type: "uint256" },
+      { name: "validBefore", type: "uint256" },
+      { name: "nonce", type: "bytes32" } // Facilitator expects bytes32 nonce in the message
+    ]
+  } as const;
+
+  // Set validAfter to 60 seconds in the past to avoid clock skew issues with the blockchain.
+  const validAfterTimestamp = BigInt(Math.floor(Date.now() / 1000) - 60);
+  const deadlineTimestamp = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour deadline
+
+  const messageToSign = {
+    from: client.crypto.address,
+    to: getAddress(finalRecipientAddress), // The recipient of the funds
+    value: BigInt(paymentOption.amount),
+    validAfter: validAfterTimestamp,
+    validBefore: deadlineTimestamp,
+    nonce: nonceForSigning
+  };
+
+  log(colors.dim("Message to be signed (TransferWithAuthorization):"), colors.cyan(JSON.stringify({ domain, types: transferAuthorisationTypes, primaryType: 'TransferWithAuthorization', message: messageToSign }, (key, value) => typeof value === 'bigint' ? value.toString() : value, 2)))
+
+  const walletClient = createWalletClient({
+    account: client.crypto.account,
+    chain: publicClient.chain,
+    transport: http()
   })
+
+  const signature = await signTypedData(walletClient, {
+    domain,
+    types: transferAuthorisationTypes,
+    primaryType: "TransferWithAuthorization",
+    message: messageToSign
+  })
+  log(successMessage("TransferWithAuthorization message signed by client."))
+  log(colors.dim(`Signature: ${signature}`))
+
   log(
-    colors.magenta(
-      "💡 This transaction is now being processed by the Base Sepolia network. We need to wait for it to be confirmed (included in a block) before we can reliably use it as proof of payment."
+      sectionHeader(
+          "💸 Client Requests Payment Execution (Client Agent -> x402 Facilitator)"
+      )
+  )
+  log(
+      colors.dim(
+          `${colors.bold("Client Agent 👤 -> x402 Facilitator 💳")}
+
+The Client Agent now sends the signed 'TransferWithAuthorization' message (via the signature and authorization object), along with payment requirements, to the x402 Facilitator's /settle endpoint (${X402_FACILITATOR_URL}/settle). The Facilitator will use this authorization to execute the USDC transfer on behalf of the client and will pay the associated blockchain gas fees.`
+      )
+  )
+  await waitForEnter("Press Enter to send request to x402 Facilitator...")
+
+  const x402NetworkString = chainIdToX402Network(paymentOption.network);
+  if (!x402NetworkString) {
+    throw new Error(errorMessage(`Unsupported network ID for x402 Facilitator: ${paymentOption.network}`));
+  }
+
+  const x402Authorization = {
+    from: messageToSign.from,
+    to: messageToSign.to,
+    value: messageToSign.value.toString(),
+    validAfter: messageToSign.validAfter.toString(),
+    validBefore: messageToSign.validBefore.toString(),
+    nonce: messageToSign.nonce // This is already a hex string (bytes32)
+  };
+
+  const x402EvmPayload = {
+    signature: signature,
+    authorization: x402Authorization
+  };
+
+  const x402PaymentPayload = {
+    x402Version: 1,
+    scheme: "exact" as const,
+    network: x402NetworkString!,
+    payload: x402EvmPayload
+  };
+
+  // --- Construct x402PaymentRequirements ---
+  // finalRecipientAddress is now calculated before signing
+  const descriptionForRequirements = paymentRequest.description || `Payment for option ${paymentOption.id}`;
+  // Use paymentOption.receiptService as resource URL, or a more specific one if available
+  // For example, if paymentRequest.serviceCallback is a URL and more appropriate.
+  // Using paymentOption.receiptService ensures a URL is present.
+  const resourceForRequirements = paymentOption.receiptService || `${SERVER_URL}/unknown_resource`;
+
+  const x402PaymentRequirements = {
+    scheme: "exact" as const,
+    network: x402NetworkString!,
+    maxAmountRequired: paymentOption.amount.toString(),
+    resource: resourceForRequirements,
+    description: descriptionForRequirements,
+    mimeType: "application/json",
+    payTo: finalRecipientAddress,
+    maxTimeoutSeconds: 60,
+    asset: usdcAddress,
+    extra: { // For EIP-712 domain details, matching what was signed
+      name: tokenNameForDomain,
+      version: domain.version // Use the same version as in the signed domain
+    }
+  };
+
+  log(colors.dim("Sending to x402 Facilitator /settle:"), colors.cyan(JSON.stringify({ paymentPayload: x402PaymentPayload, paymentRequirements: x402PaymentRequirements }, (key, value) => typeof value === 'bigint' ? value.toString() : value, 2)))
+
+  const facilitatorResponse = await fetch(`${X402_FACILITATOR_URL}/settle`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      paymentPayload: x402PaymentPayload,
+      paymentRequirements: x402PaymentRequirements
+    })
+  })
+
+  if (!facilitatorResponse.ok) {
+    const errorBody = await facilitatorResponse.text()
+    log(colors.red(`Error from x402 Facilitator (${facilitatorResponse.status}): ${errorBody}`))
+    throw new Error(
+        errorMessage(`Failed to settle payment via x402 Facilitator. Status: ${facilitatorResponse.status}`)
     )
-  )
+  }
+
+  const facilitatorJson = await facilitatorResponse.json()
+  console.log("facilitatorJson", facilitatorJson)
+  const settlementTxHash = facilitatorJson.transaction as Hex
+  if (!settlementTxHash || !/^0x[0-9a-fA-F]{64}$/.test(settlementTxHash)) {
+    log(colors.red("Invalid transactionHash received from x402 Facilitator:"), facilitatorJson)
+    throw new Error(errorMessage("Invalid or missing transactionHash from x402 Facilitator."))
+  }
+
+  log(successMessage("Payment successfully settled by x402 Facilitator! 🚀"))
+  log("Settlement Transaction Hash:", colors.cyan(settlementTxHash))
+  log(colors.dim("View on BaseScan:"))
+  log(link(`https://sepolia.basescan.org/tx/${settlementTxHash}`), { wrap: false })
 
   log(
-    colors.dim(
-      "⏳ Waiting for transaction confirmation (this might take a moment)..."
-    )
-  )
-  await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` })
-  log(successMessage("Transaction confirmed on the blockchain! ✅\n\n"))
-
-  log(
-    sectionHeader(
-      "🧾 Obtain Verifiable Receipt (Client Agent -> Receipt Service)"
-    )
+      sectionHeader(
+          "🧾 Obtain Verifiable Receipt (Client Agent -> Your Receipt Service)"
+      )
   )
   log(
-    colors.dim(
-      `${colors.bold("Client Agent 👤 -> Receipt Service 🧾")}
+      colors.dim(
+          `${colors.bold("Client Agent 👤 -> Your Receipt Service 🧾")}
 
-With the payment confirmed, the Client Agent now requests a formal, cryptographically verifiable payment receipt from the Receipt Service. The Client sends the original 'paymentToken' (received from the Server in Step 1) and the transaction hash (as metadata) to the Receipt Service. The Client also signs this request with its own DID to prove it's the one who made the payment.
-
-${colors.bold("The Receipt Service then performs several crucial verifications:")}
-1. Validates the 'paymentToken' (e.g., signature, expiry, ensuring it was issued by a trusted server for the expected payment context).
-2. Verifies the on-chain transaction: Confirms that the transaction hash is valid, the correct amount of the specified currency was transferred to the correct recipient address as per the 'paymentToken'.
-3. Verifies the Client's signature on the request, ensuring the payer is who they claim to be (linking the payment action to the Client's DID).
-
-If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serving as the payment receipt.`
-    )
+With the payment settled by the x402 Facilitator, the Client Agent now requests a formal, cryptographically verifiable payment receipt from Your Receipt Service. The Client sends the original 'paymentToken', the 'paymentOptionId', and the 'settlementTxHash' (obtained from the Facilitator) to the Receipt Service. The Client also signs this request with its own DID.`
+      )
   )
+  await waitForEnter("Press Enter to request the verifiable receipt from Your Receipt Service...")
 
-  await waitForEnter("Press Enter to request the verifiable receipt...")
+  log(colors.dim("✍️ Creating a signed payload (JWT) for Your Receipt Service..."))
 
-  log(
-    colors.dim("✍️ Creating a signed payload (JWT) for the Receipt Service...")
-  )
-
-  const payload = {
-    paymentToken,
+  const receiptServicePayload = {
+    paymentToken: paymentRequestJwt,
     paymentOptionId: paymentOption.id,
     metadata: {
-      txHash: hash,
-      network: chainId // eip155:84532
+      txHash: settlementTxHash,
+      network: chainId
     },
     payerDid: client.did
   }
 
-  const signedPayload = await createJwt(payload, {
+  const signedPayloadForReceiptService = await createJwt(receiptServicePayload, {
     issuer: client.did,
     signer: client.jwtSigner
   })
 
-  log(colors.dim("Submitting to receipt service..."))
-  const response2 = await fetch(receiptServiceUrl, {
+  log(colors.dim(`Submitting to Your Receipt Service (${receiptServiceUrl})...`))
+  const receiptServiceApiResponse = await fetch(receiptServiceUrl, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      payload: signedPayload
+      payload: signedPayloadForReceiptService
     })
   })
 
-  const { receipt, details } = (await response2.json()) as {
+  if (!receiptServiceApiResponse.ok) {
+    const errorBody = await receiptServiceApiResponse.text()
+    log(colors.red(`Error from Receipt Service (${receiptServiceApiResponse.status}): ${errorBody}`))
+    throw new Error(errorMessage(`Failed to get receipt from Receipt Service. Status: ${receiptServiceApiResponse.status}`))
+  }
+
+  const { receipt, details } = (await receiptServiceApiResponse.json()) as {
     receipt: string
     details: Verifiable<PaymentReceiptCredential>
   }
+  log(successMessage("Verifiable Receipt obtained successfully from Your Receipt Service! ✅"))
 
   return { receipt, details }
 }
 
+function parseSignature(signature: Hex): { r: Hex; s: Hex; v: bigint } {
+  const sig = signature.substring(2);
+  const r = `0x${sig.substring(0, 64)}` as Hex;
+  const s = `0x${sig.substring(64, 128)}` as Hex;
+  const v = BigInt(`0x${sig.substring(128, 130)}`);
+  return { r, s, v };
+}
+
 async function performStripePayment(
-  _client: KeypairInfo,
-  paymentOption: PaymentRequest["paymentOptions"][number],
-  paymentToken: JwtString
+    _client: KeypairInfo,
+    paymentRequestJwt: JwtString,
+    selectedPaymentOptionId: string
 ) {
+  const didResolver = getDidResolver()
+  const { paymentRequest } = await verifyPaymentToken(paymentRequestJwt, {
+    resolver: didResolver
+  })
+
+  const paymentOption = paymentRequest.paymentOptions.find(
+      (option) => option.id === selectedPaymentOptionId
+  )
+
+  if (!paymentOption) {
+    throw new Error(
+        errorMessage(
+            `Payment option with ID "${selectedPaymentOptionId}" not found in payment token.`
+        )
+    )
+  }
+
   const paymentServiceUrl = paymentOption.paymentService
   if (!paymentServiceUrl) {
-    throw new Error(errorMessage("Payment service URL is required"))
+    throw new Error(
+        errorMessage(
+            "Payment service URL is required in the selected payment option."
+        )
+    )
   }
 
   log(
-    sectionHeader(
-      "💸 Execute Payment (Client Agent -> Payment Service / Stripe)"
-    )
+      sectionHeader(
+          "💸 Execute Payment (Client Agent -> Payment Service / Stripe)"
+      )
   )
   log(
-    colors.dim(
-      `${colors.bold("Client Agent 👤 -> Payment Service 💳 -> Stripe")}
+      colors.dim(
+          `${colors.bold("Client Agent 👤 -> Payment Service 💳 -> Stripe")}
 
 The Client Agent now uses the details from the Payment Request to initiate a Stripe payment. The Payment Service will generate a Stripe payment URL where the payment can be completed. After successful payment, Stripe will redirect back to our callback URL with the payment confirmation.
 
 This flow is simulated in this example.
 `
-    )
+      )
   )
 
   await waitForEnter("Press Enter to initiate the Stripe payment...")
 
   log(colors.dim("Initiating Stripe payment flow..."))
 
-  // Step 1: Get the Stripe payment URL from the payment service
   const response1 = await fetch(paymentServiceUrl, {
     method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       paymentOptionId: paymentOption.id,
-      paymentToken
+      paymentToken: paymentRequestJwt
     })
   })
 
   if (!response1.ok) {
+    const errorBody = await response1.text()
+    log(colors.red(`Failed to get Stripe payment URL (${response1.status}): ${errorBody}`))
     throw new Error(errorMessage("Failed to get Stripe payment URL"))
   }
 
   const { paymentUrl } = (await response1.json()) as { paymentUrl: string }
 
   log(
-    successMessage("Stripe payment URL generated successfully! 🚀"),
-    colors.dim("\nSample Stripe payment URL:"),
-    colors.cyan(paymentUrl),
-    { wrap: false }
+      successMessage("Stripe payment URL generated successfully! 🚀"),
+      colors.dim("\nSample Stripe payment URL:"),
+      colors.cyan(paymentUrl),
+      { wrap: false }
   )
   log(
-    colors.magenta(
-      "\n💡 In a real implementation, this would open in a browser for the agent or user to complete the payment."
-    )
+      colors.magenta(
+          "\n💡 In a real implementation, this would open in a browser for the agent or user to complete the payment."
+      )
   )
 
   // Extract the return_to URL from the payment URL
   const returnToUrl = new URL(paymentUrl).searchParams.get("return_to")
   if (!returnToUrl) {
     throw new Error(
-      errorMessage("Invalid payment URL - missing return_to parameter")
+        errorMessage("Invalid payment URL - missing return_to parameter")
     )
   }
 
@@ -468,7 +629,7 @@ This flow is simulated in this example.
     method: "POST",
     body: JSON.stringify({
       paymentOptionId: paymentOption.id,
-      paymentToken,
+      paymentToken: paymentRequestJwt,
       metadata: {
         eventId: "evt_" + Math.random().toString(36).substring(7) // Simulated Stripe event ID
       }
@@ -488,7 +649,8 @@ This flow is simulated in this example.
 }
 
 main()
-  .catch(console.error)
-  .finally(() => {
-    process.exit(0)
-  })
+    .catch(console.error)
+    .finally(() => {
+      process.exit(0)
+    })
+

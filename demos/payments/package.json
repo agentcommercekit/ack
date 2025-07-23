@@ -23,16 +23,21 @@
     "lint:fix": "eslint . --fix",
     "setup": "./bin/setup",
     "start": "dotenv -e .env -- tsx ./src/index.ts",
+    "start-server": "tsx ./src/server.ts",
+    "start-receipt-service": "tsx ./src/receipt-service.ts",
     "test": "vitest"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.2",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
+    "@tanstack/react-query": "^5.83.0",
+    "@wagmi/core": "^2.17.3",
     "agentcommercekit": "workspace:*",
     "hono": "^4.7.10",
     "valibot": "^1.1.0",
-    "viem": "^2.29.4"
+    "viem": "^2.29.4",
+    "wagmi": "^2.15.7"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

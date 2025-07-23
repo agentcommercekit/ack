@@ -9,6 +9,8 @@ import { baseSepolia } from "viem/chains"
 export const SERVER_URL = "http://localhost:4567"
 export const RECEIPT_SERVICE_URL = "http://localhost:4568"
 export const PAYMENT_SERVICE_URL = "http://localhost:4569"
+export const X402_FACILITATOR_URL = "http://localhost:3002"
+export const X402_FACILITATOR_SPENDER_ADDRESS = "0xd7FeB809e8B9C52CE3C0B792506D2FE474aAE06D"
 
 /**
  * .env file location
