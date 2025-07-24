@@ -1,8 +1,8 @@
 /* eslint-disable @cspell/spellchecker */
-import * as v from "valibot"
+import { isCaip2ChainId } from "../caip/caip"
 import { createDidDocumentFromKeypair } from "../create-did-document"
-import { didPkhChainIdSchema } from "../schemas/valibot"
 import type { DidUri } from "../did-uri"
+import type { Caip10AccountId, Caip2ChainId } from "../schemas/valibot"
 import type { DidUriWithDocument } from "../types"
 import type { Keypair } from "@agentcommercekit/keys"
 
@@ -13,23 +13,19 @@ import type { Keypair } from "@agentcommercekit/keys"
  */
 
 /**
- * The `did:pkh` Uri type
+ * @deprecated Use `Caip2ChainId` instead
  */
-export type DidPkhChainId = v.InferOutput<typeof didPkhChainIdSchema>
-export type DidPkhUri = `did:pkh:${DidPkhChainId}:${string}`
+export type DidPkhChainId = Caip2ChainId
 
 /**
- * Checks if a given string is a valid CAIP-2 chain ID (`namespace:reference`)
- * chain_id:    namespace + ":" + reference
- * namespace:   [-a-z0-9]{3,8}
- * reference:   [-_a-zA-Z0-9]{1,32}
- *
- * @param chainId - The chain ID to check
- * @returns `true` if the chain ID is a valid CAIP-2 chain ID, `false` otherwise
+ * The `did:pkh` Uri type
  */
-export function isDidPkhChainId(chainId: unknown): chainId is DidPkhChainId {
-  return v.is(didPkhChainIdSchema, chainId)
-}
+export type DidPkhUri = DidUri<"pkh", Caip10AccountId>
+
+/**
+ * @deprecated Use `isCaip2ChainId` instead
+ */
+export const isDidPkhChainId = isCaip2ChainId
 
 /**
  * Parse a did:pkh URI into its components.
@@ -63,7 +59,7 @@ export function didPkhParts(
     throw new Error("Invalid did:pkh URI")
   }
 
-  if (!isDidPkhChainId(`${chainNamespace}:${chainReference}`)) {
+  if (!isCaip2ChainId(`${chainNamespace}:${chainReference}`)) {
     throw new Error("Invalid did:pkh URI")
   }
 
@@ -137,8 +133,8 @@ export const didPkhChainIds = {
  */
 export function createBlockchainAccountId(
   address: string,
-  chainId: DidPkhChainId
-): `${DidPkhChainId}:${string}` {
+  chainId: Caip2ChainId
+): `${Caip2ChainId}:${string}` {
   return `${chainId}:${address}`
 }
 
@@ -160,7 +156,7 @@ export function createBlockchainAccountId(
  */
 export function createDidPkhUri(
   address: string,
-  chainId: DidPkhChainId
+  chainId: Caip2ChainId
 ): DidUri {
   return `did:pkh:${createBlockchainAccountId(address, chainId)}`
 }
@@ -168,7 +164,7 @@ export function createDidPkhUri(
 interface CreateDidPkhDocumentOptions {
   keypair: Keypair
   address: string
-  chainId: DidPkhChainId
+  chainId: Caip2ChainId
   controller?: DidUri
 }
 

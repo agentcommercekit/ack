@@ -15,7 +15,7 @@ import {
   verifyJwt,
   verifyPaymentToken
 } from "agentcommercekit"
-import { didPkhChainIdSchema } from "agentcommercekit/schemas/valibot"
+import { caip2ChainIdSchema } from "agentcommercekit/schemas/valibot"
 import { Hono } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
@@ -38,7 +38,7 @@ const bodySchema = v.object({
 const paymentDetailsSchema = v.object({
   metadata: v.union([
     v.object({
-      network: didPkhChainIdSchema,
+      network: caip2ChainIdSchema,
       txHash: v.string()
     }),
     v.object({

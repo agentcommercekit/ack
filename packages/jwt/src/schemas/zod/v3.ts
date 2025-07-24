@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod/v3"
 import { jwtAlgorithms } from "../../jwt-algorithm"
 import { isJwtString } from "../../jwt-string"
 import type { JwtHeader, JwtPayload } from "../../create-jwt"

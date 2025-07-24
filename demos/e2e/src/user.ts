@@ -5,8 +5,8 @@ import {
 } from "agentcommercekit"
 import { publicKeyToAddress } from "./utils/evm-address"
 import type {
+  Caip2ChainId,
   DidDocument,
-  DidPkhChainId,
   DidResolver,
   DidUri,
   JwtSigner,
@@ -15,7 +15,7 @@ import type {
 
 interface ConstructorParams {
   wallet: Keypair
-  preferredChainId: DidPkhChainId
+  preferredChainId: Caip2ChainId
   did: DidUri
   didDocument: DidDocument
   resolver: DidResolver
@@ -23,7 +23,7 @@ interface ConstructorParams {
 
 export class User {
   readonly wallet: Keypair
-  readonly preferredChainId: DidPkhChainId
+  readonly preferredChainId: Caip2ChainId
   readonly did: DidUri
   readonly didDocument: DidDocument
   readonly signer: JwtSigner
@@ -48,7 +48,7 @@ export class User {
 
   static async create(
     resolver: DidResolver,
-    chainId: DidPkhChainId
+    chainId: Caip2ChainId
   ): Promise<User> {
     const wallet = await generateKeypair("secp256k1")
     const address = publicKeyToAddress(wallet.publicKey)

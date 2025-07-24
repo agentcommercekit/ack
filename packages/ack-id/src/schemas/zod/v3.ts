@@ -1,4 +1,4 @@
-import { z } from "zod"
+import { z } from "zod/v3"
 
 export const controllerClaimSchema = z.object({
   id: z.string(),

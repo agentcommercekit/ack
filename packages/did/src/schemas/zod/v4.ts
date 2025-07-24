@@ -1,10 +1,13 @@
 import * as z from "zod/v4"
+import { caip2ChainIdSchema } from "../../caip/schemas/zod/v4"
 import { isDidUri } from "../../did-uri"
 import type { DidUri } from "../../did-uri"
 
+export * from "../../caip/schemas/zod/v4"
+
 export const didUriSchema = z.custom<DidUri>(isDidUri, "Invalid DID format")
 
-export const didPkhChainIdSchema = z
-  .string()
-  .regex(/^[-a-z0-9]{3,8}:[-_a-zA-Z0-9]{1,32}$/)
-  .refine((val): val is `${string}:${string}` => true)
+/**
+ * @deprecated Use `caip2ChainIdSchema` instead
+ */
+export const didPkhChainIdSchema = caip2ChainIdSchema

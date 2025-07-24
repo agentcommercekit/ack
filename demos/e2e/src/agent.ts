@@ -13,8 +13,8 @@ import { verifyAgentIdentityWithCredential } from "./verification"
 import type { CredentialVerifier } from "./credential-verifier"
 import type { ReceiptVerifier } from "./receipt-verifier"
 import type {
+  Caip2ChainId,
   DidDocument,
-  DidPkhChainId,
   DidResolver,
   DidUri,
   JwtSigner,
@@ -32,7 +32,7 @@ interface AgentConstructorParams {
   receiptVerifier: ReceiptVerifier
   credentialVerifier: CredentialVerifier
   wallet: Keypair
-  preferredChainId: DidPkhChainId
+  preferredChainId: Caip2ChainId
 }
 
 export class Agent {
@@ -48,7 +48,7 @@ export class Agent {
   private readonly resolver: DidResolver
   private readonly receiptVerifier: ReceiptVerifier
   private readonly credentialVerifier: CredentialVerifier
-  private readonly preferredChainId: DidPkhChainId
+  private readonly preferredChainId: Caip2ChainId
   // An optional map of id to the request itself (e.g. product, message, etc)
   private pendingRequests: Record<string, PaymentRequest> = {}
 
@@ -105,7 +105,7 @@ export class Agent {
     credentialVerifier
   }: {
     ownerDid: DidUri
-    preferredChainId: DidPkhChainId
+    preferredChainId: Caip2ChainId
     resolver: DidResolver
     receiptVerifier: ReceiptVerifier
     credentialVerifier: CredentialVerifier
