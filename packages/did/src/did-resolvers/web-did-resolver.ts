@@ -5,6 +5,9 @@
  *
  * The error messages should match exactly with the `web` resolver from the
  * `web-did-resolver` package.
+ *
+ * @see {@link https://github.com/decentralized-identity/web-did-resolver}
+ * @see {@link ../../licenses/web-did-resolver.LICENSE}
  */
 import { isDidDocument, isDidDocumentForDid } from "../did-document"
 import { isDidWebUri } from "../methods/did-web"
