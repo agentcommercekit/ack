@@ -1,0 +1,28 @@
+{
+  "@context": [
+    "https://www.w3.org/ns/did/v1",
+    "https://w3id.org/security#blockchainAccountId",
+    "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020#EcdsaSecp256k1RecoveryMethod2020"
+  ],
+  "id": "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011",
+  "verificationMethod": [
+    {
+      "id": "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011#blockchainAccountId",
+      "type": "EcdsaSecp256k1RecoveryMethod2020",
+      "controller": "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011",
+      "blockchainAccountId": "eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011"
+    }
+  ],
+  "authentication": [
+    "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011#blockchainAccountId"
+  ],
+  "assertionMethod": [
+    "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011#blockchainAccountId"
+  ],
+  "capabilityDelegation": [
+    "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011#blockchainAccountId"
+  ],
+  "capabilityInvocation": [
+    "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011#blockchainAccountId"
+  ]
+}

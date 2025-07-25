@@ -1,14 +1,11 @@
 import { describe, expect, it } from "vitest"
 import {
   addressFromDidPkhUri,
-  createBlockchainAccountId,
   createDidPkhDocument,
   createDidPkhUri,
-  didPkhChainIds,
   didPkhParts,
   isDidPkhUri
 } from "./did-pkh"
-import type { Keypair } from "@agentcommercekit/keys"
 
 describe("didPkhParts", () => {
   it("parses valid did:pkh URIs correctly", () => {
@@ -123,51 +120,11 @@ describe("addressFromDidPkhUri", () => {
   })
 })
 
-describe("didPkhChainIds", () => {
-  it("contains expected EVM chain IDs", () => {
-    expect(didPkhChainIds.evm.mainnet).toBe("eip155:1")
-    expect(didPkhChainIds.evm.sepolia).toBe("eip155:11155111")
-    expect(didPkhChainIds.evm.base).toBe("eip155:8453")
-    expect(didPkhChainIds.evm.baseSepolia).toBe("eip155:84532")
-    expect(didPkhChainIds.evm.arbitrum).toBe("eip155:42161")
-    expect(didPkhChainIds.evm.arbitrumSepolia).toBe("eip155:421614")
-  })
-
-  it("contains expected SVM chain IDs", () => {
-    expect(didPkhChainIds.svm.mainnet).toBe(
-      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
-    )
-    expect(didPkhChainIds.svm.devnet).toBe(
-      "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
-    )
-  })
-})
-
-describe("createBlockchainAccountId", () => {
-  it("creates blockchain account ID for EVM address", () => {
-    const result = createBlockchainAccountId(
-      "0x1234567890123456789012345678901234567890",
-      "eip155:1"
-    )
-    expect(result).toBe("eip155:1:0x1234567890123456789012345678901234567890")
-  })
-
-  it("creates blockchain account ID for Solana address", () => {
-    const result = createBlockchainAccountId(
-      "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P",
-      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
-    )
-    expect(result).toBe(
-      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P"
-    )
-  })
-})
-
 describe("createDidPkhUri", () => {
   it("creates did:pkh URI for EVM address", () => {
     const result = createDidPkhUri(
-      "0x1234567890123456789012345678901234567890",
-      "eip155:1"
+      "eip155:1",
+      "0x1234567890123456789012345678901234567890"
     )
     expect(result).toBe(
       "did:pkh:eip155:1:0x1234567890123456789012345678901234567890"
@@ -176,8 +133,8 @@ describe("createDidPkhUri", () => {
 
   it("creates did:pkh URI for Solana address", () => {
     const result = createDidPkhUri(
-      "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P",
-      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P"
     )
     expect(result).toBe(
       "did:pkh:solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P"
@@ -186,21 +143,8 @@ describe("createDidPkhUri", () => {
 })
 
 describe("createDidPkhDocument", () => {
-  const mockSecp256k1Keypair: Keypair = {
-    curve: "secp256k1",
-    publicKey: new Uint8Array([1, 2, 3, 4]),
-    privateKey: new Uint8Array([5, 6, 7, 8])
-  }
-
-  const mockEd25519Keypair: Keypair = {
-    curve: "Ed25519",
-    publicKey: new Uint8Array([1, 2, 3, 4]),
-    privateKey: new Uint8Array([5, 6, 7, 8])
-  }
-
   it("creates did:pkh document for EVM address with secp256k1 keypair", () => {
     const result = createDidPkhDocument({
-      keypair: mockSecp256k1Keypair,
       address: "0x1234567890123456789012345678901234567890",
       chainId: "eip155:1"
     })
@@ -225,7 +169,6 @@ describe("createDidPkhDocument", () => {
 
   it("creates did:pkh document for Solana address with Ed25519 keypair", () => {
     const result = createDidPkhDocument({
-      keypair: mockEd25519Keypair,
       address: "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P",
       chainId: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
     })
@@ -249,7 +192,6 @@ describe("createDidPkhDocument", () => {
 
   it("creates did:pkh document with custom controller", () => {
     const result = createDidPkhDocument({
-      keypair: mockSecp256k1Keypair,
       address: "0x1234567890123456789012345678901234567890",
       chainId: "eip155:1",
       controller: "did:key:zQ3sharFd8K3z6L9b5X5J7m8n9o0p1q2r3s4t5u6v7w8x9y0z"
@@ -257,28 +199,6 @@ describe("createDidPkhDocument", () => {
 
     expect(result.didDocument.controller).toBe(
       "did:key:zQ3sharFd8K3z6L9b5X5J7m8n9o0p1q2r3s4t5u6v7w8x9y0z"
-    )
-  })
-
-  it("throws error for mismatched keypair algorithm and chain", () => {
-    expect(() =>
-      createDidPkhDocument({
-        keypair: mockEd25519Keypair,
-        address: "0x1234567890123456789012345678901234567890",
-        chainId: "eip155:1"
-      })
-    ).toThrow(
-      "Invalid keypair algorithm. Expected secp256k1 for chain eip155:1"
-    )
-
-    expect(() =>
-      createDidPkhDocument({
-        keypair: mockSecp256k1Keypair,
-        address: "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P",
-        chainId: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
-      })
-    ).toThrow(
-      "Invalid keypair algorithm. Expected Ed25519 for chain solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
     )
   })
 })

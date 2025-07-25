@@ -54,8 +54,7 @@ export class User {
     const address = publicKeyToAddress(wallet.publicKey)
     const { did, didDocument } = createDidPkhDocument({
       address,
-      chainId,
-      keypair: wallet
+      chainId
     })
 
     return new User({

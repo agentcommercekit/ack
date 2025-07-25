@@ -84,16 +84,11 @@ function convertLegacyPublicKeyToMultibase(
 /**
  * Base options for creating a DID document
  */
-export interface CreateDidDocumentOptions {
+export type CreateDidDocumentOptions = {
   /**
    * The DID to include in the DID document
    */
   did: DidUri
-  /**
-   * The public key to include in the DID document
-   */
-  publicKey: PublicKeyWithEncoding
-
   /**
    * Additional URIs that are equivalent to this DID
    */
@@ -111,16 +106,70 @@ export interface CreateDidDocumentOptions {
    */
   additionalContexts?: string[]
   /**
-   * Optional verification method to use instead of building one
+   * CapabilityDelegation verification method
    */
-  verificationMethod?: VerificationMethod
-}
+  capabilityDelegation?: string[]
+  /**
+   * CapabilityInvocation verification method
+   */
+  capabilityInvocation?: string[]
+} & (
+  | {
+      /**
+       * The public key to include in the DID document
+       */
+      publicKey: PublicKeyWithEncoding
+      /**
+       * Optional verification method to use instead of building one
+       */
+      verificationMethod?: never
+    }
+  | {
+      /**
+       * The public key to include in the DID document (not required when verificationMethod is provided)
+       */
+      publicKey?: never
+      /**
+       * Verification method to use instead of building one from publicKey
+       */
+      verificationMethod: VerificationMethod
+    }
+)
 
 /**
  * Create a DID document from a public key
  *
  * @param options - The {@link CreateDidDocumentOptions} to use
  * @returns A {@link DidDocument}
+ *
+ * @example
+ * ```ts
+ * const document = createDidDocument({
+ *   did: "did:example:123",
+ *   publicKey: {
+ *     encoding: "jwk",
+ *     curve: "Ed25519",
+ *     value: {
+ *       kty: "OKP",
+ *       crv: "Ed25519",
+ *       x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+ *     }
+ *   }
+ * })
+ * ```
+ *
+ * @example
+ * ```ts
+ * const document2 = createDidDocument({
+ *   did: "did:example:123",
+ *   verificationMethod: {
+ *     id: "did:example:123#key-1",
+ *     type: "Multikey",
+ *     controller: "did:example:123",
+ *     publicKeyMultibase: "z6MkhaXgBZDvotDkL5257faiztiGiC2QtKLGpbnnEGta2doK"
+ *   }
+ * })
+ * ```
  */
 export function createDidDocument({
   did,
@@ -129,42 +178,45 @@ export function createDidDocument({
   alsoKnownAs,
   service,
   additionalContexts,
-  verificationMethod
+  verificationMethod,
+  capabilityDelegation,
+  capabilityInvocation
 }: CreateDidDocumentOptions): DidDocument {
-  verificationMethod ??= createVerificationMethod({
-    did,
-    publicKey
-  })
+  if (!verificationMethod) {
+    // If no verification method is provided, we need to create one from the
+    // public key
+    if (!publicKey) {
+      throw new Error("Either publicKey or verificationMethod must be provided")
+    }
 
-  const verificationMethodContext =
-    verificationMethod.type === "Multikey"
-      ? "https://w3id.org/security/multikey/v1"
-      : "https://w3id.org/security/jwk/v1"
+    verificationMethod ??= createVerificationMethod({
+      did,
+      publicKey
+    })
+  }
 
-  const contexts = [
-    "https://www.w3.org/ns/did/v1",
-    verificationMethodContext,
-    ...(additionalContexts ?? [])
-  ]
+  const contexts = ["https://www.w3.org/ns/did/v1"]
+  if (verificationMethod.type === "Multikey") {
+    contexts.push("https://w3id.org/security/multikey/v1")
+  } else if (
+    verificationMethod.type === "JsonWebKey2020" ||
+    verificationMethod.type === "JsonWebKey"
+  ) {
+    contexts.push("https://w3id.org/security/jwk/v1")
+  }
+  contexts.push(...(additionalContexts ?? []))
 
   const document: DidDocument = {
     "@context": contexts,
     id: did,
     verificationMethod: [verificationMethod],
     authentication: [verificationMethod.id],
-    assertionMethod: [verificationMethod.id]
-  }
-
-  if (controller) {
-    document.controller = controller
-  }
-
-  if (alsoKnownAs) {
-    document.alsoKnownAs = alsoKnownAs
-  }
-
-  if (service) {
-    document.service = service
+    assertionMethod: [verificationMethod.id],
+    ...(controller && { controller }),
+    ...(alsoKnownAs && { alsoKnownAs }),
+    ...(service && { service }),
+    ...(capabilityDelegation && { capabilityDelegation }),
+    ...(capabilityInvocation && { capabilityInvocation })
   }
 
   return document
@@ -172,7 +224,7 @@ export function createDidDocument({
 
 export type CreateDidDocumentFromKeypairOptions = Omit<
   CreateDidDocumentOptions,
-  "publicKey"
+  "publicKey" | "verificationMethod"
 > & {
   /**
    * The keypair to create the did document from

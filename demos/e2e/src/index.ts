@@ -8,8 +8,8 @@ import {
   waitForEnter
 } from "@repo/cli-tools"
 import {
+  caip2ChainIds,
   createJwt,
-  didPkhChainIds,
   getDidResolver,
   parseJwtCredential
 } from "agentcommercekit"
@@ -30,7 +30,7 @@ import type { Keypair, PaymentRequest } from "agentcommercekit"
  *
  * @see {@link https://namespaces.chainagnostic.org}
  */
-const CHAIN_ID = didPkhChainIds.evm.baseSepolia
+const CHAIN_ID = caip2ChainIds.baseSepolia
 
 /**
  * These are defined outside the `main` function because they are

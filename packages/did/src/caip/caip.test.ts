@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isCaip2ChainId } from "./caip"
+import { createCaip10AccountId, isCaip2ChainId } from "./caip"
 
 describe("isCaip2ChainId", () => {
   it("returns true for valid CAIP-2 chain IDs", () => {
@@ -29,5 +29,25 @@ describe("isCaip2ChainId", () => {
   it("returns false for chain IDs with invalid characters", () => {
     expect(isCaip2ChainId("EIP155:1")).toBe(false) // uppercase not allowed in namespace
     expect(isCaip2ChainId("eip-155:1")).toBe(false) // hyphen not allowed in namespace
+  })
+})
+
+describe("createCaip10AccountId", () => {
+  it("creates a caip 10 account ID for EVM address", () => {
+    const result = createCaip10AccountId(
+      "eip155:1",
+      "0x1234567890123456789012345678901234567890"
+    )
+    expect(result).toBe("eip155:1:0x1234567890123456789012345678901234567890")
+  })
+
+  it("creates a caip 10 account ID for Solana address", () => {
+    const result = createCaip10AccountId(
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P"
+    )
+    expect(result).toBe(
+      "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P"
+    )
   })
 })

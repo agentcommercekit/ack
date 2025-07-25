@@ -79,7 +79,6 @@ export class Agent {
     this.preferredChainId = preferredChainId
     const { did: walletDid, didDocument: walletDidDocument } =
       createDidPkhDocument({
-        keypair: this.wallet,
         address: this.walletAddress,
         chainId: this.preferredChainId
       })

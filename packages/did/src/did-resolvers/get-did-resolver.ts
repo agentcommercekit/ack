@@ -1,6 +1,6 @@
 import { getResolver as getKeyDidResolver } from "key-did-resolver"
-import { getResolver as getPkhDidResolver } from "pkh-did-resolver"
 import { DidResolver } from "./did-resolver"
+import { getResolver as getPkhDidResolver } from "./pkh-did-resolver"
 import { getResolver as getWebDidResolver } from "./web-did-resolver"
 import type { DidWebResolverOptions } from "./web-did-resolver"
 import type { ResolverOptions } from "did-resolver"

@@ -58,7 +58,6 @@
     "@agentcommercekit/keys": "workspace:*",
     "did-resolver": "^4.1.0",
     "key-did-resolver": "^4.0.0",
-    "pkh-did-resolver": "^2.0.0",
     "valibot": "^1.1.0",
     "varint": "^6.0.0"
   },

@@ -39,7 +39,7 @@ export async function getKeypairInfo(
   const account = privateKeyToAccount(
     `0x${bytesToHexString(keypair.privateKey)}`
   )
-  const did = createDidPkhUri(address, chainId)
+  const did = createDidPkhUri(chainId, address)
   const jwtSigner = createJwtSigner(keypair)
 
   return {

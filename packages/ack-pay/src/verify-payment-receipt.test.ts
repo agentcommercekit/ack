@@ -60,8 +60,8 @@ describe("verifyPaymentReceipt()", () => {
       paymentOptionId: paymentRequest.paymentOptions[0].id,
       issuer: receiptIssuerDid,
       payerDid: createDidPkhUri(
-        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
-        "eip155:84532"
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C"
       )
     })
 

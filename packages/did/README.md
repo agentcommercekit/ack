@@ -62,8 +62,8 @@ const keyDid = createDidKeyUri(keypair)
 
 // Create a did:pkh URI from an address and chain ID
 const pkhDid = createDidPkhUri(
-  "0x1234567890123456789012345678901234567890",
-  "eip155:1"
+  "eip155:1",
+  "0x1234567890123456789012345678901234567890"
 )
 // did:pkh:eip155:1:0x1234567890123456789012345678901234567890
 ```
@@ -103,7 +103,7 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 
 - `createDidWebUri(input: string | URL): DidWebUri` - Create a did:web URI from a domain or URL
 - `createDidKeyUri(keypair: Keypair): DidKeyUri` - Create a did:key URI from a keypair
-- `createDidPkhUri(address: string, chainId: DidPkhChainId): DidPkhUri` - Create a did:pkh URI from an address and chain ID
+- `createDidPkhUri(chainId: DidPkhChainId, address: string): DidPkhUri` - Create a did:pkh URI from an address and chain ID
 
 ### Resolution
 
