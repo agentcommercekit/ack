@@ -1,19 +1,18 @@
 /* eslint-disable @cspell/spellchecker */
+import { caip10Parts, createCaip10AccountId } from "@agentcommercekit/caip"
+import {
+  isCaip10AccountId,
+  isCaip2ChainId
+} from "@agentcommercekit/caip/schemas/valibot"
 import {
   base58ToBytes,
   isBase58,
   publicKeyBytesToJwk
 } from "@agentcommercekit/keys/encoding"
-import {
-  caip10Parts,
-  createCaip10AccountId,
-  isCaip10AccountId,
-  isCaip2ChainId
-} from "../caip/caip"
 import { createDidDocument } from "../create-did-document"
 import type { DidUri } from "../did-uri"
-import type { Caip10AccountId, Caip2ChainId } from "../schemas/valibot"
 import type { DidUriWithDocument } from "../types"
+import type { Caip10AccountId, Caip2ChainId } from "@agentcommercekit/caip"
 import type { VerificationMethod } from "did-resolver"
 
 /**

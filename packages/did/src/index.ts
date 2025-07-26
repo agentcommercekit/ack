@@ -1,4 +1,3 @@
-export * from "./caip"
 export * from "./did-document"
 export * from "./did-resolvers/did-resolver"
 export * from "./did-resolvers/get-did-resolver"

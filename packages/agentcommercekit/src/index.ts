@@ -1,5 +1,6 @@
 export * from "@agentcommercekit/ack-pay"
 export * from "@agentcommercekit/ack-id"
+export * from "@agentcommercekit/caip"
 export * from "@agentcommercekit/did"
 export * from "@agentcommercekit/jwt"
 export * from "@agentcommercekit/keys"

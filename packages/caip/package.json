@@ -1,12 +1,12 @@
 {
-  "name": "@agentcommercekit/did",
-  "version": "0.7.1",
+  "name": "@agentcommercekit/caip",
+  "version": "0.1.0",
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agentcommercekit/ack.git",
-    "directory": "packages/did"
+    "directory": "packages/caip"
   },
   "license": "MIT",
   "author": {
@@ -19,10 +19,6 @@
     ".": {
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
-    },
-    "./schemas/zod": {
-      "types": "./dist/schemas/zod/v3.d.ts",
-      "default": "./dist/schemas/zod/v3.js"
     },
     "./schemas/zod/v3": {
       "types": "./dist/schemas/zod/v3.d.ts",
@@ -54,29 +50,26 @@
     "lint:fix": "eslint . --fix",
     "test": "vitest"
   },
-  "dependencies": {
-    "@agentcommercekit/caip": "workspace:*",
-    "@agentcommercekit/keys": "workspace:*",
-    "did-resolver": "^4.1.0",
-    "key-did-resolver": "^4.0.0",
-    "valibot": "^1.1.0",
-    "varint": "^6.0.0"
-  },
+  "dependencies": {},
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/varint": "^6.0.3",
     "eslint": "^9.27.0",
     "standard-parse": "^0.3.0",
     "tsdown": "^0.11.12",
     "typescript": "^5",
+    "valibot": "^1.1.0",
     "vitest": "^3.2.4",
     "zod": "^3.25.0"
   },
   "peerDependencies": {
+    "valibot": "^1.1.0",
     "zod": "^3.25.0"
   },
   "peerDependenciesMeta": {
+    "valibot": {
+      "optional": true
+    },
     "zod": {
       "optional": true
     }

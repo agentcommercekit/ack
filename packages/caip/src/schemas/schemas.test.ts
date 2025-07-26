@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest"
-import * as valibot from "./schemas/valibot"
-import * as zodv3 from "./schemas/zod/v3"
-import * as zodv4 from "./schemas/zod/v4"
+import * as valibot from "./valibot"
+import * as zodv3 from "./zod/v3"
+import * as zodv4 from "./zod/v4"
 import type {
   Caip10AccountId,
   Caip19AssetId,
   Caip19AssetName,
   Caip19AssetType,
   Caip2ChainId
-} from "./schemas/valibot"
+} from "../caips"
 
 const schemas = {
   valibot,
@@ -29,6 +29,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
 
       for (const chainId of validChainIds) {
         expect(chainId).toMatchSchema(schemas.caip2ChainIdSchema)
+        expect(schemas.isCaip2ChainId(chainId)).toBe(true)
       }
     })
 
@@ -46,6 +47,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
 
       for (const chainId of invalidChainIds) {
         expect(chainId).not.toMatchSchema(schemas.caip2ChainIdSchema)
+        expect(schemas.isCaip2ChainId(chainId)).toBe(false)
       }
     })
   })
@@ -175,7 +177,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
     })
 
     it("has correct type inference for CAIP-19 Asset Name", () => {
-      const assetName: Caip19AssetName = "eip155:erc20"
+      const assetName: Caip19AssetName = "eip155:1/slip44:60"
       expect(typeof assetName).toBe("string")
     })
 

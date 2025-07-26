@@ -1,4 +1,3 @@
-/* eslint-disable @cspell/spellchecker */
 import { generateKeypair, jwkToKeypair } from "@agentcommercekit/keys"
 import { describe, expect, it } from "vitest"
 import { createDidKeyUri, isDidKeyUri } from "./did-key"

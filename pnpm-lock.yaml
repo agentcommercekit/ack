@@ -507,6 +507,9 @@ importers:
       '@agentcommercekit/ack-pay':
         specifier: workspace:*
         version: link:../ack-pay
+      '@agentcommercekit/caip':
+        specifier: workspace:*
+        version: link:../caip
       '@agentcommercekit/did':
         specifier: workspace:*
         version: link:../did
@@ -548,8 +551,41 @@ importers:
         specifier: ^3.25.0
         version: 3.25.4
 
+  packages/caip:
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../tools/eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../tools/typescript-config
+      eslint:
+        specifier: ^9.27.0
+        version: 9.27.0(jiti@2.4.2)
+      standard-parse:
+        specifier: ^0.3.0
+        version: 0.3.0(valibot@1.1.0(typescript@5.8.3))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)(tsx@4.20.3)(yaml@2.8.0))(zod@3.25.4)
+      tsdown:
+        specifier: ^0.11.12
+        version: 0.11.12(typescript@5.8.3)
+      typescript:
+        specifier: ^5
+        version: 5.8.3
+      valibot:
+        specifier: ^1.1.0
+        version: 1.1.0(typescript@5.8.3)
+      vitest:
+        specifier: ^3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)(tsx@4.20.3)(yaml@2.8.0)
+      zod:
+        specifier: ^3.25.0
+        version: 3.25.4
+
   packages/did:
     dependencies:
+      '@agentcommercekit/caip':
+        specifier: workspace:*
+        version: link:../caip
       '@agentcommercekit/keys':
         specifier: workspace:*
         version: link:../keys

@@ -151,6 +151,7 @@ export function config({ root }) {
     {
       files: ["**/*.test.*"],
       rules: {
+        "@cspell/spellchecker": "off",
         "@typescript-eslint/no-non-null-assertion": "off"
       }
     },
