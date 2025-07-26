@@ -2,8 +2,7 @@
  * A `did:pkh` resolver for use with `did-resolver`
  */
 import {
-  caip10AccountIdFromDidPkhUri,
-  createDidPkhDocumentFromCaip10AccountId,
+  createDidPkhDocumentFromDidPkhUri,
   isDidPkhUri
 } from "../methods/did-pkh"
 import type { DIDResolutionResult, DIDResolver } from "did-resolver"
@@ -17,9 +16,7 @@ export async function resolve(did: string): Promise<DIDResolutionResult> {
     }
   }
 
-  const caip10AccountId = caip10AccountIdFromDidPkhUri(did)
-  const { didDocument } =
-    createDidPkhDocumentFromCaip10AccountId(caip10AccountId)
+  const { didDocument } = createDidPkhDocumentFromDidPkhUri(did)
 
   return Promise.resolve({
     didDocument,

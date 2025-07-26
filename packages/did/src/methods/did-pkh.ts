@@ -52,27 +52,13 @@ export function didPkhParts(
     throw new Error("Invalid did:pkh URI")
   }
 
-  const [did, method, chainNamespace, chainReference, ...rest] =
-    didUri.split(":")
-
-  // Build the address from the remaining parts
-  const address = rest.join(":")
-
-  if (
-    did !== "did" ||
-    method !== "pkh" ||
-    !chainNamespace?.length ||
-    !chainReference?.length ||
-    !address.length
-  ) {
+  const caip10AccountId = didUri.replace("did:pkh:", "")
+  if (!isCaip10AccountId(caip10AccountId)) {
     throw new Error("Invalid did:pkh URI")
   }
+  const { namespace, reference, accountId } = caip10Parts(caip10AccountId)
 
-  if (!isCaip2ChainId(`${chainNamespace}:${chainReference}`)) {
-    throw new Error("Invalid did:pkh URI")
-  }
-
-  return [did, method, chainNamespace, chainReference, address]
+  return ["did", "pkh", namespace, reference, accountId]
 }
 
 /**
@@ -175,6 +161,28 @@ const jsonLdContexts = {
     "https://w3id.org/security#blockchainAccountId",
     "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020#EcdsaSecp256k1RecoveryMethod2020"
   ]
+}
+
+/**
+ * Create a did:pkh document from a did:pkh URI
+ *
+ * @example
+ * ```ts
+ * const didDocument = createDidPkhDocumentFromDidPkhUri(
+ *   "did:pkh:eip155:1:0x1234567890123456789012345678901234567890"
+ * )
+ * ```
+ *
+ * @param didUri - The did:pkh URI
+ * @param controller - The controller of the did:pkh document
+ * @returns The did:pkh document
+ */
+export function createDidPkhDocumentFromDidPkhUri(
+  didUri: DidPkhUri,
+  controller?: DidUri
+): DidUriWithDocument {
+  const caip10AccountId = caip10AccountIdFromDidPkhUri(didUri)
+  return createDidPkhDocumentFromCaip10AccountId(caip10AccountId, controller)
 }
 
 /**
