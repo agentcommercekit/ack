@@ -82,10 +82,10 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
   describe("CAIP-19 Asset Name Schema", () => {
     it("validates correct CAIP-19 asset names", () => {
       const validAssetNames = [
-        "eip155:erc20",
-        "eip155:erc721",
-        "solana:spl",
-        "bitcoin:btc"
+        "slip44:60",
+        "erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
+        "erc721:0xb0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
+        "spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       ]
 
       for (const assetName of validAssetNames) {
@@ -111,9 +111,9 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
   describe("CAIP-19 Asset Type Schema", () => {
     it("validates correct CAIP-19 asset types", () => {
       const validAssetTypes = [
-        "eip155:1/eip155:erc20",
-        "eip155:11155111/eip155:erc721",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/solana:spl"
+        "eip155:1/erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
+        "eip155:11155111/erc721:0xb0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
       ]
 
       for (const assetType of validAssetTypes) {
@@ -139,9 +139,9 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
   describe("CAIP-19 Asset ID Schema", () => {
     it("validates correct CAIP-19 asset IDs", () => {
       const validAssetIds = [
-        "eip155:1/eip155:erc20/0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-        "eip155:11155111/eip155:erc721/123",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/solana:spl/5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "eip155:1/erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c/0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
+        "eip155:11155111/erc721:0xb0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c/123",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
       ]
 
       for (const assetId of validAssetIds) {
@@ -177,18 +177,19 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
     })
 
     it("has correct type inference for CAIP-19 Asset Name", () => {
-      const assetName: Caip19AssetName = "eip155:1/slip44:60"
+      const assetName: Caip19AssetName = "slip44:60"
       expect(typeof assetName).toBe("string")
     })
 
     it("has correct type inference for CAIP-19 Asset Type", () => {
-      const assetType: Caip19AssetType = "eip155:1/eip155:erc20"
+      const assetType: Caip19AssetType =
+        "eip155:1/erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c"
       expect(typeof assetType).toBe("string")
     })
 
     it("has correct type inference for CAIP-19 Asset ID", () => {
       const assetId: Caip19AssetId =
-        "eip155:1/eip155:erc20/0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
+        "eip155:1/erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c/0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6"
       expect(typeof assetId).toBe("string")
     })
   })

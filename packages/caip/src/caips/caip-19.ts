@@ -14,9 +14,9 @@ import type { Caip2ChainId } from "./caip-2"
  * token_id:          [-.%a-zA-Z0-9]{1,78}
  */
 
-export type Caip19AssetId = `${Caip2ChainId}:${string}`
-export type Caip19AssetName = `${Caip2ChainId}:${string}`
-export type Caip19AssetType = `${Caip2ChainId}:${string}`
+export type Caip19AssetName = `${string}:${string}` // asset_namespace:asset_reference
+export type Caip19AssetType = `${Caip2ChainId}/${Caip19AssetName}` // chain_id/asset_name
+export type Caip19AssetId = `${Caip19AssetType}/${string}` // asset_type/token_id
 
 export const caip19AssetNamespacePattern = "[-a-z0-9]{3,8}"
 export const caip19AssetReferencePattern = "[-.%a-zA-Z0-9]{1,128}"
