@@ -1,6 +1,7 @@
 import { getPublicKeyFromPrivateKey } from "@agentcommercekit/keys"
 import { bytesToMultibase } from "@agentcommercekit/keys/encoding"
 import * as varint from "varint"
+import type { DidUri } from "../did-uri"
 import type { Keypair } from "@agentcommercekit/keys"
 
 /**
@@ -15,7 +16,7 @@ import type { Keypair } from "@agentcommercekit/keys"
 /**
  * The `did:key` Uri type
  */
-export type DidKeyUri = `did:key:z${string}`
+export type DidKeyUri = DidUri<"key", `z${string}`>
 
 export const KEY_CONFIG = {
   secp256k1: {

@@ -138,7 +138,7 @@ export function createBlockchainAccountId(
 export function createDidPkhUri(
   chainId: Caip2ChainId,
   address: string
-): DidUri {
+): DidPkhUri {
   return `did:pkh:${createCaip10AccountId(chainId, address)}`
 }
 
@@ -147,7 +147,7 @@ export function createDidPkhUri(
  */
 export function createDidPkhUriFromCaip10AccountId(
   caip10AccountId: Caip10AccountId
-): DidUri {
+): DidPkhUri {
   return `did:pkh:${caip10AccountId}`
 }
 
@@ -203,7 +203,7 @@ export function createDidPkhDocumentFromDidPkhUri(
 export function createDidPkhDocumentFromCaip10AccountId(
   caip10AccountId: Caip10AccountId,
   controller?: DidUri
-): DidUriWithDocument {
+): DidUriWithDocument<DidPkhUri> {
   const did = createDidPkhUriFromCaip10AccountId(caip10AccountId)
   const verificationMethod = createVerificationMethod(did, caip10AccountId)
   const additionalContexts = jsonLdContexts[verificationMethod.type]
@@ -234,7 +234,7 @@ export function createDidPkhDocument({
   address,
   chainId,
   controller
-}: CreateDidPkhDocumentOptions): DidUriWithDocument {
+}: CreateDidPkhDocumentOptions): DidUriWithDocument<DidPkhUri> {
   const caip10AccountId = createCaip10AccountId(chainId, address)
   return createDidPkhDocumentFromCaip10AccountId(caip10AccountId, controller)
 }

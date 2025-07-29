@@ -6,12 +6,13 @@ import type {
   CreateDidDocumentFromKeypairOptions,
   CreateDidDocumentOptions
 } from "../create-did-document"
+import type { DidUri } from "../did-uri"
 import type { DidUriWithDocument } from "../types"
 
 /**
  * The type of a local Did
  */
-export type DidWebUri = `did:web:${string}`
+export type DidWebUri = DidUri<"web">
 
 // Utility type to distribute Omit over unions
 type DistributiveOmit<T, K extends keyof T> = T extends unknown
@@ -62,7 +63,7 @@ type CreateDidWebDocumentParams = {
 export function createDidWebDocument({
   baseUrl,
   ...options
-}: CreateDidWebDocumentParams): DidUriWithDocument {
+}: CreateDidWebDocumentParams): DidUriWithDocument<DidWebUri> {
   const did = createDidWebUri(baseUrl)
   const didDocument = createDidDocument({
     did,
@@ -91,7 +92,7 @@ type CreateDidWebDocumentFromKeypairParams = Omit<
 export function createDidWebDocumentFromKeypair({
   baseUrl,
   ...options
-}: CreateDidWebDocumentFromKeypairParams): DidUriWithDocument {
+}: CreateDidWebDocumentFromKeypairParams): DidUriWithDocument<DidWebUri> {
   const did = createDidWebUri(baseUrl)
   const didDocument = createDidDocumentFromKeypair({
     did,
