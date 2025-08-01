@@ -3,44 +3,79 @@ import { getPublicKeyFromPrivateKey } from "../public-key"
 import type { KeyCurve } from "../key-curves"
 
 /**
- * JWK-encoding, specifically limited to public keys
+ * JWK-encoding
  */
-export type PublicKeyJwkSecp256k1 = {
+export type JwkSecp256k1 = {
   kty: "EC"
   crv: "secp256k1"
   x: string // base64url encoded x-coordinate
   y: string // base64url encoded y-coordinate
+  d?: string // base64url encoded private key
 }
 
-export type PublicKeyJwkSecp256r1 = {
+export type PublicKeyJwkSecp256k1 = JwkSecp256k1 & {
+  d?: never
+}
+
+export type PrivateKeyJwkSecp256k1 = JwkSecp256k1 & {
+  d: string // base64url encoded private key
+}
+
+export type JwkSecp256r1 = {
   kty: "EC"
   crv: "secp256r1"
   x: string // base64url encoded x-coordinate
   y: string // base64url encoded y-coordinate
+  d?: string // base64url encoded private key
 }
 
-export type PublicKeyJwkEd25519 = {
+export type PublicKeyJwkSecp256r1 = JwkSecp256r1 & {
+  d?: never
+}
+
+export type PrivateKeyJwkSecp256r1 = JwkSecp256r1 & {
+  d: string // base64url encoded private key
+}
+
+export type JwkEd25519 = {
   kty: "OKP"
   crv: "Ed25519"
   x: string // base64url encoded x-coordinate
+  d?: string // base64url encoded private key
 }
+
+export type PublicKeyJwkEd25519 = JwkEd25519 & {
+  d?: never
+}
+
+export type PrivateKeyJwkEd25519 = JwkEd25519 & {
+  d: string // base64url encoded private key
+}
+
+export type Jwk = JwkSecp256k1 | JwkSecp256r1 | JwkEd25519
 
 export type PublicKeyJwk =
   | PublicKeyJwkSecp256k1
   | PublicKeyJwkSecp256r1
   | PublicKeyJwkEd25519
 
-/**
- * JWK-encoding for private keys
- */
-export type PrivateKeyJwk = PublicKeyJwk & {
-  d: string // base64url encoded private key
-}
+export type PrivateKeyJwk =
+  | PrivateKeyJwkSecp256k1
+  | PrivateKeyJwkSecp256r1
+  | PrivateKeyJwkEd25519
 
-function isPublicKeyJwkSecp256(
+/**
+ * Check if an object is a valid secp256k1 or secp256r1 public key (or private
+ * key) JWK
+ *
+ * @param jwk - The JWK to check
+ * @param crv - The curve to check
+ * @returns True if the JWK is a valid secp256k1 or secp256r1 public key JWK
+ */
+function isJwkSecp256(
   jwk: unknown,
   crv: "secp256k1" | "secp256r1"
-): jwk is PublicKeyJwkSecp256k1 | PublicKeyJwkSecp256r1 {
+): jwk is JwkSecp256k1 | JwkSecp256r1 {
   if (typeof jwk !== "object" || jwk === null) {
     return false
   }
@@ -62,21 +97,33 @@ function isPublicKeyJwkSecp256(
   return true
 }
 
-export function isPublicKeyJwkSecp256k1(
-  jwk: unknown
-): jwk is PublicKeyJwkSecp256k1 {
-  return isPublicKeyJwkSecp256(jwk, "secp256k1")
+/**
+ * Check if an object is a valid secp256k1 public key (or private key) JWK
+ *
+ * @param jwk - The JWK to check
+ * @returns True if the JWK is a valid secp256k1 public key JWK
+ */
+export function isJwkSecp256k1(jwk: unknown): jwk is JwkSecp256k1 {
+  return isJwkSecp256(jwk, "secp256k1")
 }
 
-export function isPublicKeyJwkSecp256r1(
-  jwk: unknown
-): jwk is PublicKeyJwkSecp256r1 {
-  return isPublicKeyJwkSecp256(jwk, "secp256r1")
+/**
+ * Check if an object is a valid secp256r1 public key (or private key) JWK
+ *
+ * @param jwk - The JWK to check
+ * @returns True if the JWK is a valid secp256r1 public key JWK
+ */
+export function isJwkSecp256r1(jwk: unknown): jwk is JwkSecp256r1 {
+  return isJwkSecp256(jwk, "secp256r1")
 }
 
-export function isPublicKeyJwkEd25519(
-  jwk: unknown
-): jwk is PublicKeyJwkEd25519 {
+/**
+ * Check if an object is a valid Ed25519 public key (or private key) JWK
+ *
+ * @param jwk - The JWK to check
+ * @returns True if the JWK is a valid Ed25519 public key JWK
+ */
+export function isJwkEd25519(jwk: unknown): jwk is JwkEd25519 {
   if (typeof jwk !== "object" || jwk === null) {
     return false
   }
@@ -98,27 +145,75 @@ export function isPublicKeyJwkEd25519(
   return true
 }
 
+export function isJwk(jwk: unknown): jwk is Jwk {
+  return isJwkSecp256k1(jwk) || isJwkSecp256r1(jwk) || isJwkEd25519(jwk)
+}
+
 /**
  * Check if an object is a valid public key JWK
  */
 export function isPublicKeyJwk(jwk: unknown): jwk is PublicKeyJwk {
-  return (
-    isPublicKeyJwkSecp256k1(jwk) ||
-    isPublicKeyJwkSecp256r1(jwk) ||
-    isPublicKeyJwkEd25519(jwk)
-  )
+  return isJwk(jwk) && !("d" in jwk)
+}
+
+export function isPublicKeyJwkSecp256k1(
+  jwk: unknown
+): jwk is PublicKeyJwkSecp256k1 {
+  return isJwkSecp256k1(jwk) && isPublicKeyJwk(jwk)
+}
+
+export function isPublicKeyJwkSecp256r1(
+  jwk: unknown
+): jwk is PublicKeyJwkSecp256r1 {
+  return isJwkSecp256r1(jwk) && isPublicKeyJwk(jwk)
+}
+
+export function isPublicKeyJwkEd25519(
+  jwk: unknown
+): jwk is PublicKeyJwkEd25519 {
+  return isJwkEd25519(jwk) && isPublicKeyJwk(jwk)
 }
 
 /**
  * Check if an object is a valid private key JWK
  */
 export function isPrivateKeyJwk(jwk: unknown): jwk is PrivateKeyJwk {
-  if (!isPublicKeyJwk(jwk)) {
-    return false
+  return isJwk(jwk) && !!jwk.d
+}
+
+export function isPrivateKeyJwkSecp256k1(
+  jwk: unknown
+): jwk is PrivateKeyJwkSecp256k1 {
+  return isJwkSecp256k1(jwk) && isPrivateKeyJwk(jwk)
+}
+
+export function isPrivateKeyJwkSecp256r1(
+  jwk: unknown
+): jwk is PrivateKeyJwkSecp256r1 {
+  return isJwkSecp256r1(jwk) && isPrivateKeyJwk(jwk)
+}
+
+export function isPrivateKeyJwkEd25519(
+  jwk: unknown
+): jwk is PrivateKeyJwkEd25519 {
+  return isJwkEd25519(jwk) && isPrivateKeyJwk(jwk)
+}
+
+/**
+ * Get the public key JWK from a private key JWK
+ *
+ * @param jwk - The private key JWK
+ * @returns The public key JWK
+ */
+export function getPublicKeyJwk(
+  jwk: PrivateKeyJwk | PublicKeyJwk
+): PublicKeyJwk {
+  if (isPrivateKeyJwk(jwk)) {
+    const { d: _d, ...publicKeyJwk } = jwk
+    return publicKeyJwk
   }
 
-  const obj = jwk as Record<string, unknown>
-  return typeof obj.d === "string" && obj.d.length > 0
+  return jwk
 }
 
 /**

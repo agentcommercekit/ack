@@ -58,6 +58,7 @@
     "@agentcommercekit/caip": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
     "did-resolver": "^4.1.0",
+    "jwks-did-resolver": "^0.3.0",
     "key-did-resolver": "^4.0.0",
     "valibot": "^1.1.0",
     "varint": "^6.0.0"

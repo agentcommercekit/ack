@@ -2,6 +2,7 @@ import { encodePublicKeyFromKeypair } from "@agentcommercekit/keys"
 import {
   base58ToBytes,
   bytesToMultibase,
+  getPublicKeyJwk,
   hexStringToBytes
 } from "@agentcommercekit/keys/encoding"
 import type { DidDocument } from "./did-document"
@@ -49,7 +50,7 @@ export function createVerificationMethod({
   switch (encoding) {
     case "jwk":
       verificationMethod.type = "JsonWebKey2020"
-      verificationMethod.publicKeyJwk = value
+      verificationMethod.publicKeyJwk = getPublicKeyJwk(value)
       break
     case "multibase":
       verificationMethod.type = "Multikey"

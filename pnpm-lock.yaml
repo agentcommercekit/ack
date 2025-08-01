@@ -592,6 +592,9 @@ importers:
       did-resolver:
         specifier: ^4.1.0
         version: 4.1.0
+      jwks-did-resolver:
+        specifier: ^0.3.0
+        version: 0.3.0(typescript@5.8.3)(zod@3.25.4)
       key-did-resolver:
         specifier: ^4.0.0
         version: 4.0.0
@@ -3285,6 +3288,10 @@ packages:
   devtools-protocol@0.0.1312386:
     resolution: {integrity: sha512-DPnhUXvmvKT2dFA/j7B+riVLUt9Q6RKJlcppojL5CoRywJJKLDYnRlw0gTFKfgDPHP5E04UoB71SxoJlVZy8FA==}
 
+  did-jwks@0.3.0:
+    resolution: {integrity: sha512-eMV9BVKGvyWk6q8fuAca3ioPMCjz172HwtfmYukZ5lS0xZuQV6PdrlQdj3CvuoG3G3QwGoStdrsOccPeuP9O0Q==}
+    hasBin: true
+
   did-jwt-vc@4.0.13:
     resolution: {integrity: sha512-T1IUneS7Rgpao8dOeZy7dMUvAvcLLn7T8YlWRk/8HsEpaVLDx5NrjRfbfDJU8FL8CI8aBIAhoDnPQO3PNV+BWg==}
     engines: {node: '>=18'}
@@ -4421,6 +4428,9 @@ packages:
   jsonpointer@5.0.1:
     resolution: {integrity: sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==}
     engines: {node: '>=0.10.0'}
+
+  jwks-did-resolver@0.3.0:
+    resolution: {integrity: sha512-ptSjTICfy6T97C7WqHwAHeJnDPbokDmfosI4nHtuiAnmi15wOAteMQFNuAzvmscj0ml2HevVRfa5DIXB2TO6GA==}
 
   katex@0.16.22:
     resolution: {integrity: sha512-XCHRdUw4lf3SKBaJe4EvgqIuWwkPSo9XoeO8GjQW94Bp7TWv9hNhzZjZ+OH9yf1UmLygb7DIT5GSFQiyt16zYg==}
@@ -6271,6 +6281,17 @@ packages:
 
   wcwidth@1.0.1:
     resolution: {integrity: sha512-XHPEwS0q6TaxcvG85+8EYkbiCux2XtWG2mkc47Ng2A77BQu9+DqIOJldST4HgPkuea7dvKSj5VgX3P1d4rW8Tg==}
+
+  web-identity-schemas@0.1.6:
+    resolution: {integrity: sha512-BDjKlPjiwlbb5nDxGRpjdJGU6uMa793u+dR8HtJ2309cGf1hcHzccdl5moXj1LEnjVlty8yETEWLcDXaFq6ZDw==}
+    peerDependencies:
+      valibot: ^1.0.0
+      zod: ^4.0.0
+    peerDependenciesMeta:
+      valibot:
+        optional: true
+      zod:
+        optional: true
 
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
@@ -9065,6 +9086,14 @@ snapshots:
 
   devtools-protocol@0.0.1312386: {}
 
+  did-jwks@0.3.0(typescript@5.8.3)(zod@3.25.4):
+    dependencies:
+      valibot: 1.1.0(typescript@5.8.3)
+      web-identity-schemas: 0.1.6(valibot@1.1.0(typescript@5.8.3))(zod@3.25.4)
+    transitivePeerDependencies:
+      - typescript
+      - zod
+
   did-jwt-vc@4.0.13:
     dependencies:
       did-jwt: 8.0.15
@@ -10413,6 +10442,13 @@ snapshots:
       jsep: 1.4.0
 
   jsonpointer@5.0.1: {}
+
+  jwks-did-resolver@0.3.0(typescript@5.8.3)(zod@3.25.4):
+    dependencies:
+      did-jwks: 0.3.0(typescript@5.8.3)(zod@3.25.4)
+    transitivePeerDependencies:
+      - typescript
+      - zod
 
   katex@0.16.22:
     dependencies:
@@ -12840,6 +12876,11 @@ snapshots:
   wcwidth@1.0.1:
     dependencies:
       defaults: 1.0.4
+
+  web-identity-schemas@0.1.6(valibot@1.1.0(typescript@5.8.3))(zod@3.25.4):
+    optionalDependencies:
+      valibot: 1.1.0(typescript@5.8.3)
+      zod: 3.25.4
 
   web-namespaces@2.0.1: {}
 

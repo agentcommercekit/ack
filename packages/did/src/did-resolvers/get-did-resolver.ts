@@ -1,3 +1,4 @@
+import { getResolver as getJwksDidResolver } from "jwks-did-resolver"
 import { getResolver as getKeyDidResolver } from "key-did-resolver"
 import { DidResolver } from "./did-resolver"
 import { getResolver as getPkhDidResolver } from "./pkh-did-resolver"
@@ -26,12 +27,14 @@ export function getDidResolver({
 }: GetDidResolverOptions = {}): DidResolver {
   const keyResolver = getKeyDidResolver()
   const webResolver = getWebDidResolver(webOptions)
+  const jwksResolver = getJwksDidResolver(webOptions)
   const pkhResolver = getPkhDidResolver()
 
   const didResolver = new DidResolver(
     {
       ...keyResolver,
       ...webResolver,
+      ...jwksResolver,
       ...pkhResolver
     },
     options
