@@ -1,0 +1,29 @@
+{
+  "name": "@demos/swap",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "demo": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@ai-sdk/anthropic": "^0.0.51",
+    "@ai-sdk/openai": "^0.0.66",
+    "@hono/node-server": "^1.13.1",
+    "@repo/api-utils": "workspace:*",
+    "@repo/cli-tools": "workspace:*",
+    "agentcommercekit": "workspace:*",
+    "ai": "^3.4.7",
+    "dotenv": "^16.4.5",
+    "hono": "^4.6.3",
+    "tsx": "^4.19.1",
+    "typescript": "^5.5.3",
+    "valibot": "^0.38.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
+  }
+}

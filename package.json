@@ -26,6 +26,7 @@
     "demo:identity-a2a": "pnpm --filter ./demos/identity-a2a demo",
     "demo:payments": "pnpm --filter ./demos/payments demo",
     "demo:skyfire-kya": "pnpm --filter ./demos/skyfire-kya demo",
+    "demo:swap": "pnpm --filter ./demos/swap demo",
     "dev:docs": "pnpm --filter ./docs docs",
     "dev:examples": "turbo dev",
     "fix": "turbo fix",

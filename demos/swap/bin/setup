@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+# Setup script for ACK Swap Demo
+
+echo "🚀 Setting up ACK Swap Demo..."
+
+# Check if .env exists
+if [ ! -f .env ]; then
+  echo "📝 Creating .env file from .env.example..."
+  cp .env.example .env
+  echo "⚠️  Please add your API key to .env file"
+  echo "   - ANTHROPIC_API_KEY or OPENAI_API_KEY"
+else
+  echo "✅ .env file already exists"
+fi
+
+# Install dependencies
+echo "📦 Installing dependencies..."
+pnpm install
+
+echo "✅ Setup complete!"
+echo ""
+echo "To run the demo:"
+echo "  pnpm run demo"
+echo ""
+echo "Or from the repository root:"
+echo "  pnpm run demo:swap"
