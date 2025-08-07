@@ -26,28 +26,36 @@ export class SwapRequestorAgent extends BaseAgent {
   private getSystemPrompt(): string {
     return `You are a swap requestor agent that helps users swap between USDC and ETH.
 
-IMPORTANT INSTRUCTIONS:
-1. When a user asks to swap tokens, ALWAYS use the tools in this order:
-   a. First use prepareSwap to check balance and verify the executor
-   b. If prepareSwap succeeds, immediately use initiateSwap
-   c. If payment is required, use sendPayment
+CRITICAL INSTRUCTIONS FOR SEAMLESS SWAP EXECUTION:
+1. When a user asks to swap tokens, ALWAYS execute these tools automatically in sequence:
+   a. First call prepareSwap to check balance and verify the executor
+   b. Immediately after prepareSwap succeeds, call initiateSwap
+   c. If initiateSwap returns status: "PAYMENT_REQUIRED", IMMEDIATELY call sendPayment with the paymentToken
+   d. NEVER ask the user to manually send payment - do it automatically in the same conversation
 
 2. Extract the swap amount from the user's request. Common requests:
    - "Swap 60 USDC for ETH" → amountIn: 60
    - "Can you swap 60 usdc for eth?" → amountIn: 60
    - "Exchange 60 USDC to ETH" → amountIn: 60
 
-3. Always provide helpful text responses explaining what you're doing.
+3. Execute the full swap flow without stopping for user input. Only provide status updates.
+
+4. IMPORTANT: If initiateSwap returns status: "PAYMENT_REQUIRED" with a paymentToken, AUTOMATICALLY call sendPayment immediately - do NOT wait for user confirmation.
 
 Your DID is: ${this.did}
 The executor is at: did:web:localhost:5679
 
-Available tools (USE IN ORDER):
+Available tools (CHAIN AUTOMATICALLY):
 - prepareSwap: Checks balance and verifies executor (use FIRST)
 - initiateSwap: Sends the swap request (use AFTER prepareSwap succeeds)
-- sendPayment: Handles payment if required
+- sendPayment: Handles payment automatically when required (use when initiateSwap returns paymentRequired)
 
-Remember: For ANY swap request, immediately call prepareSwap with the amount, then initiateSwap.`
+Remember: Execute the COMPLETE swap flow automatically. Never stop mid-flow to ask for user confirmation.
+
+TOOL EXECUTION RULES:
+- If prepareSwap succeeds → IMMEDIATELY call initiateSwap
+- If initiateSwap returns status: "PAYMENT_REQUIRED" → IMMEDIATELY call sendPayment with the paymentToken
+- Continue until the swap is fully complete`
   }
 
   /**
@@ -89,7 +97,7 @@ Remember: For ANY swap request, immediately call prepareSwap with the amount, th
       model,
       system: this.getSystemPrompt(),
       messages: this.messages,
-      maxToolRoundtrips: 3,
+      maxSteps: 10,
       tools: {
         prepareSwap: tool({
           description:
@@ -201,7 +209,8 @@ Remember: For ANY swap request, immediately call prepareSwap with the amount, th
         }),
 
         initiateSwap: tool({
-          description: "Initiate the swap with the executor after preparation",
+          description:
+            "Initiate the swap with the executor after preparation. If the response has status: 'PAYMENT_REQUIRED', you MUST immediately call sendPayment with the paymentToken from the response.",
           parameters: z.object({
             amountIn: z.number().describe("Amount of USDC to swap"),
             tokenIn: z.string().default("USDC").describe("Input token"),
@@ -269,10 +278,20 @@ Remember: For ANY swap request, immediately call prepareSwap with the amount, th
               /eyJ[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+/
             )
             if (paymentTokenMatch) {
+              log(
+                colors.yellow("   💳 Payment required - payment token detected")
+              )
+              log(
+                colors.dim(
+                  `   Payment token: ${paymentTokenMatch[0].substring(0, 50)}...`
+                )
+              )
               return {
-                success: false,
-                paymentRequired: true,
+                success: true,
+                status: "PAYMENT_REQUIRED",
                 paymentToken: paymentTokenMatch[0],
+                message:
+                  "Payment token received from executor. You must now call sendPayment with this token to complete the swap.",
                 executorMessage: result.text
               }
             }
@@ -285,7 +304,8 @@ Remember: For ANY swap request, immediately call prepareSwap with the amount, th
         }),
 
         sendPayment: tool({
-          description: "Send payment to executor",
+          description:
+            "Automatically send payment to executor when required by initiateSwap. This completes the swap flow.",
           parameters: z.object({
             paymentToken: z.string().describe("Payment token from executor")
           }),
@@ -389,15 +409,16 @@ Remember: For ANY swap request, immediately call prepareSwap with the amount, th
       if (result.toolCalls && result.toolCalls.length > 0) {
         const toolNames = result.toolCalls.map((tc) => tc.toolName)
 
-        if (toolNames.includes("prepareSwap")) {
+        if (toolNames.includes("sendPayment")) {
           responseText =
-            "I'm checking your balance and verifying the executor's identity to prepare for the swap."
+            "Payment processed successfully! Your swap has been completed."
         } else if (toolNames.includes("initiateSwap")) {
-          responseText = "I'm initiating the swap for you now."
-        } else if (toolNames.includes("sendPayment")) {
-          responseText = "Processing the payment for the swap."
+          responseText = "Swap initiated. Processing payment automatically..."
+        } else if (toolNames.includes("prepareSwap")) {
+          responseText =
+            "Balance verified and executor authenticated. Initiating swap..."
         } else {
-          responseText = "Processing your request..."
+          responseText = "Processing your swap request..."
         }
       } else {
         responseText =

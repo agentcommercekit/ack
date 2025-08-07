@@ -45,7 +45,7 @@ export class MockAckLabService {
     // Initialize balances - USDC uses 6 decimals, ETH uses 18
     this.balances.set(requestorData.did, {
       "caip19:eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":
-        "100000000", // 100 USDC
+        "1000000000", // 1000 USDC
       "caip19:eip155:1/slip44:60": "0" // 0 ETH
     })
 

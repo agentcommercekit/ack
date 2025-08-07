@@ -86,3 +86,59 @@ export interface SwapResult {
   tokenOut?: string
   error?: string
 }
+
+/**
+ * Data request from requestor
+ */
+export interface DataRequest {
+  /** Dataset identifier */
+  datasetId: string
+  /** Purpose of data use */
+  purpose: string
+  /** Requested access duration in hours */
+  accessDurationHours: number
+  /** Requestor's DID */
+  requestorDid: DidUri
+}
+
+/**
+ * Price offer in negotiation
+ */
+export interface PriceOffer {
+  /** Offered price in USDC */
+  priceUsdc: number
+  /** Dataset being negotiated */
+  datasetId: string
+  /** Access duration in hours */
+  accessDurationHours: number
+}
+
+/**
+ * Access token for data
+ */
+export interface DataAccessToken {
+  /** JWT access token */
+  token: JwtString
+  /** Dataset ID */
+  datasetId: string
+  /** Expiration timestamp */
+  expiresAt: Date
+  /** Data endpoint URL */
+  dataUrl: string
+}
+
+/**
+ * Data provider policies
+ */
+export interface DataProviderPolicies extends AgentPolicies {
+  /** Minimum price per hour in USDC */
+  minPricePerHour: number
+  /** Maximum price per hour in USDC */
+  maxPricePerHour: number
+  /** Auto-accept threshold (percentage of max price, e.g., 0.8 = 80%) */
+  autoAcceptThreshold: number
+  /** Maximum negotiation rounds */
+  maxNegotiationRounds: number
+  /** Available datasets */
+  availableDatasets: string[]
+}

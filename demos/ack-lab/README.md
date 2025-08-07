@@ -59,6 +59,8 @@ Or from this directory:
 pnpm run demo
 ```
 
+npm run dev
+
 ## How It Works
 
 ### 1. Identity Establishment
