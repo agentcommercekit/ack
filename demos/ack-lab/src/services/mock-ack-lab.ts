@@ -56,6 +56,35 @@ export class MockAckLabService {
   }
 
   /**
+   * Register additional agents (for multi-demo support)
+   */
+  registerAgent(
+    agentData: AgentData,
+    keypair: Keypair,
+    initialBalance?: TokenBalances
+  ) {
+    // Add agent
+    this.agents.set(agentData.did, agentData)
+
+    // Store keypair
+    this.keypairs.set(agentData.did, keypair)
+
+    // Set initial balance if provided, otherwise default
+    if (initialBalance) {
+      this.balances.set(agentData.did, initialBalance)
+    } else {
+      // Default balance for data demo agents
+      this.balances.set(agentData.did, {
+        "caip19:eip155:1/erc20:0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48":
+          "1000000000", // 1000 USDC
+        "caip19:eip155:1/slip44:60": "0" // 0 ETH
+      })
+    }
+
+    log(colors.green(`[ACK-Lab] Registered agent: ${agentData.did}`))
+  }
+
+  /**
    * Get agent metadata including DID and ownership VC
    */
   async getMetadata(agentDid: DidUri): Promise<AgentMetadata | null> {

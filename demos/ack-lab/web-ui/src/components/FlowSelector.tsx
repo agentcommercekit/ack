@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -19,6 +19,35 @@ import { DataFlow } from './DataFlow'
 export function FlowSelector() {
   const [activeFlow, setActiveFlow] = useState<'swap' | 'data'>('data')
 
+  // Switch demo context when tab changes
+  const handleFlowChange = async (value: string) => {
+    const demo = value as 'swap' | 'data'
+    setActiveFlow(demo)
+
+    // Notify the backend router about the demo switch
+    try {
+      await fetch('http://localhost:5677/switch-demo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ demo })
+      })
+      console.log(`Switched to ${demo} demo`)
+    } catch (error) {
+      console.error('Failed to switch demo context:', error)
+    }
+  }
+
+  // Set initial demo context on mount
+  useEffect(() => {
+    fetch('http://localhost:5677/switch-demo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ demo: activeFlow })
+    }).catch(error => {
+      console.error('Failed to set initial demo context:', error)
+    })
+  }, [])
+
   return (
     <div className="max-w-7xl mx-auto p-6 space-y-6">
       {/* Header */}
@@ -30,7 +59,7 @@ export function FlowSelector() {
 
         {/* Flow Selector */}
         <div className="flex justify-center">
-          <Tabs value={activeFlow} onValueChange={(value) => setActiveFlow(value as 'swap' | 'data')} className="w-full max-w-md">
+          <Tabs value={activeFlow} onValueChange={handleFlowChange} className="w-full max-w-md">
             <TabsList className="grid w-full grid-cols-2">
               <TabsTrigger value="swap" className="flex items-center gap-2">
                 <ArrowLeftRight className="w-4 h-4" />
@@ -112,7 +141,8 @@ export function FlowSelector() {
 
       {/* Flow Content */}
       <div className="mt-8">
-        {activeFlow === 'swap' ? <SwapFlow /> : <DataFlow />}
+        {/* Only render the active component to avoid SSE connection leaks */}
+        {activeFlow === 'swap' ? <SwapFlow key="swap" /> : <DataFlow key="data" />}
       </div>
     </div>
   )

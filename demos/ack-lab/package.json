@@ -4,9 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "demo": "tsx src/index.ts",
+    "demo": "tsx src/unified-demo-server.ts",
     "demo:data": "tsx src/data-monetization-demo.ts",
     "demo:swap": "tsx src/index.ts",
+    "demo:unified": "tsx src/unified-demo-server.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

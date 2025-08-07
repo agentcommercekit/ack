@@ -269,9 +269,21 @@ export function SwapFlow() {
 
   // Connect to SSE events when component mounts
   useEffect(() => {
+    let es: EventSource | null = null
+    let reconnectTimeout: NodeJS.Timeout | null = null
+    let isCleaningUp = false
+
     const connectToEvents = () => {
+      if (isCleaningUp) return // Don't reconnect if we're cleaning up
+
       console.log('🔌 Connecting to SSE events for swap...')
-      const es = new EventSource('http://localhost:5678/events')
+
+      // Close existing connection if any
+      if (es) {
+        es.close()
+      }
+
+      es = new EventSource('http://localhost:5677/events')
 
       es.onopen = () => {
         console.log('✅ SSE connection opened for swap')
@@ -297,22 +309,41 @@ export function SwapFlow() {
 
       es.onerror = (error) => {
         console.error('❌ SSE connection error (swap):', error)
-        // Attempt to reconnect after a delay
-        setTimeout(() => {
-          console.log('🔄 Attempting to reconnect SSE for swap...')
-          connectToEvents()
-        }, 3000)
-      }
 
-      return es
+        if (es) {
+          es.close()
+        }
+
+        // Only reconnect if we're not cleaning up
+        if (!isCleaningUp) {
+          // Clear any existing timeout
+          if (reconnectTimeout) {
+            clearTimeout(reconnectTimeout)
+          }
+
+          // Reconnect after a delay with exponential backoff
+          reconnectTimeout = setTimeout(() => {
+            console.log('🔄 Attempting to reconnect SSE for swap...')
+            connectToEvents()
+          }, 5000) // Increased delay to 5 seconds
+        }
+      }
     }
 
-    const es = connectToEvents()
+    connectToEvents()
 
     // Cleanup on unmount
     return () => {
       console.log('🔌 Closing SSE connection for swap')
-      es.close()
+      isCleaningUp = true
+
+      if (reconnectTimeout) {
+        clearTimeout(reconnectTimeout)
+      }
+
+      if (es) {
+        es.close()
+      }
     }
   }, [handleRealtimeEvent])
 
@@ -332,8 +363,8 @@ export function SwapFlow() {
     try {
       console.log('🚀 Starting swap request:', message)
 
-      // Call the real requestor agent
-      const response = await fetch('http://localhost:5678/chat', {
+      // Call the requestor agent through the router
+      const response = await fetch('http://localhost:5677/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

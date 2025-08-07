@@ -30,6 +30,61 @@ importers:
         specifier: ^5
         version: 5.8.3
 
+  demos/ack-lab:
+    dependencies:
+      '@ai-sdk/anthropic':
+        specifier: ^0.0.51
+        version: 0.0.51(zod@3.25.4)
+      '@ai-sdk/openai':
+        specifier: ^0.0.66
+        version: 0.0.66(zod@3.25.4)
+      '@hono/node-server':
+        specifier: ^1.13.1
+        version: 1.14.2(hono@4.7.10)
+      '@repo/api-utils':
+        specifier: workspace:*
+        version: link:../../tools/api-utils
+      '@repo/cli-tools':
+        specifier: workspace:*
+        version: link:../../tools/cli-tools
+      agentcommercekit:
+        specifier: workspace:*
+        version: link:../../packages/agentcommercekit
+      ai:
+        specifier: ^3.4.7
+        version: 3.4.33(react@19.1.0)(sswr@2.2.0(svelte@5.38.0))(svelte@5.38.0)(vue@3.5.18(typescript@5.8.3))(zod@3.25.4)
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.5.0
+      eventsource:
+        specifier: ^2.0.2
+        version: 2.0.2
+      hono:
+        specifier: ^4.6.3
+        version: 4.7.10
+      tsx:
+        specifier: ^4.19.1
+        version: 4.20.3
+      typescript:
+        specifier: ^5.5.3
+        version: 5.8.3
+      valibot:
+        specifier: ^0.38.0
+        version: 0.38.0(typescript@5.8.3)
+      zod:
+        specifier: ^3.23.8
+        version: 3.25.4
+    devDependencies:
+      '@repo/eslint-config':
+        specifier: workspace:*
+        version: link:../../tools/eslint-config
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../tools/typescript-config
+      '@types/eventsource':
+        specifier: ^1.1.15
+        version: 1.1.15
+
   demos/e2e:
     dependencies:
       '@repo/cli-tools':
@@ -259,55 +314,6 @@ importers:
       vitest:
         specifier: ^3.2.4
         version: 3.2.4(@types/debug@4.1.12)(@types/node@22.15.19)(jiti@2.4.2)(lightningcss@1.29.3)(tsx@4.20.3)(yaml@2.8.0)
-
-  demos/swap:
-    dependencies:
-      '@ai-sdk/anthropic':
-        specifier: ^0.0.51
-        version: 0.0.51(zod@3.25.4)
-      '@ai-sdk/openai':
-        specifier: ^0.0.66
-        version: 0.0.66(zod@3.25.4)
-      '@hono/node-server':
-        specifier: ^1.13.1
-        version: 1.14.2(hono@4.7.10)
-      '@repo/api-utils':
-        specifier: workspace:*
-        version: link:../../tools/api-utils
-      '@repo/cli-tools':
-        specifier: workspace:*
-        version: link:../../tools/cli-tools
-      agentcommercekit:
-        specifier: workspace:*
-        version: link:../../packages/agentcommercekit
-      ai:
-        specifier: ^3.4.7
-        version: 3.4.33(react@19.1.0)(sswr@2.2.0(svelte@5.38.0))(svelte@5.38.0)(vue@3.5.18(typescript@5.8.3))(zod@3.25.4)
-      dotenv:
-        specifier: ^16.4.5
-        version: 16.5.0
-      hono:
-        specifier: ^4.6.3
-        version: 4.7.10
-      tsx:
-        specifier: ^4.19.1
-        version: 4.20.3
-      typescript:
-        specifier: ^5.5.3
-        version: 5.8.3
-      valibot:
-        specifier: ^0.38.0
-        version: 0.38.0(typescript@5.8.3)
-      zod:
-        specifier: ^3.23.8
-        version: 3.25.4
-    devDependencies:
-      '@repo/eslint-config':
-        specifier: workspace:*
-        version: link:../../tools/eslint-config
-      '@repo/typescript-config':
-        specifier: workspace:*
-        version: link:../../tools/typescript-config
 
   docs:
     devDependencies:
@@ -2503,6 +2509,9 @@ packages:
   '@types/estree@1.0.7':
     resolution: {integrity: sha512-w28IoSUCJpidD/TGviZwwMJckNESJZXFu7NBZ5YJ4mEUnNraUn9Pm8HSZm/jDF1pDWYKspWE7oVphigUPRakIQ==}
 
+  '@types/eventsource@1.1.15':
+    resolution: {integrity: sha512-XQmGcbnxUNa06HR3VBVkc9+A2Vpi9ZyLJcdS5dwaQQ/4ZMWFO+5c90FnMUpbtMZwB/FChoYHwuVg8TvkECacTA==}
+
   '@types/express-serve-static-core@5.0.6':
     resolution: {integrity: sha512-3xhRnjJPkULekpSzgtoNYYcTWgEZkp4myc+Saevii5JPnHNvHMRlBSHDbs7Bh1iPPoVTERHEZXyhyLbMEsExsA==}
 
@@ -3907,6 +3916,10 @@ packages:
   eventsource-parser@1.1.2:
     resolution: {integrity: sha512-v0eOBUbiaFojBu2s2NPBfYUoRR9GjcDNvCXVaqEf5vVfpIAh9f8RCo4vXTP8c63QRKCFwoLpMpTdPwwhEKVgzA==}
     engines: {node: '>=14.18'}
+
+  eventsource@2.0.2:
+    resolution: {integrity: sha512-IzUmBGPR3+oUG9dUeXynyNmf91/3zUSJg1lCktzKw47OXuhco54U3r9B7O4XX+Rb1Itm9OZ2b0RkTs10bICOxA==}
+    engines: {node: '>=12.0.0'}
 
   expand-template@2.0.3:
     resolution: {integrity: sha512-XYfuKMvj4O35f/pOXLObndIRvyQ+/+6AhODh+OKWj9S9498pHHn/IMszH+gt0fBCRWMNfk1ZSp5x3AifmnI2vg==}
@@ -8518,6 +8531,8 @@ snapshots:
 
   '@types/estree@1.0.7': {}
 
+  '@types/eventsource@1.1.15': {}
+
   '@types/express-serve-static-core@5.0.6':
     dependencies:
       '@types/node': 22.15.19
@@ -10011,6 +10026,8 @@ snapshots:
   eventemitter3@5.0.1: {}
 
   eventsource-parser@1.1.2: {}
+
+  eventsource@2.0.2: {}
 
   expand-template@2.0.3: {}
 

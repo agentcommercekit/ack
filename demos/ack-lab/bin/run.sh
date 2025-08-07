@@ -14,17 +14,29 @@ print_color() {
     echo -e "${1}${2}${NC}"
 }
 
+# Function to check if a command exists
+command_exists() {
+    command -v "$1" >/dev/null 2>&1
+}
+
 # Get the directory of the script
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 PROJECT_DIR="$( cd "$SCRIPT_DIR/.." && pwd )"
 
 print_color "$BLUE" "╔═══════════════════════════════════════════╗"
-print_color "$BLUE" "║       🔧 ACK Lab Demo Setup               ║"
+print_color "$BLUE" "║       🚀 ACK Lab Demo Setup & Run         ║"
 print_color "$BLUE" "╚═══════════════════════════════════════════╝"
 echo
 
 # Change to project directory
 cd "$PROJECT_DIR"
+
+# Check for pnpm
+if ! command_exists pnpm; then
+    print_color "$RED" "❌ Error: pnpm is not installed."
+    echo "Please install pnpm first: npm install -g pnpm"
+    exit 1
+fi
 
 # Function to prompt for API key
 prompt_for_key() {
@@ -82,6 +94,13 @@ else
     print_color "$GREEN" "✅ ACK_LAB_API_KEY is configured"
 fi
 
+# Reload .env after potential modifications
+if [ -f .env ]; then
+    set -a
+    source .env 2>/dev/null || true
+    set +a
+fi
+
 # Install dependencies
 print_color "$BLUE" "📦 Installing dependencies..."
 echo
@@ -98,12 +117,66 @@ pnpm install
 # Return to project directory
 cd "$PROJECT_DIR"
 
-print_color "$GREEN" "\n✅ Setup complete!"
+print_color "$GREEN" "✅ All dependencies installed!"
 echo
-print_color "$BLUE" "To run the demo with both server and UI:"
-print_color "$YELLOW" "  ./bin/run.sh"
+
+# Function to cleanup on exit
+cleanup() {
+    print_color "$YELLOW" "\n🛑 Shutting down services..."
+
+    # Kill all child processes
+    if [ -n "$SERVER_PID" ]; then
+        kill $SERVER_PID 2>/dev/null || true
+    fi
+    if [ -n "$UI_PID" ]; then
+        kill $UI_PID 2>/dev/null || true
+    fi
+
+    # Wait a moment for processes to clean up
+    sleep 1
+
+    print_color "$GREEN" "✅ All services stopped"
+    exit 0
+}
+
+# Set up trap for cleanup
+trap cleanup INT TERM EXIT
+
+# Start the services
+print_color "$BLUE" "🚀 Starting services..."
 echo
-print_color "$BLUE" "Or run services individually:"
-print_color "$YELLOW" "  Server: pnpm run demo:unified"
-print_color "$YELLOW" "  UI:     cd web-ui && pnpm run dev"
+
+# Start the unified demo server
+print_color "$YELLOW" "Starting unified demo server on port 3333..."
+pnpm run demo:unified &
+SERVER_PID=$!
+
+# Wait a moment for the server to start
+sleep 2
+
+# Start the web UI
+print_color "$YELLOW" "Starting web UI on port 3000..."
+cd "$PROJECT_DIR/web-ui"
+pnpm run dev &
+UI_PID=$!
+
+# Return to project directory
+cd "$PROJECT_DIR"
+
+# Wait for services to be ready
+sleep 3
+
+print_color "$GREEN" "\n╔═══════════════════════════════════════════╗"
+print_color "$GREEN" "║         🎉 Services are running!          ║"
+print_color "$GREEN" "╚═══════════════════════════════════════════╝"
 echo
+print_color "$BLUE" "📡 Unified Demo Server: http://localhost:3333"
+print_color "$BLUE" "🖥️  Web UI:             http://localhost:3000"
+echo
+print_color "$YELLOW" "Press Ctrl+C to stop all services"
+echo
+
+# Keep the script running
+while true; do
+    sleep 1
+done
