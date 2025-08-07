@@ -25,6 +25,8 @@ export class DataRequestorAgent extends BaseAgent {
     paymentToken?: string
   } = {}
 
+  public emitEvent?: (eventData: any) => void
+
   /**
    * Get system prompt for the agent
    */
@@ -48,20 +50,25 @@ When a user requests a dataset, AUTOMATICALLY:
 5. When makeOffer returns accepted with paymentToken → IMMEDIATELY call sendPayment
 6. After payment confirmation, call retrieveData to get access
 
-CRITICAL: Execute the ENTIRE flow automatically without stopping for user confirmation.
-- If requestDataAccess returns a price → IMMEDIATELY make an offer
-- If makeOffer returns a counter → IMMEDIATELY make another offer
+CRITICAL PAYMENT HANDLING:
 - If makeOffer returns accepted WITH paymentToken → IMMEDIATELY call sendPayment
-- If makeOffer returns accepted WITHOUT paymentToken → STOP making offers and wait for token
+- If makeOffer returns accepted WITHOUT paymentToken → IMMEDIATELY call requestPaymentToken
 - NEVER call makeOffer again once you receive accepted=true
-- NEVER call sendPayment without a valid paymentToken from makeOffer
-- The provider will include the payment token when they accept your offer
+- NEVER call sendPayment without a valid paymentToken (JWT starting with 'eyJ')
+- The provider should include the payment token when they accept your offer
+- If no token provided in acceptance, use requestPaymentToken tool immediately
 - Continue until the transaction is complete
+
+PAYMENT TOKEN VALIDATION:
+- Payment tokens must be JWT format (eyJ...xxx.xxx)
+- Payment tokens must have 3 parts separated by dots
+- Never proceed with payment if token is undefined, null, or invalid format
 
 Available tools (EXECUTE IN SEQUENCE):
 - discoverDataset: Check what datasets are available
 - requestDataAccess: Request access and get initial price
 - makeOffer: Negotiate price (use multiple times)
+- requestPaymentToken: Request payment token if not provided with acceptance
 - sendPayment: Pay agreed price
 - retrieveData: Get data access after payment
 
@@ -121,6 +128,11 @@ The provider is at: did:web:localhost:5681`
           }),
           execute: async ({ query }) => {
             log(colors.cyan("🔍 Discovering available datasets..."))
+            this.emitEvent?.({
+              type: "step_started",
+              step: "dataset-discovery",
+              message: "Discovering available datasets..."
+            })
 
             // For demo, we know the provider has these datasets
             const availableDatasets = [
@@ -130,6 +142,15 @@ The provider is at: did:web:localhost:5681`
             ]
 
             log(colors.green(`   ✓ Found ${availableDatasets.length} datasets`))
+            this.emitEvent?.({
+              type: "step_completed",
+              step: "dataset-discovery",
+              message: `Found ${availableDatasets.length} available datasets`,
+              data: {
+                datasetCount: availableDatasets.length,
+                datasets: availableDatasets
+              }
+            })
 
             return {
               success: true,
@@ -151,6 +172,12 @@ The provider is at: did:web:localhost:5681`
           }),
           execute: async ({ datasetId, accessDurationHours, purpose }) => {
             log(colors.cyan(`📊 Requesting access to ${datasetId}...`))
+            this.emitEvent?.({
+              type: "step_started",
+              step: "credential-verification",
+              message: "Verifying credentials and requesting dataset access...",
+              data: { datasetId, accessDurationHours, purpose }
+            })
 
             // Store negotiation context
             this.currentNegotiation = {
@@ -214,6 +241,16 @@ The provider is at: did:web:localhost:5681`
                 )
               }
 
+              this.emitEvent?.({
+                type: "step_completed",
+                step: "credential-verification",
+                message: "Credentials verified, starting price negotiation...",
+                data: {
+                  initialPrice: price,
+                  negotiationId: this.currentNegotiation.negotiationId
+                }
+              })
+
               return {
                 success: true,
                 initialPrice: price,
@@ -239,10 +276,15 @@ The provider is at: did:web:localhost:5681`
           execute: async ({ offerPrice }) => {
             // Check if we already have a payment token (offer was accepted)
             if (this.currentNegotiation.paymentToken) {
-              log(colors.yellow("   ⚠️ Offer already accepted, payment token received. Should proceed with payment instead."))
+              log(
+                colors.yellow(
+                  "   ⚠️ Offer already accepted, payment token received. Should proceed with payment instead."
+                )
+              )
               return {
                 success: false,
-                error: "Offer already accepted. Please proceed with payment using the token.",
+                error:
+                  "Offer already accepted. Please proceed with payment using the token.",
                 paymentToken: this.currentNegotiation.paymentToken,
                 agreedPrice: this.currentNegotiation.agreedPrice
               }
@@ -257,6 +299,17 @@ The provider is at: did:web:localhost:5681`
                 `💵 Making offer: $${offerPrice} (round ${this.currentNegotiation.rounds})`
               )
             )
+
+            this.emitEvent?.({
+              type: "step_progress",
+              step: "price-negotiation",
+              message: `Making offer: $${offerPrice} (round ${this.currentNegotiation.rounds})`,
+              data: {
+                offerPrice,
+                round: this.currentNegotiation.rounds,
+                negotiationId: this.currentNegotiation.negotiationId
+              }
+            })
 
             // Send offer to provider
             const offerMessage = `I'd like to offer $${offerPrice} USDC for access to ${this.currentNegotiation.datasetId}.${this.currentNegotiation.negotiationId ? ` (Negotiation: ${this.currentNegotiation.negotiationId})` : ""}`
@@ -285,7 +338,9 @@ The provider is at: did:web:localhost:5681`
             if (
               (result.text.toLowerCase().includes("i accept") ||
                 result.text.toLowerCase().includes("accept your offer") ||
-                result.text.toLowerCase().includes("have accepted your offer") ||
+                result.text
+                  .toLowerCase()
+                  .includes("have accepted your offer") ||
                 result.text.toLowerCase().includes("accepted your offer") ||
                 result.text.toLowerCase().includes("accepted at")) &&
               !result.text.toLowerCase().includes("cannot accept") &&
@@ -302,6 +357,18 @@ The provider is at: did:web:localhost:5681`
               if (paymentTokenMatch) {
                 log(colors.green("   💳 Payment token received!"))
                 this.currentNegotiation.paymentToken = paymentTokenMatch[0]
+
+                this.emitEvent?.({
+                  type: "step_completed",
+                  step: "price-negotiation",
+                  message: `Offer accepted at $${offerPrice}! Payment token received.`,
+                  data: {
+                    agreedPrice: offerPrice,
+                    paymentToken: paymentTokenMatch[0],
+                    negotiationId: this.currentNegotiation.negotiationId
+                  }
+                })
+
                 return {
                   success: true,
                   accepted: true,
@@ -334,25 +401,33 @@ The provider is at: did:web:localhost:5681`
                 const tokenResult = await paymentResponse.json()
                 log(colors.green(`   ✓ Provider response: ${tokenResult.text}`))
 
-                // Look for payment token in response
+                // Look for payment token in response - improved regex
                 const tokenMatch = tokenResult.text.match(
-                  /eyJ[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+\.[A-Za-z0-9+/=]+/
+                  /eyJ[A-Za-z0-9_\-+/=]+\.[A-Za-z0-9_\-+/=]+\.[A-Za-z0-9_\-+/=]+/
                 )
 
                 if (tokenMatch) {
-                  log(colors.green("   💳 Payment token received!"))
-                  this.currentNegotiation.paymentToken = tokenMatch[0]
-                  return {
-                    success: true,
-                    accepted: true,
-                    agreedPrice: offerPrice,
-                    paymentToken: tokenMatch[0],
-                    message: `Offer accepted at $${offerPrice}! Payment token received. Proceeding with payment.`
+                  const token = tokenMatch[0]
+                  // Validate token format
+                  if (token.split(".").length === 3) {
+                    log(colors.green("   💳 Valid payment token received!"))
+                    this.currentNegotiation.paymentToken = token
+                    return {
+                      success: true,
+                      accepted: true,
+                      agreedPrice: offerPrice,
+                      paymentToken: token,
+                      message: `Offer accepted at $${offerPrice}! Payment token received. Proceeding with payment.`
+                    }
+                  } else {
+                    log(
+                      colors.red("   ❌ Invalid payment token format received")
+                    )
                   }
                 }
               }
 
-              // Still no token - return error
+              // Still no token - return error but with specific guidance
               log(
                 colors.red(
                   "   ❌ Provider accepted but didn't provide payment token"
@@ -360,8 +435,11 @@ The provider is at: did:web:localhost:5681`
               )
               return {
                 success: false,
+                accepted: true, // Still accepted, just missing token
+                agreedPrice: offerPrice,
                 error:
-                  "Provider accepted offer but failed to provide payment token"
+                  "Provider accepted offer but failed to provide payment token. Will retry payment token request.",
+                shouldRetryTokenRequest: true
               }
             }
 
@@ -405,6 +483,13 @@ The provider is at: did:web:localhost:5681`
               .describe("Payment token from provider (must be a JWT string)")
           }),
           execute: async ({ paymentToken }) => {
+            this.emitEvent?.({
+              type: "step_started",
+              step: "payment-processing",
+              message: "Processing payment...",
+              data: { paymentToken: paymentToken.substring(0, 20) + "..." }
+            })
+
             // Validate payment token
             if (
               !paymentToken ||
@@ -412,6 +497,12 @@ The provider is at: did:web:localhost:5681`
               paymentToken === "null"
             ) {
               log(colors.red("   ❌ No valid payment token provided"))
+              this.emitEvent?.({
+                type: "step_failed",
+                step: "payment-processing",
+                message: "No valid payment token provided",
+                error: "Missing payment token"
+              })
               return {
                 success: false,
                 error:
@@ -491,12 +582,83 @@ The provider is at: did:web:localhost:5681`
               this.currentNegotiation.accessToken = tokenMatch[0]
             }
 
+            this.emitEvent?.({
+              type: "step_completed",
+              step: "payment-processing",
+              message: "Payment confirmed! Access granted.",
+              data: {
+                accessToken: tokenMatch?.[0],
+                dataUrl: urlMatch?.[0],
+                receipt: receipt
+              }
+            })
+
             return {
               success: true,
               accessToken: tokenMatch?.[0],
               dataUrl: urlMatch?.[0],
               providerMessage: result.text,
               message: `Payment confirmed! ${tokenMatch ? `Access granted with token: ${tokenMatch[0]}` : "Access granted."}`
+            }
+          }
+        }),
+
+        requestPaymentToken: tool({
+          description:
+            "Request payment token from provider after offer acceptance - use when makeOffer returns accepted but no token",
+          parameters: z.object({
+            agreedPrice: z
+              .number()
+              .describe("The agreed price from the accepted offer"),
+            datasetId: z.string().describe("Dataset ID from negotiation")
+          }),
+          execute: async ({ agreedPrice, datasetId }) => {
+            log(colors.cyan("💳 Requesting payment token from provider..."))
+
+            const tokenRequestMessage = `I accepted your offer for $${agreedPrice} USDC for ${datasetId}. Please provide the payment token so I can complete the payment.`
+
+            const response = await fetch("http://localhost:5681/chat", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                message: tokenRequestMessage
+              })
+            })
+
+            if (!response.ok) {
+              return {
+                success: false,
+                error: "Failed to request payment token from provider"
+              }
+            }
+
+            const result = await response.json()
+            log(colors.green(`   ✓ Provider response: ${result.text}`))
+
+            // Look for payment token in response
+            const tokenMatch = result.text.match(
+              /eyJ[A-Za-z0-9_\-+/=]+\.[A-Za-z0-9_\-+/=]+\.[A-Za-z0-9_\-+/=]+/
+            )
+
+            if (tokenMatch) {
+              const token = tokenMatch[0]
+              if (token.split(".").length === 3) {
+                log(colors.green("   💳 Payment token received!"))
+                this.currentNegotiation.paymentToken = token
+                return {
+                  success: true,
+                  paymentToken: token,
+                  message: `Payment token received: ${token.substring(0, 50)}...`
+                }
+              }
+            }
+
+            return {
+              success: false,
+              error: "Provider did not provide a valid payment token",
+              providerResponse: result.text
             }
           }
         }),
@@ -509,6 +671,12 @@ The provider is at: did:web:localhost:5681`
           }),
           execute: async ({ accessToken, dataUrl }) => {
             log(colors.cyan("📥 Retrieving data..."))
+            this.emitEvent?.({
+              type: "step_started",
+              step: "data-access",
+              message: "Retrieving data...",
+              data: { accessToken, dataUrl }
+            })
 
             // Extract token ID from URL
             const tokenId = dataUrl.split("/").pop()
@@ -531,6 +699,17 @@ The provider is at: did:web:localhost:5681`
             log(colors.green("   ✅ Data retrieved successfully"))
             log(colors.dim(`   Dataset: ${data.datasetId}`))
             log(colors.dim(`   Records: ${data.data.records}`))
+
+            this.emitEvent?.({
+              type: "step_completed",
+              step: "data-access",
+              message: `Data retrieved successfully! ${data.data.records} records`,
+              data: {
+                dataset: data.datasetId,
+                recordCount: data.data.records,
+                metadata: data.metadata
+              }
+            })
 
             return {
               success: true,
@@ -580,6 +759,69 @@ The provider is at: did:web:localhost:5681`
     const app = new Hono()
 
     app.use("*", cors())
+
+    // Event stream for real-time progress updates
+    const eventControllers = new Set<ReadableStreamDefaultController>()
+
+    // Server-Sent Events endpoint
+    app.get("/events", (c) => {
+      let streamController: ReadableStreamDefaultController
+
+      const stream = new ReadableStream({
+        start(controller) {
+          streamController = controller
+
+          // Send initial connection event
+          controller.enqueue(
+            `data: ${JSON.stringify({ type: "connected", timestamp: new Date().toISOString() })}\n\n`
+          )
+
+          // Store the controller for sending events
+          eventControllers.add(controller)
+
+          console.log(
+            `📡 SSE client connected. Total clients: ${eventControllers.size}`
+          )
+        },
+        cancel() {
+          if (streamController) {
+            eventControllers.delete(streamController)
+            console.log(
+              `📡 SSE client disconnected. Total clients: ${eventControllers.size}`
+            )
+          }
+        }
+      })
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type"
+        }
+      })
+    })
+
+    // Helper function to emit events to all connected clients
+    this.emitEvent = (eventData: any) => {
+      const event = {
+        ...eventData,
+        timestamp: new Date().toISOString()
+      }
+
+      console.log("🔄 Emitting event:", event)
+
+      eventControllers.forEach((controller) => {
+        try {
+          controller.enqueue(`data: ${JSON.stringify(event)}\n\n`)
+        } catch (error) {
+          console.error("Error writing to event stream:", error)
+          eventControllers.delete(controller)
+        }
+      })
+    }
 
     // Chat endpoint
     app.post("/chat", async (c) => {

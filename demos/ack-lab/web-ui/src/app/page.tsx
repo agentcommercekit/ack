@@ -1,5 +1,5 @@
-import { SwapFlow } from '@/components/SwapFlow'
+import { FlowSelector } from '@/components/FlowSelector'
 
 export default function Home() {
-  return <SwapFlow />
+  return <FlowSelector />
 }

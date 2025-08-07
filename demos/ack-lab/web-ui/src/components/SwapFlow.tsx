@@ -1,15 +1,12 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Progress } from './ui/progress'
-import { Separator } from './ui/separator'
 import { Input } from './ui/input'
-import { Textarea } from './ui/textarea'
 import {
-  ArrowRight,
   CheckCircle,
   Clock,
   AlertCircle,
@@ -17,7 +14,6 @@ import {
   Bot,
   Coins,
   Shield,
-  CreditCard,
   RefreshCw,
   RotateCcw,
   Plus
@@ -159,7 +155,168 @@ export function SwapFlow() {
     }
   }
 
-      const executeRealSwap = async (message: string) => {
+  // Handle real-time events from the agent
+  const handleRealtimeEvent = useCallback((eventData: {
+    type: string
+    step: string
+    message: string
+    data?: {
+      amountIn?: number
+      tokenIn?: string
+      tokenOut?: string
+      usdcAmount?: number
+      ethAmount?: string
+      required?: number
+      executorDid?: string
+      paymentToken?: string
+      receipt?: string
+      executorMessage?: string
+      amountSwapped?: string
+      amountReceived?: string
+      transactionHash?: string
+    }
+    error?: string
+  }) => {
+    console.log(`🔄 Processing ${eventData.type} event for swap step: ${eventData.step}`, eventData)
+
+    const steps = [...flowSteps]
+
+    // Map event steps to our flow steps
+    const stepMapping: { [key: string]: number } = {
+      'balance-check': 1,
+      'identity-verification': 3,
+      'swap-initiation': 2,
+      'payment-request': 4,
+      'payment-processing': 5,
+      'payment-verification': 6,
+      'swap-execution': 7
+    }
+
+    const stepIndex = stepMapping[eventData.step]
+    if (!stepIndex) return
+
+    switch (eventData.type) {
+      case 'step_started':
+        // Mark previous steps as completed
+        for (let i = 1; i < stepIndex; i++) {
+          if (steps[i].status !== 'completed') {
+            steps[i].status = 'completed'
+          }
+        }
+        // Mark current step as in-progress
+        steps[stepIndex].status = 'in-progress'
+        steps[stepIndex].details = [eventData.message]
+        if (eventData.data) {
+          // Add real data details
+          if (eventData.data.amountIn) {
+            steps[stepIndex].details.push(`💰 Amount: ${eventData.data.amountIn} USDC`)
+          }
+          if (eventData.data.usdcAmount !== undefined) {
+            steps[stepIndex].details.push(`💵 Balance: ${eventData.data.usdcAmount} USDC`)
+          }
+        }
+        setCurrentStep(stepIndex)
+        break
+
+      case 'step_completed':
+        steps[stepIndex].status = 'completed'
+        steps[stepIndex].details = [`✅ ${eventData.message}`]
+
+        // Add real data details
+        if (eventData.data) {
+          if (eventData.data.usdcAmount !== undefined) {
+            steps[stepIndex].details.push(`💵 Balance: ${eventData.data.usdcAmount} USDC`)
+          }
+          if (eventData.data.ethAmount) {
+            steps[stepIndex].details.push(`⟠ ETH: ${eventData.data.ethAmount}`)
+          }
+          if (eventData.data.paymentToken) {
+            steps[stepIndex].details.push(`🎫 Payment Token: ${eventData.data.paymentToken}`)
+          }
+          if (eventData.data.receipt) {
+            steps[stepIndex].details.push(`📄 Receipt: ${eventData.data.receipt}`)
+          }
+          if (eventData.data.amountSwapped) {
+            steps[stepIndex].details.push(`💱 Swapped: ${eventData.data.amountSwapped} USDC`)
+          }
+          if (eventData.data.amountReceived) {
+            steps[stepIndex].details.push(`💰 Received: ${eventData.data.amountReceived} ETH`)
+          }
+          if (eventData.data.transactionHash) {
+            steps[stepIndex].details.push(`🔗 Tx Hash: ${eventData.data.transactionHash.substring(0, 10)}...`)
+          }
+          if (eventData.data.executorMessage && !eventData.data.transactionHash) {
+            // Only show full message if we don't have parsed details
+            steps[stepIndex].details.push(`✅ ${eventData.data.executorMessage.substring(0, 100)}...`)
+          }
+        }
+        setCurrentStep(stepIndex)
+        break
+
+      case 'step_failed':
+        steps[stepIndex].status = 'failed'
+        steps[stepIndex].details = [`❌ ${eventData.message}`]
+        if (eventData.data?.usdcAmount !== undefined && eventData.data?.required) {
+          steps[stepIndex].details.push(`💵 Have: ${eventData.data.usdcAmount} USDC`)
+          steps[stepIndex].details.push(`💰 Need: ${eventData.data.required} USDC`)
+        }
+        setCurrentStep(stepIndex)
+        break
+    }
+
+    setFlowSteps([...steps])
+  }, [flowSteps, setCurrentStep, setFlowSteps])
+
+  // Connect to SSE events when component mounts
+  useEffect(() => {
+    const connectToEvents = () => {
+      console.log('🔌 Connecting to SSE events for swap...')
+      const es = new EventSource('http://localhost:5678/events')
+
+      es.onopen = () => {
+        console.log('✅ SSE connection opened for swap')
+      }
+
+      es.onmessage = (event) => {
+        try {
+          console.log('📡 Raw SSE message (swap):', event.data)
+          const eventData = JSON.parse(event.data)
+          console.log('📡 Parsed SSE event (swap):', eventData)
+
+          // Skip connection events
+          if (eventData.type === 'connected') {
+            console.log('✅ SSE connection confirmed for swap')
+            return
+          }
+
+          handleRealtimeEvent(eventData)
+        } catch (error) {
+          console.error('❌ Error parsing SSE event (swap):', error, 'Raw data:', event.data)
+        }
+      }
+
+      es.onerror = (error) => {
+        console.error('❌ SSE connection error (swap):', error)
+        // Attempt to reconnect after a delay
+        setTimeout(() => {
+          console.log('🔄 Attempting to reconnect SSE for swap...')
+          connectToEvents()
+        }, 3000)
+      }
+
+      return es
+    }
+
+    const es = connectToEvents()
+
+    // Cleanup on unmount
+    return () => {
+      console.log('🔌 Closing SSE connection for swap')
+      es.close()
+    }
+  }, [handleRealtimeEvent])
+
+  const executeRealSwap = async (message: string) => {
     setIsProcessing(true)
     setChatHistory(prev => [...prev, { role: 'user', message, timestamp: new Date() }])
 
@@ -173,6 +330,8 @@ export function SwapFlow() {
     setCurrentStep(1)
 
     try {
+      console.log('🚀 Starting swap request:', message)
+
       // Call the real requestor agent
       const response = await fetch('http://localhost:5678/chat', {
         method: 'POST',
@@ -190,71 +349,26 @@ export function SwapFlow() {
 
       const result = await response.json()
 
+      const responseText = result.text || ''
+      console.log('📨 Agent final response:', responseText)
+
       // Add the agent's response to chat
       setChatHistory(prev => [...prev, {
         role: 'agent',
-        message: result.text || 'Processing your request...',
+        message: responseText,
         timestamp: new Date()
       }])
 
-      // Parse the response to update the flow steps based on what the agent did
-      const responseText = result.text || ''
+      // Real-time events via SSE will handle all step updates
+      console.log('✅ Swap request initiated, SSE events will handle progress updates')
 
       // Extract amount for balance updates
       const amountMatch = message.match(/(\d+(?:\.\d+)?)\s*(usdc|eth)/i)
       const amount = amountMatch ? parseFloat(amountMatch[1]) : 60
 
-      // Check for various response patterns and update steps accordingly
-      if (responseText.includes('Policy violation') || responseText.includes('exceeds') || responseText.includes('violation')) {
-        // Policy violation during balance check/preparation
-        steps[1].status = 'completed'
-        steps[1].details = ['✓ Balance checked']
-
-        steps[2].status = 'failed'
-        steps[2].details = [`❌ ${responseText}`]
-        setFlowSteps([...steps])
-        setCurrentStep(2)
-
-      } else if (responseText.includes('Insufficient')) {
-        // Balance check failed
-        steps[1].status = 'failed'
-        steps[1].details = [`❌ ${responseText}`]
-        setFlowSteps([...steps])
-        setCurrentStep(1)
-
-      } else if (responseText.includes('successfully') || responseText.includes('completed') || responseText.includes('Transaction:')) {
-        // Successful swap - mark all steps as completed
-        steps[1].status = 'completed'
-        steps[1].details = [
-          `✓ Balance: ${requestorState.balance.usdc} USDC verified`,
-          '✓ Executor identity verified',
-          '✓ Policy compliance verified'
-        ]
-
-        steps[2].status = 'completed'
-        steps[2].details = [`✓ Initiated swap: ${amount} USDC → ETH`]
-
-        steps[3].status = 'completed'
-        steps[3].details = ['✓ Identity verified by executor']
-
-        steps[4].status = 'completed'
-        steps[4].details = [`✓ Payment request created for ${amount} USDC`]
-
-        steps[5].status = 'completed'
-        steps[5].details = ['✓ Payment sent via ACK-Pay']
-
-        steps[6].status = 'completed'
-        steps[6].details = [`✓ Payment receipt verified`]
-
-        steps[7].status = 'completed'
+      // Update balances if swap completed successfully
+      if (responseText.includes('successfully') || responseText.includes('completed') || responseText.includes('Transaction:')) {
         const ethAmount = amount / 3000
-        steps[7].details = [
-          `✓ Swap executed: ${amount} USDC → ${ethAmount.toFixed(4)} ETH`,
-          `✓ Transaction completed`
-        ]
-
-        setFlowSteps([...steps])
-        setCurrentStep(7)
 
         // Update balances
         setRequestorState(prev => ({
@@ -272,40 +386,7 @@ export function SwapFlow() {
             eth: Math.max(0, prev.balance.eth - ethAmount)
           }
         }))
-
-      } else if (responseText.includes('processing') || responseText.includes('checking') || responseText.includes('help')) {
-        // Agent is processing or asking for clarification
-        steps[1].status = 'in-progress'
-        steps[1].details = ['Processing request...']
-        setFlowSteps([...steps])
-        setCurrentStep(1)
-
-      } else {
-        // Default case - show as processing
-        steps[1].status = 'in-progress'
-        steps[1].details = ['Agent is processing your request...']
-        setFlowSteps([...steps])
-        setCurrentStep(1)
       }
-
-      // Refresh balances from ACK-Lab after any swap attempt
-      setTimeout(async () => {
-        try {
-          const balanceResponse = await fetch('http://localhost:5680/agents')
-          if (balanceResponse.ok) {
-            const agents = await balanceResponse.json()
-            // Update agent states with fresh data if available
-            agents.forEach((agent: { did: string }) => {
-              if (agent.did.includes('alice') || agent.did.includes('5678')) {
-                // This is the requestor - we'd need to fetch actual balance from ACK-Lab
-                // For now, keep the calculated balance
-              }
-            })
-          }
-        } catch (error) {
-          console.log('Could not refresh balances:', error)
-        }
-      }, 1000)
 
     } catch (error) {
       console.error('Failed to execute swap:', error)
@@ -444,14 +525,7 @@ export function SwapFlow() {
   const progress = ((flowSteps.filter(step => step.status === 'completed').length) / flowSteps.length) * 100
 
   return (
-    <div className="max-w-7xl mx-auto p-6 space-y-6">
-      {/* Header */}
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-bold">ACK Swap Demo - Web UI</h1>
-        <p className="text-muted-foreground">
-          Interactive visualization of AI agents conducting token swaps using ACK-ID and ACK-Pay
-        </p>
-      </div>
+    <div className="space-y-6">
 
       {/* Progress */}
       <Card>

@@ -20,6 +20,8 @@ export class SwapRequestorAgent extends BaseAgent {
   private identityVerified = false
   private swapInitiated = false
 
+  public emitEvent?: (eventData: any) => void
+
   /**
    * Get system prompt for the agent
    */
@@ -109,6 +111,13 @@ TOOL EXECUTION RULES:
           execute: async ({ amountIn, tokenOut }) => {
             // Step 1: Check balance
             log(colors.cyan("📊 Checking balance..."))
+            this.emitEvent?.({
+              type: "step_started",
+              step: "balance-check",
+              message: "Checking USDC balance...",
+              data: { amountIn, tokenOut }
+            })
+
             const balance = await this.checkBalance()
             if (!balance) {
               const error = "Failed to check balance"
@@ -137,14 +146,37 @@ TOOL EXECUTION RULES:
             if (usdcAmount < amountIn) {
               const error = `Insufficient USDC balance. You have ${usdcAmount} USDC but need ${amountIn} USDC`
               log(colors.red(`   ❌ ${error}`))
+              this.emitEvent?.({
+                type: "step_failed",
+                step: "balance-check",
+                message: error,
+                data: { usdcAmount, required: amountIn }
+              })
               return {
                 success: false,
                 error
               }
             }
 
+            this.emitEvent?.({
+              type: "step_completed",
+              step: "balance-check",
+              message: `Balance verified: ${usdcAmount} USDC available`,
+              data: {
+                usdcAmount,
+                ethAmount: ethAmount.toFixed(4),
+                required: amountIn
+              }
+            })
+
             // Step 2: Verify executor identity
             log(colors.cyan("🔐 Verifying executor identity..."))
+            this.emitEvent?.({
+              type: "step_started",
+              step: "identity-verification",
+              message: "Verifying executor identity...",
+              data: { executorDid: "did:web:localhost%3A5679" }
+            })
             const executorDid = "did:web:localhost%3A5679" // Use URL-encoded format
             log(colors.dim(`   Looking up ${executorDid} at ACK-Lab...`))
 
@@ -175,8 +207,20 @@ TOOL EXECUTION RULES:
               )
               await this.verifier.verifyCredential(parsed)
               log(colors.green("   ✓ Executor identity verified"))
+              this.emitEvent?.({
+                type: "step_completed",
+                step: "identity-verification",
+                message: "Executor identity verified successfully",
+                data: { executorDid }
+              })
             } catch (error) {
               log(colors.red(`   ❌ Invalid executor credentials: ${error}`))
+              this.emitEvent?.({
+                type: "step_failed",
+                step: "identity-verification",
+                message: "Invalid executor credentials",
+                error: error
+              })
               return { success: false, error: "Invalid executor credentials" }
             }
 
@@ -217,6 +261,13 @@ TOOL EXECUTION RULES:
             tokenOut: z.string().default("ETH").describe("Output token")
           }),
           execute: async ({ amountIn, tokenIn = "USDC", tokenOut = "ETH" }) => {
+            this.emitEvent?.({
+              type: "step_started",
+              step: "swap-initiation",
+              message: `Initiating swap: ${amountIn} ${tokenIn} → ${tokenOut}`,
+              data: { amountIn, tokenIn, tokenOut }
+            })
+
             // Skip re-verification if already done
             if (!this.balanceChecked || !this.identityVerified) {
               log(colors.dim("   Doing quick verification..."))
@@ -286,6 +337,20 @@ TOOL EXECUTION RULES:
                   `   Payment token: ${paymentTokenMatch[0].substring(0, 50)}...`
                 )
               )
+              this.emitEvent?.({
+                type: "step_completed",
+                step: "swap-initiation",
+                message: "Swap initiated, payment request received",
+                data: {
+                  paymentToken: paymentTokenMatch[0].substring(0, 20) + "..."
+                }
+              })
+              this.emitEvent?.({
+                type: "step_started",
+                step: "payment-request",
+                message: "Payment request received from executor",
+                data: { paymentRequired: true }
+              })
               return {
                 success: true,
                 status: "PAYMENT_REQUIRED",
@@ -317,6 +382,19 @@ TOOL EXECUTION RULES:
               )
             )
 
+            this.emitEvent?.({
+              type: "step_completed",
+              step: "payment-request",
+              message: "Payment request processed",
+              data: { paymentToken: paymentToken.substring(0, 20) + "..." }
+            })
+            this.emitEvent?.({
+              type: "step_started",
+              step: "payment-processing",
+              message: "Processing payment via ACK-Pay...",
+              data: { paymentToken: paymentToken.substring(0, 20) + "..." }
+            })
+
             const jwt = await this.createAuthJwt()
             const paymentUrl = `${this.ackLabUrl}/payment`
             log(colors.dim(`   Sending payment to: ${paymentUrl}`))
@@ -341,6 +419,19 @@ TOOL EXECUTION RULES:
             const { receipt } = await response.json()
             log(colors.green("   ✓ Payment sent successfully"))
             log(colors.dim(`   Receipt: ${receipt?.substring(0, 50)}...`))
+
+            this.emitEvent?.({
+              type: "step_completed",
+              step: "payment-processing",
+              message: "Payment sent successfully",
+              data: { receipt: receipt?.substring(0, 20) + "..." }
+            })
+            this.emitEvent?.({
+              type: "step_started",
+              step: "payment-verification",
+              message: "Verifying payment with executor...",
+              data: {}
+            })
 
             // Now send the receipt to the executor via chat
             log(colors.cyan("   Sending receipt to executor..."))
@@ -378,12 +469,34 @@ TOOL EXECUTION RULES:
             ) {
               this.swapComplete = true
               log(colors.green(`   ✅ ${result.text}`))
+
+              this.emitEvent?.({
+                type: "step_completed",
+                step: "payment-verification",
+                message: "Payment verified by executor",
+                data: {}
+              })
+              this.emitEvent?.({
+                type: "step_completed",
+                step: "swap-execution",
+                message: "Swap executed successfully!",
+                data: { executorMessage: result.text }
+              })
+
               return {
                 success: true,
                 executorMessage: result.text
               }
             } else if (result.text && result.text.includes("failed")) {
               log(colors.red(`   ❌ ${result.text}`))
+
+              this.emitEvent?.({
+                type: "step_failed",
+                step: "swap-execution",
+                message: "Swap failed",
+                error: result.text
+              })
+
               return {
                 success: false,
                 error: result.text
@@ -431,6 +544,40 @@ TOOL EXECUTION RULES:
       content: responseText
     })
 
+    // Emit final completion events if swap was successful
+    if (
+      this.swapComplete ||
+      responseText.includes("successfully completed") ||
+      responseText.includes("has been successfully") ||
+      responseText.includes("Transaction Hash") ||
+      responseText.includes("Amount Received")
+    ) {
+      // Ensure payment verification is marked complete
+      this.emitEvent?.({
+        type: "step_completed",
+        step: "payment-verification",
+        message: "Payment verified by executor",
+        data: {}
+      })
+
+      // Mark swap execution as complete with details from the response
+      const amountMatch = responseText.match(/(\d+(?:\.\d+)?)\s*USDC/)
+      const ethMatch = responseText.match(/(\d+(?:\.\d+)?)\s*ETH/)
+      const txHashMatch = responseText.match(/0x[a-fA-F0-9]+/)
+
+      this.emitEvent?.({
+        type: "step_completed",
+        step: "swap-execution",
+        message: "Swap executed successfully!",
+        data: {
+          amountSwapped: amountMatch ? amountMatch[1] : undefined,
+          amountReceived: ethMatch ? ethMatch[1] : undefined,
+          transactionHash: txHashMatch ? txHashMatch[0] : undefined,
+          executorMessage: responseText
+        }
+      })
+    }
+
     log(colors.dim("\nAgent response:"))
     log(responseText)
   }
@@ -446,6 +593,69 @@ TOOL EXECUTION RULES:
     const app = new Hono()
 
     app.use("*", cors())
+
+    // Event stream for real-time progress updates
+    const eventControllers = new Set<ReadableStreamDefaultController>()
+
+    // Server-Sent Events endpoint
+    app.get("/events", (c) => {
+      let streamController: ReadableStreamDefaultController
+
+      const stream = new ReadableStream({
+        start(controller) {
+          streamController = controller
+
+          // Send initial connection event
+          controller.enqueue(
+            `data: ${JSON.stringify({ type: "connected", timestamp: new Date().toISOString() })}\n\n`
+          )
+
+          // Store the controller for sending events
+          eventControllers.add(controller)
+
+          console.log(
+            `📡 SSE client connected. Total clients: ${eventControllers.size}`
+          )
+        },
+        cancel() {
+          if (streamController) {
+            eventControllers.delete(streamController)
+            console.log(
+              `📡 SSE client disconnected. Total clients: ${eventControllers.size}`
+            )
+          }
+        }
+      })
+
+      return new Response(stream, {
+        headers: {
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Headers": "Content-Type"
+        }
+      })
+    })
+
+    // Helper function to emit events to all connected clients
+    this.emitEvent = (eventData: any) => {
+      const event = {
+        ...eventData,
+        timestamp: new Date().toISOString()
+      }
+
+      console.log("🔄 Emitting event:", event)
+
+      eventControllers.forEach((controller) => {
+        try {
+          controller.enqueue(`data: ${JSON.stringify(event)}\n\n`)
+        } catch (error) {
+          console.error("Error writing to event stream:", error)
+          eventControllers.delete(controller)
+        }
+      })
+    }
 
     // Chat endpoint for natural language communication
     app.post("/chat", async (c) => {

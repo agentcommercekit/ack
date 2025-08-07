@@ -104,7 +104,7 @@ export abstract class BaseAgent {
    * Create a JWT for authentication to ACK-Lab
    */
   async createAuthJwt(): Promise<JwtString> {
-    const jwt = await createJwt(
+    return createJwt(
       {
         sub: this.did,
         iat: Math.floor(Date.now() / 1000)
@@ -115,10 +115,6 @@ export abstract class BaseAgent {
         expiresIn: 300 // 5 minutes
       }
     )
-    console.log(
-      `🔧 DEBUG: Created JWT for ${this.did}: ${jwt.substring(0, 50)}...`
-    )
-    return jwt
   }
 
   /**

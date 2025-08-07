@@ -144,8 +144,6 @@ export class DataProviderAgent extends BaseAgent {
    * Run the agent with a message
    */
   async run(prompt: string): Promise<string> {
-    log(colors.cyan(`🔧 DEBUG: Provider received message: "${prompt}"`))
-
     this.messages.push({
       role: "user",
       content: prompt
@@ -154,8 +152,6 @@ export class DataProviderAgent extends BaseAgent {
     const result = await this._run(this.messages)
 
     this.messages.push(...result.responseMessages)
-
-    log(colors.cyan(`🔧 DEBUG: Provider responding with: "${result.text}"`))
 
     return result.text
   }
@@ -359,7 +355,7 @@ export class DataProviderAgent extends BaseAgent {
                 finalPrice: offeredPrice,
                 negotiationId,
                 shouldCreatePayment: true,
-                message: `Excellent! I accept your offer of $${offeredPrice} USDC. Creating payment request now.`
+                message: `I accept your offer of $${offeredPrice} USDC for ${negotiation.accessDurationHours} hours access to ${negotiation.datasetId}. I will now create the payment request.`
               }
             }
 
@@ -410,18 +406,13 @@ export class DataProviderAgent extends BaseAgent {
               negotiation.currentPrice = offeredPrice
               // Store the agreed price for payment request
               negotiation.agreedPrice = offeredPrice
-              log(
-                colors.green(
-                  `🔧 DEBUG: Accepting offer of $${offeredPrice} (stored as agreedPrice)`
-                )
-              )
               return {
                 success: true,
                 accepted: true,
                 finalPrice: offeredPrice,
                 negotiationId,
                 shouldCreatePayment: true,
-                message: `After consideration, I accept your offer of $${offeredPrice} USDC. Creating payment request now.`
+                message: `After consideration, I accept your offer of $${offeredPrice} USDC for ${negotiation.accessDurationHours} hours access to ${negotiation.datasetId}. I will now create the payment request.`
               }
             }
 
@@ -455,34 +446,14 @@ export class DataProviderAgent extends BaseAgent {
               .optional()
           }),
           execute: async ({ datasetId, requestorDid }) => {
-            log(
-              colors.cyan(
-                `🔧 DEBUG: findNegotiation called with datasetId="${datasetId}", requestorDid="${requestorDid}"`
-              )
-            )
-
             const negotiations = Array.from(this.negotiations.entries())
-            log(
-              colors.dim(`🔧 DEBUG: Total negotiations: ${negotiations.length}`)
-            )
 
             let found = negotiations.filter(([id, neg]) => {
               const matchesDataset = datasetId && neg.datasetId === datasetId
               const matchesRequestor =
                 requestorDid && neg.requestorDid === requestorDid
-              log(
-                colors.dim(
-                  `🔧 DEBUG: Checking negotiation ${id}: dataset match=${matchesDataset}, requestor match=${matchesRequestor}`
-                )
-              )
               return matchesDataset || matchesRequestor
             })
-
-            log(
-              colors.dim(
-                `🔧 DEBUG: Found ${found.length} matching negotiations`
-              )
-            )
 
             if (found.length === 0) {
               return {
@@ -500,11 +471,6 @@ export class DataProviderAgent extends BaseAgent {
             const [negotiationId, negotiation] = found[0]!
             const priceToUse =
               negotiation.agreedPrice || negotiation.currentPrice
-            log(
-              colors.green(
-                `🔧 DEBUG: Found negotiation - agreedPrice: ${negotiation.agreedPrice}, currentPrice: ${negotiation.currentPrice}, using: ${priceToUse}`
-              )
-            )
             return {
               success: true,
               negotiationId,
@@ -529,17 +495,6 @@ export class DataProviderAgent extends BaseAgent {
           }),
           execute: async ({ negotiationId, agreedPrice }) => {
             try {
-              log(
-                colors.cyan(
-                  `🔧 DEBUG: createPaymentRequest called with negotiationId="${negotiationId}", agreedPrice=${agreedPrice}`
-                )
-              )
-              log(
-                colors.dim(
-                  `🔧 DEBUG: Available negotiations: ${Array.from(this.negotiations.keys()).join(", ")}`
-                )
-              )
-
               const negotiation = this.negotiations.get(negotiationId)
               if (!negotiation) {
                 log(colors.red(`   ❌ Negotiation not found: ${negotiationId}`))
@@ -555,26 +510,13 @@ export class DataProviderAgent extends BaseAgent {
               }
 
               log(
-                colors.green(`🔧 DEBUG: Found negotiation for ${negotiationId}`)
-              )
-              log(
                 colors.yellow(
                   `💳 Creating payment request for $${agreedPrice} USDC (Negotiation: ${negotiationId})`
                 )
               )
 
               const amountInSubunits = agreedPrice * 1000000 // USDC has 6 decimals
-              log(
-                colors.dim(`🔧 DEBUG: Amount in subunits: ${amountInSubunits}`)
-              )
-
-              log(colors.dim(`🔧 DEBUG: Creating JWT for ACK-Lab...`))
               const jwt = await this.createAuthJwt()
-              log(
-                colors.dim(
-                  `🔧 DEBUG: JWT created, making request to ${this.ackLabUrl}/payment-request`
-                )
-              )
 
               const response = await fetch(
                 `${this.ackLabUrl}/payment-request`,
@@ -588,17 +530,9 @@ export class DataProviderAgent extends BaseAgent {
                 }
               )
 
-              log(
-                colors.dim(
-                  `🔧 DEBUG: ACK-Lab response status: ${response.status}`
-                )
-              )
-
               if (!response.ok) {
                 const errorText = await response.text()
-                log(
-                  colors.red(`🔧 DEBUG: ACK-Lab error response: ${errorText}`)
-                )
+
                 return {
                   success: false,
                   error: `Failed to create payment request: ${response.status} - ${errorText}`
@@ -606,12 +540,10 @@ export class DataProviderAgent extends BaseAgent {
               }
 
               const responseData = await response.json()
-              log(colors.dim(`🔧 DEBUG: ACK-Lab response data:`, responseData))
 
               const { paymentToken } = responseData
 
               if (!paymentToken) {
-                log(colors.red(`🔧 DEBUG: No paymentToken in response`))
                 return {
                   success: false,
                   error: "No payment token received from ACK-Lab"
@@ -619,27 +551,124 @@ export class DataProviderAgent extends BaseAgent {
               }
 
               log(colors.green("✅ Payment request created"))
-              log(
-                colors.dim(
-                  `🔧 DEBUG: Payment token: ${paymentToken.substring(0, 20)}...`
-                )
-              )
               return {
                 success: true,
                 paymentToken,
                 amount: agreedPrice,
-                message: `Payment of $${agreedPrice} USDC required. Please send payment using this token: ${paymentToken}`
+                negotiationId,
+                message: `Payment request created successfully. Payment token: ${paymentToken}`
               }
             } catch (error) {
-              log(
-                colors.red(
-                  `🔧 DEBUG: Exception in createPaymentRequest: ${error}`
-                )
-              )
-              log(colors.red(`🔧 DEBUG: Error stack:`, (error as Error).stack))
               return {
                 success: false,
                 error: `Failed to create payment request: ${error}`
+              }
+            }
+          }
+        }),
+
+        providePaymentToken: tool({
+          description:
+            "Provide payment token for an accepted offer - use when requestor asks for payment token",
+          parameters: z.object({
+            datasetId: z
+              .string()
+              .describe("Dataset ID from the negotiation")
+              .optional(),
+            negotiationId: z
+              .string()
+              .describe("Negotiation ID if known")
+              .optional()
+          }),
+          execute: async ({ datasetId, negotiationId }) => {
+            try {
+              // Find the negotiation
+              let foundNegotiation: [string, any] | undefined
+
+              if (negotiationId) {
+                const neg = this.negotiations.get(negotiationId)
+                if (neg) {
+                  foundNegotiation = [negotiationId, neg]
+                }
+              }
+
+              if (!foundNegotiation && datasetId) {
+                const negotiations = Array.from(this.negotiations.entries())
+                foundNegotiation = negotiations.find(
+                  ([id, neg]) => neg.datasetId === datasetId && neg.agreedPrice
+                )
+              }
+
+              if (!foundNegotiation) {
+                return {
+                  success: false,
+                  error:
+                    "No accepted negotiation found. Please make an offer first."
+                }
+              }
+
+              const [negId, negotiation] = foundNegotiation
+
+              if (!negotiation.agreedPrice) {
+                return {
+                  success: false,
+                  error:
+                    "No agreed price found. Please complete negotiation first."
+                }
+              }
+
+              log(
+                colors.yellow(
+                  `💳 Providing payment token for agreed price: $${negotiation.agreedPrice}`
+                )
+              )
+
+              // Create payment request
+              const amountInSubunits = negotiation.agreedPrice * 1000000 // USDC has 6 decimals
+              const jwt = await this.createAuthJwt()
+
+              const response = await fetch(
+                `${this.ackLabUrl}/payment-request`,
+                {
+                  method: "POST",
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${jwt}`
+                  },
+                  body: JSON.stringify({ amount: amountInSubunits })
+                }
+              )
+
+              if (!response.ok) {
+                const errorText = await response.text()
+                return {
+                  success: false,
+                  error: `Failed to create payment request: ${response.status} - ${errorText}`
+                }
+              }
+
+              const responseData = await response.json()
+              const { paymentToken } = responseData
+
+              if (!paymentToken) {
+                return {
+                  success: false,
+                  error: "No payment token received from ACK-Lab"
+                }
+              }
+
+              log(colors.green("✅ Payment token provided"))
+              return {
+                success: true,
+                paymentToken,
+                amount: negotiation.agreedPrice,
+                negotiationId: negId,
+                message: `Here is the payment token for your accepted offer of $${negotiation.agreedPrice} USDC: ${paymentToken}`
+              }
+            } catch (error) {
+              return {
+                success: false,
+                error: `Failed to provide payment token: ${error}`
               }
             }
           }
@@ -734,12 +763,6 @@ export class DataProviderAgent extends BaseAgent {
 
 Your DID is: ${this.did}
 
-EXAMPLE ACCEPTANCE FLOW:
-When you accept an offer (evaluateOffer returns accepted: true):
-1. Call evaluateOffer → returns {accepted: true, negotiationId: "xxx", finalPrice: 100}
-2. IMMEDIATELY call createPaymentRequest with negotiationId and finalPrice
-3. Your final message will include the payment token automatically
-
 AVAILABLE DATASETS:
 ${Object.entries(this.datasets)
   .map(
@@ -754,38 +777,46 @@ PRICING POLICY:
 - Auto-accept: ${this.dataProviderPolicies.autoAcceptThreshold * 100}% of maximum
 - Max negotiation rounds: ${this.dataProviderPolicies.maxNegotiationRounds}
 
-PROCESS:
+NEGOTIATION PROCESS:
 1. When someone requests data, first verify they have Catena ICC using verifyCredentials
 2. Check dataset availability using checkDataAvailability
 3. Start negotiation with startNegotiation (begin at maximum price)
 4. Evaluate their offers with evaluateOffer
-5. CRITICAL: When evaluateOffer returns accepted: true, you MUST call createPaymentRequest IMMEDIATELY in the SAME tool call batch using the negotiationId and finalPrice from evaluateOffer
-6. The payment token from createPaymentRequest will be included in your response automatically
-7. When they provide receipt, verify and grant access with verifyPaymentAndGrantAccess
+5. **CRITICAL PAYMENT FLOW**: When evaluateOffer returns accepted: true AND shouldCreatePayment: true:
+   - You MUST IMMEDIATELY call createPaymentRequest in the SAME response
+   - Use the negotiationId and finalPrice from evaluateOffer
+   - Include the payment token from createPaymentRequest in your final message
+   - Format: "I accept your offer of $X USDC. Payment token: [TOKEN]"
+6. When they provide receipt, verify and grant access with verifyPaymentAndGrantAccess
+
+PAYMENT TOKEN HANDLING:
+- ALWAYS call both evaluateOffer AND createPaymentRequest together when accepting
+- NEVER accept an offer without immediately creating the payment request
+- ALWAYS include the payment token in your response message when accepting
+- If someone asks for a payment token after acceptance, use providePaymentToken tool
+- If requestor says "provide payment token" or similar, use providePaymentToken with the dataset name
+
+RESPONSE TEMPLATES:
+When accepting an offer:
+"I accept your offer of $[PRICE] USDC for [DURATION] hours access to [DATASET]. Please proceed with payment using this token: [PAYMENT_TOKEN]"
+
+When providing payment token after request:
+"Here is the payment token for your accepted offer: [PAYMENT_TOKEN]"
 
 CRITICAL RULES:
-- If evaluateOffer returns accepted: true AND shouldCreatePayment: true → IMMEDIATELY call createPaymentRequest with the negotiationId and finalPrice
-- Call BOTH tools in the SAME response (evaluateOffer then createPaymentRequest)
-- Do NOT wait for them to ask for payment
-- The payment token will be included in your final response text automatically
+1. evaluateOffer returns accepted: true → IMMEDIATELY call createPaymentRequest
+2. NEVER accept without providing payment token
+3. ALWAYS include payment token in acceptance message
+4. If asked for payment token, use providePaymentToken with dataset name
+5. Track negotiationId throughout conversation
+6. When createPaymentRequest succeeds, include the paymentToken in your response
 
 NEGOTIATION STRATEGY:
 - Start high (maximum price) and gradually decrease
 - Auto-accept offers at or above ${this.dataProviderPolicies.autoAcceptThreshold * 100}% of max
 - Never go below minimum price
 - Be professional but firm in negotiations
-- When you accept an offer, your response should mention that the payment token is included
-
-IMPORTANT:
-- Always verify Catena ICC before proceeding
-- When evaluateOffer accepts an offer → IMMEDIATELY call createPaymentRequest in the SAME response
-- If requestor asks for "payment token", "provide payment", or mentions payment after acceptance:
-  1. Call findNegotiation with the dataset name (consumer-behavior-q4, etc.)
-  2. Then call createPaymentRequest with the found negotiationId and agreed price
-- When someone asks for payment token, respond with the token in your message
-- Store and track negotiationId throughout the conversation
-- Require payment before granting access
-- Access tokens are time-limited based on agreement`
+- Always verify Catena ICC before proceeding`
   }
 
   private async getModel() {
