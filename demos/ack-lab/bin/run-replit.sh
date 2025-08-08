@@ -25,6 +25,44 @@ for port in 3000 5677 5678 5679 5680 5681 5682; do
     lsof -ti:$port | xargs kill -9 2>/dev/null || true
 done
 
+# Check for .env file and OPENAI_API_KEY
+if [ ! -f ".env" ]; then
+    print_color "$YELLOW" "📝 Creating .env file..."
+    touch .env
+fi
+
+# Load existing .env if it exists
+if [ -f ".env" ]; then
+    set -a
+    source .env 2>/dev/null || true
+    set +a
+fi
+
+# Check for OPENAI_API_KEY
+if [ -z "$OPENAI_API_KEY" ]; then
+    if ! grep -q "^OPENAI_API_KEY=" .env 2>/dev/null; then
+        print_color "$YELLOW" "⚠️  OPENAI_API_KEY not found!"
+        print_color "$BLUE" "This is required for AI-powered agent responses."
+        echo ""
+        read -p "Enter your OPENAI_API_KEY (or press Enter to skip): " api_key
+
+        if [ -n "$api_key" ]; then
+            echo "OPENAI_API_KEY=$api_key" >> .env
+            print_color "$GREEN" "✅ OPENAI_API_KEY added to .env file"
+            # Reload environment
+            set -a
+            source .env 2>/dev/null || true
+            set +a
+        else
+            print_color "$YELLOW" "⏭️  Skipping - agent responses will be limited"
+            print_color "$YELLOW" "You can add it later to the .env file"
+        fi
+        echo ""
+    fi
+else
+    print_color "$GREEN" "✅ OPENAI_API_KEY is configured"
+fi
+
 # Install dependencies if needed
 if [ ! -d "node_modules" ]; then
     print_color "$YELLOW" "📦 Installing dependencies..."

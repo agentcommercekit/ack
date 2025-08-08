@@ -1,8 +1,17 @@
+run = "cd demos/ack-lab && ./bin/run-replit.sh"
+
+[deployment]
+run = ["sh", "-c", "cd demos/ack-lab && ./bin/run-replit.sh"]
+
 modules = ["nodejs-20"]
 
 [[ports]]
 localPort = 3000
 externalPort = 80
+
+[[ports]]
+localPort = 3001
+externalPort = 5173
 
 [[ports]]
 localPort = 5677
