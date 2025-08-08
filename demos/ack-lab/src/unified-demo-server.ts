@@ -344,7 +344,7 @@ async function main() {
   log("  • Router (Web UI): http://localhost:5677")
 
   log(colors.bold("\n🌐 Web UI Instructions:\n"))
-  log("1. Start the web UI: " + colors.cyan("cd web-ui && npm run dev"))
+  log("1. Start the web UI: " + colors.cyan("cd web-ui && pnpm run dev"))
   log("2. Open " + colors.cyan("http://localhost:3000") + " in your browser")
   log("3. Switch between demos using the tabs at the top")
   log("4. Interact with the agents through the chat interface")
