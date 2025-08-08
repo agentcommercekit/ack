@@ -9,6 +9,7 @@
     "demo:swap": "tsx src/index.ts",
     "demo:unified": "tsx src/unified-demo-server.ts",
     "dev": "./bin/run-replit.sh",
+    "dev:local": "./bin/run.sh",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

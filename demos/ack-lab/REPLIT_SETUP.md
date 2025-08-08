@@ -5,7 +5,7 @@ This demo has been configured to work seamlessly on both local development envir
 ## Quick Start on Replit
 
 1. **Fork/Import the repository on Replit**
-2. **Run the demo**: The `.replit` configuration will automatically run `npm run dev`
+2. **Run the demo**: The `.replit` configuration will automatically run `pnpm run dev`
 3. **Access the Web UI**: Open the webview or the external URL provided by Replit
 
 ## How It Works
@@ -64,8 +64,8 @@ If the automatic setup doesn't work, you can manually:
 1. Install dependencies:
 
 ```bash
-npm install
-cd web-ui && npm install
+pnpm install
+cd web-ui && pnpm install
 ```
 
 2. Create a `.env` file (optional, for AI features):
@@ -79,7 +79,7 @@ OPENAI_API_KEY=your_key_here
 3. Run the demo:
 
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 ## Accessing Services

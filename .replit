@@ -1,10 +1,4 @@
-run = "pnpm run dev"
-
-[nix]
-channel = "stable-24_05"
-
-[deployment]
-run = ["sh", "-c", "pnpm run dev"]
+modules = ["nodejs-20"]
 
 [[ports]]
 localPort = 3000
@@ -33,6 +27,3 @@ externalPort = 4200
 [[ports]]
 localPort = 5682
 externalPort = 5000
-
-[env]
-NODE_ENV = "development"

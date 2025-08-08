@@ -85,11 +85,43 @@ export class MockAckLabService {
   }
 
   /**
+   * Helper function to find an agent with different colon encodings
+   */
+  private findAgentWithNormalizedDid(agentDid: DidUri): AgentData | undefined {
+    // Try direct lookup first
+    let agent = this.agents.get(agentDid)
+
+    // If not found, try with URL-encoded port format
+    // This handles both localhost and Replit domains
+    if (!agent && agentDid.includes(":") && !agentDid.includes("%3A")) {
+      // Has unencoded colon - try encoding it
+      const encodedDid = agentDid.replace(/:(\d+)$/, "%3A$1") as DidUri
+      agent = this.agents.get(encodedDid)
+    }
+
+    // If still not found, try with decoded port format
+    if (!agent && agentDid.includes("%3A")) {
+      // Has encoded colon - try decoding it
+      const decodedDid = agentDid.replace(/%3A(\d+)$/, ":$1") as DidUri
+      agent = this.agents.get(decodedDid)
+    }
+
+    return agent
+  }
+
+  /**
+   * Helper function to check if an agent exists with different colon encodings
+   */
+  private hasAgentWithNormalizedDid(agentDid: DidUri): boolean {
+    return this.findAgentWithNormalizedDid(agentDid) !== undefined
+  }
+
+  /**
    * Get agent metadata including DID and ownership VC
    */
   async getMetadata(agentDid: DidUri): Promise<AgentMetadata | null> {
     log(colors.dim(`[ACK-Lab] Metadata request for: ${agentDid}`))
-    const agent = this.agents.get(agentDid)
+    const agent = this.findAgentWithNormalizedDid(agentDid)
 
     if (!agent) {
       log(colors.red(`[ACK-Lab] Agent not found: ${agentDid}`))
@@ -128,27 +160,7 @@ export class MockAckLabService {
       )
     )
 
-    let agent = this.agents.get(agentDid)
-
-    // If not found, try with URL-encoded port format
-    if (!agent && agentDid.includes("localhost:")) {
-      const encodedDid = agentDid.replace(
-        /localhost:(\d+)/,
-        "localhost%3A$1"
-      ) as DidUri
-      log(colors.dim(`[ACK-Lab] Trying encoded format: ${encodedDid}`))
-      agent = this.agents.get(encodedDid)
-    }
-
-    // If still not found, try with decoded port format
-    if (!agent && agentDid.includes("localhost%3A")) {
-      const decodedDid = agentDid.replace(
-        /localhost%3A(\d+)/,
-        "localhost:$1"
-      ) as DidUri
-      log(colors.dim(`[ACK-Lab] Trying decoded format: ${decodedDid}`))
-      agent = this.agents.get(decodedDid)
-    }
+    const agent = this.findAgentWithNormalizedDid(agentDid)
 
     if (!agent) {
       log(
@@ -162,16 +174,15 @@ export class MockAckLabService {
     // Find the correct key format that exists in the map
     let correctKey = agentDid
     if (!this.agents.has(agentDid)) {
-      if (agentDid.includes("localhost:")) {
-        correctKey = agentDid.replace(
-          /localhost:(\d+)/,
-          "localhost%3A$1"
-        ) as DidUri
-      } else if (agentDid.includes("localhost%3A")) {
-        correctKey = agentDid.replace(
-          /localhost%3A(\d+)/,
-          "localhost:$1"
-        ) as DidUri
+      // Try to find the key that actually exists in the map
+      for (const key of this.agents.keys()) {
+        // Check if this is the same DID with different colon encoding
+        const keyNormalized = key.replace(/%3A(\d+)$/, ":$1")
+        const didNormalized = agentDid.replace(/%3A(\d+)$/, ":$1")
+        if (keyNormalized === didNormalized) {
+          correctKey = key
+          break
+        }
       }
     }
 
@@ -445,8 +456,8 @@ export class MockAckLabService {
       const payload = JSON.parse(Buffer.from(parts[1]!, "base64").toString())
       const issuer = payload.iss as DidUri
 
-      // Check if agent exists
-      if (!this.agents.has(issuer)) {
+      // Check if agent exists, handling colon encoding
+      if (!this.hasAgentWithNormalizedDid(issuer)) {
         return null
       }
 
@@ -487,14 +498,12 @@ export class MockAckLabService {
 
       log(colors.dim(`[ACK-Lab Server] After decode: ${normalizedDid}`))
 
-      // Now we should have something like did:web:localhost:5679 or did:web:localhost%3A5679
-      // Normalize to match storage format (did:web:localhost%3A5679)
-      if (normalizedDid.includes("localhost:")) {
+      // Now we should have something like did:web:domain:5679 or did:web:domain%3A5679
+      // Normalize to match storage format (did:web:domain%3A5679)
+      // Check if it has an unencoded port colon at the end
+      if (normalizedDid.match(/:(\d+)$/) && !normalizedDid.includes("%3A")) {
         // Replace the port colon with %3A
-        normalizedDid = normalizedDid.replace(
-          /localhost:(\d+)/,
-          "localhost%3A$1"
-        ) as DidUri
+        normalizedDid = normalizedDid.replace(/:(\d+)$/, "%3A$1") as DidUri
       }
 
       log(colors.dim(`[ACK-Lab Server] Final normalized: ${normalizedDid}`))

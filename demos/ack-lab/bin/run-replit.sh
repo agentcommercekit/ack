@@ -28,17 +28,17 @@ done
 # Install dependencies if needed
 if [ ! -d "node_modules" ]; then
     print_color "$YELLOW" "📦 Installing dependencies..."
-    npm install
+    pnpm install
 fi
 
 if [ ! -d "web-ui/node_modules" ]; then
     print_color "$YELLOW" "📦 Installing web-ui dependencies..."
-    cd web-ui && npm install && cd ..
+    cd web-ui && pnpm install && cd ..
 fi
 
 # Start the unified demo server in the background
 print_color "$GREEN" "🚀 Starting unified demo server..."
-npm run demo:unified &
+pnpm run demo:unified &
 SERVER_PID=$!
 
 # Wait for server to start
@@ -46,7 +46,7 @@ sleep 5
 
 # Start the web UI
 print_color "$GREEN" "🌐 Starting web UI..."
-cd web-ui && npm run dev &
+cd web-ui && pnpm run dev &
 UI_PID=$!
 
 # Function to cleanup on exit

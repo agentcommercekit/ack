@@ -16,7 +16,7 @@ A web-based interface for managing agent policies in the ACK-Lab service. This U
 ## Prerequisites
 
 1. The ACK Swap Demo must be running with ACK-Lab service on port 5680
-2. Node.js and npm installed
+2. Node.js and pnpm installed
 
 ## Getting Started
 
@@ -24,15 +24,15 @@ A web-based interface for managing agent policies in the ACK-Lab service. This U
 
    ```bash
    cd ../
-   npm run dev  # This starts the main swap demo and ACK-Lab service
+   pnpm run dev  # This starts the main swap demo and ACK-Lab service
    ```
 
 2. **Start the Policy Manager UI**:
 
    ```bash
    cd ack-lab-ui
-   npm install
-   npm run dev -- -p 3001
+   pnpm install
+   pnpm run dev -- -p 3001
    ```
 
 3. **Access the Policy Manager**:

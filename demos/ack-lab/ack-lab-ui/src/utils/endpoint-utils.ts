@@ -6,13 +6,13 @@
  * Port mapping for Replit - maps local ports to external ports
  */
 const REPLIT_PORT_MAPPING: Record<number, number> = {
-  3000: 80,    // Web UI
-  5677: 3000,  // Router
-  5678: 3001,  // Swap Requestor
-  5679: 3002,  // Swap Executor
-  5680: 3003,  // ACK-Lab
-  5681: 4200,  // Data Provider
-  5682: 5000   // Data Requestor
+  3000: 80, // Web UI
+  5677: 3000, // Router
+  5678: 3001, // Swap Requestor
+  5679: 3002, // Swap Executor
+  5680: 3003, // ACK-Lab
+  5681: 4200, // Data Provider
+  5682: 5000 // Data Requestor
 }
 
 /**
@@ -140,7 +140,7 @@ export function extractPortFromDid(did: string): number | null {
   }
   // Check if it's a Replit domain without port (port 80)
   if (isReplit() && did.includes("replit.dev") && !did.match(/%3A\d+/)) {
-    return 3000  // Port 80 maps to local port 3000
+    return 3000 // Port 80 maps to local port 3000
   }
   return null
 }

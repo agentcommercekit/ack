@@ -6,13 +6,13 @@
  * Port mapping for Replit - maps local ports to external ports
  */
 const REPLIT_PORT_MAPPING: Record<number, number> = {
-  3000: 80,    // Web UI
-  5677: 3000,  // Router
-  5678: 3001,  // Swap Requestor
-  5679: 3002,  // Swap Executor
-  5680: 3003,  // ACK-Lab
-  5681: 4200,  // Data Provider
-  5682: 5000   // Data Requestor
+  3000: 80, // Web UI
+  5677: 3000, // Router
+  5678: 3001, // Swap Requestor
+  5679: 3002, // Swap Executor
+  5680: 3003, // ACK-Lab
+  5681: 4200, // Data Provider
+  5682: 5000 // Data Requestor
 }
 
 /**
@@ -117,7 +117,7 @@ export function extractPortFromDid(did: string): number | null {
   if (match && match[1]) {
     const port = parseInt(match[1], 10)
     // If on Replit and the DID contains the Replit domain, convert external to local port
-    if (isReplit() && did.includes(process.env.REPLIT_DEV_DOMAIN || '')) {
+    if (isReplit() && did.includes(process.env.REPLIT_DEV_DOMAIN || "")) {
       return getLocalPortFromExternal(port)
     }
     return port
@@ -126,14 +126,18 @@ export function extractPortFromDid(did: string): number | null {
   const unmatchedColon = did.match(/:(\d+)$/)
   if (unmatchedColon && unmatchedColon[1]) {
     const port = parseInt(unmatchedColon[1], 10)
-    if (isReplit() && did.includes(process.env.REPLIT_DEV_DOMAIN || '')) {
+    if (isReplit() && did.includes(process.env.REPLIT_DEV_DOMAIN || "")) {
       return getLocalPortFromExternal(port)
     }
     return port
   }
   // Check if it's a Replit domain without port (port 80)
-  if (isReplit() && did.includes(process.env.REPLIT_DEV_DOMAIN || '') && !did.match(/%3A\d+/)) {
-    return 3000  // Port 80 maps to local port 3000
+  if (
+    isReplit() &&
+    did.includes(process.env.REPLIT_DEV_DOMAIN || "") &&
+    !did.match(/%3A\d+/)
+  ) {
+    return 3000 // Port 80 maps to local port 3000
   }
   return null
 }
