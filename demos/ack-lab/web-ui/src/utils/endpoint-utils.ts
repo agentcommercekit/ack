@@ -3,6 +3,19 @@
  */
 
 /**
+ * Port mapping for Replit - maps local ports to external ports
+ */
+const REPLIT_PORT_MAPPING: Record<number, number> = {
+  3000: 80,    // Web UI
+  5677: 3000,  // Router
+  5678: 3001,  // Swap Requestor
+  5679: 3002,  // Swap Executor
+  5680: 3003,  // ACK-Lab
+  5681: 4200,  // Data Provider
+  5682: 5000   // Data Requestor
+}
+
+/**
  * Check if we're running on Replit by examining the current domain
  */
 export function isReplit(): boolean {
@@ -25,6 +38,20 @@ export function getBaseDomain(): string {
 }
 
 /**
+ * Get the external port for Replit
+ * @param localPort - The local port number
+ */
+function getReplitExternalPort(localPort: number): string {
+  const externalPort = REPLIT_PORT_MAPPING[localPort]
+  if (!externalPort) {
+    // If not mapped, use the local port as-is
+    return `:${localPort}`
+  }
+  // Port 80 doesn't need to be specified in URLs
+  return externalPort === 80 ? "" : `:${externalPort}`
+}
+
+/**
  * Generate a service URL for the current environment
  * @param port - The port number for the service
  * @param path - Optional path to append
@@ -32,9 +59,8 @@ export function getBaseDomain(): string {
 export function getServiceUrl(port: number, path: string = ""): string {
   if (isReplit()) {
     const domain = getBaseDomain()
-    // On Replit, use HTTPS with the domain and port
-    // Port 3000 (web UI) is mapped to 80 so we don't include it
-    const externalPort = port === 3000 ? "" : `:${port}`
+    // On Replit, use HTTPS with the domain and mapped port
+    const externalPort = getReplitExternalPort(port)
     return `https://${domain}${externalPort}${path}`
   }
   // Local development
@@ -63,11 +89,30 @@ export function getServiceEndpoints() {
 export function createDidWebForEnvironment(port: number): string {
   const domain = getBaseDomain()
   if (isReplit()) {
-    // On Replit, use the domain with encoded colon before port
-    return `did:web:${domain}%3A${port}`
+    // On Replit, use the domain with mapped external port
+    const externalPort = REPLIT_PORT_MAPPING[port] || port
+    // Port 80 is omitted in DID Web URIs
+    if (externalPort === 80) {
+      return `did:web:${domain}`
+    }
+    return `did:web:${domain}%3A${externalPort}`
   }
   // Local development - use localhost with encoded colon
   return `did:web:localhost%3A${port}`
+}
+
+/**
+ * Get the local port from external port (reverse mapping for Replit)
+ */
+function getLocalPortFromExternal(externalPort: number): number {
+  // Find the local port that maps to this external port
+  for (const [local, external] of Object.entries(REPLIT_PORT_MAPPING)) {
+    if (external === externalPort) {
+      return parseInt(local, 10)
+    }
+  }
+  // If not found in mapping, assume it's the same
+  return externalPort
 }
 
 /**
@@ -77,12 +122,25 @@ export function extractPortFromDid(did: string): number | null {
   // Match patterns like did:web:localhost%3A5678 or did:web:domain%3A5678
   const match = did.match(/%3A(\d+)/)
   if (match) {
-    return parseInt(match[1], 10)
+    const port = parseInt(match[1], 10)
+    // If on Replit and the DID contains a Replit domain, convert external to local port
+    if (isReplit() && did.includes("replit.dev")) {
+      return getLocalPortFromExternal(port)
+    }
+    return port
   }
   // Also check for unencoded colons (shouldn't happen but just in case)
   const unmatchedColon = did.match(/:(\d+)$/)
   if (unmatchedColon) {
-    return parseInt(unmatchedColon[1], 10)
+    const port = parseInt(unmatchedColon[1], 10)
+    if (isReplit() && did.includes("replit.dev")) {
+      return getLocalPortFromExternal(port)
+    }
+    return port
+  }
+  // Check if it's a Replit domain without port (port 80)
+  if (isReplit() && did.includes("replit.dev") && !did.match(/%3A\d+/)) {
+    return 3000  // Port 80 maps to local port 3000
   }
   return null
 }

@@ -14,8 +14,10 @@ This demo has been configured to work seamlessly on both local development envir
 
 The demo automatically detects whether it's running on Replit or locally and configures all service endpoints accordingly:
 
-- **Local**: Uses `http://localhost:PORT`
-- **Replit**: Uses `https://$REPLIT_DEV_DOMAIN:PORT`
+- **Local**: Uses `http://localhost:PORT` with the original port numbers
+- **Replit**: Uses `https://$REPLIT_DEV_DOMAIN:EXTERNAL_PORT` with mapped external ports
+
+**Important**: On Replit, the internal services still run on their original ports (5677-5682), but they are exposed externally on different ports (3000-5000) for access from outside the Replit container. The endpoint utilities handle this mapping automatically.
 
 ### Port Mapping
 
@@ -24,12 +26,12 @@ The following ports are configured in `.replit`:
 | Service        | Local Port | Replit External Port |
 | -------------- | ---------- | -------------------- |
 | Web UI         | 3000       | 80 (default)         |
-| Router         | 5677       | 5677                 |
-| Swap Requestor | 5678       | 5678                 |
-| Swap Executor  | 5679       | 5679                 |
-| ACK-Lab        | 5680       | 5680                 |
-| Data Provider  | 5681       | 5681                 |
-| Data Requestor | 5682       | 5682                 |
+| Router         | 5677       | 3000                 |
+| Swap Requestor | 5678       | 3001                 |
+| Swap Executor  | 5679       | 3002                 |
+| ACK-Lab        | 5680       | 3003                 |
+| Data Provider  | 5681       | 4200                 |
+| Data Requestor | 5682       | 5000                 |
 
 ### Environment Detection
 
@@ -85,8 +87,12 @@ npm run dev
 Once running on Replit, you can access:
 
 - **Web UI**: The main webview URL (no port needed)
-- **Individual Services**: `https://your-replit-domain:PORT`
-- **ACK-Lab Admin**: `https://your-replit-domain:5680/admin`
+- **Router API**: `https://your-replit-domain:3000`
+- **Swap Requestor**: `https://your-replit-domain:3001`
+- **Swap Executor**: `https://your-replit-domain:3002`
+- **ACK-Lab Admin**: `https://your-replit-domain:3003/admin`
+- **Data Provider**: `https://your-replit-domain:4200`
+- **Data Requestor**: `https://your-replit-domain:5000`
 
 ## Troubleshooting
 

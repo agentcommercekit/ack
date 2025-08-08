@@ -12,27 +12,27 @@ externalPort = 80
 
 [[ports]]
 localPort = 5677
-externalPort = 5677
+externalPort = 3000
 
 [[ports]]
 localPort = 5678
-externalPort = 5678
+externalPort = 3001
 
 [[ports]]
 localPort = 5679
-externalPort = 5679
+externalPort = 3002
 
 [[ports]]
 localPort = 5680
-externalPort = 5680
+externalPort = 3003
 
 [[ports]]
 localPort = 5681
-externalPort = 5681
+externalPort = 4200
 
 [[ports]]
 localPort = 5682
-externalPort = 5682
+externalPort = 5000
 
 [env]
 NODE_ENV = "development"
