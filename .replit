@@ -1,4 +1,4 @@
-run = "cd demos/ack-lab && ./bin/run-replit.sh"
+run = "pnpm run setup && cd demos/ack-lab && ./bin/run-replit.sh"
 
 [deployment]
 run = ["sh", "-c", "cd demos/ack-lab && ./bin/run-replit.sh"]
