@@ -2,8 +2,24 @@ run = "cd demos/ack-lab && ./bin/run-replit.sh"
 
 [deployment]
 run = ["sh", "-c", "cd demos/ack-lab && ./bin/run-replit.sh"]
+deploymentTarget = "cloudrun"
 
-modules = ["nodejs-20"]
+[nix]
+channel = "stable-24_05"
+
+[env]
+XDG_CONFIG_HOME = "$REPL_HOME/.config"
+npm_config_prefix = "$XDG_CONFIG_HOME/npm/node_global"
+PATH = "$npm_config_prefix/bin:$REPL_HOME/node_modules/.bin"
+PNPM_HOME = "$XDG_CONFIG_HOME/pnpm"
+
+[packager]
+language = "nodejs-pnpm"
+
+[packager.features]
+packageSearch = true
+guessImports = false
+enabledForHosting = false
 
 [[ports]]
 localPort = 3000
