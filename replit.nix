@@ -1,7 +1,7 @@
 { pkgs }: {
   deps = [
-    pkgs.nodejs_20
+    pkgs.nodePackages_latest.pnpm
+    pkgs.nodejs_latest
     pkgs.lsof
-    pkgs.nodePackages.pnpm
   ];
 }

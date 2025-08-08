@@ -71,7 +71,7 @@ fi
 
 if [ ! -d "web-ui/node_modules" ]; then
     print_color "$YELLOW" "📦 Installing web-ui dependencies..."
-    cd web-ui && pnpm install && cd ..
+    cd web-ui && npm install && cd ..
 fi
 
 # Start the unified demo server in the background
