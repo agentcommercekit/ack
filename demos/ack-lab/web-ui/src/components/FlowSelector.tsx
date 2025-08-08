@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { getServiceUrl } from '../utils/endpoint-utils'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs'
@@ -26,7 +27,7 @@ export function FlowSelector() {
 
     // Notify the backend router about the demo switch
     try {
-      await fetch('http://localhost:5677/switch-demo', {
+      await fetch(getServiceUrl(5677, '/switch-demo'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ demo })
@@ -39,7 +40,7 @@ export function FlowSelector() {
 
   // Set initial demo context on mount
   useEffect(() => {
-    fetch('http://localhost:5677/switch-demo', {
+    fetch(getServiceUrl(5677, '/switch-demo'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ demo: activeFlow })

@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { getServiceUrl } from '../utils/endpoint-utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -135,7 +136,7 @@ export function PolicyManager() {
     }
   ])
 
-  const ACK_LAB_URL = 'http://localhost:5680'
+  const ACK_LAB_URL = getServiceUrl(5680)
 
   // Load agents from ACK-Lab on component mount
   useEffect(() => {

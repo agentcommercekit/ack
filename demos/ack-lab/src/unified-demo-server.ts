@@ -16,6 +16,11 @@ import { SwapRequestorAgent } from "./agents/swap-requestor"
 import { SwapExecutorAgent } from "./agents/swap-executor"
 import { DataRequestorAgent } from "./agents/data-requestor"
 import { DataProviderAgent } from "./agents/data-provider"
+import {
+  getServiceUrl,
+  getServiceEndpoints,
+  isReplit
+} from "./utils/endpoint-utils"
 
 import { CredentialIssuer } from "./services/credential-issuer"
 import { CredentialVerifier } from "./services/credential-verifier"
@@ -72,7 +77,7 @@ async function setupSwapDemo(
   // Create agents with different ports for swap demo
   const requestorAgent = new SwapRequestorAgent({
     resolver,
-    baseUrl: "http://localhost:5678", // Main requestor port (shared with UI)
+    baseUrl: getServiceUrl(5678), // Main requestor port (shared with UI)
     ownerDid: requestorOwner.did,
     verifier: credentialVerifier,
     keypair: requestorKeypair,
@@ -85,7 +90,7 @@ async function setupSwapDemo(
 
   const executorAgent = new SwapExecutorAgent({
     resolver,
-    baseUrl: "http://localhost:5679",
+    baseUrl: getServiceUrl(5679),
     ownerDid: executorOwner.did,
     verifier: credentialVerifier,
     keypair: executorKeypair,
@@ -156,7 +161,7 @@ async function setupDataDemo(credentialVerifier: CredentialVerifier) {
   // Create agents with different ports for data demo
   const requestorAgent = new DataRequestorAgent({
     resolver,
-    baseUrl: "http://localhost:5682", // Different port for data requestor
+    baseUrl: getServiceUrl(5682), // Different port for data requestor
     ownerDid: requestorOwner.did,
     verifier: credentialVerifier,
     keypair: requestorKeypair,
@@ -169,7 +174,7 @@ async function setupDataDemo(credentialVerifier: CredentialVerifier) {
 
   const providerAgent = new DataProviderAgent({
     resolver,
-    baseUrl: "http://localhost:5681", // Keep provider on original port
+    baseUrl: getServiceUrl(5681), // Keep provider on original port
     ownerDid: providerOwner.did,
     verifier: credentialVerifier,
     keypair: providerKeypair,
@@ -332,20 +337,27 @@ async function main() {
   log(colors.green("✅ Data Provider agent started on port 5681"))
 
   // Display status
+  const endpoints = getServiceEndpoints()
   log(colors.bold("\n✨ All services running!\n"))
+
+  if (isReplit()) {
+    log(colors.yellow("🌐 Running on Replit!"))
+    log(colors.dim(`Domain: ${process.env.REPLIT_DEV_DOMAIN}\n`))
+  }
+
   log(colors.cyan("Demo Endpoints:"))
   log("  • Swap Demo:")
-  log("    - Requestor: http://localhost:5678")
-  log("    - Executor: http://localhost:5679")
+  log(`    - Requestor: ${endpoints.swapRequestor}`)
+  log(`    - Executor: ${endpoints.swapExecutor}`)
   log("  • Data Demo:")
-  log("    - Requestor: http://localhost:5682")
-  log("    - Provider: http://localhost:5681")
-  log("  • ACK-Lab: http://localhost:5680")
-  log("  • Router (Web UI): http://localhost:5677")
+  log(`    - Requestor: ${endpoints.dataRequestor}`)
+  log(`    - Provider: ${endpoints.dataProvider}`)
+  log(`  • ACK-Lab: ${endpoints.ackLab}`)
+  log(`  • Router (Web UI): ${endpoints.router}`)
 
   log(colors.bold("\n🌐 Web UI Instructions:\n"))
   log("1. Start the web UI: " + colors.cyan("cd web-ui && pnpm run dev"))
-  log("2. Open " + colors.cyan("http://localhost:3000") + " in your browser")
+  log("2. Open " + colors.cyan(endpoints.webUI) + " in your browser")
   log("3. Switch between demos using the tabs at the top")
   log("4. Interact with the agents through the chat interface")
 

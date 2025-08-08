@@ -7,6 +7,7 @@ import { z } from "zod"
 import { parseJwtCredential, type JwtString } from "agentcommercekit"
 import type { CoreMessage } from "ai"
 import { BaseAgent } from "./base-agent"
+import { getServiceUrl } from "../utils/endpoint-utils"
 import type {
   DataRequest,
   PriceOffer,
@@ -720,7 +721,7 @@ export class DataProviderAgent extends BaseAgent {
                 token: `access_${tokenId}` as JwtString,
                 datasetId: negotiation.datasetId,
                 expiresAt,
-                dataUrl: `http://localhost:5681/data/${tokenId}`
+                dataUrl: `${getServiceUrl(5681)}/data/${tokenId}`
               }
 
               this.accessTokens.set(tokenId, accessToken)

@@ -5,6 +5,10 @@ import { cors } from "hono/cors"
 import { colors, log } from "@repo/cli-tools"
 import { parseJwtCredential, type JwtString } from "agentcommercekit"
 import { BaseAgent } from "./base-agent"
+import {
+  getServiceUrl,
+  createDidWebForEnvironment
+} from "../utils/endpoint-utils"
 import type { DataRequest, PriceOffer } from "../types"
 
 /**
@@ -72,7 +76,7 @@ Available tools (EXECUTE IN SEQUENCE):
 - sendPayment: Pay agreed price
 - retrieveData: Get data access after payment
 
-The provider is at: did:web:localhost:5681`
+The provider is at: ${createDidWebForEnvironment(5681)}`
   }
 
   /**
@@ -182,13 +186,13 @@ The provider is at: did:web:localhost:5681`
             // Store negotiation context
             this.currentNegotiation = {
               datasetId,
-              providerDid: "did:web:localhost%3A5681",
+              providerDid: createDidWebForEnvironment(5681),
               rounds: 0,
               maxBudget: accessDurationHours * 80 // Max $80/hour budget
             }
 
             // Send request to provider
-            const providerUrl = "http://localhost:5681/chat"
+            const providerUrl = getServiceUrl(5681, "/chat")
             const requestMessage = `I need access to the ${datasetId} dataset for ${accessDurationHours} hours. Purpose: ${purpose}. My DID is ${this.did}.`
 
             log(colors.dim(`   Sending to provider: ${requestMessage}`))
@@ -314,7 +318,7 @@ The provider is at: did:web:localhost:5681`
             // Send offer to provider
             const offerMessage = `I'd like to offer $${offerPrice} USDC for access to ${this.currentNegotiation.datasetId}.${this.currentNegotiation.negotiationId ? ` (Negotiation: ${this.currentNegotiation.negotiationId})` : ""}`
 
-            const response = await fetch("http://localhost:5681/chat", {
+            const response = await fetch(getServiceUrl(5681, "/chat"), {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"
@@ -385,7 +389,7 @@ The provider is at: did:web:localhost:5681`
               const paymentRequestMessage = `Thank you for accepting my offer of $${offerPrice} USDC. Please provide the payment token so I can complete the payment.`
 
               const paymentResponse = await fetch(
-                "http://localhost:5681/chat",
+                getServiceUrl(5681, "/chat"),
                 {
                   method: "POST",
                   headers: {
@@ -555,7 +559,7 @@ The provider is at: did:web:localhost:5681`
             log(colors.cyan("   Sending receipt to provider..."))
             const receiptMessage = `Payment complete! Here is my receipt: ${receipt}`
 
-            const providerResponse = await fetch("http://localhost:5681/chat", {
+            const providerResponse = await fetch(getServiceUrl(5681, "/chat"), {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"
@@ -617,7 +621,7 @@ The provider is at: did:web:localhost:5681`
 
             const tokenRequestMessage = `I accepted your offer for $${agreedPrice} USDC for ${datasetId}. Please provide the payment token so I can complete the payment.`
 
-            const response = await fetch("http://localhost:5681/chat", {
+            const response = await fetch(getServiceUrl(5681, "/chat"), {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"

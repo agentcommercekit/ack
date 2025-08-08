@@ -15,6 +15,7 @@ import {
 } from "agentcommercekit"
 import { colors, log } from "@repo/cli-tools"
 import { CredentialVerifier } from "../services/credential-verifier"
+import { getServiceUrl } from "../utils/endpoint-utils"
 import type { AgentMetadata, AgentPolicies, PolicyResult } from "../types"
 
 interface AgentConstructorParams {
@@ -55,7 +56,7 @@ export abstract class BaseAgent {
       maxTransactionSize: 1000000000, // 1000 USDC
       dailyTransactionLimit: 10000000000 // 10000 USDC
     },
-    ackLabUrl = "http://localhost:5680"
+    ackLabUrl = getServiceUrl(5680)
   }: AgentConstructorParams) {
     if (!keypair) {
       throw new Error("Keypair is required for agent creation")

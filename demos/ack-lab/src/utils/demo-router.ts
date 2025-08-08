@@ -1,6 +1,7 @@
 import { Hono } from "hono"
 import { cors } from "hono/cors"
 import { streamSSE } from "hono/streaming"
+import { getServiceUrl } from "../utils/endpoint-utils"
 
 /**
  * Creates a router that proxies requests to the appropriate demo agent
@@ -45,7 +46,7 @@ export class DemoRouter {
 
       try {
         // Forward request to appropriate agent
-        const response = await fetch(`http://localhost:${targetPort}/chat`, {
+        const response = await fetch(getServiceUrl(targetPort, "/chat"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
@@ -81,16 +82,13 @@ export class DemoRouter {
 
         try {
           // Connect to the appropriate agent's SSE endpoint
-          const response = await fetch(
-            `http://localhost:${targetPort}/events`,
-            {
-              headers: {
-                Accept: "text/event-stream"
-              },
-              // @ts-ignore - signal is not in the type definition but it works
-              signal: stream.signal
-            }
-          )
+          const response = await fetch(getServiceUrl(targetPort, "/events"), {
+            headers: {
+              Accept: "text/event-stream"
+            },
+            // @ts-ignore - signal is not in the type definition but it works
+            signal: stream.signal
+          })
 
           if (!response.ok) {
             console.error(`Failed to connect to agent SSE: ${response.status}`)

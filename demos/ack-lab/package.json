@@ -8,6 +8,7 @@
     "demo:data": "tsx src/data-monetization-demo.ts",
     "demo:swap": "tsx src/index.ts",
     "demo:unified": "tsx src/unified-demo-server.ts",
+    "dev": "./bin/run-replit.sh",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

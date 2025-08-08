@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { getServiceUrl, getServiceEndpoints, createDidWebForEnvironment } from '../utils/endpoint-utils'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
 import { Progress } from './ui/progress'
@@ -103,13 +104,13 @@ export function DataFlow() {
   const [eventSource, setEventSource] = useState<EventSource | null>(null)
 
   const [requestorState, setRequestorState] = useState<AgentState>({
-    did: 'did:web:localhost%3A5678',
+    did: createDidWebForEnvironment(5678),
     balance: { usdc: 1000 },
     status: 'idle'
   })
 
   const [providerState, setProviderState] = useState<AgentState>({
-    did: 'did:web:localhost%3A5681',
+    did: createDidWebForEnvironment(5681),
     balance: { usdc: 0 },
     status: 'idle'
   })
@@ -232,7 +233,7 @@ export function DataFlow() {
         es.close()
       }
 
-      es = new EventSource('http://localhost:5677/events')
+      es = new EventSource(getServiceUrl(5677, '/events'))
 
       es.onopen = () => {
         console.log('✅ SSE connection opened')
@@ -412,7 +413,7 @@ export function DataFlow() {
       console.log('🚀 Starting data request:', message)
 
       // Send request to requestor agent through the router
-      const response = await fetch('http://localhost:5677/chat', {
+      const response = await fetch(getServiceUrl(5677, '/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -495,12 +496,12 @@ export function DataFlow() {
     setSelectedDataset('')
     setNegotiationState({ rounds: 0 })
     setRequestorState({
-      did: 'did:web:localhost%3A5678',
+      did: createDidWebForEnvironment(5678),
       balance: { usdc: 1000 },
       status: 'idle'
     })
     setProviderState({
-      did: 'did:web:localhost%3A5681',
+      did: createDidWebForEnvironment(5681),
       balance: { usdc: 0 },
       status: 'idle'
     })
@@ -519,7 +520,7 @@ export function DataFlow() {
     setChatHistory(prev => [...prev, { role: 'user', message: 'reset balances', timestamp: new Date() }])
 
     try {
-      const response = await fetch('http://localhost:5680/reset-balances', {
+      const response = await fetch(getServiceUrl(5680, '/reset-balances'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -560,7 +561,7 @@ export function DataFlow() {
     setChatHistory(prev => [...prev, { role: 'user', message: 'topup', timestamp: new Date() }])
 
     try {
-      const response = await fetch('http://localhost:5680/topup-requestor', {
+      const response = await fetch(getServiceUrl(5680, '/topup-requestor'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: 100 })

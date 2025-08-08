@@ -1,0 +1,38 @@
+run = "npm run dev"
+
+[nix]
+channel = "stable-24_05"
+
+[deployment]
+run = ["sh", "-c", "npm run dev"]
+
+[[ports]]
+localPort = 3000
+externalPort = 80
+
+[[ports]]
+localPort = 5677
+externalPort = 5677
+
+[[ports]]
+localPort = 5678
+externalPort = 5678
+
+[[ports]]
+localPort = 5679
+externalPort = 5679
+
+[[ports]]
+localPort = 5680
+externalPort = 5680
+
+[[ports]]
+localPort = 5681
+externalPort = 5681
+
+[[ports]]
+localPort = 5682
+externalPort = 5682
+
+[env]
+NODE_ENV = "development"

@@ -7,6 +7,10 @@ import { cors } from "hono/cors"
 import { colors, log } from "@repo/cli-tools"
 import { parseJwtCredential, type JwtString } from "agentcommercekit"
 import { BaseAgent } from "./base-agent"
+import {
+  getServiceUrl,
+  createDidWebForEnvironment
+} from "../utils/endpoint-utils"
 import type { SwapRequest, SwapResult } from "../types"
 
 /**
@@ -45,7 +49,7 @@ CRITICAL INSTRUCTIONS FOR SEAMLESS SWAP EXECUTION:
 4. IMPORTANT: If initiateSwap returns status: "PAYMENT_REQUIRED" with a paymentToken, AUTOMATICALLY call sendPayment immediately - do NOT wait for user confirmation.
 
 Your DID is: ${this.did}
-The executor is at: did:web:localhost:5679
+The executor is at: ${createDidWebForEnvironment(5679)}
 
 Available tools (CHAIN AUTOMATICALLY):
 - prepareSwap: Checks balance and verifies executor (use FIRST)
@@ -175,9 +179,9 @@ TOOL EXECUTION RULES:
               type: "step_started",
               step: "identity-verification",
               message: "Verifying executor identity...",
-              data: { executorDid: "did:web:localhost%3A5679" }
+              data: { executorDid: createDidWebForEnvironment(5679) }
             })
-            const executorDid = "did:web:localhost%3A5679" // Use URL-encoded format
+            const executorDid = createDidWebForEnvironment(5679) // Use URL-encoded format
             log(colors.dim(`   Looking up ${executorDid} at ACK-Lab...`))
 
             const metadata = await this.fetchCounterpartyMetadata(
@@ -272,7 +276,7 @@ TOOL EXECUTION RULES:
             if (!this.balanceChecked || !this.identityVerified) {
               log(colors.dim("   Doing quick verification..."))
               // Do quick verification
-              const executorDid = "did:web:localhost%3A5679" // Use URL-encoded format
+              const executorDid = createDidWebForEnvironment(5679) // Use URL-encoded format
               const metadata = await this.fetchCounterpartyMetadata(
                 executorDid as any
               )
@@ -297,7 +301,7 @@ TOOL EXECUTION RULES:
             log(colors.dim(`   Amount in subunits: ${amountInSubunits}`))
 
             // Send swap request to executor via chat
-            const executorUrl = "http://localhost:5679/chat"
+            const executorUrl = getServiceUrl(5679, "/chat")
             log(colors.dim(`   Sending chat message to: ${executorUrl}`))
 
             const swapMessage = `I want to swap ${amountIn} ${tokenIn} for ${tokenOut}. My DID is ${this.did}.`
@@ -437,7 +441,7 @@ TOOL EXECUTION RULES:
             log(colors.cyan("   Sending receipt to executor..."))
             const receiptMessage = `I have completed the payment. Here is my receipt: ${receipt}`
 
-            const swapResponse = await fetch("http://localhost:5679/chat", {
+            const swapResponse = await fetch(getServiceUrl(5679, "/chat"), {
               method: "POST",
               headers: {
                 "Content-Type": "application/json"

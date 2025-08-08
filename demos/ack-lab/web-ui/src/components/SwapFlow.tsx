@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { getServiceUrl } from '../utils/endpoint-utils'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { Badge } from './ui/badge'
@@ -283,7 +284,7 @@ export function SwapFlow() {
         es.close()
       }
 
-      es = new EventSource('http://localhost:5677/events')
+      es = new EventSource(getServiceUrl(5677, '/events'))
 
       es.onopen = () => {
         console.log('✅ SSE connection opened for swap')
@@ -364,7 +365,7 @@ export function SwapFlow() {
       console.log('🚀 Starting swap request:', message)
 
       // Call the requestor agent through the router
-      const response = await fetch('http://localhost:5677/chat', {
+      const response = await fetch(getServiceUrl(5677, '/chat'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -472,7 +473,7 @@ export function SwapFlow() {
     setChatHistory(prev => [...prev, { role: 'user', message: 'reset', timestamp: new Date() }])
 
     try {
-      const response = await fetch('http://localhost:5680/reset-balances', {
+      const response = await fetch(getServiceUrl(5680, '/reset-balances'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' }
       })
@@ -516,7 +517,7 @@ export function SwapFlow() {
     setChatHistory(prev => [...prev, { role: 'user', message: 'topup', timestamp: new Date() }])
 
     try {
-      const response = await fetch('http://localhost:5680/topup-requestor', {
+      const response = await fetch(getServiceUrl(5680, '/topup-requestor'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: 100 })
