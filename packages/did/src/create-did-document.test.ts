@@ -4,6 +4,10 @@ import {
   keyCurves,
   publicKeyEncodings
 } from "@agentcommercekit/keys"
+import {
+  bytesToMultibase,
+  publicKeyBytesToJwk
+} from "@agentcommercekit/keys/encoding"
 import { beforeEach, describe, expect, test } from "vitest"
 import {
   createDidDocument,
@@ -31,13 +35,6 @@ const contextMap = {
   hex: "https://w3id.org/security/multikey/v1",
   base58: "https://w3id.org/security/multikey/v1"
 }
-
-const encodingToPropertyMap = {
-  hex: "publicKeyMultibase",
-  jwk: "publicKeyJwk",
-  multibase: "publicKeyMultibase",
-  base58: "publicKeyMultibase"
-} as const
 
 describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
   const did = "did:web:example.com"
@@ -76,19 +73,25 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
           })
 
           const keyId = `${did}#${encodingMap[encoding]}-1`
+          const expectedVerificationMethod =
+            encoding === "jwk"
+              ? {
+                  id: keyId,
+                  type: keyTypeMap[encoding],
+                  controller: did,
+                  publicKeyJwk: publicKeyBytesToJwk(keypair.publicKey, curve)
+                }
+              : {
+                  id: keyId,
+                  type: keyTypeMap[encoding],
+                  controller: did,
+                  publicKeyMultibase: bytesToMultibase(keypair.publicKey)
+                }
+
           const expectedDocument = {
             "@context": ["https://www.w3.org/ns/did/v1", contextMap[encoding]],
             id: did,
-            verificationMethod: [
-              {
-                id: keyId,
-                type: keyTypeMap[encoding],
-                controller: did,
-                [encodingToPropertyMap[encoding]]: expect.any(
-                  encoding === "jwk" ? Object : String
-                ) as unknown
-              }
-            ],
+            verificationMethod: [expectedVerificationMethod],
             authentication: [keyId],
             assertionMethod: [keyId]
           }
