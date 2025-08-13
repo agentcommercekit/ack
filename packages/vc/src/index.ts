@@ -1,6 +1,7 @@
 import { verifyPresentation } from "did-jwt-vc"
 
 export * from "./create-credential"
+export * from "./create-presentation"
 export * from "./is-credential"
 export * from "./signing/sign-credential"
 export * from "./signing/sign-presentation"
