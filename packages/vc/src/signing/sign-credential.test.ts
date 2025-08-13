@@ -39,11 +39,10 @@ test("signCredential creates a valid JWT and verifiable credential", async () =>
   })
 
   // Sign the credential
-  const { jwt, verifiableCredential } = await signCredential(credential, {
+  const jwt = await signCredential(credential, {
     did: issuerDid,
     signer: createJwtSigner(issuerKeypair),
-    alg: "ES256K",
-    resolver
+    alg: "ES256K"
   })
 
   // Verify the JWT using did-jwt verifier
@@ -58,5 +57,5 @@ test("signCredential creates a valid JWT and verifiable credential", async () =>
   const payload = result.payload as JwtCredentialPayload
 
   // Verify VC-specific payload elements
-  expect(verifiableCredential).toMatchObject(payload.vc)
+  expect(credential).toMatchObject(payload.vc)
 })

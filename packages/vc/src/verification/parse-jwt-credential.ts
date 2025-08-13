@@ -9,11 +9,11 @@ import type { Resolvable } from "@agentcommercekit/did"
  * @param resolver - The resolver to use for did resolution
  * @returns A {@link Verifiable<W3CCredential>}
  */
-export async function parseJwtCredential(
+export async function parseJwtCredential<T extends W3CCredential>(
   jwt: string,
   resolver: Resolvable
-): Promise<Verifiable<W3CCredential>> {
+): Promise<Verifiable<T>> {
   const result = await verifyCredential(jwt, resolver)
 
-  return result.verifiableCredential
+  return result.verifiableCredential as Verifiable<T>
 }

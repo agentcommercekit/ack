@@ -1,7 +1,8 @@
 import { isJwtString } from "@agentcommercekit/jwt"
 import { createVerifiableCredentialJwt, verifyCredential } from "did-jwt-vc"
-import type { SignOptions } from "./types"
+import type { Signer } from "./types"
 import type { Verifiable, W3CCredential } from "../types"
+import type { Resolvable } from "@agentcommercekit/did"
 import type { JwtString } from "@agentcommercekit/jwt"
 
 type SignedCredential<T extends W3CCredential> = {
@@ -22,18 +23,16 @@ type SignedCredential<T extends W3CCredential> = {
  * @param options - The {@link SignCredentialOptions} to use
  * @returns A {@link SignedCredential}
  */
-export async function signCredential<T extends W3CCredential>(
-  credential: T,
-  options: SignOptions
-): Promise<SignedCredential<T>> {
+export async function signCredential(
+  credential: W3CCredential,
+  signer: Signer
+): Promise<JwtString> {
   // options.alg is already a JwtAlgorithm, no conversion needed
-  const jwt = await createVerifiableCredentialJwt(credential, options)
+  const jwt = await createVerifiableCredentialJwt(credential, signer)
 
   if (!isJwtString(jwt)) {
     throw new Error("Failed to sign credential")
   }
 
-  const { verifiableCredential } = await verifyCredential(jwt, options.resolver)
-
-  return { jwt, verifiableCredential: verifiableCredential as Verifiable<T> }
+  return jwt
 }

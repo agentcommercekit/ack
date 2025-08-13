@@ -1,6 +1,10 @@
 import { apiSuccessResponse } from "@repo/api-utils/api-response"
 import { notFound } from "@repo/api-utils/exceptions"
-import { createStatusListCredential, signCredential } from "agentcommercekit"
+import {
+  createStatusListCredential,
+  parseJwtCredential,
+  signCredential
+} from "agentcommercekit"
 import { Hono } from "hono"
 import { env } from "hono/adapter"
 import { getStatusList } from "@/db/queries/status-lists"
@@ -56,10 +60,10 @@ app.get(
       issuer: issuer.did
     })
 
-    const { verifiableCredential } = await signCredential(credential, {
-      ...issuer,
-      resolver
-    })
+    const jwt = await signCredential(credential, issuer)
+
+    const verifiableCredential =
+      await parseJwtCredential<BitstringStatusListCredential>(jwt, resolver)
 
     return c.json(apiSuccessResponse(verifiableCredential))
   }

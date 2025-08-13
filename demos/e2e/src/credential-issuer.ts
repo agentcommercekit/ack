@@ -90,11 +90,10 @@ export class CredentialIssuer {
       issuer: this.did
     })
 
-    const { jwt } = await signCredential(credential, {
+    const jwt = await signCredential(credential, {
       did: this.did,
       signer: this.signer,
-      alg: "ES256K",
-      resolver: this.resolver
+      alg: "ES256K"
     })
 
     return jwt

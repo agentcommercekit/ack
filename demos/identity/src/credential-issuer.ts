@@ -3,6 +3,7 @@ import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
   generateKeypair,
+  parseJwtCredential,
   signCredential,
   verifyJwt
 } from "agentcommercekit"
@@ -88,12 +89,13 @@ export class CredentialIssuer {
       issuer: this.did
     })
 
-    const { verifiableCredential } = await signCredential(credential, {
+    const jwt = await signCredential(credential, {
       did: this.did,
       signer: this.signer,
-      alg: "ES256K",
-      resolver: this.resolver
+      alg: "ES256K"
     })
+
+    const verifiableCredential = await parseJwtCredential(jwt, this.resolver)
 
     return verifiableCredential
   }

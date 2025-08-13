@@ -1,4 +1,8 @@
-import { makeRevocable, signCredential } from "agentcommercekit"
+import {
+  makeRevocable,
+  parseJwtCredential,
+  signCredential
+} from "agentcommercekit"
 import { getStatusListPosition } from "@/db/utils/get-status-list-position"
 import type { CredentialResponse, Issuer } from "../types"
 import type { DatabaseCredential } from "@/db/schema"
@@ -34,13 +38,9 @@ export async function buildSignedCredential({
     statusListUrl: `${baseUrl}/status/${statusListId}`
   })
 
-  const { verifiableCredential, jwt } = await signCredential(
-    unsignedCredential,
-    {
-      ...issuer,
-      resolver
-    }
-  )
+  const jwt = await signCredential(unsignedCredential, issuer)
+
+  const verifiableCredential = await parseJwtCredential(jwt, resolver)
 
   return {
     credential: verifiableCredential,

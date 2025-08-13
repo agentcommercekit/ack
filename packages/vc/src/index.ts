@@ -1,3 +1,5 @@
+import { verifyPresentation } from "did-jwt-vc"
+
 export * from "./create-credential"
 export * from "./is-credential"
 export * from "./signing/sign-credential"
@@ -13,3 +15,5 @@ export * from "./verification/types"
 export * from "./verification/parse-jwt-credential"
 export * from "./verification/verify-parsed-credential"
 export * from "./verification/verify-proof"
+
+export { verifyPresentation }

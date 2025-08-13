@@ -37,11 +37,10 @@ test("parseJwtCredential should parse a valid credential", async () => {
     }
   })
 
-  const { jwt } = await signCredential(credential, {
+  const jwt = await signCredential(credential, {
     did: issuerDid,
     signer: createJwtSigner(issuerKeypair),
-    alg: "ES256K",
-    resolver
+    alg: "ES256K"
   })
 
   const vc = await parseJwtCredential(jwt, resolver)

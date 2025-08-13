@@ -5,6 +5,7 @@ import {
   createJwtSigner,
   generateKeypair,
   getDidResolver,
+  parseJwtCredential,
   signCredential
 } from "agentcommercekit"
 import type { DidUri } from "agentcommercekit"
@@ -37,12 +38,13 @@ export async function issueCredential({
     issuer: issuerDid
   })
 
-  const { verifiableCredential } = await signCredential(credential, {
+  const jwt = await signCredential(credential, {
     did: issuerDid,
     signer,
-    alg: "EdDSA",
-    resolver
+    alg: "EdDSA"
   })
+
+  const verifiableCredential = await parseJwtCredential(jwt, resolver)
 
   return verifiableCredential
 }

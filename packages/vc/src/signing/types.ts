@@ -1,7 +1,6 @@
-import type { Resolvable } from "@agentcommercekit/did"
 import type { JwtAlgorithm, JwtSigner } from "@agentcommercekit/jwt"
 
-export interface SignOptions {
+export interface Signer {
   /**
    * The algorithm to use for the JWT
    */
@@ -14,8 +13,4 @@ export interface SignOptions {
    * The signer to use for the JWT
    */
   signer: JwtSigner
-  /**
-   * A resolver to use for parsing the signed credential
-   */
-  resolver: Resolvable
 }

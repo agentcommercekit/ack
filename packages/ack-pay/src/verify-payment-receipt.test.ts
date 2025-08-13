@@ -5,7 +5,11 @@ import {
 } from "@agentcommercekit/did"
 import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
-import { InvalidCredentialError, signCredential } from "@agentcommercekit/vc"
+import {
+  InvalidCredentialError,
+  parseJwtCredential,
+  signCredential
+} from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createPaymentRequestBody } from "./create-payment-request-body"
@@ -65,14 +69,12 @@ describe("verifyPaymentReceipt()", () => {
       )
     })
 
-    const signed = await signCredential(unsignedReceipt, {
+    signedReceiptJwt = await signCredential(unsignedReceipt, {
       did: receiptIssuerDid,
-      signer: createJwtSigner(receiptIssuerKeypair),
-      resolver
+      signer: createJwtSigner(receiptIssuerKeypair)
     })
 
-    signedReceipt = signed.verifiableCredential
-    signedReceiptJwt = signed.jwt
+    signedReceipt = await parseJwtCredential(signedReceiptJwt, resolver)
   })
 
   it("validates a JWT receipt string", async () => {

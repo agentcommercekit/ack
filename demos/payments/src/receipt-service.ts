@@ -11,6 +11,7 @@ import {
   createPaymentReceipt,
   getDidResolver,
   isDidPkhUri,
+  parseJwtCredential,
   signCredential,
   verifyJwt,
   verifyPaymentToken
@@ -125,17 +126,16 @@ app.post("/", async (c) => {
     payerDid: parsed.issuer
   })
 
-  const { jwt, verifiableCredential } = await signCredential(receipt, {
+  const jwt = await signCredential(receipt, {
     did: serverIdentity.did,
     signer: serverIdentity.jwtSigner,
-    alg: "ES256K",
-    resolver: didResolver
+    alg: "ES256K"
   })
 
   log(successMessage("Receipt created successfully"))
   return c.json({
     receipt: jwt,
-    details: verifiableCredential
+    details: await parseJwtCredential(jwt, didResolver)
   })
 })
 
