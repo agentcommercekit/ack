@@ -34,9 +34,9 @@ const paymentRequest = {
   paymentOptions: [
     {
       id: "option-1",
-      amount: 1000,
-      decimals: 2,
-      currency: "USD",
+      amount: new BigInt(100_000_000).toString(), // 100 USDC
+      decimals: 6,
+      currency: "USDC",
       recipient: "did:web:payment.example.com",
       paymentService: "https://pay.example.com"
     }

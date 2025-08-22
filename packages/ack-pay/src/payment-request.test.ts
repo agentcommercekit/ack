@@ -8,7 +8,7 @@ describe("isPaymentRequest", () => {
     paymentOptions: [
       {
         id: "test-payment-option-id",
-        amount: 100,
+        amount: BigInt(100).toString(),
         decimals: 2,
         currency: "USD",
         recipient: "did:example:recipient"

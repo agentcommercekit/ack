@@ -61,7 +61,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
         // USDC on Base
         {
           id: "usdc-base-sepolia",
-          amount: 50000, // 5 cents in USDC subunits
+          amount: BigInt(50000).toString(), // 5 cents in USDC subunits
           decimals: 6,
           currency: "USDC",
           recipient: serverIdentity.crypto.address, // This could be a did:pkh
