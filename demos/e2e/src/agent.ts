@@ -212,7 +212,7 @@ ${colors.bold(otherAgent.did)}
           paymentOptions: [
             {
               id: crypto.randomUUID(),
-              amount: 500,
+              amount: BigInt(500).toString(),
               decimals: 2,
               currency: "USD",
               recipient: this.walletDid

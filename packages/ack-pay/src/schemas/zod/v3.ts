@@ -5,7 +5,7 @@ const urlOrDidUri = z.union([z.string().url(), didUriSchema])
 
 export const paymentOptionSchema = z.object({
   id: z.string(),
-  amount: z.number().int().positive(),
+  amount: z.union([z.number().int().positive(), z.string()]),
   decimals: z.number().int().nonnegative(),
   currency: z.string(),
   recipient: z.string(),
