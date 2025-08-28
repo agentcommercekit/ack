@@ -1,4 +1,5 @@
 import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
+import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod"
 import { z } from "zod/v3"
 
 const urlOrDidUri = z.union([z.string().url(), didUriSchema])
@@ -26,12 +27,7 @@ export const paymentRequestSchema = z.object({
 })
 
 export const paymentReceiptClaimSchema = z.object({
-  paymentToken: z.string(), // Often a JwtString but not required
+  paymentRequestToken: jwtStringSchema,
   paymentOptionId: z.string(),
   metadata: z.record(z.string(), z.unknown()).optional()
-})
-
-export const paymentRequestBodySchema = z.object({
-  payment: paymentRequestSchema,
-  paymentToken: z.string() // Often a JwtString but not required
 })

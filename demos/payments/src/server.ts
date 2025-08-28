@@ -2,7 +2,7 @@ import { serve } from "@hono/node-server"
 import { logger } from "@repo/api-utils/middleware/logger"
 import { colors, errorMessage, log, successMessage } from "@repo/cli-tools"
 import {
-  createPaymentRequestResponse,
+  createSignedPaymentRequest,
   curveToJwtAlgorithm,
   getDidResolver,
   verifyPaymentReceipt
@@ -83,7 +83,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
     }
 
     // Generate the ACK-Pay Payment Request, which is a signed JWT detailing what needs to be paid.
-    const paymentRequest402Response = await createPaymentRequestResponse(
+    const paymentRequestBody = await createSignedPaymentRequest(
       paymentRequestInit,
       {
         issuer: serverIdentity.did,
@@ -92,8 +92,15 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
       }
     )
 
+    const res = new Response(JSON.stringify(paymentRequestBody), {
+      status: 402,
+      headers: {
+        "Content-Type": "application/json"
+      }
+    })
+
     log(successMessage("Payment request generated"))
-    throw new HTTPException(402, { res: paymentRequest402Response })
+    throw new HTTPException(402, { res })
   }
 
   try {
@@ -103,7 +110,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
       resolver: didResolver,
       trustedReceiptIssuers,
       paymentRequestIssuer: serverIdentity.did,
-      verifyPaymentTokenJwt: true
+      verifyPaymentRequestTokenJwt: true
     })
   } catch (e) {
     console.log(errorMessage("Error verifying receipt"), e)

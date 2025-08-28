@@ -14,7 +14,7 @@ import {
   parseJwtCredential,
   signCredential,
   verifyJwt,
-  verifyPaymentToken
+  verifyPaymentRequestToken
 } from "agentcommercekit"
 import { caip2ChainIdSchema } from "agentcommercekit/schemas/valibot"
 import { Hono } from "hono"
@@ -48,7 +48,7 @@ const paymentDetailsSchema = v.object({
     })
   ]),
   payerDid: v.string(),
-  paymentToken: v.string()
+  paymentRequestToken: v.string()
 })
 
 /**
@@ -87,10 +87,10 @@ app.post("/", async (c) => {
   log(colors.dim("Payment details:"))
   logJson(paymentDetails, colors.cyan)
 
-  log(colors.dim("Verifying payment token..."))
-  // Verify the payment token is not expired, etc.
-  const { paymentRequest } = await verifyPaymentToken(
-    paymentDetails.paymentToken,
+  log(colors.dim("Verifying payment request token..."))
+  // Verify the payment request token is not expired, etc.
+  const { paymentRequest } = await verifyPaymentRequestToken(
+    paymentDetails.paymentRequestToken,
     {
       resolver: didResolver
     }
@@ -120,7 +120,7 @@ app.post("/", async (c) => {
 
   log(colors.dim("\nCreating payment receipt..."))
   const receipt = createPaymentReceipt({
-    paymentToken: paymentDetails.paymentToken,
+    paymentRequestToken: paymentDetails.paymentRequestToken,
     paymentOptionId: paymentOption.id,
     issuer: serverIdentity.did,
     payerDid: parsed.issuer

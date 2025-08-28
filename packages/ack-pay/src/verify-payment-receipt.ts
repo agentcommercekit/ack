@@ -10,7 +10,7 @@ import {
   getReceiptClaimVerifier,
   isPaymentReceiptCredential
 } from "./receipt-claim-verifier"
-import { verifyPaymentToken } from "./verify-payment-token"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequest } from "./payment-request"
 import type { Resolvable } from "@agentcommercekit/did"
 import type { JwtString } from "@agentcommercekit/jwt"
@@ -26,11 +26,11 @@ interface VerifyPaymentReceiptOptions {
    */
   trustedReceiptIssuers?: string[]
   /**
-   * Whether to verify the paymentToken as a JWT
+   * Whether to verify the paymentRequestToken as a JWT
    */
-  verifyPaymentTokenJwt?: boolean
+  verifyPaymentRequestTokenJwt?: boolean
   /**
-   * The issuer of the paymentToken
+   * The issuer of the paymentRequestToken
    */
   paymentRequestIssuer?: string
 }
@@ -48,17 +48,17 @@ export async function verifyPaymentReceipt(
     resolver,
     trustedReceiptIssuers,
     paymentRequestIssuer,
-    verifyPaymentTokenJwt = true
+    verifyPaymentRequestTokenJwt = true
   }: VerifyPaymentReceiptOptions
 ): Promise<
   | {
       receipt: Verifiable<W3CCredential>
-      paymentToken: string
+      paymentRequestToken: string
       paymentRequest: null
     }
   | {
       receipt: Verifiable<W3CCredential>
-      paymentToken: JwtString
+      paymentRequestToken: JwtString
       paymentRequest: PaymentRequest
     }
 > {
@@ -84,34 +84,40 @@ export async function verifyPaymentReceipt(
     verifiers: [getReceiptClaimVerifier()]
   })
 
-  // Verify the paymentToken is a valid JWT
-  const paymentToken = parsedCredential.credentialSubject.paymentToken
+  // Verify the paymentRequestToken is a valid JWT
+  const paymentRequestToken =
+    parsedCredential.credentialSubject.paymentRequestToken
 
-  if (!verifyPaymentTokenJwt) {
+  if (!verifyPaymentRequestTokenJwt) {
     return {
       receipt: parsedCredential,
-      paymentToken,
+      paymentRequestToken,
       paymentRequest: null
     }
   }
 
-  if (!isJwtString(paymentToken)) {
-    throw new InvalidCredentialSubjectError("Payment token is not a JWT")
+  if (!isJwtString(paymentRequestToken)) {
+    throw new InvalidCredentialSubjectError(
+      "Payment Request token is not a JWT"
+    )
   }
 
-  const { paymentRequest } = await verifyPaymentToken(paymentToken, {
-    resolver,
-    // We don't want to fail Receipt Verification if the paymentToken has
-    // expired, since the receipt lives longer than that
-    verifyExpiry: false,
-    // If the paymentRequestIssuer is provided, we want to verify that the
-    // payment token was issued by the same issuer.
-    issuer: paymentRequestIssuer
-  })
+  const { paymentRequest } = await verifyPaymentRequestToken(
+    paymentRequestToken,
+    {
+      resolver,
+      // We don't want to fail Receipt Verification if the paymentRequestToken has
+      // expired, since the receipt lives longer than that
+      verifyExpiry: false,
+      // If the paymentRequestIssuer is provided, we want to verify that the
+      // payment request token was issued by the same issuer.
+      issuer: paymentRequestIssuer
+    }
+  )
 
   return {
     receipt: parsedCredential,
-    paymentToken,
+    paymentRequestToken,
     paymentRequest
   }
 }

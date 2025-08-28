@@ -67,7 +67,7 @@ export class ReceiptVerifier {
       resolver: this.resolver,
       trustedReceiptIssuers: this.trustedIssuers,
       paymentRequestIssuer: paymentRequestIssuer,
-      verifyPaymentTokenJwt: true
+      verifyPaymentRequestTokenJwt: true
     })
   }
 }

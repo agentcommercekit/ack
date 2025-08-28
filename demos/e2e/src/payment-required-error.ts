@@ -5,12 +5,12 @@ import type { PaymentRequest } from "agentcommercekit"
  */
 export class PaymentRequiredError extends Error {
   paymentRequest: PaymentRequest
-  paymentToken: string
+  paymentRequestToken: string
 
-  constructor(paymentRequest: PaymentRequest, paymentToken: string) {
+  constructor(paymentRequest: PaymentRequest, paymentRequestToken: string) {
     super("402 Payment Required")
     this.name = "PaymentRequiredError"
     this.paymentRequest = paymentRequest
-    this.paymentToken = paymentToken
+    this.paymentRequestToken = paymentRequestToken
   }
 }

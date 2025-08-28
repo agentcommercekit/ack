@@ -3,10 +3,10 @@ import {
   bytesToHexString,
   createJwt,
   createPaymentReceipt,
-  createPaymentRequestBody,
+  createSignedPaymentRequest,
   curveToJwtAlgorithm,
   getDidResolver,
-  verifyPaymentToken
+  verifyPaymentRequestToken
 } from "agentcommercekit"
 import {
   credentialSchema,
@@ -26,7 +26,7 @@ vi.mock("agentcommercekit", async () => {
   const actual = await vi.importActual("agentcommercekit")
   return {
     ...actual,
-    verifyPaymentToken: vi.fn(),
+    verifyPaymentRequestToken: vi.fn(),
     getDidResolver: vi.fn()
   }
 })
@@ -56,7 +56,7 @@ vi.mock("@/db/queries/credentials", async () => {
         id,
         credentialType: "PaymentReceiptCredential",
         baseCredential: createPaymentReceipt({
-          paymentToken: "test.payment.token",
+          paymentRequestToken: "test.payment.token",
           paymentOptionId: "test-payment-option-id",
           issuer: "did:web:issuer.example.com",
           payerDid: "did:web:payer.example.com"
@@ -95,17 +95,15 @@ async function generatePayload(
   resourceServer: DidWithSigner,
   paymentService: DidWithSigner
 ) {
-  const { paymentToken, paymentRequest } = await createPaymentRequestBody(
-    paymentRequestInit,
-    {
+  const { paymentRequestToken, paymentRequest } =
+    await createSignedPaymentRequest(paymentRequestInit, {
       issuer: resourceServer.did,
       signer: resourceServer.signer,
       algorithm: curveToJwtAlgorithm(resourceServer.keypair.curve)
-    }
-  )
+    })
 
   const payload = {
-    paymentToken,
+    paymentRequestToken,
     paymentOptionId: paymentRequest.paymentOptions[0].id,
     metadata: {
       txHash: "test-tx-hash"
@@ -154,7 +152,7 @@ describe("POST /credentials/receipts", () => {
     process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
     process.env.BASE_URL = "https://issuer.example.com"
 
-    vi.mocked(verifyPaymentToken).mockResolvedValue({
+    vi.mocked(verifyPaymentRequestToken).mockResolvedValue({
       paymentRequest,
       // @ts-expect-error - Not a full parsed JWT
       parsed: {
@@ -224,7 +222,7 @@ describe("POST /credentials/receipts", () => {
   it("validates the parsed payload", async () => {
     const signedPayload = await createJwt(
       {
-        paymentToken: "test.jwt.token",
+        paymentRequestToken: "test.jwt.token",
         paymentOptionId: "test-payment-option-id",
         metadata: {
           txHash: "test-tx-hash"
@@ -296,7 +294,7 @@ describe("DELETE /credentials/receipts", () => {
     process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
     process.env.BASE_URL = "https://issuer.example.com"
 
-    vi.mocked(verifyPaymentToken).mockResolvedValue({
+    vi.mocked(verifyPaymentRequestToken).mockResolvedValue({
       paymentRequest,
       // @ts-expect-error - Not a full parsed JWT
       parsed: {
@@ -379,13 +377,13 @@ describe("DELETE /credentials/receipts", () => {
 
   it("throws an error if stored credential is invalid", async () => {
     const invalidCredential = createPaymentReceipt({
-      paymentToken: "test.payment.token",
+      paymentRequestToken: "test.payment.token",
       paymentOptionId: "test-payment-option-id",
       issuer: "did:web:issuer.example.com",
       payerDid: "did:web:payer.example.com"
     })
 
-    delete invalidCredential.credentialSubject.paymentToken
+    delete invalidCredential.credentialSubject.paymentRequestToken
 
     vi.mocked(getCredential).mockResolvedValueOnce({
       id: 1,

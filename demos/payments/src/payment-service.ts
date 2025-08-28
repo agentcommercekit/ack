@@ -1,7 +1,11 @@
 import { serve } from "@hono/node-server"
 import { logger } from "@repo/api-utils/middleware/logger"
 import { colors, errorMessage, log } from "@repo/cli-tools"
-import { createJwt, getDidResolver, verifyPaymentToken } from "agentcommercekit"
+import {
+  createJwt,
+  getDidResolver,
+  verifyPaymentRequestToken
+} from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
 import { Hono } from "hono"
 import { env } from "hono/adapter"
@@ -21,7 +25,7 @@ app.use(logger())
 
 const bodySchema = v.object({
   paymentOptionId: v.string(),
-  paymentToken: jwtStringSchema
+  paymentRequestToken: jwtStringSchema
 })
 
 const name = colors.green(colors.bold("[Payment Service]"))
@@ -32,13 +36,13 @@ const name = colors.green(colors.bold("[Payment Service]"))
  * the payment can be completed.
  */
 app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
-  const { paymentOptionId, paymentToken } = v.parse(
+  const { paymentOptionId, paymentRequestToken } = v.parse(
     bodySchema,
     await c.req.json()
   )
 
-  // Verify the payment token and payment option are valid
-  await validatePaymentOption(paymentOptionId, paymentToken)
+  // Verify the payment request token and payment option are valid
+  await validatePaymentOption(paymentOptionId, paymentRequestToken)
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
@@ -65,15 +69,15 @@ app.post(
       env(c).PAYMENT_SERVICE_PRIVATE_KEY_HEX
     )
 
-    const { paymentOptionId, paymentToken, metadata } = v.parse(
+    const { paymentOptionId, paymentRequestToken, metadata } = v.parse(
       callbackSchema,
       await c.req.json()
     )
 
-    // Verify the payment token and payment option are valid
+    // Verify the payment request token and payment option are valid
     const { paymentOption } = await validatePaymentOption(
       paymentOptionId,
-      paymentToken
+      paymentRequestToken
     )
     const receiptServiceUrl = paymentOption.receiptService
     if (!receiptServiceUrl) {
@@ -81,7 +85,7 @@ app.post(
     }
 
     const payload = {
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId,
       metadata: {
         network: "stripe",
@@ -117,14 +121,17 @@ app.post(
 
 async function validatePaymentOption(
   paymentOptionId: string,
-  paymentToken: JwtString
+  paymentRequestToken: JwtString
 ) {
   const didResolver = getDidResolver()
 
-  log(colors.dim(`${name} Verifying payment token...`))
-  const { paymentRequest } = await verifyPaymentToken(paymentToken, {
-    resolver: didResolver
-  })
+  log(colors.dim(`${name} Verifying payment request token...`))
+  const { paymentRequest } = await verifyPaymentRequestToken(
+    paymentRequestToken,
+    {
+      resolver: didResolver
+    }
+  )
 
   log(colors.dim(`${name} Checking for payment option...`))
   const paymentOption = paymentRequest.paymentOptions.find(

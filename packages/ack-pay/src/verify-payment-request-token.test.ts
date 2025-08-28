@@ -10,8 +10,8 @@ import {
 } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
-import { createPaymentRequestBody } from "./create-payment-request-body"
-import { verifyPaymentToken } from "./verify-payment-token"
+import { createSignedPaymentRequest } from "./create-signed-payment-request"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequestInit } from "./payment-request"
 import type { DidDocument, DidUri } from "@agentcommercekit/did"
 import type { JwtSigner } from "@agentcommercekit/jwt"
@@ -26,7 +26,7 @@ function cleanPaymentRequest(paymentRequest: PaymentRequestInit) {
   )
 }
 
-describe("verifyPaymentToken", () => {
+describe("verifyPaymentRequestToken", () => {
   let keypair: Keypair
   let signer: JwtSigner
   let issuerDid: DidUri
@@ -55,9 +55,9 @@ describe("verifyPaymentToken", () => {
     })
   })
 
-  it("verifies a valid payment token", async () => {
-    // Generate a valid payment token
-    const body = await createPaymentRequestBody(paymentRequest, {
+  it("verifies a valid payment request token", async () => {
+    // Generate a valid payment request token
+    const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
       algorithm: curveToJwtAlgorithm(keypair.curve)
@@ -67,7 +67,7 @@ describe("verifyPaymentToken", () => {
     resolver.addToCache(issuerDid, issuerDidDocument)
 
     // Verify the token
-    const result = await verifyPaymentToken(body.paymentToken, {
+    const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
       resolver
     })
 
@@ -82,10 +82,10 @@ describe("verifyPaymentToken", () => {
     resolver.addToCache(issuerDid, issuerDidDocument)
 
     await expect(
-      verifyPaymentToken("invalid.jwt.token", {
+      verifyPaymentRequestToken("invalid.jwt.token", {
         resolver
       })
-    ).rejects.toThrow("Invalid payment token")
+    ).rejects.toThrow("Invalid payment request token")
   })
 
   it("throws for expired JWT", async () => {
@@ -111,10 +111,10 @@ describe("verifyPaymentToken", () => {
     resolver.addToCache(issuerDid, issuerDidDocument)
 
     await expect(
-      verifyPaymentToken(expiredToken, {
+      verifyPaymentRequestToken(expiredToken, {
         resolver
       })
-    ).rejects.toThrow("Invalid payment token")
+    ).rejects.toThrow("Invalid payment request token")
   })
 
   it("allows expired JWT when expiry verification is disabled", async () => {
@@ -140,7 +140,7 @@ describe("verifyPaymentToken", () => {
     resolver.addToCache(issuerDid, issuerDidDocument)
 
     // Verify with verifyExpiry set to false
-    const result = await verifyPaymentToken(expiredToken, {
+    const result = await verifyPaymentRequestToken(expiredToken, {
       resolver,
       verifyExpiry: false
     })
@@ -150,7 +150,7 @@ describe("verifyPaymentToken", () => {
   })
 
   it("throws for JWT with invalid signature", async () => {
-    const body = await createPaymentRequestBody(paymentRequest, {
+    const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
       algorithm: curveToJwtAlgorithm(keypair.curve)
@@ -168,10 +168,10 @@ describe("verifyPaymentToken", () => {
     )
 
     await expect(
-      verifyPaymentToken(body.paymentToken, {
+      verifyPaymentRequestToken(body.paymentRequestToken, {
         resolver
       })
-    ).rejects.toThrow("Invalid payment token")
+    ).rejects.toThrow("Invalid payment request token")
   })
 
   it("throws for a JWT that does not contain a payment config", async () => {
@@ -188,9 +188,9 @@ describe("verifyPaymentToken", () => {
     resolver.addToCache(issuerDid, issuerDidDocument)
 
     await expect(
-      verifyPaymentToken(invalidToken, {
+      verifyPaymentRequestToken(invalidToken, {
         resolver
       })
-    ).rejects.toThrow("Payment token is not a valid PaymentRequest")
+    ).rejects.toThrow("Payment Request token is not a valid PaymentRequest")
   })
 })

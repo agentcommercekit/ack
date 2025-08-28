@@ -1,4 +1,5 @@
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
+import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/valibot"
 import * as v from "valibot"
 
 const urlOrDidUri = v.union([v.pipe(v.string(), v.url()), didUriSchema])
@@ -31,12 +32,7 @@ export const paymentRequestSchema = v.object({
 })
 
 export const paymentReceiptClaimSchema = v.object({
-  paymentToken: v.string(), // Often a JwtString but not required
+  paymentRequestToken: jwtStringSchema,
   paymentOptionId: v.string(),
   metadata: v.optional(v.record(v.string(), v.unknown()))
-})
-
-export const paymentRequestBodySchema = v.object({
-  paymentRequest: paymentRequestSchema,
-  paymentToken: v.string() // Often a JwtString but not required
 })

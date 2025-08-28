@@ -29,7 +29,7 @@ _Example ACK Receipt Verifiable Credential:_
   "credentialSubject": {
     // ID of the entity that made the payment (Client Agent DID)
     "id": "did:key:z6MkmCJAZansQ3d7Mi6moQoAFj6vpuPP9e4vWKsjWEY4Hd9t",
-    "paymentToken": "<signed-representation-of-the-payment-request-structure>",
+    "paymentRequestToken": "<signed-representation-of-the-payment-request-structure>",
     "paymentOptionId": "unique-payment-option-id-123", // The payment option that was used to make the payment
     "metadata": {
       // Additional metadata about the payment, depending on the payment option
@@ -83,16 +83,22 @@ When an ACK Receipt is presented by a Client Agent to a Server Agent (e.g., when
     (e.g., querying a status list endpoint).
   </Step>
   <Step title="Verify Payment Details">
-    Examine the claims within `credentialSubject.paymentToken`,
+    Examine the claims within `credentialSubject.paymentRequestToken`,
     `credentialSubject.paymentOptionId`, and `credentialSubject.metadata` to
-    ensure they match the service requirements: - Is the original `paymentToken`
-    valid and correctly signed? - Is the `paymentOptionId` valid and matches an
-    expected payment option? - Is the `recipient` correct (e.g., does it match
-    the Server Agent's expected identifier)? - Is the `amount`, `currency`, and
-    `decimals` sufficient for the requested service? - Does the `id` match the
-    one originally issued (if applicable in a Server-Initiated flow)? - Are the
-    credential `issuanceDate` and settlement `timestamp` values recent enough,
-    or has the receipt potentially expired based on policy?
+    ensure they match the service requirements:
+
+    - Is the original `paymentRequestToken` valid and correctly signed?
+
+    - Is the `paymentOptionId` valid and matches an expected payment option?
+
+    - Is the `recipient` correct (e.g., does it match the Server Agent's expected identifier)?
+
+    - Is the `amount`, `currency`, and `decimals` sufficient for the requested service?
+
+    - Does the `id` match the one originally issued (if applicable in a Server-Initiated flow)?
+
+    - Are the credential `issuanceDate` and settlement `timestamp` values recent enough, or has the receipt potentially expired based on policy?
+
   </Step>
 </Steps>
 If all these checks pass, the Server can confidently treat the payment as valid

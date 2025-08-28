@@ -10,14 +10,14 @@ import {
 } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
-import { createPaymentRequestBody } from "./create-payment-request-body"
-import { verifyPaymentToken } from "./verify-payment-token"
+import { createSignedPaymentRequest } from "./create-signed-payment-request"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequestInit } from "./payment-request"
 import type { DidUri } from "@agentcommercekit/did"
 import type { JwtSigner } from "@agentcommercekit/jwt"
 import type { Keypair } from "@agentcommercekit/keys"
 
-describe("createPaymentRequestBody()", () => {
+describe("createSignedPaymentRequest()", () => {
   let keypair: Keypair
   let signer: JwtSigner
   let issuerDid: DidUri
@@ -42,7 +42,7 @@ describe("createPaymentRequestBody()", () => {
   })
 
   it("generates a valid 402 response", async () => {
-    const result = await createPaymentRequestBody(paymentRequest, {
+    const result = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
       algorithm: curveToJwtAlgorithm(keypair.curve)
@@ -61,11 +61,11 @@ describe("createPaymentRequestBody()", () => {
       ]
     })
 
-    expect(isJwtString(result.paymentToken)).toBe(true)
+    expect(isJwtString(result.paymentRequestToken)).toBe(true)
   })
 
-  it("generates a valid jwt payment token", async () => {
-    const body = await createPaymentRequestBody(paymentRequest, {
+  it("generates a valid jwt payment request token", async () => {
+    const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
       algorithm: curveToJwtAlgorithm(keypair.curve)
@@ -80,7 +80,7 @@ describe("createPaymentRequestBody()", () => {
       })
     )
 
-    const result = await verifyPaymentToken(body.paymentToken, {
+    const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
       resolver
     })
 
@@ -94,7 +94,7 @@ describe("createPaymentRequestBody()", () => {
 
   it("includes expiresAt in ISO string format when provided", async () => {
     const expiresAt = new Date("2024-12-31T23:59:59Z")
-    const result = await createPaymentRequestBody(
+    const result = await createSignedPaymentRequest(
       { ...paymentRequest, expiresAt },
       {
         issuer: issuerDid,

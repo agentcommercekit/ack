@@ -19,10 +19,7 @@ pnpm add @agentcommercekit/ack-pay
 ### Creating a Payment Request
 
 ```ts
-import {
-  createPaymentRequestBody,
-  createPaymentRequestResponse
-} from "@agentcommercekit/ack-pay"
+import { createPaymentRequestBody } from "@agentcommercekit/ack-pay"
 import { createDidWebUri } from "@agentcommercekit/did"
 import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
@@ -46,17 +43,16 @@ const paymentRequest = {
 const keypair = await generateKeypair("secp256k1")
 
 // Create a payment request body with a signed token
-const paymentBody = await createPaymentRequestBody(paymentRequest, {
+const paymentRequestBody = await createPaymentRequestBody(paymentRequest, {
   issuer: createDidWebUri("https://server.example.com"),
   signer: createJwtSigner(keypair),
   algorithm: curveToJwtAlgorithm(keypair.curve)
 })
 
 // Create a 402 Payment Required response
-const response = await createPaymentRequestResponse(paymentRequest, {
-  issuer: createDidWebUri("https://server.example.com"),
-  signer: createJwtSigner(keypair),
-  algorithm: curveToJwtAlgorithm(keypair.curve)
+const response = new Response(JSON.stringify(paymentRequestBody, {
+  status: 402,
+  contentType: "application/json"
 })
 ```
 
@@ -66,7 +62,7 @@ const response = await createPaymentRequestResponse(paymentRequest, {
 import { createPaymentReceipt } from "@agentcommercekit/ack-pay"
 
 const receipt = createPaymentReceipt({
-  paymentToken: "<payment-token-from-request>",
+  paymentRequestToken: "<payment-token-from-request>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
   payerDid: "did:web:customer.example.com"
@@ -105,13 +101,12 @@ isPaymentReceiptClaim(credential.credentialSubject)
 ### Payment Requests
 
 - `createPaymentRequestBody(params, options)` - Creates a payment request with a signed JWT token
-- `createPaymentRequestResponse(params, options)` - Creates a HTTP 402 Response with payment request
 - `isPaymentRequest(value)` - Type guard for payment requests
 
-### Payment Tokens
+### Payment Request Tokens
 
-- `createPaymentToken(paymentRequest, options)` - Creates a signed JWT token for a payment request
-- `verifyPaymentToken(token, options)` - Verifies a payment token JWT
+- `createPaymentRequestToken(paymentRequest, options)` - Creates a signed JWT token for a payment request
+- `verifyPaymentRequestToken(token, options)` - Verifies a payment request token JWT
 
 ### Payment Receipts
 

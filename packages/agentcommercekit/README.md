@@ -110,8 +110,7 @@ import { createA2AHandshakeMessage } from "agentcommercekit/a2a"
 
 ```ts
 import {
-  createPaymentRequestBody,
-  createPaymentRequestResponse,
+  createSignedPaymentRequest,
   createDidWebUri,
   createJwtSigner,
   curveToJwtAlgorithm,
@@ -137,17 +136,17 @@ const paymentRequest = {
 const keypair = await generateKeypair("secp256k1")
 
 // Create a payment request body with a signed token
-const paymentBody = await createPaymentRequestBody(paymentRequest, {
+const paymentRequestBody = await createSignedPaymentRequest(paymentRequest, {
   issuer: createDidWebUri("https://server.example.com"),
   signer: createJwtSigner(keypair),
   algorithm: curveToJwtAlgorithm(keypair.curve)
 })
 
 // Create a 402 Payment Required response
-const response = await createPaymentRequestResponse(paymentRequest, {
-  issuer: createDidWebUri("https://server.example.com"),
-  signer: createJwtSigner(keypair),
-  algorithm: curveToJwtAlgorithm(keypair.curve)
+// Create a 402 Payment Required response
+const response = new Response(JSON.stringify(paymentRequestBody, {
+  status: 402,
+  contentType: "application/json"
 })
 ```
 
@@ -157,7 +156,7 @@ const response = await createPaymentRequestResponse(paymentRequest, {
 import { createPaymentReceipt } from "agentcommercekit"
 
 const receipt = createPaymentReceipt({
-  paymentToken: "<payment-token-from-request>",
+  paymentRequestToken: "<payment-request-token>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
   payerDid: "did:web:customer.example.com"

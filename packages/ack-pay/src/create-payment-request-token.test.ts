@@ -12,14 +12,14 @@ import {
 import { generateKeypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
-import { createPaymentToken } from "./create-payment-token"
+import { createPaymentRequestToken } from "./create-payment-request-token"
 import { paymentRequestSchema } from "./schemas/valibot"
 import type { PaymentRequestInit } from "./payment-request"
 import type { DidUri } from "@agentcommercekit/did"
 import type { JwtSigner } from "@agentcommercekit/jwt"
 import type { Keypair } from "@agentcommercekit/keys"
 
-describe("createPaymentToken()", () => {
+describe("createPaymentRequestToken()", () => {
   let keypair: Keypair
   let signer: JwtSigner
   let issuerDid: DidUri
@@ -44,22 +44,28 @@ describe("createPaymentToken()", () => {
     issuerDid = createDidKeyUri(keypair)
   })
 
-  it("generates a paymentToken", async () => {
-    const paymentToken = await createPaymentToken(paymentRequest, {
-      issuer: issuerDid,
-      signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
-    })
+  it("generates a paymentRequestToken", async () => {
+    const paymentRequestToken = await createPaymentRequestToken(
+      paymentRequest,
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve)
+      }
+    )
 
-    expect(isJwtString(paymentToken)).toBe(true)
+    expect(isJwtString(paymentRequestToken)).toBe(true)
   })
 
-  it("generates a valid jwt payment token", async () => {
-    const paymentToken = await createPaymentToken(paymentRequest, {
-      issuer: issuerDid,
-      signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
-    })
+  it("generates a valid jwt payment request token", async () => {
+    const paymentRequestToken = await createPaymentRequestToken(
+      paymentRequest,
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve)
+      }
+    )
 
     const resolver = getDidResolver()
     resolver.addToCache(
@@ -71,8 +77,8 @@ describe("createPaymentToken()", () => {
     )
 
     // Verify the JWT is valid (disable audience validation)
-    // TODO: Use parsePaymentToken when it returns the issuer
-    const result = await verifyJwt(paymentToken, {
+    // TODO: Use parsePaymentRequestToken when it returns the issuer
+    const result = await verifyJwt(paymentRequestToken, {
       resolver
     })
 

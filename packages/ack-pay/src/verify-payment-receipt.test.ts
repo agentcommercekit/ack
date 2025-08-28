@@ -12,8 +12,8 @@ import {
 } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentReceipt } from "./create-payment-receipt"
-import { createPaymentRequestBody } from "./create-payment-request-body"
-import { InvalidPaymentTokenError } from "./errors"
+import { createSignedPaymentRequest } from "./create-signed-payment-request"
+import { InvalidPaymentRequestTokenError } from "./errors"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 import type { PaymentRequestInit } from "./payment-request"
 import type { DidUri, Resolvable } from "@agentcommercekit/did"
@@ -50,17 +50,15 @@ describe("verifyPaymentReceipt()", () => {
       ]
     }
 
-    const { paymentToken, paymentRequest } = await createPaymentRequestBody(
-      paymentRequestInit,
-      {
+    const { paymentRequestToken, paymentRequest } =
+      await createSignedPaymentRequest(paymentRequestInit, {
         issuer: paymentRequestIssuerDid,
         signer: createJwtSigner(paymentRequestIssuerKeypair),
         algorithm: curveToJwtAlgorithm(paymentRequestIssuerKeypair.curve)
-      }
-    )
+      })
 
     unsignedReceipt = createPaymentReceipt({
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId: paymentRequest.paymentOptions[0].id,
       issuer: receiptIssuerDid,
       payerDid: createDidPkhUri(
@@ -80,7 +78,7 @@ describe("verifyPaymentReceipt()", () => {
   it("validates a JWT receipt string", async () => {
     const result = await verifyPaymentReceipt(signedReceiptJwt, { resolver })
     expect(result.receipt).toBeDefined()
-    expect(result.paymentToken).toBeDefined()
+    expect(result.paymentRequestToken).toBeDefined()
     expect(result.paymentRequest).toBeDefined()
   })
 
@@ -89,7 +87,7 @@ describe("verifyPaymentReceipt()", () => {
       resolver
     })
     expect(result.receipt).toBeDefined()
-    expect(result.paymentToken).toBeDefined()
+    expect(result.paymentRequestToken).toBeDefined()
     expect(result.paymentRequest).toBeDefined()
   })
 
@@ -102,7 +100,7 @@ describe("verifyPaymentReceipt()", () => {
   it("throws for invalid credential subject", async () => {
     const invalidCredential = {
       ...unsignedReceipt,
-      credentialSubject: { paymentToken: null }
+      credentialSubject: { paymentRequestToken: null }
     }
 
     await expect(
@@ -111,33 +109,33 @@ describe("verifyPaymentReceipt()", () => {
     ).rejects.toThrow(InvalidCredentialError)
   })
 
-  it("skips payment token verification when disabled", async () => {
+  it("skips payment request token verification when disabled", async () => {
     const result = await verifyPaymentReceipt(signedReceiptJwt, {
       resolver,
-      verifyPaymentTokenJwt: false
+      verifyPaymentRequestTokenJwt: false
     })
     expect(result.receipt).toBeDefined()
-    expect(result.paymentToken).toBeDefined()
+    expect(result.paymentRequestToken).toBeDefined()
     expect(result.paymentRequest).toBeNull()
   })
 
-  it("validates payment token issuer when specified", async () => {
+  it("validates payment request token issuer when specified", async () => {
     const result = await verifyPaymentReceipt(signedReceiptJwt, {
       resolver,
       paymentRequestIssuer: paymentRequestIssuerDid
     })
     expect(result.receipt).toBeDefined()
-    expect(result.paymentToken).toBeDefined()
+    expect(result.paymentRequestToken).toBeDefined()
     expect(result.paymentRequest).toBeDefined()
   })
 
-  it("throws for invalid payment token issuer", async () => {
+  it("throws for invalid payment request token issuer", async () => {
     await expect(
       verifyPaymentReceipt(signedReceiptJwt, {
         resolver,
         paymentRequestIssuer: "did:example:wrong-issuer"
       })
-    ).rejects.toThrow(InvalidPaymentTokenError)
+    ).rejects.toThrow(InvalidPaymentRequestTokenError)
   })
 
   it("validates trusted receipt issuers", async () => {
@@ -146,7 +144,7 @@ describe("verifyPaymentReceipt()", () => {
       trustedReceiptIssuers: [receiptIssuerDid]
     })
     expect(result.receipt).toBeDefined()
-    expect(result.paymentToken).toBeDefined()
+    expect(result.paymentRequestToken).toBeDefined()
     expect(result.paymentRequest).toBeDefined()
   })
 

@@ -20,7 +20,10 @@ import {
   isJwtString,
   parseJwtCredential
 } from "agentcommercekit"
-import { paymentRequestBodySchema } from "agentcommercekit/schemas/valibot"
+import {
+  jwtStringSchema,
+  paymentRequestSchema
+} from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { isAddress } from "viem"
 import {
@@ -118,14 +121,17 @@ The Client attempts to access a protected resource on the Server. Since no valid
     throw new Error("Server did not respond with 402")
   }
 
-  const { paymentToken, paymentRequest } = v.parse(
-    paymentRequestBodySchema,
+  const { paymentRequestToken, paymentRequest } = v.parse(
+    v.object({
+      paymentRequestToken: jwtStringSchema,
+      paymentRequest: paymentRequestSchema
+    }),
     await response1.json()
   )
 
-  // This demo uses JWT strings for the payment token, but this is not a requirement of the protocol.
-  if (!isJwtString(paymentToken)) {
-    throw new Error(errorMessage("Invalid payment token"))
+  // This demo uses JWT strings for the payment request token, but this is not a requirement of the protocol.
+  if (!isJwtString(paymentRequestToken)) {
+    throw new Error(errorMessage("Invalid payment request token"))
   }
 
   log(
@@ -138,7 +144,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
   log(
     colors.magenta(
       wordWrap(
-        "\n💡 The 'paymentToken' is a JWT signed by the Server, ensuring the integrity and authenticity of the payment request. The Client will include this token when requesting a receipt, along with the payment option id and metadata."
+        "\n💡 The 'paymentRequestToken' is a JWT signed by the Server, ensuring the integrity and authenticity of the payment request. The Client will include this token when requesting a receipt, along with the payment option id and metadata."
       )
     )
   )
@@ -168,7 +174,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
     const paymentResult = await performStripePayment(
       clientKeypairInfo,
       selectedPaymentOption,
-      paymentToken
+      paymentRequestToken
     )
     receipt = paymentResult.receipt
     details = paymentResult.details
@@ -176,7 +182,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
     const paymentResult = await performOnChainPayment(
       clientKeypairInfo,
       selectedPaymentOption,
-      paymentToken
+      paymentRequestToken
     )
     receipt = paymentResult.receipt
     details = paymentResult.details
@@ -215,7 +221,7 @@ The Client Agent now retries the original request to the Server Agent, this time
 
 ${colors.bold("The Server Agent then performs its own verifications:")}
 1. Validates the receipt's signature (ensuring it was issued by a trusted Receipt Service and hasn't been tampered with).
-2. Checks the receipt's claims: Confirms the receipt is for the correct payment (e.g., matches the 'paymentToken' it originally issued), is not expired, and meets any other criteria for accessing the resource.
+2. Checks the receipt's claims: Confirms the receipt is for the correct payment (e.g., matches the 'paymentRequestToken' it originally issued), is not expired, and meets any other criteria for accessing the resource.
 
 If the receipt is valid, the Server grants access to the protected resource.`
     )
@@ -262,7 +268,7 @@ If the receipt is valid, the Server grants access to the protected resource.`
 async function performOnChainPayment(
   client: KeypairInfo,
   paymentOption: PaymentRequest["paymentOptions"][number],
-  paymentToken: JwtString
+  paymentRequestToken: JwtString
 ) {
   const receiptServiceUrl = paymentOption.receiptService
   if (!receiptServiceUrl) {
@@ -346,11 +352,11 @@ The Client Agent now uses the details from the Payment Request to make the payme
     colors.dim(
       `${colors.bold("Client Agent 👤 -> Receipt Service 🧾")}
 
-With the payment confirmed, the Client Agent now requests a formal, cryptographically verifiable payment receipt from the Receipt Service. The Client sends the original 'paymentToken' (received from the Server in Step 1) and the transaction hash (as metadata) to the Receipt Service. The Client also signs this request with its own DID to prove it's the one who made the payment.
+With the payment confirmed, the Client Agent now requests a formal, cryptographically verifiable payment receipt from the Receipt Service. The Client sends the original 'paymentRequestToken' (received from the Server in Step 1) and the transaction hash (as metadata) to the Receipt Service. The Client also signs this request with its own DID to prove it's the one who made the payment.
 
 ${colors.bold("The Receipt Service then performs several crucial verifications:")}
-1. Validates the 'paymentToken' (e.g., signature, expiry, ensuring it was issued by a trusted server for the expected payment context).
-2. Verifies the on-chain transaction: Confirms that the transaction hash is valid, the correct amount of the specified currency was transferred to the correct recipient address as per the 'paymentToken'.
+1. Validates the 'paymentRequestToken' (e.g., signature, expiry, ensuring it was issued by a trusted server for the expected payment context).
+2. Verifies the on-chain transaction: Confirms that the transaction hash is valid, the correct amount of the specified currency was transferred to the correct recipient address as per the 'paymentRequestToken'.
 3. Verifies the Client's signature on the request, ensuring the payer is who they claim to be (linking the payment action to the Client's DID).
 
 If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serving as the payment receipt.`
@@ -364,7 +370,7 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
   )
 
   const payload = {
-    paymentToken,
+    paymentRequestToken,
     paymentOptionId: paymentOption.id,
     metadata: {
       txHash: hash,
@@ -397,7 +403,7 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
 async function performStripePayment(
   _client: KeypairInfo,
   paymentOption: PaymentRequest["paymentOptions"][number],
-  paymentToken: JwtString
+  paymentRequestToken: JwtString
 ) {
   const paymentServiceUrl = paymentOption.paymentService
   if (!paymentServiceUrl) {
@@ -429,7 +435,7 @@ This flow is simulated in this example.
     method: "POST",
     body: JSON.stringify({
       paymentOptionId: paymentOption.id,
-      paymentToken
+      paymentRequestToken
     })
   })
 
@@ -468,7 +474,7 @@ This flow is simulated in this example.
     method: "POST",
     body: JSON.stringify({
       paymentOptionId: paymentOption.id,
-      paymentToken,
+      paymentRequestToken,
       metadata: {
         eventId: "evt_" + Math.random().toString(36).substring(7) // Simulated Stripe event ID
       }

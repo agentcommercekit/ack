@@ -3,7 +3,7 @@ import {
   createDidPkhDocument,
   createDidWebDocumentFromKeypair,
   createJwtSigner,
-  createPaymentRequestBody,
+  createSignedPaymentRequest,
   curveToJwtAlgorithm,
   generateKeypair
 } from "agentcommercekit"
@@ -205,45 +205,46 @@ ${colors.bold(otherAgent.did)}
 
     // If no receipt provided, generate payment request
     if (!receipt) {
-      const { paymentRequest, paymentToken } = await createPaymentRequestBody(
-        {
-          id: crypto.randomUUID(),
-          expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
-          paymentOptions: [
-            {
-              id: crypto.randomUUID(),
-              amount: BigInt(500).toString(),
-              decimals: 2,
-              currency: "USD",
-              recipient: this.walletDid
-            }
-          ]
-        },
-        {
-          issuer: this.did,
-          signer: this.signer,
-          algorithm: curveToJwtAlgorithm(this.keypair.curve)
-        }
-      )
+      const { paymentRequest, paymentRequestToken } =
+        await createSignedPaymentRequest(
+          {
+            id: crypto.randomUUID(),
+            expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
+            paymentOptions: [
+              {
+                id: crypto.randomUUID(),
+                amount: BigInt(500).toString(),
+                decimals: 2,
+                currency: "USD",
+                recipient: this.walletDid
+              }
+            ]
+          },
+          {
+            issuer: this.did,
+            signer: this.signer,
+            algorithm: curveToJwtAlgorithm(this.keypair.curve)
+          }
+        )
 
-      // Optional: Store the pending payment tokens.
-      this.pendingRequests[paymentToken] = paymentRequest
+      // Optional: Store the pending payment request tokens.
+      this.pendingRequests[paymentRequestToken] = paymentRequest
 
-      throw new PaymentRequiredError(paymentRequest, paymentToken)
+      throw new PaymentRequiredError(paymentRequest, paymentRequestToken)
     }
 
     // Verify the receipt
-    const { paymentToken } = await this.receiptVerifier.verifyReceipt(
+    const { paymentRequestToken } = await this.receiptVerifier.verifyReceipt(
       receipt,
       this.did
     )
 
-    // Optional: Ensure the payment token was for this same type of request.
+    // Optional: Ensure the payment request token was for this same type of request.
     // Payment requests and receipts are designed to allow for stateless
     // operation, but it can be useful to map a given request to a specific
     // action on the server.
-    if (!this.pendingRequests[paymentToken]) {
-      throw new Error("Payment token not found")
+    if (!this.pendingRequests[paymentRequestToken]) {
+      throw new Error("Payment Request token not found")
     }
 
     // Provide the service
