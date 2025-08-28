@@ -4,7 +4,7 @@ import {
   createPaymentReceipt,
   generateKeypair,
   signCredential,
-  verifyPaymentToken
+  verifyPaymentRequestToken
 } from "agentcommercekit"
 import type {
   DidDocument,
@@ -65,15 +65,18 @@ export class ReceiptIssuer {
   async issueReceipt({
     payerDid,
     txHash,
-    paymentToken
+    paymentRequestToken
   }: {
     payerDid: DidUri
     txHash: string
-    paymentToken: string
+    paymentRequestToken: string
   }): Promise<JwtString> {
-    const { paymentRequest } = await verifyPaymentToken(paymentToken, {
-      resolver: this.resolver
-    })
+    const { paymentRequest } = await verifyPaymentRequestToken(
+      paymentRequestToken,
+      {
+        resolver: this.resolver
+      }
+    )
 
     // Verify the payment on-chain
     const paymentVerified = await this.verifyPaymentOnChain(
@@ -86,7 +89,7 @@ export class ReceiptIssuer {
 
     // Create and sign the receipt credential
     const credential = createPaymentReceipt({
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId: paymentRequest.paymentOptions[0].id,
       issuer: this.did,
       payerDid

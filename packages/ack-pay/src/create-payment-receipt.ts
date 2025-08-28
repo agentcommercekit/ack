@@ -5,7 +5,7 @@ import type { W3CCredential } from "@agentcommercekit/vc"
 const PAYMENT_RECEIPT_TYPE = "PaymentReceiptCredential"
 
 interface CreatePaymentReceiptParams {
-  paymentToken: string
+  paymentRequestToken: string
   paymentOptionId: string
   issuer: DidUri
   payerDid: DidUri
@@ -20,7 +20,7 @@ interface CreatePaymentReceiptParams {
  * @returns A {@link W3CCredential} with a payment receipt attestation
  */
 export function createPaymentReceipt({
-  paymentToken,
+  paymentRequestToken,
   paymentOptionId,
   issuer,
   payerDid,
@@ -28,7 +28,7 @@ export function createPaymentReceipt({
   metadata
 }: CreatePaymentReceiptParams): W3CCredential {
   const attestation: Record<string, unknown> = {
-    paymentToken,
+    paymentRequestToken,
     paymentOptionId
   }
 

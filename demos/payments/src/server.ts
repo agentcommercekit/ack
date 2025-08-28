@@ -103,7 +103,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
       resolver: didResolver,
       trustedReceiptIssuers,
       paymentRequestIssuer: serverIdentity.did,
-      verifyPaymentTokenJwt: true
+      verifyPaymentRequestTokenJwt: true
     })
   } catch (e) {
     console.log(errorMessage("Error verifying receipt"), e)

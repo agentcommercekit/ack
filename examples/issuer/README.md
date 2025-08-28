@@ -169,7 +169,7 @@ SignedPayload<{
     txHash: "0x123..."
   }
   payerDid: "did:..."
-  paymentToken: "jwt-token"
+  paymentRequestToken: "jwt-token"
   paymentOptionId: "option-id"
 }>
 ```
@@ -200,7 +200,7 @@ curl --request POST \
     "txHash": "0x123abc456def"
   },
   "payerDid": "did:web:0.0.0.0%3A3458:wallet",
-  "paymentToken": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
+  "paymentRequestToken": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
   "paymentOptionId": "option1"
 }'
 ```
@@ -234,9 +234,9 @@ curl --request GET \
 
 Revokes a payment receipt credential by flipping the bit on the credential's Status List.
 
-For demo purposes, we only allow the original payment token issuer to revoke the receipt.
+For demo purposes, we only allow the original payment request token issuer to revoke the receipt.
 
-**Request Payload**, signed by the original payment token issuer
+**Request Payload**, signed by the original payment request token issuer
 
 ```ts
 SignedPayload<{

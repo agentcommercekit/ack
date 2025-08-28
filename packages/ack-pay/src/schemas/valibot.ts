@@ -31,12 +31,12 @@ export const paymentRequestSchema = v.object({
 })
 
 export const paymentReceiptClaimSchema = v.object({
-  paymentToken: v.string(), // Often a JwtString but not required
+  paymentRequestToken: v.string(), // Often a JwtString but not required
   paymentOptionId: v.string(),
   metadata: v.optional(v.record(v.string(), v.unknown()))
 })
 
 export const paymentRequestBodySchema = v.object({
   paymentRequest: paymentRequestSchema,
-  paymentToken: v.string() // Often a JwtString but not required
+  paymentRequestToken: v.string() // Often a JwtString but not required
 })

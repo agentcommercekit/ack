@@ -157,7 +157,7 @@ const response = await createPaymentRequestResponse(paymentRequest, {
 import { createPaymentReceipt } from "agentcommercekit"
 
 const receipt = createPaymentReceipt({
-  paymentToken: "<payment-token-from-request>",
+  paymentRequestToken: "<payment-request-token>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
   payerDid: "did:web:customer.example.com"

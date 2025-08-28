@@ -66,7 +66,7 @@ const response = await createPaymentRequestResponse(paymentRequest, {
 import { createPaymentReceipt } from "@agentcommercekit/ack-pay"
 
 const receipt = createPaymentReceipt({
-  paymentToken: "<payment-token-from-request>",
+  paymentRequestToken: "<payment-token-from-request>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
   payerDid: "did:web:customer.example.com"
@@ -108,10 +108,10 @@ isPaymentReceiptClaim(credential.credentialSubject)
 - `createPaymentRequestResponse(params, options)` - Creates a HTTP 402 Response with payment request
 - `isPaymentRequest(value)` - Type guard for payment requests
 
-### Payment Tokens
+### Payment Request Tokens
 
-- `createPaymentToken(paymentRequest, options)` - Creates a signed JWT token for a payment request
-- `verifyPaymentToken(token, options)` - Verifies a payment token JWT
+- `createPaymentRequestToken(paymentRequest, options)` - Creates a signed JWT token for a payment request
+- `verifyPaymentRequestToken(token, options)` - Verifies a payment request token JWT
 
 ### Payment Receipts
 

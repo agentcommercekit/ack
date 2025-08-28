@@ -198,7 +198,11 @@ If identity is verified, Agent 2 will then respond with a 402 Payment Required e
 
   const message = "What's the current price of AAPL stock?"
 
-  const { paymentRequest, paymentToken } = await chat(agent1, agent2, message)
+  const { paymentRequest, paymentRequestToken } = await chat(
+    agent1,
+    agent2,
+    message
+  )
 
   log(
     colors.dim(`
@@ -217,7 +221,7 @@ Next, we will perform the payment and fetch a Receipt.
   log(
     colors.dim(`
 Payment must be made using token:
-${paymentToken}
+${paymentRequestToken}
 
 `)
   )
@@ -241,7 +245,7 @@ ${paymentToken}
   const receipt = await receiptIssuer.issueReceipt({
     payerDid: agent1.walletDid,
     txHash,
-    paymentToken
+    paymentRequestToken
   })
   log(successMessage("Payment Receipt VC Issued!"))
   logJson(await parseJwtCredential(receipt, resolver))
@@ -291,7 +295,7 @@ async function chat(agent1: Agent, agent2: Agent, message: string) {
     if (error instanceof PaymentRequiredError) {
       return {
         paymentRequest: error.paymentRequest,
-        paymentToken: error.paymentToken
+        paymentRequestToken: error.paymentRequestToken
       }
     }
 

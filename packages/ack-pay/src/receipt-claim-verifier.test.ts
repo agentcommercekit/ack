@@ -4,7 +4,7 @@ import { generateKeypair } from "@agentcommercekit/keys"
 import { InvalidCredentialSubjectError } from "@agentcommercekit/vc"
 import * as v from "valibot"
 import { describe, expect, it } from "vitest"
-import { createPaymentToken } from "./create-payment-token"
+import { createPaymentRequestToken } from "./create-payment-request-token"
 import { getReceiptClaimVerifier } from "./receipt-claim-verifier"
 import { paymentRequestSchema } from "./schemas/valibot"
 import type { paymentReceiptClaimSchema } from "./schemas/valibot"
@@ -27,7 +27,7 @@ describe("getReceiptClaimVerifier", () => {
     const verifier = getReceiptClaimVerifier()
 
     const invalidSubject = {
-      paymentToken: null
+      paymentRequestToken: null
     }
 
     await expect(verifier.verify(invalidSubject, resolver)).rejects.toThrow(
@@ -52,14 +52,17 @@ describe("getReceiptClaimVerifier", () => {
       ]
     })
 
-    const paymentToken = await createPaymentToken(paymentRequest, {
-      issuer: issuerDid,
-      signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
-    })
+    const paymentRequestToken = await createPaymentRequestToken(
+      paymentRequest,
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve)
+      }
+    )
     const receiptSubject: v.InferOutput<typeof paymentReceiptClaimSchema> = {
       paymentOptionId: paymentRequest.paymentOptions[0].id,
-      paymentToken
+      paymentRequestToken
     }
 
     const verifier = getReceiptClaimVerifier()

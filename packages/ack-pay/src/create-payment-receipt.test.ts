@@ -8,7 +8,7 @@ import type { PaymentRequestInit } from "./payment-request"
 
 describe("createPaymentReceipt", () => {
   const date = new Date("2024-12-31T23:59:59Z")
-  let paymentToken: string
+  let paymentRequestToken: string
 
   beforeAll(() => {
     vi.setSystemTime(date)
@@ -37,12 +37,12 @@ describe("createPaymentReceipt", () => {
       algorithm: curveToJwtAlgorithm(keypair.curve)
     })
 
-    paymentToken = paymentRequiredBody.paymentToken
+    paymentRequestToken = paymentRequiredBody.paymentRequestToken
   })
 
   it("creates a payment receipt with valid inputs", () => {
     const receipt = createPaymentReceipt({
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId: "test-payment-option-id",
       issuer: "did:example:issuer",
       payerDid: "did:example:payer"
@@ -56,14 +56,14 @@ describe("createPaymentReceipt", () => {
       issuanceDate: date.toISOString(),
       credentialSubject: {
         id: "did:example:payer",
-        paymentToken
+        paymentRequestToken
       }
     })
   })
 
   it("allows passing metadata for inclusion in the attestation", () => {
     const receipt = createPaymentReceipt({
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId: "test-payment-option-id",
       issuer: "did:example:issuer",
       payerDid: "did:example:payer",
@@ -80,7 +80,7 @@ describe("createPaymentReceipt", () => {
       issuanceDate: date.toISOString(),
       credentialSubject: {
         id: "did:example:payer",
-        paymentToken,
+        paymentRequestToken,
         metadata: {
           test: "test"
         }
@@ -91,7 +91,7 @@ describe("createPaymentReceipt", () => {
   it("creates a payment receipt with an expiration date", () => {
     const expirationDate = new Date("2024-12-31T23:59:59Z")
     const receipt = createPaymentReceipt({
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId: "test-payment-option-id",
       issuer: "did:example:issuer",
       payerDid: "did:example:payer",

@@ -26,12 +26,12 @@ export const paymentRequestSchema = z.object({
 })
 
 export const paymentReceiptClaimSchema = z.object({
-  paymentToken: z.string(), // Often a JwtString but not required
+  paymentRequestToken: z.string(), // Often a JwtString but not required
   paymentOptionId: z.string(),
   metadata: z.record(z.string(), z.unknown()).optional()
 })
 
 export const paymentRequestBodySchema = z.object({
   payment: paymentRequestSchema,
-  paymentToken: z.string() // Often a JwtString but not required
+  paymentRequestToken: z.string() // Often a JwtString but not required
 })
