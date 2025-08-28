@@ -1,4 +1,4 @@
-import { InvalidPaymentTokenError } from "@agentcommercekit/ack-pay"
+import { InvalidPaymentRequestTokenError } from "@agentcommercekit/ack-pay"
 import { DidResolutionError } from "@agentcommercekit/did"
 import { CredentialVerificationError } from "@agentcommercekit/vc"
 import { HTTPException } from "hono/http-exception"
@@ -10,7 +10,7 @@ export const errorHandler: ErrorHandler<Env> = (err, c) => {
   if (
     err instanceof DidResolutionError ||
     err instanceof CredentialVerificationError ||
-    err instanceof InvalidPaymentTokenError
+    err instanceof InvalidPaymentRequestTokenError
   ) {
     return c.json(formatErrorResponse(err), 400)
   }

@@ -8,7 +8,7 @@ import { signedPayloadValidator } from "@repo/api-utils/middleware/signed-payloa
 import {
   createPaymentReceipt,
   isPaymentReceiptCredential,
-  verifyPaymentToken
+  verifyPaymentRequestToken
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import { Hono } from "hono"
@@ -39,7 +39,7 @@ const bodySchema = v.object({
     txHash: v.string()
   }),
   payerDid: didUriSchema,
-  paymentToken: v.string(),
+  paymentRequestToken: v.string(),
   paymentOptionId: v.string()
 })
 
@@ -71,7 +71,7 @@ async function verifyPayment(
  *     txHash: string  // Transaction hash of the payment
  *   },
  *   payerDid: string,        // DID URI of the payer
- *   paymentToken: string,    // Signed payment token
+ *   paymentRequestToken: string,    // Signed payment request token
  *   paymentOptionId: string  // ID of the payment option used
  * }
  * ```
@@ -93,11 +93,15 @@ app.post(
     const resolver = c.get("resolver")
     const { BASE_URL } = env(c)
 
-    const { paymentToken, paymentOptionId, metadata, payerDid } = payload.body
+    const { paymentRequestToken, paymentOptionId, metadata, payerDid } =
+      payload.body
 
-    const { paymentRequest } = await verifyPaymentToken(paymentToken, {
-      resolver
-    })
+    const { paymentRequest } = await verifyPaymentRequestToken(
+      paymentRequestToken,
+      {
+        resolver
+      }
+    )
 
     const verified = await verifyPayment(
       paymentRequest,
@@ -110,7 +114,7 @@ app.post(
     }
 
     const receipt = createPaymentReceipt({
-      paymentToken,
+      paymentRequestToken,
       paymentOptionId,
       issuer: issuer.did,
       payerDid
@@ -180,9 +184,9 @@ const deleteBodySchema = v.object({
  *
  * @description
  * Revokes a payment receipt credential by flipping the bit on the credential's Status List.
- * For demo purposes, we only allow the original payment token issuer to revoke the receipt.
+ * For demo purposes, we only allow the original payment request token issuer to revoke the receipt.
  *
- * Request Body, signed by the original payment token issuer:
+ * Request Body, signed by the original payment request token issuer:
  * ```ts
  * SignedPayload<{
  *   id: string  // ID of the receipt credential to revoke
@@ -211,14 +215,14 @@ app.delete(
       return internalServerError("Invalid stored credential")
     }
 
-    const { parsed } = await verifyPaymentToken(
-      credential.credentialSubject.paymentToken,
+    const { parsed } = await verifyPaymentRequestToken(
+      credential.credentialSubject.paymentRequestToken,
       {
         resolver
       }
     )
 
-    // For now, only allows the original issuer of the payment token
+    // For now, only allows the original issuer of the payment request token
     // to revoke the receipt.
     if (parsed.issuer !== payload.issuer) {
       return unauthorized()

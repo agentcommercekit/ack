@@ -11,7 +11,7 @@ import {
 import { generateKeypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentRequestBody } from "./create-payment-request-body"
-import { verifyPaymentToken } from "./verify-payment-token"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequestInit } from "./payment-request"
 import type { DidUri } from "@agentcommercekit/did"
 import type { JwtSigner } from "@agentcommercekit/jwt"
@@ -61,10 +61,10 @@ describe("createPaymentRequestBody()", () => {
       ]
     })
 
-    expect(isJwtString(result.paymentToken)).toBe(true)
+    expect(isJwtString(result.paymentRequestToken)).toBe(true)
   })
 
-  it("generates a valid jwt payment token", async () => {
+  it("generates a valid jwt payment request token", async () => {
     const body = await createPaymentRequestBody(paymentRequest, {
       issuer: issuerDid,
       signer,
@@ -80,7 +80,7 @@ describe("createPaymentRequestBody()", () => {
       })
     )
 
-    const result = await verifyPaymentToken(body.paymentToken, {
+    const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
       resolver
     })
 
