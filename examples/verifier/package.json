@@ -30,7 +30,7 @@
     "@hono/valibot-validator": "^0.5.2",
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "hono": "^4.7.10",
+    "hono": "^4.9.7",
     "valibot": "^1.1.0"
   },
   "devDependencies": {

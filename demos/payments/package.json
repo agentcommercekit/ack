@@ -30,7 +30,7 @@
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "hono": "^4.7.10",
+    "hono": "^4.9.7",
     "valibot": "^1.1.0",
     "viem": "^2.29.4"
   },

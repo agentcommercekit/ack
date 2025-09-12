@@ -48,7 +48,7 @@
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
     "@agentcommercekit/vc": "workspace:*",
-    "hono": "^4.7.10",
+    "hono": "^4.9.7",
     "valibot": "^1.1.0"
   },
   "devDependencies": {
