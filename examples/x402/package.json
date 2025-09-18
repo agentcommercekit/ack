@@ -1,0 +1,25 @@
+{
+  "name": "x402",
+  "type": "module",
+  "scripts": {
+    "buy": "tsx bin/buy.ts",
+    "cf-typegen": "wrangler types --env-interface CloudflareBindings",
+    "deploy": "wrangler deploy --minify",
+    "dev": "wrangler dev",
+    "setup": "tsx bin/setup.ts"
+  },
+  "dependencies": {
+    "@coinbase/x402": "^0.6.4",
+    "@hono/node-server": "^1.14.2",
+    "agentcommercekit": "workspace:*",
+    "dotenv": "^17.2.2",
+    "hono": "^4.9.7",
+    "viem": "^2.37.6",
+    "vitest": "^3.2.4",
+    "x402-fetch": "^0.6.0",
+    "x402-hono": "^0.6.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.4.0"
+  }
+}
