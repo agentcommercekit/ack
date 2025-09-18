@@ -39,18 +39,18 @@ app.use(
   )
 )
 
-// the buyer trusts this DID
-const trustedDid = "did:web:localhost%3A5000:trusted"
-
 // Returns the server's DID and Verifiable Credential
 app.get("/identify", async (c) => {
+  // the buyer trusts the controller DID
+  const { did: controllerDid } = await getControllerIdentity()
+
   const signer = await getServerIdentity()
   const { did } = signer
 
   const unsigned = await createControllerCredential({
     issuer: did,
     subject: did,
-    controller: trustedDid
+    controller: controllerDid
   })
 
   const vcJwt = await signCredential(unsigned, signer)

@@ -1,3 +1,13 @@
+/**
+ * This file creates 2 identities for the server:
+ * - The server's identity, which is used to sign Verifiable Credentials
+ * - The controller's identity, which is used to sign Controller Credentials
+ *
+ * The server's DID document sets the controller DID as its controller.
+ *
+ * The controller DID is used to sign Controller Credentials that allow buyers
+ * to verify the server's identity.
+ */
 import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
@@ -13,9 +23,6 @@ import type {
   JwtSigner
 } from "agentcommercekit"
 
-// The DID that controls the server DID (hosted under /trusted)
-export const trustedDid = "did:web:localhost%3A5000:trusted"
-
 const privKey = process.env.SERVER_PRIVATE_KEY!
 const controllerPrivKey = process.env.CONTROLLER_PRIVATE_KEY!
 
@@ -26,9 +33,13 @@ type ServerIdentity = {
   alg: JwtAlgorithm
 }
 
+// cache vars for the identities so we only generate them once
 let _serverIdentity: ServerIdentity | null = null
 let _controllerIdentity: ServerIdentity | null = null
 
+/**
+ * Returns the server's identity - the DID, DID Document, and signer
+ */
 export async function getServerIdentity(): Promise<ServerIdentity> {
   if (_serverIdentity) {
     return _serverIdentity
@@ -36,10 +47,12 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
 
   const keypair = await generateKeypair("Ed25519", hexStringToBytes(privKey))
 
+  const { did: controllerDid } = await getControllerIdentity()
+
   const { did, didDocument } = createDidWebDocumentFromKeypair({
     keypair,
     baseUrl: "http://localhost:5000",
-    controller: trustedDid
+    controller: controllerDid
   })
 
   _serverIdentity = {
@@ -52,7 +65,9 @@ export async function getServerIdentity(): Promise<ServerIdentity> {
   return _serverIdentity
 }
 
-// Separate identity for the controller DID hosted at /trusted
+/**
+ * Returns the controller's identity - the DID, DID Document, and signer
+ */
 export async function getControllerIdentity(): Promise<ServerIdentity> {
   if (_controllerIdentity) {
     return _controllerIdentity
