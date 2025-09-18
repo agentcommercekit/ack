@@ -45,6 +45,3 @@ npm-debug.log*
 
 # Claude
 .claude/*.local.*
-
-# Local development variables
-.dev.vars
