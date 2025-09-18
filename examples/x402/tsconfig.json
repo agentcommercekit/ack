@@ -1,0 +1,10 @@
+{
+  "extends": "@repo/typescript-config/base-app.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "vitest.config.ts", "bin"]
+}
