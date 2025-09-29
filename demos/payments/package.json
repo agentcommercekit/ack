@@ -29,9 +29,11 @@
     "@hono/node-server": "^1.14.2",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
+    "@solana/spl-memo": "^0.2.5",
     "@solana/spl-token": "^0.4.14",
     "@solana/web3.js": "^1.98.4",
     "agentcommercekit": "workspace:*",
+    "bs58": "^6.0.0",
     "hono": "^4.7.10",
     "valibot": "^1.1.0",
     "viem": "^2.29.4"

@@ -16,6 +16,16 @@ import { getKeypairInfo } from "./utils/keypair-info"
 import type { PaymentRequestInit } from "agentcommercekit"
 import type { Env, TypedResponse } from "hono"
 
+function isSolanaKeysResult(
+  v: unknown
+): v is { publicKey: string; secretKeyJson: string } {
+  return (
+    !!v &&
+    typeof (v as { publicKey?: unknown }).publicKey === "string" &&
+    typeof (v as { secretKeyJson?: unknown }).secretKeyJson === "string"
+  )
+}
+
 const app = new Hono<Env>()
 app.use(logger())
 
@@ -39,10 +49,15 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
   const didResolver = getDidResolver()
 
   // Ensure Solana server keys are present
-  const { publicKey: solanaServerPublicKey } = await ensureSolanaKeys(
+  const getSolanaKeys = ensureSolanaKeys as (
+    pubEnv: string,
+    secretEnv: string
+  ) => Promise<{ publicKey: string; secretKeyJson: string }>
+  const solanaKeys = await getSolanaKeys(
     "SOLANA_SERVER_PUBLIC_KEY",
     "SOLANA_SERVER_SECRET_KEY_JSON"
   )
+  const solanaServerPublicKey: string = solanaKeys.publicKey
 
   const { did: receiptIssuerDid } = await getKeypairInfo(
     env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX

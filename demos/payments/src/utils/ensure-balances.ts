@@ -1,9 +1,9 @@
 import { waitForEnter } from "@repo/cli-tools"
+import { Connection, PublicKey } from "@solana/web3.js"
 import { createPublicClient, erc20Abi, http } from "viem"
 import { formatUnits } from "viem/utils"
-import type { Chain } from "viem"
-import { Connection, PublicKey } from "@solana/web3.js"
 import { solana } from "@/constants"
+import type { Chain } from "viem"
 
 /**
  * Ensure the client wallet has a non-zero balance of USDC and ETH
@@ -45,27 +45,25 @@ export async function ensureNonZeroBalances(
   return { balanceUsdc, balanceEth }
 }
 
-export async function ensureSolanaSolBalance(address: string) {
+export async function ensureSolanaSolBalance(address: string | PublicKey) {
+  const pubkey = typeof address === "string" ? new PublicKey(address) : address
   const connection = new Connection(solana.rpcUrl, solana.commitment)
-  let lamports = await connection.getBalance(
-    new PublicKey(address),
-    solana.commitment
-  )
+  let lamports = await connection.getBalance(pubkey, solana.commitment)
 
   while (lamports === 0) {
-    console.log("We need to fund this Solana address with devnet SOL:", address)
+    console.log(
+      "We need to fund this Solana address with devnet SOL:",
+      pubkey.toBase58()
+    )
     console.log("Faucet: https://faucet.solana.com/")
     const prefilled = `https://faucet.solana.com/?walletAddress=${encodeURIComponent(
-      address
+      pubkey.toBase58()
     )}&amount=0.5`
     console.log("Prefilled faucet (0.5 SOL):", prefilled)
     console.log("Once funded, press enter to check balance again")
     await waitForEnter()
     console.log("Attempting to fetch SOL balance...")
-    lamports = await connection.getBalance(
-      new PublicKey(address),
-      solana.commitment
-    )
+    lamports = await connection.getBalance(pubkey, solana.commitment)
     console.log("SOL balance fetched (lamports):", lamports)
   }
 

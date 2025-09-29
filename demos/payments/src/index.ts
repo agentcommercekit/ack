@@ -58,10 +58,12 @@ import {
   TransactionMessage,
   VersionedTransaction
 } from "@solana/web3.js"
+import { createHash } from "node:crypto"
 import {
   createTransferInstruction,
   getOrCreateAssociatedTokenAccount
 } from "@solana/spl-token"
+import { createMemoInstruction } from "@solana/spl-memo"
 
 /**
  * Example showcasing payments using the ACK-Pay protocol.
@@ -450,11 +452,15 @@ async function performSolanaPayment(
   log(sectionHeader("💸 Execute Payment (Client Agent -> Solana / SPL Token)"))
 
   const connection = new Connection(solana.rpcUrl, solana.commitment)
-  const { secretKeyJson } = await ensureSolanaKeys(
-    "SOLANA_CLIENT_PUBLIC_KEY",
-    "SOLANA_CLIENT_SECRET_KEY_JSON"
+  const clientSolKeys = await (
+    ensureSolanaKeys as unknown as (
+      pubEnv: string,
+      secretEnv: string
+    ) => Promise<{ publicKey: string; secretKeyJson: string }>
+  )("SOLANA_CLIENT_PUBLIC_KEY", "SOLANA_CLIENT_SECRET_KEY_JSON")
+  const keyBytes = new Uint8Array(
+    JSON.parse(clientSolKeys.secretKeyJson) as number[]
   )
-  const keyBytes = new Uint8Array(JSON.parse(secretKeyJson) as number[])
   const payer = Keypair.fromSecretKey(keyBytes)
 
   const mint = new PublicKey(solana.usdcMint)
@@ -463,6 +469,12 @@ async function performSolanaPayment(
   await ensureSolanaSolBalance(payer.publicKey.toBase58())
 
   const recipient = new PublicKey(paymentOption.recipient)
+
+  // Bind tx to the payment request using a Memo (replay mitigation)
+  const expectedMemo = createHash("sha256")
+    .update(paymentRequestToken)
+    .digest("hex")
+  const memoIx = createMemoInstruction(expectedMemo, [payer.publicKey])
 
   const senderAta = await getOrCreateAssociatedTokenAccount(
     connection,
@@ -477,7 +489,7 @@ async function performSolanaPayment(
     senderAta.address,
     solana.commitment
   )
-  while (!tokenBal || tokenBal.value.amount === "0") {
+  while (tokenBal.value.amount === "0") {
     log(
       colors.dim(
         "USDC balance is 0. Please request devnet USDC from Circle's faucet, then press Enter to retry."
@@ -513,12 +525,16 @@ async function performSolanaPayment(
   const msg = new TransactionMessage({
     payerKey: payer.publicKey,
     recentBlockhash: blockhash,
-    instructions: [ix]
+    instructions: [memoIx, ix]
   }).compileToV0Message()
   const tx = new VersionedTransaction(msg)
   tx.sign([payer])
   const signature = await connection.sendTransaction(tx, {
     maxRetries: 10
+  })
+  log(colors.dim("View on Solana Explorer:"))
+  log(link(`https://explorer.solana.com/tx/${signature}?cluster=devnet`), {
+    wrap: false
   })
   await connection.confirmTransaction(
     { signature, blockhash, lastValidBlockHeight },

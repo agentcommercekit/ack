@@ -16,7 +16,10 @@ export async function ensurePrivateKey(name: string) {
   return newPrivateKeyHex
 }
 
-export async function ensureSolanaKeys(pubEnv: string, secretEnv: string) {
+export async function ensureSolanaKeys(
+  pubEnv: string,
+  secretEnv: string
+): Promise<{ publicKey: string; secretKeyJson: string }> {
   const existingPub = process.env[pubEnv]
   const existingSecret = process.env[secretEnv]
   if (existingPub && existingSecret) {
