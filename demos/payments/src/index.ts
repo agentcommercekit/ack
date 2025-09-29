@@ -31,10 +31,14 @@ import {
   chain,
   chainId,
   publicClient,
+  solana,
   usdcAddress
 } from "./constants"
-import { ensureNonZeroBalances } from "./utils/ensure-balances"
-import { ensurePrivateKey } from "./utils/ensure-private-keys"
+import {
+  ensureNonZeroBalances,
+  ensureSolanaSolBalance
+} from "./utils/ensure-balances"
+import { ensurePrivateKey, ensureSolanaKeys } from "./utils/ensure-private-keys"
 import { getKeypairInfo } from "./utils/keypair-info"
 import { transferUsdc } from "./utils/usdc-contract"
 import type { KeypairInfo } from "./utils/keypair-info"
@@ -47,6 +51,17 @@ import type {
 import "./server"
 import "./receipt-service"
 import "./payment-service"
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  TransactionMessage,
+  VersionedTransaction
+} from "@solana/web3.js"
+import {
+  createTransferInstruction,
+  getOrCreateAssociatedTokenAccount
+} from "@solana/spl-token"
 
 /**
  * Example showcasing payments using the ACK-Pay protocol.
@@ -153,9 +168,20 @@ The Client attempts to access a protected resource on the Server. Since no valid
   const selectedPaymentOptionId = await select({
     message: "Select which payment option to use",
     choices: paymentOptions.map((option) => ({
-      name: option.network === "stripe" ? "Stripe" : "Base Sepolia",
+      name:
+        option.network === "stripe"
+          ? "Stripe"
+          : option.network?.startsWith("solana:")
+            ? "Solana"
+            : "Base Sepolia",
       value: option.id,
-      description: `Pay on ${option.network === "stripe" ? "Stripe" : "Base Sepolia"} using ${option.currency}`
+      description: `Pay on ${
+        option.network === "stripe"
+          ? "Stripe"
+          : option.network?.startsWith("solana:")
+            ? "Solana"
+            : "Base Sepolia"
+      } using ${option.currency}`
     }))
   })
 
@@ -172,6 +198,17 @@ The Client attempts to access a protected resource on the Server. Since no valid
 
   if (selectedPaymentOption.network === "stripe") {
     const paymentResult = await performStripePayment(
+      clientKeypairInfo,
+      selectedPaymentOption,
+      paymentRequestToken
+    )
+    receipt = paymentResult.receipt
+    details = paymentResult.details
+  } else if (
+    typeof selectedPaymentOption.network === "string" &&
+    selectedPaymentOption.network.startsWith("solana:")
+  ) {
+    const paymentResult = await performSolanaPayment(
       clientKeypairInfo,
       selectedPaymentOption,
       paymentRequestToken
@@ -393,6 +430,121 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
   })
 
   const { receipt, details } = (await response2.json()) as {
+    receipt: string
+    details: Verifiable<PaymentReceiptCredential>
+  }
+
+  return { receipt, details }
+}
+
+async function performSolanaPayment(
+  client: KeypairInfo,
+  paymentOption: PaymentRequest["paymentOptions"][number],
+  paymentRequestToken: JwtString
+) {
+  const receiptServiceUrl = paymentOption.receiptService
+  if (!receiptServiceUrl) {
+    throw new Error(errorMessage("Receipt service URL is required"))
+  }
+
+  log(sectionHeader("💸 Execute Payment (Client Agent -> Solana / SPL Token)"))
+
+  const connection = new Connection(solana.rpcUrl, solana.commitment)
+  const { secretKeyJson } = await ensureSolanaKeys(
+    "SOLANA_CLIENT_PUBLIC_KEY",
+    "SOLANA_CLIENT_SECRET_KEY_JSON"
+  )
+  const keyBytes = new Uint8Array(JSON.parse(secretKeyJson) as number[])
+  const payer = Keypair.fromSecretKey(keyBytes)
+
+  const mint = new PublicKey(solana.usdcMint)
+
+  // Ensure payer has SOL for fees
+  await ensureSolanaSolBalance(payer.publicKey.toBase58())
+
+  const recipient = new PublicKey(paymentOption.recipient)
+
+  const senderAta = await getOrCreateAssociatedTokenAccount(
+    connection,
+    payer,
+    mint,
+    payer.publicKey,
+    undefined,
+    solana.commitment
+  )
+  // Ensure sender has USDC balance; if not, prompt Circle faucet
+  let tokenBal = await connection.getTokenAccountBalance(
+    senderAta.address,
+    solana.commitment
+  )
+  while (!tokenBal || tokenBal.value.amount === "0") {
+    log(
+      colors.dim(
+        "USDC balance is 0. Please request devnet USDC from Circle's faucet, then press Enter to retry."
+      )
+    )
+    log(colors.dim(`Send USDC to your wallet: ${payer.publicKey.toBase58()}`))
+    log(colors.cyan("https://faucet.circle.com/"))
+    await waitForEnter("Press Enter after funding USDC...")
+    tokenBal = await connection.getTokenAccountBalance(
+      senderAta.address,
+      solana.commitment
+    )
+  }
+  const recipientAta = await getOrCreateAssociatedTokenAccount(
+    connection,
+    payer,
+    mint,
+    recipient,
+    undefined,
+    solana.commitment
+  )
+
+  const amount = BigInt(paymentOption.amount)
+  const ix = createTransferInstruction(
+    senderAta.address,
+    recipientAta.address,
+    payer.publicKey,
+    Number(amount) // safe here as demo amounts are tiny (5e4)
+  )
+
+  const { blockhash, lastValidBlockHeight } =
+    await connection.getLatestBlockhash(solana.commitment)
+  const msg = new TransactionMessage({
+    payerKey: payer.publicKey,
+    recentBlockhash: blockhash,
+    instructions: [ix]
+  }).compileToV0Message()
+  const tx = new VersionedTransaction(msg)
+  tx.sign([payer])
+  const signature = await connection.sendTransaction(tx, {
+    maxRetries: 10
+  })
+  await connection.confirmTransaction(
+    { signature, blockhash, lastValidBlockHeight },
+    solana.commitment
+  )
+
+  // Request receipt from receipt-service
+  const payload = {
+    paymentRequestToken,
+    paymentOptionId: paymentOption.id,
+    metadata: {
+      network: solana.chainId,
+      txHash: signature
+    },
+    payerDid: client.did
+  }
+  const signedPayload = await createJwt(payload, {
+    issuer: client.did,
+    signer: client.jwtSigner
+  })
+
+  const response = await fetch(receiptServiceUrl, {
+    method: "POST",
+    body: JSON.stringify({ payload: signedPayload })
+  })
+  const { receipt, details } = (await response.json()) as {
     receipt: string
     details: Verifiable<PaymentReceiptCredential>
   }

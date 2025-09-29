@@ -11,6 +11,7 @@ import { Hono } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import { PAYMENT_SERVICE_URL, RECEIPT_SERVICE_URL, chainId } from "./constants"
+import { ensureSolanaKeys } from "./utils/ensure-private-keys"
 import { getKeypairInfo } from "./utils/keypair-info"
 import type { PaymentRequestInit } from "agentcommercekit"
 import type { Env, TypedResponse } from "hono"
@@ -37,6 +38,12 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
   const serverIdentity = await getKeypairInfo(env(c).SERVER_PRIVATE_KEY_HEX)
   const didResolver = getDidResolver()
 
+  // Ensure Solana server keys are present
+  const { publicKey: solanaServerPublicKey } = await ensureSolanaKeys(
+    "SOLANA_SERVER_PUBLIC_KEY",
+    "SOLANA_SERVER_SECRET_KEY_JSON"
+  )
+
   const { did: receiptIssuerDid } = await getKeypairInfo(
     env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX
   )
@@ -54,7 +61,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
   if (!receipt) {
     log(colors.yellow("No receipt found, generating payment request..."))
 
-    // Build a payment request with a single payment option for USDC on Base Sepolia
+    // Build a payment request with multiple options: USDC on Base Sepolia, Stripe, and Solana (devnet)
     const paymentRequestInit: PaymentRequestInit = {
       id: crypto.randomUUID(),
       paymentOptions: [
@@ -77,6 +84,16 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
           decimals: 2,
           recipient: serverIdentity.did,
           paymentService: PAYMENT_SERVICE_URL,
+          receiptService: RECEIPT_SERVICE_URL
+        },
+        // USDC on Solana (devnet)
+        {
+          id: "usdc-solana-devnet",
+          amount: BigInt(50000).toString(),
+          decimals: 6,
+          currency: "USDC",
+          recipient: solanaServerPublicKey,
+          network: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1", // devnet
           receiptService: RECEIPT_SERVICE_URL
         }
       ]

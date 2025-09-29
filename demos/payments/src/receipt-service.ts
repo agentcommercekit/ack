@@ -24,6 +24,8 @@ import * as v from "valibot"
 import { erc20Abi, isAddressEqual } from "viem"
 import { parseEventLogs } from "viem/utils"
 import { chainId, publicClient, usdcAddress } from "./constants"
+import { solana } from "./constants"
+import { Connection, PublicKey } from "@solana/web3.js"
 import { asAddress } from "./utils/as-address"
 import { getKeypairInfo } from "./utils/keypair-info"
 import type { paymentOptionSchema } from "agentcommercekit/schemas/valibot"
@@ -111,6 +113,8 @@ app.post("/", async (c) => {
     await verifyStripePayment(parsed.issuer, paymentDetails, paymentOption)
   } else if (paymentOption.network === chainId) {
     await verifyOnChainPayment(parsed.issuer, paymentDetails, paymentOption)
+  } else if (paymentOption.network === solana.chainId) {
+    await verifySolanaPayment(parsed.issuer, paymentDetails, paymentOption)
   } else {
     log(errorMessage("Invalid network"))
     throw new HTTPException(400, {
@@ -232,6 +236,62 @@ async function verifyOnChainPayment(
 
   // Optional:
   // Additional checks, like checking txHash block number timestamp occurred after payment_request issued
+}
+
+async function verifySolanaPayment(
+  _issuer: string,
+  paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
+  paymentOption: v.InferOutput<typeof paymentOptionSchema>
+) {
+  if (paymentDetails.metadata.network !== solana.chainId) {
+    log(errorMessage("Invalid network"))
+    throw new HTTPException(400, { message: "Invalid network" })
+  }
+  const signature = paymentDetails.metadata.txHash
+  const connection = new Connection(solana.rpcUrl, solana.commitment)
+  log(colors.dim("Loading Solana transaction details..."))
+  const tx = await connection.getParsedTransaction(signature, {
+    maxSupportedTransactionVersion: 0,
+    commitment: solana.commitment
+  } as never)
+  if (!tx || tx.meta?.err) {
+    log(errorMessage("Solana transaction not found or failed"))
+    throw new HTTPException(400, { message: "Invalid transaction" })
+  }
+
+  // Validate postTokenBalances reflect the transfer to recipient for the mint
+  const mint = new PublicKey(solana.usdcMint).toBase58()
+  const recipient = new PublicKey(
+    typeof paymentOption.recipient === "string"
+      ? paymentOption.recipient
+      : (paymentOption.recipient as string)
+  ).toBase58()
+
+  const dec = paymentOption.decimals
+  const expectedAmount = BigInt(paymentOption.amount)
+
+  const post = tx.meta?.postTokenBalances || []
+  const pre = tx.meta?.preTokenBalances || []
+
+  const preBal = pre.find((b) => b.mint === mint && b.owner === recipient)
+  const postBal = post.find((b) => b.mint === mint && b.owner === recipient)
+
+  if (!postBal) {
+    log(errorMessage("Recipient post token balance not found"))
+    throw new HTTPException(400, { message: "Recipient not credited" })
+  }
+  if (postBal.uiTokenAmount.decimals !== dec) {
+    log(errorMessage("Invalid token decimals"))
+    throw new HTTPException(400, { message: "Invalid token decimals" })
+  }
+
+  const preAmount = BigInt(preBal?.uiTokenAmount.amount ?? "0")
+  const postAmount = BigInt(postBal.uiTokenAmount.amount)
+  const delta = postAmount - preAmount
+  if (delta !== expectedAmount) {
+    log(errorMessage("Invalid amount"))
+    throw new HTTPException(400, { message: "Invalid amount" })
+  }
 }
 
 serve({
