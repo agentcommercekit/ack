@@ -103,3 +103,16 @@ When an ACK Receipt is presented by a Client Agent to a Server Agent (e.g., when
 </Steps>
 If all these checks pass, the Server can confidently treat the payment as valid
 and proceed with service delivery.
+
+## On-Chain Verification Example: Solana (SPL‑USDC)
+
+When verifying an on-chain payment on Solana, in addition to the general VC checks, a Receipt Service (or Server) typically performs these steps against the submitted transaction signature:
+
+- Fetch the parsed transaction (e.g., `getParsedTransaction`) with an appropriate commitment (e.g., `confirmed` in development, `finalized` in production).
+- Extract Memo instructions and confirm a memo equals `sha256(paymentRequestToken)` to bind the payment to the specific request (replay protection).
+- Confirm the token mint matches the expected USDC mint for the environment.
+- Confirm the credited recipient is the expected address (e.g., canonical associated token account for recipient+mint).
+- Compute the delta in recipient `postTokenBalances - preTokenBalances` and verify it equals the required `amount` with matching `decimals`.
+- Optionally validate payer/fee-payer, ensure `blockTime >= paymentRequest.iat`, and reject duplicate receipts for the same `jti` or signature (idempotency).
+
+These checks mirror what the demo implementation performs for Solana devnet and complement the general ACK Receipt verification process.
