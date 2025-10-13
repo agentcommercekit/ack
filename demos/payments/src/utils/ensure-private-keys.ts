@@ -1,7 +1,7 @@
 import { colors, log, updateEnvFile } from "@repo/cli-tools"
+import { getAddressFromPublicKey } from "@solana/addresses"
 import { envFilePath } from "@/constants"
 import { generatePrivateKeyHex } from "./keypair-info"
-import { Keypair } from "@solana/web3.js"
 
 export async function ensurePrivateKey(name: string) {
   const privateKeyHex = process.env[name]
@@ -26,9 +26,31 @@ export async function ensureSolanaKeys(
     return { publicKey: existingPub, secretKeyJson: existingSecret }
   }
   log(colors.dim(`Generating ${pubEnv}/${secretEnv}...`))
-  const kp = Keypair.generate()
-  const publicKey = kp.publicKey.toBase58()
-  const secretKeyJson = JSON.stringify(Array.from(kp.secretKey))
+  const kp = await crypto.subtle.generateKey("Ed25519", true, [
+    "sign",
+    "verify"
+  ])
+
+  const privateKeyJwk = await crypto.subtle.exportKey("jwk", kp.privateKey)
+  const privateKeyBase64 = privateKeyJwk.d
+  if (!privateKeyBase64) throw new Error("Failed to get private key bytes")
+
+  const privateKeyBytes = new Uint8Array(
+    Buffer.from(privateKeyBase64, "base64")
+  )
+  // Export raw 32-byte public key from SPKI (last 32 bytes of the DER-encoded key)
+  const publicKeySpki = await crypto.subtle.exportKey("spki", kp.publicKey)
+  const publicKeyBytes = new Uint8Array(publicKeySpki).slice(-32)
+  // Concatenate 32-byte private key + 32-byte public key => 64-byte secret key
+  const secretKey64 = new Uint8Array(
+    privateKeyBytes.length + publicKeyBytes.length
+  )
+  secretKey64.set(privateKeyBytes, 0)
+  secretKey64.set(publicKeyBytes, privateKeyBytes.length)
+  const secretKeyJson = JSON.stringify(Array.from(secretKey64))
+
+  const publicKey = await getAddressFromPublicKey(kp.publicKey)
+
   await updateEnvFile(
     { [pubEnv]: publicKey, [secretEnv]: secretKeyJson },
     envFilePath

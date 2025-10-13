@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto"
 import {
   colors,
   demoFooter,
@@ -13,8 +14,29 @@ import {
   wordWrap
 } from "@repo/cli-tools"
 import {
+  address,
+  appendTransactionMessageInstructions,
+  createKeyPairSignerFromBytes,
+  createSolanaRpc,
+  createTransactionMessage,
+  getBase64EncodedWireTransaction,
+  pipe,
+  setTransactionMessageFeePayerSigner,
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners
+} from "@solana/kit"
+import {
+  TOKEN_PROGRAM_ADDRESS,
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenInstructionAsync,
+  getTransferCheckedInstruction
+} from "@solana-program/token"
+import {
   addressFromDidPkhUri,
+  createDidPkhUri,
   createJwt,
+  createJwtSigner,
+  generateKeypair,
   getDidResolver,
   isDidPkhUri,
   isJwtString,
@@ -51,19 +73,6 @@ import type {
 import "./server"
 import "./receipt-service"
 import "./payment-service"
-import {
-  Connection,
-  Keypair,
-  PublicKey,
-  TransactionMessage,
-  VersionedTransaction
-} from "@solana/web3.js"
-import { createHash } from "node:crypto"
-import {
-  createTransferInstruction,
-  getOrCreateAssociatedTokenAccount
-} from "@solana/spl-token"
-import { createMemoInstruction } from "@solana/spl-memo"
 
 /**
  * Example showcasing payments using the ACK-Pay protocol.
@@ -451,97 +460,131 @@ async function performSolanaPayment(
 
   log(sectionHeader("💸 Execute Payment (Client Agent -> Solana / SPL Token)"))
 
-  const connection = new Connection(solana.rpcUrl, solana.commitment)
-  const clientSolKeys = await (
-    ensureSolanaKeys as unknown as (
-      pubEnv: string,
-      secretEnv: string
-    ) => Promise<{ publicKey: string; secretKeyJson: string }>
-  )("SOLANA_CLIENT_PUBLIC_KEY", "SOLANA_CLIENT_SECRET_KEY_JSON")
+  const rpc = createSolanaRpc(solana.rpcUrl)
+  const clientSolKeys = await ensureSolanaKeys(
+    "SOLANA_CLIENT_PUBLIC_KEY",
+    "SOLANA_CLIENT_SECRET_KEY_JSON"
+  )
   const keyBytes = new Uint8Array(
     JSON.parse(clientSolKeys.secretKeyJson) as number[]
   )
-  const payer = Keypair.fromSecretKey(keyBytes)
+  const payerSigner = await createKeyPairSignerFromBytes(keyBytes)
 
-  const mint = new PublicKey(solana.usdcMint)
+  const mint = address(solana.usdcMint)
 
   // Ensure payer has SOL for fees
-  await ensureSolanaSolBalance(payer.publicKey.toBase58())
+  await ensureSolanaSolBalance(clientSolKeys.publicKey)
 
-  const recipient = new PublicKey(paymentOption.recipient)
+  const recipient = address(paymentOption.recipient)
 
   // Bind tx to the payment request using a Memo (replay mitigation)
   const expectedMemo = createHash("sha256")
     .update(paymentRequestToken)
     .digest("hex")
-  const memoIx = createMemoInstruction(expectedMemo, [payer.publicKey])
+  const memoInstruction = {
+    programAddress: address("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+    data: new TextEncoder().encode(expectedMemo)
+  }
 
-  const senderAta = await getOrCreateAssociatedTokenAccount(
-    connection,
-    payer,
-    mint,
-    payer.publicKey,
-    undefined,
-    solana.commitment
-  )
+  const [senderAta] = await findAssociatedTokenPda({
+    mint: mint,
+    owner: payerSigner.address,
+    tokenProgram: TOKEN_PROGRAM_ADDRESS
+  })
+  const [recipientAta] = await findAssociatedTokenPda({
+    mint: mint,
+    owner: recipient,
+    tokenProgram: TOKEN_PROGRAM_ADDRESS
+  })
+
   // Ensure sender has USDC balance; if not, prompt Circle faucet
-  let tokenBal = await connection.getTokenAccountBalance(
-    senderAta.address,
-    solana.commitment
-  )
-  while (tokenBal.value.amount === "0") {
+  let tokenBal: { amount: string }
+  try {
+    ;({ value: tokenBal } = await rpc
+      .getTokenAccountBalance(senderAta, { commitment: solana.commitment })
+      .send())
+  } catch (e: unknown) {
+    tokenBal = { amount: "0" }
+  }
+  while (tokenBal.amount === "0") {
     log(
       colors.dim(
         "USDC balance is 0. Please request devnet USDC from Circle's faucet, then press Enter to retry."
       )
     )
-    log(colors.dim(`Send USDC to your wallet: ${payer.publicKey.toBase58()}`))
+    log(colors.dim(`Send USDC to your wallet: ${clientSolKeys.publicKey}`))
     log(colors.cyan("https://faucet.circle.com/"))
     await waitForEnter("Press Enter after funding USDC...")
-    tokenBal = await connection.getTokenAccountBalance(
-      senderAta.address,
-      solana.commitment
-    )
+    try {
+      ;({ value: tokenBal } = await rpc
+        .getTokenAccountBalance(senderAta, { commitment: solana.commitment })
+        .send())
+    } catch (e: unknown) {
+      tokenBal = { amount: "0" }
+    }
   }
-  const recipientAta = await getOrCreateAssociatedTokenAccount(
-    connection,
-    payer,
-    mint,
-    recipient,
-    undefined,
-    solana.commitment
-  )
+  const { value: recipientAtaInfo } = await rpc
+    .getAccountInfo(recipientAta, {
+      commitment: solana.commitment,
+      encoding: "base64"
+    })
+    .send()
+  const maybeCreateRecipientAtaInstruction = !recipientAtaInfo
+    ? await getCreateAssociatedTokenInstructionAsync({
+        payer: payerSigner,
+        owner: recipient,
+        mint: mint,
+        ata: recipientAta,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS
+      })
+    : undefined
 
   const amount = BigInt(paymentOption.amount)
-  const ix = createTransferInstruction(
-    senderAta.address,
-    recipientAta.address,
-    payer.publicKey,
-    Number(amount) // safe here as demo amounts are tiny (5e4)
-  )
-
-  const { blockhash, lastValidBlockHeight } =
-    await connection.getLatestBlockhash(solana.commitment)
-  const msg = new TransactionMessage({
-    payerKey: payer.publicKey,
-    recentBlockhash: blockhash,
-    instructions: [memoIx, ix]
-  }).compileToV0Message()
-  const tx = new VersionedTransaction(msg)
-  tx.sign([payer])
-  const signature = await connection.sendTransaction(tx, {
-    maxRetries: 10
+  const transferIx = getTransferCheckedInstruction({
+    source: senderAta,
+    destination: recipientAta,
+    mint,
+    authority: payerSigner.address,
+    amount,
+    decimals: paymentOption.decimals
   })
+
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+  const txMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payerSigner, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstructions(
+        [
+          memoInstruction,
+          ...(maybeCreateRecipientAtaInstruction
+            ? [maybeCreateRecipientAtaInstruction]
+            : []),
+          transferIx
+        ],
+        m
+      )
+  )
+  const signedTx = await signTransactionMessageWithSigners(txMessage)
+  const wireTx = getBase64EncodedWireTransaction(signedTx)
+  const base58Signature = await rpc
+    .sendTransaction(wireTx, { encoding: "base64", skipPreflight: true })
+    .send()
+  const signature = base58Signature
   log(colors.dim("View on Solana Explorer:"))
   log(link(`https://explorer.solana.com/tx/${signature}?cluster=devnet`), {
     wrap: false
   })
-  await connection.confirmTransaction(
-    { signature, blockhash, lastValidBlockHeight },
-    solana.commitment
-  )
 
   // Request receipt from receipt-service
+  // Sign with the actual Solana payer (Ed25519) and bind payerDid to Solana did:pkh
+  // Build an ACK signer from the same Ed25519 seed used for the Solana payer
+  const ackEd25519Keypair = await generateKeypair(
+    "Ed25519",
+    new Uint8Array(Array.from(keyBytes).slice(0, 32))
+  )
+  const ackEd25519JwtSigner = createJwtSigner(ackEd25519Keypair)
   const payload = {
     paymentRequestToken,
     paymentOptionId: paymentOption.id,
@@ -549,12 +592,16 @@ async function performSolanaPayment(
       network: solana.chainId,
       txHash: signature
     },
-    payerDid: client.did
+    payerDid: createDidPkhUri(solana.chainId, clientSolKeys.publicKey)
   }
-  const signedPayload = await createJwt(payload, {
-    issuer: client.did,
-    signer: client.jwtSigner
-  })
+  const signedPayload = await createJwt(
+    payload,
+    {
+      issuer: createDidPkhUri(solana.chainId, clientSolKeys.publicKey),
+      signer: ackEd25519JwtSigner
+    },
+    { alg: "EdDSA" }
+  )
 
   const response = await fetch(receiptServiceUrl, {
     method: "POST",

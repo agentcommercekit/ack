@@ -49,11 +49,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
   const didResolver = getDidResolver()
 
   // Ensure Solana server keys are present
-  const getSolanaKeys = ensureSolanaKeys as (
-    pubEnv: string,
-    secretEnv: string
-  ) => Promise<{ publicKey: string; secretKeyJson: string }>
-  const solanaKeys = await getSolanaKeys(
+  const solanaKeys = await ensureSolanaKeys(
     "SOLANA_SERVER_PUBLIC_KEY",
     "SOLANA_SERVER_SECRET_KEY_JSON"
   )

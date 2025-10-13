@@ -8,7 +8,10 @@ import {
   logJson,
   successMessage
 } from "@repo/cli-tools"
-import { Connection, PublicKey } from "@solana/web3.js"
+import {
+  createSolanaRpc,
+  signature as toSignature
+} from "@solana/kit"
 import {
   createPaymentReceipt,
   getDidResolver,
@@ -29,12 +32,10 @@ import { parseEventLogs } from "viem/utils"
 import { chainId, publicClient, solana, usdcAddress } from "./constants"
 import { asAddress } from "./utils/as-address"
 import { getKeypairInfo } from "./utils/keypair-info"
-import type {
-  ParsedInstruction,
-  ParsedTransactionWithMeta,
-  PartiallyDecodedInstruction
-} from "@solana/web3.js"
+import type { Rpc, Signature } from "@solana/kit"
+// Types narrowed inline to avoid @solana/web3.js dependency
 import type { paymentOptionSchema } from "agentcommercekit/schemas/valibot"
+import type { GetTransactionApi } from "gill"
 import type { Env } from "hono"
 
 const app = new Hono<Env>()
@@ -244,6 +245,20 @@ async function verifyOnChainPayment(
   // Additional checks, like checking txHash block number timestamp occurred after payment_request issued
 }
 
+function getTransaction(rpc: Rpc<GetTransactionApi>, signature: Signature) {
+  return rpc
+    .getTransaction(signature, {
+      commitment: solana.commitment,
+      encoding: "jsonParsed",
+      maxSupportedTransactionVersion: 0 as const
+    })
+    .send()
+}
+
+type GetTransactionResult = Awaited<ReturnType<typeof getTransaction>>
+
+const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
+
 async function verifySolanaPayment(
   _issuer: string,
   paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
@@ -254,12 +269,19 @@ async function verifySolanaPayment(
     throw new HTTPException(400, { message: "Invalid network" })
   }
   const signature = paymentDetails.metadata.txHash
-  const connection = new Connection(solana.rpcUrl, solana.commitment)
+  const rpc = createSolanaRpc(solana.rpcUrl)
   log(colors.dim("Loading Solana transaction details..."))
-  const tx = await connection.getParsedTransaction(signature, {
-    maxSupportedTransactionVersion: 0,
-    commitment: solana.commitment
-  } as never)
+  // Poll for the transaction to appear; RPC may not have it immediately after send
+
+  let tx: GetTransactionResult | null = null
+  const maxAttempts = 10
+  const delayMs = 1000
+
+  for (let i = 0; i < maxAttempts; i++) {
+    tx = await getTransaction(rpc, toSignature(signature))
+    if (tx && !tx.meta?.err) break
+    await new Promise((r) => setTimeout(r, delayMs))
+  }
   if (!tx || tx.meta?.err) {
     log(errorMessage("Solana transaction not found or failed"))
     throw new HTTPException(400, { message: "Invalid transaction" })
@@ -270,47 +292,6 @@ async function verifySolanaPayment(
     .update(paymentDetails.paymentRequestToken)
     .digest("hex")
     .toLowerCase()
-  const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
-
-  function extractMemosFromParsedTx(
-    txParsed: ParsedTransactionWithMeta
-  ): string[] {
-    const memos: string[] = []
-
-    const scan = (ix: ParsedInstruction | PartiallyDecodedInstruction) => {
-      // Parsed memo
-      if ("program" in ix && ix.program === "spl-memo") {
-        const parsed: unknown = ix.parsed
-        if (typeof parsed === "string") {
-          memos.push(parsed)
-          return
-        }
-        const info = (parsed as { info?: { memo?: string } } | undefined)?.info
-        if (info?.memo) memos.push(String(info.memo))
-        return
-      }
-
-      // Partially decoded memo: data is base-58
-      if ("programId" in ix) {
-        const pid = (ix as PartiallyDecodedInstruction).programId.toBase58()
-        const data = (ix as PartiallyDecodedInstruction).data
-        if (pid === MEMO_PROGRAM_ID && typeof data === "string") {
-          try {
-            const raw = bs58.decode(data)
-            memos.push(Buffer.from(raw).toString("utf8"))
-          } catch {
-            // ignore malformed memo data
-          }
-        }
-      }
-    }
-
-    for (const ix of txParsed.transaction.message.instructions) scan(ix)
-    for (const inner of txParsed.meta?.innerInstructions ?? []) {
-      for (const ix of inner.instructions) scan(ix)
-    }
-    return memos
-  }
 
   const memos = extractMemosFromParsedTx(tx).map((m) => m.trim().toLowerCase())
   if (!memos.includes(expectedMemo)) {
@@ -319,18 +300,22 @@ async function verifySolanaPayment(
   }
 
   // Validate postTokenBalances reflect the transfer to recipient for the mint
-  const mint = new PublicKey(solana.usdcMint).toBase58()
-  const recipient = new PublicKey(
+  const mint = solana.usdcMint
+  const recipient =
     typeof paymentOption.recipient === "string"
       ? paymentOption.recipient
-      : (paymentOption.recipient as string)
-  ).toBase58()
+      : String(paymentOption.recipient)
 
   const dec = paymentOption.decimals
   const expectedAmount = BigInt(paymentOption.amount)
 
-  const post = tx.meta?.postTokenBalances ?? []
-  const pre = tx.meta?.preTokenBalances ?? []
+  type TokenBalance = {
+    mint: string
+    owner: string
+    uiTokenAmount: { amount: string; decimals: number }
+  }
+  const post = (tx.meta?.postTokenBalances ?? []) as unknown as TokenBalance[]
+  const pre = (tx.meta?.preTokenBalances ?? []) as unknown as TokenBalance[]
 
   const preBal = pre.find((b) => b.mint === mint && b.owner === recipient)
   const postBal = post.find((b) => b.mint === mint && b.owner === recipient)
@@ -344,13 +329,69 @@ async function verifySolanaPayment(
     throw new HTTPException(400, { message: "Invalid token decimals" })
   }
 
-  const preAmount = BigInt(preBal?.uiTokenAmount.amount ?? "0")
-  const postAmount = BigInt(postBal.uiTokenAmount.amount)
+  const toBigInt = (v: unknown): bigint => {
+    if (typeof v === "string") return BigInt(v)
+    if (typeof v === "number") return BigInt(v)
+    if (typeof v === "bigint") return v
+    return 0n
+  }
+  const preAmount = toBigInt(preBal?.uiTokenAmount.amount ?? "0")
+  const postAmount = toBigInt(postBal.uiTokenAmount.amount)
   const delta = postAmount - preAmount
   if (delta !== expectedAmount) {
     log(errorMessage("Invalid amount"))
     throw new HTTPException(400, { message: "Invalid amount" })
   }
+}
+
+function extractMemosFromParsedTx(txParsed: GetTransactionResult): string[] {
+  const memos: string[] = []
+
+  if (txParsed === null) return memos
+
+  const scan = (ix: unknown) => {
+    if (typeof ix !== "object" || ix === null) return
+
+    // Parsed memo
+    if (
+      "program" in ix &&
+      (ix as { program?: unknown }).program === "spl-memo"
+    ) {
+      const parsed = (ix as { parsed?: unknown }).parsed
+      if (typeof parsed === "string") {
+        memos.push(parsed)
+        return
+      }
+      const info = (parsed as { info?: { memo?: string } } | undefined)?.info
+      if (info?.memo) memos.push(String(info.memo))
+      return
+    }
+
+    // Partially decoded memo: data is base-58
+    if ("programId" in ix) {
+      const pidField = (
+        ix as {
+          programId: string | { toBase58(): string }
+        }
+      ).programId
+      const pid = typeof pidField === "string" ? pidField : pidField.toBase58()
+      const data = (ix as { data?: unknown }).data
+      if (pid === MEMO_PROGRAM_ID && typeof data === "string") {
+        try {
+          const raw = bs58.decode(data)
+          memos.push(Buffer.from(raw).toString("utf8"))
+        } catch {
+          // ignore malformed memo data
+        }
+      }
+    }
+  }
+
+  for (const ix of txParsed.transaction.message.instructions) scan(ix)
+  for (const inner of txParsed.meta?.innerInstructions ?? []) {
+    for (const ix of inner.instructions) scan(ix)
+  }
+  return memos
 }
 
 serve({
