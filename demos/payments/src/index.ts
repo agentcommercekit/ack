@@ -483,6 +483,7 @@ async function performSolanaPayment(
     .digest("hex")
   const memoInstruction = {
     programAddress: address("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
+    accounts: [],
     data: new TextEncoder().encode(expectedMemo)
   }
 
@@ -569,7 +570,7 @@ async function performSolanaPayment(
   const signedTx = await signTransactionMessageWithSigners(txMessage)
   const wireTx = getBase64EncodedWireTransaction(signedTx)
   const base58Signature = await rpc
-    .sendTransaction(wireTx, { encoding: "base64", skipPreflight: true })
+    .sendTransaction(wireTx, { encoding: "base64" })
     .send()
   const signature = base58Signature
   log(colors.dim("View on Solana Explorer:"))

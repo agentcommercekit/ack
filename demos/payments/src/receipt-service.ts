@@ -8,11 +8,9 @@ import {
   logJson,
   successMessage
 } from "@repo/cli-tools"
+import { createSolanaRpc, signature as toSignature } from "@solana/kit"
 import {
-  createSolanaRpc,
-  signature as toSignature
-} from "@solana/kit"
-import {
+  addressFromDidPkhUri,
   createPaymentReceipt,
   getDidResolver,
   isDidPkhUri,
@@ -260,7 +258,7 @@ type GetTransactionResult = Awaited<ReturnType<typeof getTransaction>>
 const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 
 async function verifySolanaPayment(
-  _issuer: string,
+  issuer: string,
   paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
   paymentOption: v.InferOutput<typeof paymentOptionSchema>
 ) {
@@ -274,8 +272,8 @@ async function verifySolanaPayment(
   // Poll for the transaction to appear; RPC may not have it immediately after send
 
   let tx: GetTransactionResult | null = null
-  const maxAttempts = 10
-  const delayMs = 1000
+  const maxAttempts = 20
+  const delayMs = 1500
 
   for (let i = 0; i < maxAttempts; i++) {
     tx = await getTransaction(rpc, toSignature(signature))
@@ -285,6 +283,37 @@ async function verifySolanaPayment(
   if (!tx || tx.meta?.err) {
     log(errorMessage("Solana transaction not found or failed"))
     throw new HTTPException(400, { message: "Invalid transaction" })
+  }
+
+  // Ensure the JWT issuer DID matches a signer of the transaction (typically the fee payer)
+  let issuerAddress: string
+  try {
+    issuerAddress = addressFromDidPkhUri(issuer)
+  } catch {
+    throw new HTTPException(400, { message: "Invalid issuer DID" })
+  }
+  const signerPubkeys = new Set<string>()
+
+  // jsonParsed format exposes accountKeys with `pubkey` and `signer` flags
+  type ParsedAccountKey = Readonly<{
+    pubkey: string | { toBase58(): string }
+    signer?: boolean
+  }>
+  type MessageWithAccountKeys = Readonly<{
+    accountKeys?: readonly ParsedAccountKey[]
+  }>
+
+  const msg = tx.transaction.message as unknown as MessageWithAccountKeys
+  for (const k of msg.accountKeys ?? []) {
+    if (k.signer) {
+      const pub = typeof k.pubkey === "string" ? k.pubkey : k.pubkey.toBase58()
+      if (pub) signerPubkeys.add(pub)
+    }
+  }
+
+  if (!signerPubkeys.has(issuerAddress)) {
+    log(errorMessage("Issuer DID did not sign the transaction"))
+    throw new HTTPException(400, { message: "Invalid payer DID" })
   }
 
   // Verify Memo binds to the Payment Request

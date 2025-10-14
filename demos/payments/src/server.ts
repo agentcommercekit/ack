@@ -16,16 +16,6 @@ import { getKeypairInfo } from "./utils/keypair-info"
 import type { PaymentRequestInit } from "agentcommercekit"
 import type { Env, TypedResponse } from "hono"
 
-function isSolanaKeysResult(
-  v: unknown
-): v is { publicKey: string; secretKeyJson: string } {
-  return (
-    !!v &&
-    typeof (v as { publicKey?: unknown }).publicKey === "string" &&
-    typeof (v as { secretKeyJson?: unknown }).secretKeyJson === "string"
-  )
-}
-
 const app = new Hono<Env>()
 app.use(logger())
 

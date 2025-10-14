@@ -36,7 +36,7 @@ export async function ensureSolanaKeys(
   if (!privateKeyBase64) throw new Error("Failed to get private key bytes")
 
   const privateKeyBytes = new Uint8Array(
-    Buffer.from(privateKeyBase64, "base64")
+    Buffer.from(privateKeyBase64, "base64url")
   )
   // Export raw 32-byte public key from SPKI (last 32 bytes of the DER-encoded key)
   const publicKeySpki = await crypto.subtle.exportKey("spki", kp.publicKey)
