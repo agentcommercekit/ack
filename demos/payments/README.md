@@ -6,7 +6,7 @@ This interactive command-line demo showcases a common use case: the **Server-Ini
 
 - A **Client Agent** attempting to access a protected resource.
 - A **Server Agent** requiring payment and issuing a formal Payment Request.
-- The Client Agent making a payment using **USDC on the Base Sepolia testnet**.
+- The Client Agent making a payment using **USDC on the Base Sepolia testnet** or **USDC on Solana devnet**, or a **Stripe** simulated card payment.
 - A **Receipt Service** verifying the on-chain payment and issuing a cryptographically **Verifiable Credential (VC)** as a payment receipt.
 - The Client Agent using this receipt to gain access to the resource.
 
@@ -50,7 +50,9 @@ pnpm run demo
 The interactive CLI will guide you through the following steps:
 
 1. **Client requests resource**: The Client attempts to fetch data from the Server Agent, who responds with an HTTP `402 Payment Required` status. This response contains a `PaymentRequest` which includes details on how to pay for access to this resource and offers multiple payment options.
-2. **Client makes payment**: If the client chooses to pay via Credit Card, they will pay via a sample Payment Service. Alternatively, the Client can use the information from the Payment Request to transfer USDC from its wallet to the Server's wallet on the Base Sepolia testnet.
+2. **Client makes payment**: If the client chooses to pay via Credit Card, they will pay via a sample Payment Service. Alternatively, the Client can use the information from the Payment Request to transfer USDC from its wallet to the Server's wallet on:
+   - Base Sepolia (EVM), or
+   - Solana devnet (SPL token, USDC mint configurable via env)
 3. **Client requests a receipt**: Once the payment transaction is complete, the Client or the Payment Service will request a formal Receipt **Verifiable Credential (VC)**. For on-chain payments, the Client provides the Receipt Service with proof of the on-chain transaction and the original Payment Request.
 4. **Receipt Service verifies payment**: The Receipt Service verifies all of the provided data, performs on-chain transaction verification if required, and verifies the integrity of the original payment request. If all is successful, it issues a Receipt Credential (VC).
 5. **Client presents receipt to Server**: The Client retries the request to the Server, this time presenting the Verifiable Credential (receipt). The Server verifies the receipt and, if valid, grants access to the protected resource.

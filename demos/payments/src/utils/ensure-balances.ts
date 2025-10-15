@@ -1,6 +1,9 @@
+// cspell:ignore lamports
 import { waitForEnter } from "@repo/cli-tools"
+import { createSolanaRpc, address as solAddress } from "@solana/kit"
 import { createPublicClient, erc20Abi, http } from "viem"
 import { formatUnits } from "viem/utils"
+import { solana } from "@/constants"
 import type { Chain } from "viem"
 
 /**
@@ -41,6 +44,45 @@ export async function ensureNonZeroBalances(
   console.log("   ETH: ", formatUnits(balanceEth.value, balanceUsdc.decimals))
 
   return { balanceUsdc, balanceEth }
+}
+
+export async function ensureSolanaSolBalance(address: string) {
+  const rpc = createSolanaRpc(solana.rpcUrl)
+  const pubkey = solAddress(address)
+  let lamports = 0n
+  try {
+    ;({ value: lamports } = await rpc
+      .getBalance(pubkey, { commitment: solana.commitment })
+      .send())
+  } catch (error) {
+    console.error("Failed to fetch balance:", error)
+    console.log("Will retry after next attempt...")
+    lamports = 0n
+  }
+  while (lamports === BigInt(0)) {
+    console.log("We need to fund this Solana address with devnet SOL:", address)
+    console.log("Faucet: https://faucet.solana.com/")
+    const prefilled = `https://faucet.solana.com/?walletAddress=${encodeURIComponent(
+      address
+    )}&amount=0.5`
+    console.log("Prefilled faucet (0.5 SOL):", prefilled)
+    console.log("Once funded, press enter to check balance again")
+    await waitForEnter()
+    console.log("Attempting to fetch SOL balance...  " + pubkey)
+    try {
+      ;({ value: lamports } = await rpc
+        .getBalance(pubkey, { commitment: solana.commitment })
+        .send())
+    } catch (error) {
+      console.error("Failed to fetch balance:", error)
+      console.log("Will retry after next attempt...")
+      continue
+    }
+    console.log("SOL balance fetched (lamports):", lamports)
+  }
+
+  console.log("Client Solana SOL balance (lamports):", lamports)
+  return lamports
 }
 
 async function getEthBalance(chain: Chain, address: `0x${string}`) {

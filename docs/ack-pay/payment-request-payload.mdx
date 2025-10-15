@@ -46,6 +46,16 @@ Every Payment Request payload contains essential properties:
         "recipient": "acct_StripeAccountID",
         "paymentService": "https://payments.example.com/stripe",
         "receiptService": "https://receipts.example.com/stripe"
+      },
+      {
+        // Option 3: USDC on Solana devnet
+        "id": "usdc-solana-devnet",
+        "currency": "USDC",
+        "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "amount": 10000000,
+        "decimals": 6,
+        "recipient": "9juQ8sLL5NfwT7UhWHqHQAg45JDNrm41SiCDdeTQbLsw",
+        "receiptService": "https://receipts.example.com/solana"
       }
       // ... more options ...
     ]
@@ -88,3 +98,5 @@ This abstraction provides key benefits:
 - **Client Flexibility:** The Client can pay using a method convenient for it, even if it differs from the Server's preferred settlement method.
 
 If fees are associated with bridging, FX conversions, or other transformations performed by the Payment Service, these should be communicated transparently to the Client during the payment negotiation or execution process.
+
+> Note: Solana networks use CAIP‑2 chain IDs (e.g., `solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1` for devnet). The `recipient` is the base58 wallet address receiving funds on that network.
