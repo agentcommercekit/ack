@@ -67,9 +67,8 @@ Client requests access to a protected resource. Server responds with an HTTP `40
   via a Payment Service.
 
 This demo also supports an on-chain payment on **Solana devnet** using SPL‑USDC.
-In that path, the Client transfers USDC directly to the Server’s Solana address
-and includes a Memo bound to the signed Payment Request for replay protection. The
-Receipt Service verifies the memo, mint, recipient and exact amount before issuing
+In that path, the Client transfers USDC directly to the Server’s Solana address. The
+Receipt Service verifies the mint, recipient and exact amount before issuing
 a receipt.
 
 </Step>

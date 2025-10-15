@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto"
 import {
   colors,
   demoFooter,
@@ -477,16 +476,6 @@ async function performSolanaPayment(
 
   const recipient = address(paymentOption.recipient)
 
-  // Bind tx to the payment request using a Memo (replay mitigation)
-  const expectedMemo = createHash("sha256")
-    .update(paymentRequestToken)
-    .digest("hex")
-  const memoInstruction = {
-    programAddress: address("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-    accounts: [],
-    data: new TextEncoder().encode(expectedMemo)
-  }
-
   const [senderAta] = await findAssociatedTokenPda({
     mint: mint,
     owner: payerSigner.address,
@@ -558,7 +547,6 @@ async function performSolanaPayment(
     (m) =>
       appendTransactionMessageInstructions(
         [
-          memoInstruction,
           ...(maybeCreateRecipientAtaInstruction
             ? [maybeCreateRecipientAtaInstruction]
             : []),

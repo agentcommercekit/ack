@@ -1,4 +1,3 @@
-import { createHash } from "node:crypto"
 import { serve } from "@hono/node-server"
 import { logger } from "@repo/api-utils/middleware/logger"
 import {
@@ -20,7 +19,6 @@ import {
   verifyPaymentRequestToken
 } from "agentcommercekit"
 import { caip2ChainIdSchema } from "agentcommercekit/schemas/valibot"
-import bs58 from "bs58"
 import { Hono } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
@@ -31,7 +29,6 @@ import { chainId, publicClient, solana, usdcAddress } from "./constants"
 import { asAddress } from "./utils/as-address"
 import { getKeypairInfo } from "./utils/keypair-info"
 import type { Rpc, Signature } from "@solana/kit"
-// Types narrowed inline to avoid @solana/web3.js dependency
 import type { paymentOptionSchema } from "agentcommercekit/schemas/valibot"
 import type { GetTransactionApi } from "gill"
 import type { Env } from "hono"
@@ -255,8 +252,6 @@ function getTransaction(rpc: Rpc<GetTransactionApi>, signature: Signature) {
 
 type GetTransactionResult = Awaited<ReturnType<typeof getTransaction>>
 
-const MEMO_PROGRAM_ID = "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
-
 async function verifySolanaPayment(
   issuer: string,
   paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
@@ -316,18 +311,6 @@ async function verifySolanaPayment(
     throw new HTTPException(400, { message: "Invalid payer DID" })
   }
 
-  // Verify Memo binds to the Payment Request
-  const expectedMemo = createHash("sha256")
-    .update(paymentDetails.paymentRequestToken)
-    .digest("hex")
-    .toLowerCase()
-
-  const memos = extractMemosFromParsedTx(tx).map((m) => m.trim().toLowerCase())
-  if (!memos.includes(expectedMemo)) {
-    log(errorMessage("Payment memo missing or invalid"))
-    throw new HTTPException(400, { message: "Invalid memo" })
-  }
-
   // Validate postTokenBalances reflect the transfer to recipient for the mint
   const mint = solana.usdcMint
   const recipient =
@@ -364,6 +347,7 @@ async function verifySolanaPayment(
     if (typeof v === "bigint") return v
     return 0n
   }
+
   const preAmount = toBigInt(preBal?.uiTokenAmount.amount ?? "0")
   const postAmount = toBigInt(postBal.uiTokenAmount.amount)
   const delta = postAmount - preAmount
@@ -371,56 +355,6 @@ async function verifySolanaPayment(
     log(errorMessage("Invalid amount"))
     throw new HTTPException(400, { message: "Invalid amount" })
   }
-}
-
-function extractMemosFromParsedTx(txParsed: GetTransactionResult): string[] {
-  const memos: string[] = []
-
-  if (txParsed === null) return memos
-
-  const scan = (ix: unknown) => {
-    if (typeof ix !== "object" || ix === null) return
-
-    // Parsed memo
-    if (
-      "program" in ix &&
-      (ix as { program?: unknown }).program === "spl-memo"
-    ) {
-      const parsed = (ix as { parsed?: unknown }).parsed
-      if (typeof parsed === "string") {
-        memos.push(parsed)
-        return
-      }
-      const info = (parsed as { info?: { memo?: string } } | undefined)?.info
-      if (info?.memo) memos.push(String(info.memo))
-      return
-    }
-
-    // Partially decoded memo: data is base-58
-    if ("programId" in ix) {
-      const pidField = (
-        ix as {
-          programId: string | { toBase58(): string }
-        }
-      ).programId
-      const pid = typeof pidField === "string" ? pidField : pidField.toBase58()
-      const data = (ix as { data?: unknown }).data
-      if (pid === MEMO_PROGRAM_ID && typeof data === "string") {
-        try {
-          const raw = bs58.decode(data)
-          memos.push(Buffer.from(raw).toString("utf8"))
-        } catch {
-          // ignore malformed memo data
-        }
-      }
-    }
-  }
-
-  for (const ix of txParsed.transaction.message.instructions) scan(ix)
-  for (const inner of txParsed.meta?.innerInstructions ?? []) {
-    for (const ix of inner.instructions) scan(ix)
-  }
-  return memos
 }
 
 serve({
