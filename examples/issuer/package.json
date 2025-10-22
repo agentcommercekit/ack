@@ -33,7 +33,7 @@
     "better-sqlite3": "^11.10.0",
     "bit-buffers": "^1.0.2",
     "drizzle-orm": "^0.43.1",
-    "hono": "^4.7.10",
+    "hono": "^4.10.2",
     "valibot": "^1.1.0"
   },
   "devDependencies": {
