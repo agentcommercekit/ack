@@ -26,15 +26,15 @@
   "dependencies": {
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "jose": "^6.0.11",
-    "zod": "^3.25.0"
+    "jose": "6.0.11",
+    "zod": "3.25.4"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "eslint": "^9.27.0",
-    "tsx": "^4.19.4",
-    "typescript": "^5",
-    "vitest": "^3.2.4"
+    "eslint": "9.27.0",
+    "tsx": "4.19.4",
+    "typescript": "5.7.3",
+    "vitest": "3.2.4"
   }
 }

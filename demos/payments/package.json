@@ -26,22 +26,22 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.2",
+    "@hono/node-server": "1.14.2",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0",
-    "viem": "^2.29.4"
+    "hono": "4.7.10",
+    "valibot": "1.1.0",
+    "viem": "2.29.4"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22",
-    "dotenv-cli": "^8.0.0",
-    "eslint": "^9.27.0",
-    "tsx": "^4.19.4",
-    "typescript": "^5",
-    "vitest": "^3.2.4"
+    "@types/node": "22.18.13",
+    "dotenv-cli": "8.0.0",
+    "eslint": "9.27.0",
+    "tsx": "4.19.4",
+    "typescript": "5.7.3",
+    "vitest": "3.2.4"
   }
 }

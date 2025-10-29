@@ -30,19 +30,19 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@inquirer/prompts": "^7.5.1",
-    "figlet": "^1.8.1",
-    "strip-ansi": "^7.1.0",
-    "wrap-ansi": "^9.0.0",
-    "yoctocolors": "^2.1.1"
+    "@inquirer/prompts": "7.5.1",
+    "figlet": "1.8.1",
+    "strip-ansi": "7.1.0",
+    "wrap-ansi": "9.0.0",
+    "yoctocolors": "2.1.1"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/figlet": "^1.7.0",
-    "@types/node": "^22",
-    "eslint": "^9.27.0",
-    "typescript": "^5",
-    "vitest": "^3.2.4"
+    "@types/figlet": "1.7.0",
+    "@types/node": "22.18.13",
+    "eslint": "9.27.0",
+    "typescript": "5.7.3",
+    "vitest": "3.2.4"
   }
 }

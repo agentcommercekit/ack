@@ -27,25 +27,25 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.2",
+    "@hono/node-server": "1.14.2",
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "better-sqlite3": "^11.10.0",
-    "bit-buffers": "^1.0.2",
-    "drizzle-orm": "^0.43.1",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0"
+    "better-sqlite3": "11.10.0",
+    "bit-buffers": "1.0.2",
+    "drizzle-orm": "0.43.1",
+    "hono": "4.7.10",
+    "valibot": "1.1.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:^",
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/better-sqlite3": "^7.6.13",
-    "@types/node": "^22",
-    "dotenv-cli": "^8.0.0",
-    "drizzle-kit": "^0.31.1",
-    "eslint": "^9.27.0",
-    "tsx": "^4.19.4",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "@types/better-sqlite3": "7.6.13",
+    "@types/node": "22.18.13",
+    "dotenv-cli": "8.0.0",
+    "drizzle-kit": "0.31.1",
+    "eslint": "9.27.0",
+    "tsx": "4.19.4",
+    "vite-tsconfig-paths": "5.1.4",
+    "vitest": "3.2.4"
   }
 }

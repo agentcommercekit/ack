@@ -48,14 +48,14 @@
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
     "@agentcommercekit/vc": "workspace:*",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0"
+    "hono": "4.7.10",
+    "valibot": "1.1.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "eslint": "^9.27.0",
-    "typescript": "^5",
-    "vitest": "^3.2.4"
+    "eslint": "9.27.0",
+    "typescript": "5.7.3",
+    "vitest": "3.2.4"
   }
 }

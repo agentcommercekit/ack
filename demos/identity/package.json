@@ -26,26 +26,26 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "^1.2.11",
-    "@ai-sdk/openai": "^1.3.22",
-    "@ai-sdk/valibot": "^0.1.28",
-    "@hono/node-server": "^1.14.2",
-    "@hono/valibot-validator": "^0.5.2",
+    "@ai-sdk/anthropic": "1.2.11",
+    "@ai-sdk/openai": "1.3.22",
+    "@ai-sdk/valibot": "0.1.28",
+    "@hono/node-server": "1.14.2",
+    "@hono/valibot-validator": "0.5.2",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "ai": "^4.3.16",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0"
+    "ai": "4.3.16",
+    "hono": "4.7.10",
+    "valibot": "1.1.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22",
-    "dotenv-cli": "^8.0.0",
-    "eslint": "^9.27.0",
-    "tsx": "^4.19.4",
-    "typescript": "^5",
-    "vitest": "^3.2.4"
+    "@types/node": "22.18.13",
+    "dotenv-cli": "8.0.0",
+    "eslint": "9.27.0",
+    "tsx": "4.19.4",
+    "typescript": "5.7.3",
+    "vitest": "3.2.4"
   }
 }

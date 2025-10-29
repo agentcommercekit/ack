@@ -40,13 +40,13 @@
     "test": "turbo test --env-mode=loose"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "^0.5.1",
-    "@changesets/cli": "^2.29.4",
+    "@changesets/changelog-github": "0.5.1",
+    "@changesets/cli": "2.29.4",
     "@repo/typescript-config": "workspace:*",
-    "prettier": "^3.5.3",
-    "prettier-plugin-packagejson": "^2.5.14",
-    "turbo": "^2.5.3",
-    "typescript": "^5"
+    "prettier": "3.5.3",
+    "prettier-plugin-packagejson": "2.5.14",
+    "turbo": "2.5.3",
+    "typescript": "5.7.3"
   },
   "packageManager": "pnpm@10.11.0",
   "engines": {
