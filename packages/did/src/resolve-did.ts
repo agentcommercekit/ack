@@ -4,7 +4,7 @@ import {
   DidDocumentNotFoundError,
   InvalidDidControllerError,
   InvalidDidUriError,
-  UnsupportedDidMethodError
+  UnsupportedDidMethodError,
 } from "./errors"
 import type { DidUriWithDocument } from "./types"
 
@@ -22,7 +22,7 @@ interface DidUriWithControlledDidDocument extends DidUriWithDocument {
  */
 export async function resolveDid(
   didUri: string,
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<DidUriWithDocument> {
   if (!isDidUri(didUri)) {
     throw new InvalidDidUriError(`Invalid DID URI format: ${didUri}`)
@@ -44,19 +44,19 @@ export async function resolveDid(
 
   if (!result.didDocument) {
     throw new DidDocumentNotFoundError(
-      `No DID document returned for: ${didUri}`
+      `No DID document returned for: ${didUri}`,
     )
   }
 
   if (!isDidUri(result.didDocument.id)) {
     throw new InvalidDidUriError(
-      `Invalid DID document ID format: ${result.didDocument.id}`
+      `Invalid DID document ID format: ${result.didDocument.id}`,
     )
   }
 
   return {
     did: result.didDocument.id,
-    didDocument: result.didDocument
+    didDocument: result.didDocument,
   }
 }
 
@@ -70,7 +70,7 @@ export async function resolveDid(
  */
 export async function resolveDidWithController(
   didUri: string,
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<DidUriWithControlledDidDocument> {
   // Resolve the agent's DID document
   const { did, didDocument } = await resolveDid(didUri, resolver)
@@ -82,14 +82,14 @@ export async function resolveDidWithController(
   // Check if the agent has a controller that can be resolved
   if (!isDidUri(didDocument.controller)) {
     throw new InvalidDidControllerError(
-      `Controller of DID ${didUri} is not a valid DID: ${didDocument.controller}`
+      `Controller of DID ${didUri} is not a valid DID: ${didDocument.controller}`,
     )
   }
 
   // Check if the agent is not controlling itself
   if (didDocument.controller === did) {
     throw new InvalidDidControllerError(
-      `DID ${didUri} cannot be its own controller`
+      `DID ${didUri} cannot be its own controller`,
     )
   }
 
@@ -98,6 +98,6 @@ export async function resolveDidWithController(
   return {
     did,
     didDocument,
-    controller
+    controller,
   }
 }

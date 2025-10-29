@@ -5,7 +5,7 @@ import {
   CredentialRevokedError,
   InvalidProofError,
   UnsupportedCredentialTypeError,
-  UntrustedIssuerError
+  UntrustedIssuerError,
 } from "./errors"
 import { isExpired } from "./is-expired"
 import { isRevoked } from "./is-revoked"
@@ -28,7 +28,7 @@ type VerifyCredentialOptions = {
 }
 
 function isVerifiable(
-  credential: W3CCredential
+  credential: W3CCredential,
 ): credential is Verifiable<W3CCredential> {
   return (
     "proof" in credential &&
@@ -51,7 +51,7 @@ function isVerifiable(
  */
 export async function verifyParsedCredential(
   credential: W3CCredential,
-  options: VerifyCredentialOptions
+  options: VerifyCredentialOptions,
 ): Promise<void> {
   if (!isVerifiable(credential)) {
     throw new InvalidProofError("Credential does not contain a proof")
@@ -74,19 +74,19 @@ export async function verifyParsedCredential(
     !options.trustedIssuers.includes(credential.issuer.id)
   ) {
     throw new UntrustedIssuerError(
-      `Issuer is not trusted '${credential.issuer.id}'`
+      `Issuer is not trusted '${credential.issuer.id}'`,
     )
   }
 
   // If verifiers are provided, we verify the credential against them.
   if (options.verifiers?.length) {
     const verifiers = options.verifiers.filter((v) =>
-      v.accepts(credential.type)
+      v.accepts(credential.type),
     )
 
     if (!verifiers.length) {
       throw new UnsupportedCredentialTypeError(
-        `Unsupported credential type: ${credential.type.join(", ")}`
+        `Unsupported credential type: ${credential.type.join(", ")}`,
       )
     }
 

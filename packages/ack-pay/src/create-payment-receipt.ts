@@ -24,11 +24,11 @@ export function createPaymentReceipt({
   issuer,
   payerDid,
   expirationDate,
-  metadata
+  metadata,
 }: CreatePaymentReceiptParams): W3CCredential {
   const attestation: Record<string, unknown> = {
     paymentRequestToken,
-    paymentOptionId
+    paymentOptionId,
   }
 
   if (metadata) {
@@ -40,6 +40,6 @@ export function createPaymentReceipt({
     issuer: issuer,
     subject: payerDid,
     expirationDate,
-    attestation
+    attestation,
   })
 }

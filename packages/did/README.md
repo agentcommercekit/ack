@@ -36,7 +36,7 @@ const resolver = getDidResolver()
 // Resolve a DID and its controller
 const { did, didDocument, controller } = await resolveDidWithController(
   "did:web:example.com",
-  resolver
+  resolver,
 )
 ```
 
@@ -46,7 +46,7 @@ const { did, didDocument, controller } = await resolveDidWithController(
 import {
   createDidKeyUri,
   createDidPkhUri,
-  createDidWebUri
+  createDidWebUri,
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 
@@ -62,7 +62,7 @@ const keyDid = createDidKeyUri(keypair)
 // Create a did:pkh URI from an address and chain ID
 const pkhDid = createDidPkhUri(
   "eip155:1",
-  "0x1234567890123456789012345678901234567890"
+  "0x1234567890123456789012345678901234567890",
 )
 // did:pkh:eip155:1:0x1234567890123456789012345678901234567890
 ```
@@ -72,7 +72,7 @@ const pkhDid = createDidPkhUri(
 ```ts
 import {
   createDidDocumentFromKeypair,
-  createDidWebDocumentFromKeypair
+  createDidWebDocumentFromKeypair,
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 
@@ -85,14 +85,14 @@ const didDocument = createDidDocumentFromKeypair({
   did,
   keypair,
   encoding: "jwk", // Optional, defaults to "jwk"
-  controller: "did:web:controller.example.com" // Optional
+  controller: "did:web:controller.example.com", // Optional
 })
 
 // Create a did:web and document with URI and document
 const { did, didDocument } = createDidWebDocumentFromKeypair({
   keypair,
   baseUrl: "https://www.example.com",
-  controller: ownerDid
+  controller: ownerDid,
 })
 ```
 

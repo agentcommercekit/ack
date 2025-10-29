@@ -5,7 +5,7 @@ import {
   type JwtAlgorithm,
   type JwtPayload,
   type JwtSigner,
-  type JwtString
+  type JwtString,
 } from "@agentcommercekit/jwt"
 import type { W3CCredential } from "@agentcommercekit/vc"
 import { v4 } from "uuid"
@@ -30,14 +30,14 @@ type SignedA2AMessage = {
  */
 export async function createSignedA2AMessage(
   { metadata, ...message }: Message,
-  options: SignMessageOptions
+  options: SignMessageOptions,
 ): Promise<SignedA2AMessage> {
   // Sign everything in the message, excluding the metadata
   const { jwt: sig, jti } = await createMessageSignature({ message }, options)
 
   const metadataWithSig = {
     ...metadata,
-    sig
+    sig,
   }
 
   return {
@@ -45,8 +45,8 @@ export async function createSignedA2AMessage(
     jti,
     message: {
       ...message,
-      metadata: metadataWithSig
-    }
+      metadata: metadataWithSig,
+    },
   }
 }
 
@@ -70,22 +70,22 @@ export function createA2AHandshakePayload(params: A2AHandshakeParams) {
   const nonces = params.requestNonce
     ? {
         nonce: params.requestNonce,
-        replyNonce: nonce
+        replyNonce: nonce,
       }
     : {
-        nonce: nonce
+        nonce: nonce,
       }
 
   return {
     aud: params.recipient,
     ...nonces,
-    vc: params.vc
+    vc: params.vc,
   }
 }
 
 export function createA2AHandshakeMessageFromJwt(
   role: "agent" | "user",
-  jwt: string
+  jwt: string,
 ): Message {
   return {
     kind: "message" as const,
@@ -95,10 +95,10 @@ export function createA2AHandshakeMessageFromJwt(
       {
         kind: "data" as const,
         data: {
-          jwt
-        }
-      }
-    ]
+          jwt,
+        },
+      },
+    ],
   }
 }
 
@@ -110,7 +110,7 @@ export function createA2AHandshakeMessageFromJwt(
 export async function createA2AHandshakeMessage(
   role: "agent" | "user",
   params: A2AHandshakeParams,
-  signOptions: SignMessageOptions
+  signOptions: SignMessageOptions,
 ) {
   const payload = createA2AHandshakePayload(params)
 
@@ -122,28 +122,28 @@ export async function createA2AHandshakeMessage(
     sig: jwt,
     jti,
     nonce: payload.nonce,
-    message
+    message,
   }
 }
 
 async function createMessageSignature(
   payload: Partial<JwtPayload>,
-  { did, jwtSigner, alg = "ES256K", expiresIn = 5 * 60 }: SignMessageOptions
+  { did, jwtSigner, alg = "ES256K", expiresIn = 5 * 60 }: SignMessageOptions,
 ): Promise<{ jwt: JwtString; jti: string }> {
   const jti = generateRandomJti()
   const jwt = await createJwt(
     {
       jti,
-      ...payload
+      ...payload,
     },
     {
       expiresIn,
       signer: jwtSigner,
-      issuer: did
+      issuer: did,
     },
     {
-      alg
-    }
+      alg,
+    },
   )
 
   return { jwt, jti }

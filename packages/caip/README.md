@@ -53,7 +53,7 @@ import { caip10Parts, createCaip10AccountId } from "@agentcommercekit/caip"
 // Create an account ID
 const accountId = createCaip10AccountId(
   "eip155:1",
-  "0x1234567890123456789012345678901234567890"
+  "0x1234567890123456789012345678901234567890",
 )
 // "eip155:1:0x1234567890123456789012345678901234567890"
 
@@ -136,16 +136,16 @@ const nftToken: Caip19AssetId =
 // Valibot schemas
 import {
   caip2ChainIdSchema,
-  caip10AccountIdSchema
+  caip10AccountIdSchema,
 } from "@agentcommercekit/caip/schemas/valibot"
 // Zod v3 schemas
 import {
   caip2ChainIdSchema,
-  caip10AccountIdSchema
+  caip10AccountIdSchema,
 } from "@agentcommercekit/caip/schemas/zod/v3"
 import {
   caip2ChainIdSchema,
-  caip10AccountIdSchema
+  caip10AccountIdSchema,
 } from "@agentcommercekit/caip/schemas/zod/v4"
 ```
 

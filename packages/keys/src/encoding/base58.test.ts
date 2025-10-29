@@ -3,7 +3,7 @@ import {
   base58btcToBytes,
   base58ToBytes,
   bytesToBase58,
-  bytesToBase58btc
+  bytesToBase58btc,
 } from "./base58"
 
 describe("base58btc encoding and decoding (used for DID:key)", () => {

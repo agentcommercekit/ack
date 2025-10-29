@@ -4,7 +4,7 @@ import {
   makeRevocable,
   parseJwtCredential,
   signCredential,
-  type Resolvable
+  type Resolvable,
 } from "agentcommercekit"
 import type { CredentialResponse, Issuer } from "../types"
 
@@ -21,10 +21,10 @@ export async function buildSignedCredential({
   path,
   issuer,
   credential,
-  resolver
+  resolver,
 }: BuildSignedCredentialParams): Promise<CredentialResponse> {
   const { id: statusListId, index: statusListIndex } = getStatusListPosition(
-    credential.id
+    credential.id,
   )
 
   let unsignedCredential = credential.baseCredential
@@ -35,7 +35,7 @@ export async function buildSignedCredential({
   unsignedCredential = makeRevocable(unsignedCredential, {
     id: `${baseUrl}/status/${statusListId}#${statusListIndex}`,
     statusListIndex,
-    statusListUrl: `${baseUrl}/status/${statusListId}`
+    statusListUrl: `${baseUrl}/status/${statusListId}`,
   })
 
   const jwt = await signCredential(unsignedCredential, issuer)
@@ -44,6 +44,6 @@ export async function buildSignedCredential({
 
   return {
     credential: verifiableCredential,
-    jwt
+    jwt,
   }
 }

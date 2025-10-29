@@ -8,7 +8,7 @@ import { createPaymentRequestToken } from "./create-payment-request-token"
 import { getReceiptClaimVerifier } from "./receipt-claim-verifier"
 import {
   paymentRequestSchema,
-  type paymentReceiptClaimSchema
+  type paymentReceiptClaimSchema,
 } from "./schemas/valibot"
 
 describe("getReceiptClaimVerifier", () => {
@@ -29,11 +29,11 @@ describe("getReceiptClaimVerifier", () => {
     const verifier = getReceiptClaimVerifier()
 
     const invalidSubject = {
-      paymentRequestToken: null
+      paymentRequestToken: null,
     }
 
     await expect(verifier.verify(invalidSubject, resolver)).rejects.toThrow(
-      InvalidCredentialSubjectError
+      InvalidCredentialSubjectError,
     )
   })
 
@@ -49,9 +49,9 @@ describe("getReceiptClaimVerifier", () => {
           amount: 10,
           decimals: 2,
           currency: "USD",
-          recipient: "sol:123"
-        }
-      ]
+          recipient: "sol:123",
+        },
+      ],
     })
 
     const paymentRequestToken = await createPaymentRequestToken(
@@ -59,18 +59,18 @@ describe("getReceiptClaimVerifier", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
     const receiptSubject: v.InferOutput<typeof paymentReceiptClaimSchema> = {
       paymentOptionId: paymentRequest.paymentOptions[0].id,
-      paymentRequestToken
+      paymentRequestToken,
     }
 
     const verifier = getReceiptClaimVerifier()
 
     await expect(
-      verifier.verify(receiptSubject, resolver)
+      verifier.verify(receiptSubject, resolver),
     ).resolves.not.toThrow()
   })
 })

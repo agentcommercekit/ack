@@ -4,7 +4,7 @@ import type {
   Caip10AccountId,
   Caip19AssetId,
   Caip19AssetName,
-  Caip19AssetType
+  Caip19AssetType,
 } from "../caips"
 import * as valibot from "./valibot"
 import * as zodv3 from "./zod/v3"
@@ -13,7 +13,7 @@ import * as zodv4 from "./zod/v4"
 const schemas = {
   valibot,
   zodv3,
-  zodv4
+  zodv4,
 }
 
 describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
@@ -24,7 +24,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "eip155:11155111",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
         "bitcoin:mainnet",
-        "cosmos:cosmoshub-4"
+        "cosmos:cosmoshub-4",
       ]
 
       for (const chainId of validChainIds) {
@@ -42,7 +42,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "ab:1", // too short namespace
         "verylongnamespace:1", // too long namespace
         "EIP155:1", // uppercase not allowed in namespace
-        "eip-155:1" // hyphen not allowed in namespace
+        "eip-155:1", // hyphen not allowed in namespace
       ]
 
       for (const chainId of invalidChainIds) {
@@ -57,7 +57,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
       const validAccountIds = [
         "eip155:1:0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
         "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-        "bitcoin:mainnet:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh"
+        "bitcoin:mainnet:bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh",
       ]
 
       for (const accountId of validAccountIds) {
@@ -70,7 +70,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "eip155:1",
         "eip155:1:",
         "eip155::0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
-        ""
+        "",
       ]
 
       for (const accountId of invalidAccountIds) {
@@ -85,7 +85,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "slip44:60",
         "erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
         "erc721:0xb0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
-        "spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        "spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
       ]
 
       for (const assetName of validAssetNames) {
@@ -99,7 +99,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "eip155:",
         ":erc20",
         "EIP155:erc20", // uppercase not allowed
-        ""
+        "",
       ]
 
       for (const assetName of invalidAssetNames) {
@@ -113,7 +113,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
       const validAssetTypes = [
         "eip155:1/erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
         "eip155:11155111/erc721:0xb0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v"
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
       ]
 
       for (const assetType of validAssetTypes) {
@@ -127,7 +127,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "eip155:1/eip155",
         "eip155:1/eip155:",
         "invalid/asset/type",
-        ""
+        "",
       ]
 
       for (const assetType of invalidAssetTypes) {
@@ -141,7 +141,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
       const validAssetIds = [
         "eip155:1/erc20:0xa0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c/0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
         "eip155:11155111/erc721:0xb0b86a33e6441b8c4c8c8c8c8c8c8c8c8c8c8c8c/123",
-        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp/spl:EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v/5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
       ]
 
       for (const assetId of validAssetIds) {
@@ -155,7 +155,7 @@ describe.each(Object.entries(schemas))("CAIP (%s)", (_name, schemas) => {
         "eip155:1/eip155:erc20/",
         "eip155:1//0x742d35Cc6634C0532925a3b8D4C9db96C4b4d8b6",
         "invalid/asset/id/format",
-        ""
+        "",
       ]
 
       for (const assetId of invalidAssetIds) {

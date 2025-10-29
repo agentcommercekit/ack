@@ -8,8 +8,8 @@ export function demoHeader(message: string) {
     figlet.textSync(message, {
       font: "Standard",
       horizontalLayout: "full",
-      verticalLayout: "full"
-    })
+      verticalLayout: "full",
+    }),
   )
 }
 
@@ -17,9 +17,9 @@ export function demoFooter(message: string) {
   return colors.bold(
     colors.cyan(
       figlet.textSync(message, {
-        font: "Small"
-      })
-    )
+        font: "Small",
+      }),
+    ),
   )
 }
 
@@ -28,11 +28,11 @@ export function demoFooter(message: string) {
  */
 export function sectionHeader(
   message: string,
-  { step }: { step?: number } = {}
+  { step }: { step?: number } = {},
 ) {
   const stepMessage = [
     step ? colors.bold(`Step ${step}:`) : undefined,
-    message
+    message,
   ].filter(Boolean)
 
   const stepMessageLength = stripAnsi(stepMessage.join(" ")).length

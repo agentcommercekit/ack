@@ -14,7 +14,7 @@ describe("createCredential", () => {
   it("creates a basic credential with required fields", () => {
     const credential = createCredential({
       issuer: mockIssuer,
-      subject: mockSubject
+      subject: mockSubject,
     })
 
     expect(credential).toEqual({
@@ -22,7 +22,7 @@ describe("createCredential", () => {
       type: ["VerifiableCredential"],
       issuer: { id: mockIssuer },
       credentialSubject: { id: mockSubject },
-      issuanceDate: date.toISOString()
+      issuanceDate: date.toISOString(),
     })
   })
 
@@ -30,12 +30,12 @@ describe("createCredential", () => {
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      attestation: mockAttestation
+      attestation: mockAttestation,
     })
 
     expect(credential.credentialSubject).toEqual({
       id: mockSubject,
-      ...mockAttestation
+      ...mockAttestation,
     })
   })
 
@@ -44,7 +44,7 @@ describe("createCredential", () => {
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      type: customType
+      type: customType,
     })
 
     expect(credential.type).toEqual(["VerifiableCredential", customType])
@@ -55,7 +55,7 @@ describe("createCredential", () => {
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      type: types
+      type: types,
     })
 
     expect(credential.type).toEqual(["VerifiableCredential", ...types])
@@ -66,7 +66,7 @@ describe("createCredential", () => {
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      issuanceDate
+      issuanceDate,
     })
 
     expect(credential.issuanceDate).toBe(issuanceDate.toISOString())
@@ -77,7 +77,7 @@ describe("createCredential", () => {
     const credential = createCredential({
       id: customId,
       issuer: mockIssuer,
-      subject: mockSubject
+      subject: mockSubject,
     })
 
     expect(credential.id).toBe(customId)

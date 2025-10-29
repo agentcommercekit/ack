@@ -1,6 +1,6 @@
 import {
   resolveDidWithController,
-  type Resolvable
+  type Resolvable,
 } from "@agentcommercekit/did"
 import {
   InvalidControllerClaimError,
@@ -8,7 +8,7 @@ import {
   isCredential,
   type ClaimVerifier,
   type CredentialSubject,
-  type W3CCredential
+  type W3CCredential,
 } from "@agentcommercekit/vc"
 import * as v from "valibot"
 import { controllerClaimSchema } from "./schemas/valibot"
@@ -18,7 +18,7 @@ export interface ControllerCredential extends W3CCredential {
 }
 
 function isControllerClaim(
-  credentialSubject: CredentialSubject
+  credentialSubject: CredentialSubject,
 ): credentialSubject is v.InferOutput<typeof controllerClaimSchema> {
   return v.is(controllerClaimSchema, credentialSubject)
 }
@@ -30,7 +30,7 @@ function isControllerClaim(
  * @returns `true` if the credential is a controller credential, `false` otherwise
  */
 export function isControllerCredential(
-  credential: unknown
+  credential: unknown,
 ): credential is ControllerCredential {
   if (!isCredential(credential)) {
     return false
@@ -41,7 +41,7 @@ export function isControllerCredential(
 
 async function verifyAgentControllerClaim(
   credentialSubject: CredentialSubject,
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<void> {
   if (!isControllerClaim(credentialSubject)) {
     throw new InvalidCredentialSubjectError()
@@ -50,7 +50,7 @@ async function verifyAgentControllerClaim(
   // Resolve the agent's DID document and its controller's DID document
   const { controller } = await resolveDidWithController(
     credentialSubject.id,
-    resolver
+    resolver,
   )
 
   if (controller.did !== credentialSubject.controller) {
@@ -66,6 +66,6 @@ async function verifyAgentControllerClaim(
 export function getControllerClaimVerifier(): ClaimVerifier {
   return {
     accepts: (type: string[]) => type.includes("ControllerCredential"),
-    verify: verifyAgentControllerClaim
+    verify: verifyAgentControllerClaim,
   }
 }

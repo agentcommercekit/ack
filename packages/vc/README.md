@@ -30,8 +30,8 @@ const credential = createCredential({
   issuer: issuerDid,
   subject: "did:example:subject",
   attestation: {
-    claim: "value"
-  }
+    claim: "value",
+  },
 })
 
 // Sign credential
@@ -42,7 +42,7 @@ const signer = createJwtSigner(issuerKeypair)
 const { jwt, verifiableCredential } = await signCredential(credential, {
   did: issuerDid,
   signer,
-  resolver
+  resolver,
 })
 
 // jwt - signed credential in jwt form
@@ -54,7 +54,7 @@ const { jwt, verifiableCredential } = await signCredential(credential, {
 ```ts
 import {
   parsedJwtCredential,
-  verifyParsedCredential
+  verifyParsedCredential,
 } from "@agentcommercekit/vc"
 
 // Parse JWT credential
@@ -63,7 +63,7 @@ const parsed = await parsedJwtCredential(jwt, resolver)
 // Verify credential
 await verifyParsedCredential(credential, {
   resolver,
-  trustedIssuers: ["did:example:issuer"]
+  trustedIssuers: ["did:example:issuer"],
 })
 ```
 

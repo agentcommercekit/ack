@@ -27,7 +27,7 @@ export function isJwtProof(proof: unknown): proof is JwtProof {
 
 async function verifyJwtProof(
   proof: Verifiable<W3CCredential>["proof"],
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<void> {
   if (!isJwtProof(proof)) {
     throw new InvalidProofError()
@@ -48,14 +48,14 @@ async function verifyJwtProof(
  */
 export async function verifyProof(
   proof: Verifiable<W3CCredential>["proof"],
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<void> {
   switch (proof.type) {
     case "JwtProof2020":
       return verifyJwtProof(proof, resolver)
     default:
       throw new UnsupportedProofTypeError(
-        `Unsupported proof type: ${proof.type}`
+        `Unsupported proof type: ${proof.type}`,
       )
   }
 }

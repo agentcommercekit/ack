@@ -2,14 +2,14 @@ import {
   createDidDocumentFromKeypair,
   createDidKeyUri,
   getDidResolver,
-  type DidUri
+  type DidUri,
 } from "@agentcommercekit/did"
 import {
   createJwtSigner,
   curveToJwtAlgorithm,
   isJwtString,
   verifyJwt,
-  type JwtSigner
+  type JwtSigner,
 } from "@agentcommercekit/jwt"
 import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
@@ -31,9 +31,9 @@ describe("createPaymentRequestToken()", () => {
         amount: 10,
         decimals: 2,
         currency: "USD",
-        recipient: "sol:123"
-      }
-    ]
+        recipient: "sol:123",
+      },
+    ],
   }
   const paymentRequest = v.parse(paymentRequestSchema, paymentRequestInit)
 
@@ -49,8 +49,8 @@ describe("createPaymentRequestToken()", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     expect(isJwtString(paymentRequestToken)).toBe(true)
@@ -62,8 +62,8 @@ describe("createPaymentRequestToken()", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     const resolver = getDidResolver()
@@ -71,14 +71,14 @@ describe("createPaymentRequestToken()", () => {
       issuerDid,
       createDidDocumentFromKeypair({
         did: issuerDid,
-        keypair
-      })
+        keypair,
+      }),
     )
 
     // Verify the JWT is valid (disable audience validation)
     // TODO: Use parsePaymentRequestToken when it returns the issuer
     const result = await verifyJwt(paymentRequestToken, {
-      resolver
+      resolver,
     })
 
     expect(result.payload.iss).toBe(issuerDid)

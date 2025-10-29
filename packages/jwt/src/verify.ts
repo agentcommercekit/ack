@@ -11,7 +11,7 @@ export type VerifyJwtOptions = JWTVerifyOptions & {
  */
 export async function verifyJwt(
   jwt: string,
-  { issuer, ...options }: VerifyJwtOptions = {}
+  { issuer, ...options }: VerifyJwtOptions = {},
 ): Promise<JwtVerified> {
   const result = await verifyJWT(jwt, options)
 

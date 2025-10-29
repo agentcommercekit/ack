@@ -2,7 +2,7 @@ import type { JwtString } from "@agentcommercekit/jwt"
 import * as v from "valibot"
 import {
   createPaymentRequestToken,
-  type PaymentRequestTokenOptions
+  type PaymentRequestTokenOptions,
 } from "./create-payment-request-token"
 import type { PaymentRequest, PaymentRequestInit } from "./payment-request"
 import { paymentRequestSchema } from "./schemas/valibot"
@@ -16,7 +16,7 @@ import { paymentRequestSchema } from "./schemas/valibot"
  */
 export async function createSignedPaymentRequest(
   paymentRequestInit: PaymentRequestInit,
-  { issuer, signer, algorithm }: PaymentRequestTokenOptions
+  { issuer, signer, algorithm }: PaymentRequestTokenOptions,
 ): Promise<{
   paymentRequest: PaymentRequest
   paymentRequestToken: JwtString
@@ -25,12 +25,12 @@ export async function createSignedPaymentRequest(
   const paymentRequestToken = await createPaymentRequestToken(paymentRequest, {
     issuer,
     signer,
-    algorithm
+    algorithm,
   })
 
   return {
     paymentRequest,
-    paymentRequestToken
+    paymentRequestToken,
   }
 }
 
@@ -46,6 +46,6 @@ export async function createPaymentRequestBody(
   const result = await createSignedPaymentRequest(...args)
   return {
     paymentRequest: result.paymentRequest,
-    paymentToken: result.paymentRequestToken
+    paymentToken: result.paymentRequestToken,
   }
 }

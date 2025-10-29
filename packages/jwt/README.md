@@ -29,7 +29,7 @@ const signer = createJwtSigner(keypair)
 // Create a JWT
 const jwt = await createJwt(
   { sub: "did:web:subject.com", foo: "bar" },
-  { issuer: "did:web:issuer.com", signer }
+  { issuer: "did:web:issuer.com", signer },
 )
 ```
 
@@ -42,7 +42,7 @@ import { verifyJwt } from "@agentcommercekit/jwt"
 const resolver = getDidResolver()
 
 const parsed = await verifyJwt(payload, {
-  resolver: didResolver
+  resolver: didResolver,
 })
 
 console.log(parsed.payload)

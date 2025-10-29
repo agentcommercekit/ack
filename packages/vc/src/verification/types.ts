@@ -5,6 +5,6 @@ export type ClaimVerifier = {
   accepts(type: string[]): boolean
   verify(
     credentialSubject: CredentialSubject,
-    resolver: Resolvable
+    resolver: Resolvable,
   ): Promise<void>
 }

@@ -10,8 +10,8 @@ describe("DidResolver", () => {
     publicKey: {
       encoding: "hex",
       curve: "secp256k1",
-      value: "0xc0ffee254729296a45a3885639AC7E10F9d54979"
-    }
+      value: "0xc0ffee254729296a45a3885639AC7E10F9d54979",
+    },
   })
 
   it("returns empty result for non-matching Did", async () => {
@@ -19,7 +19,7 @@ describe("DidResolver", () => {
 
     expect(result.didDocument).toBeNull()
     expect(result.didResolutionMetadata).toEqual({
-      error: "unsupportedDidMethod"
+      error: "unsupportedDidMethod",
     })
     expect(result.didDocumentMetadata).toEqual({})
   })
@@ -38,11 +38,11 @@ describe("DidResolver", () => {
 
       expect(result.didDocument).toEqual(didDocument)
       expect(result.didResolutionMetadata).toEqual({
-        contentType: "application/did+json"
+        contentType: "application/did+json",
       })
       expect(result.didDocumentMetadata).toEqual({
         created: date.toISOString(),
-        updated: date.toISOString()
+        updated: date.toISOString(),
       })
     })
   })

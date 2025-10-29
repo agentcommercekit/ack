@@ -4,7 +4,7 @@ import {
   index,
   integer,
   sqliteTable as table,
-  text
+  text,
 } from "drizzle-orm/sqlite-core"
 
 export const STATUS_LIST_MAX_SIZE = 8_192
@@ -26,7 +26,7 @@ export const statusListsTable = table("status_lists", {
     .notNull()
     // eslint-disable-next-line @cspell/spellchecker
     .default(sql`(unixepoch() * 1000)`)
-    .$onUpdateFn(() => new Date())
+    .$onUpdateFn(() => new Date()),
 })
 
 export type DatabaseStatusList = typeof statusListsTable.$inferSelect
@@ -46,9 +46,9 @@ export const credentialsTable = table(
       .notNull()
       // eslint-disable-next-line @cspell/spellchecker
       .default(sql`(unixepoch() * 1000)`),
-    revokedAt: integer("revoked_at", { mode: "timestamp_ms" })
+    revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
   },
-  (t) => [index("credential_type_idx").on(t.credentialType)]
+  (t) => [index("credential_type_idx").on(t.credentialType)],
 )
 
 export type DatabaseCredential = typeof credentialsTable.$inferSelect

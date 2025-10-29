@@ -1,7 +1,7 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -12,7 +12,7 @@ import {
   CredentialRevokedError,
   InvalidProofError,
   UnsupportedCredentialTypeError,
-  UntrustedIssuerError
+  UntrustedIssuerError,
 } from "./errors"
 import { isExpired } from "./is-expired"
 import { isRevoked } from "./is-revoked"
@@ -20,15 +20,15 @@ import { verifyParsedCredential } from "./verify-parsed-credential"
 import { verifyProof } from "./verify-proof"
 
 vi.mock("./is-expired", () => ({
-  isExpired: vi.fn()
+  isExpired: vi.fn(),
 }))
 
 vi.mock("./is-revoked", () => ({
-  isRevoked: vi.fn()
+  isRevoked: vi.fn(),
 }))
 
 vi.mock("./verify-proof", () => ({
-  verifyProof: vi.fn()
+  verifyProof: vi.fn(),
 }))
 
 async function setup() {
@@ -41,8 +41,8 @@ async function setup() {
     issuerDid,
     createDidDocumentFromKeypair({
       did: issuerDid,
-      keypair: issuerKeypair
-    })
+      keypair: issuerKeypair,
+    }),
   )
 
   // Generate an unsigned attestation
@@ -52,12 +52,12 @@ async function setup() {
     subject: subjectDid,
     issuer: issuerDid,
     attestation: {
-      test: "test"
-    }
+      test: "test",
+    },
   })
 
   credential.issuer = {
-    id: issuerDid
+    id: issuerDid,
   }
 
   const vc = {
@@ -65,8 +65,8 @@ async function setup() {
     // just dummy fields, we mock the actual proof verification
     proof: {
       type: "JwtProof2020",
-      jwt: "test.jwt.token"
-    }
+      jwt: "test.jwt.token",
+    },
   } as unknown as Verifiable<W3CCredential>
 
   return { vc, issuerDid, resolver }
@@ -88,14 +88,14 @@ describe("verifyParsedCredential", () => {
 
     const vc = {
       ...baseVc,
-      proof: undefined
+      proof: undefined,
     }
 
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(InvalidProofError)
   })
 
@@ -107,8 +107,8 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(CredentialExpiredError)
   })
 
@@ -120,8 +120,8 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(CredentialRevokedError)
   })
 
@@ -131,8 +131,8 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: ["did:example:123"],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(UntrustedIssuerError)
   })
 
@@ -144,8 +144,8 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(InvalidProofError)
   })
 
@@ -159,15 +159,15 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => true,
-            verify: () => Promise.resolve()
+            verify: () => Promise.resolve(),
           },
           {
             accepts: () => true,
             verify: () =>
-              Promise.reject(new Error("Invalid credential subject"))
-          }
-        ]
-      })
+              Promise.reject(new Error("Invalid credential subject")),
+          },
+        ],
+      }),
     ).rejects.toThrow("Invalid credential subject")
   })
 
@@ -181,10 +181,10 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => false,
-            verify: () => Promise.resolve()
-          }
-        ]
-      })
+            verify: () => Promise.resolve(),
+          },
+        ],
+      }),
     ).rejects.toThrow(UnsupportedCredentialTypeError)
   })
 
@@ -198,10 +198,10 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => true,
-            verify: () => Promise.resolve()
-          }
-        ]
-      })
+            verify: () => Promise.resolve(),
+          },
+        ],
+      }),
     ).resolves.not.toThrow()
   })
 
@@ -211,8 +211,8 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).resolves.not.toThrow()
   })
 
@@ -225,10 +225,10 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => true,
-            verify: () => Promise.resolve()
-          }
-        ]
-      })
+            verify: () => Promise.resolve(),
+          },
+        ],
+      }),
     ).resolves.not.toThrow()
   })
 })

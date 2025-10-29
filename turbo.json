@@ -3,6 +3,9 @@
   "ui": "stream",
   "concurrency": "15",
   "tasks": {
+    "//#check:format": {},
+    "//#check:packages": {},
+    "//#format": {},
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -18,7 +21,7 @@
       ]
     },
     "check:types": {
-      "dependsOn": ["^check:types", "^build"]
+      "dependsOn": ["^build"]
     },
     "clean": {
       "dependsOn": ["^clean"]
@@ -32,21 +35,18 @@
       "dependsOn": ["lint:fix", "//#format"]
     },
     "lint": {
-      "dependsOn": ["^lint", "^build"]
+      "dependsOn": ["^build"]
     },
     "lint:fix": {
-      "dependsOn": ["^lint:fix", "^build"]
+      "dependsOn": ["^build"]
     },
     "setup": {
       "dependsOn": ["^setup"],
       "cache": false
     },
     "test": {
-      "dependsOn": ["^test", "^build"]
-    },
-    "//#check:format": {},
-    "//#check:packages": {},
-    "//#format": {}
+      "dependsOn": ["^build"]
+    }
   },
   "globalEnv": ["NODE_ENV"]
 }

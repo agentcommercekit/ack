@@ -6,7 +6,7 @@ import {
   curveToJwtAlgorithm,
   getDidResolver,
   verifyPaymentReceipt,
-  type PaymentRequestInit
+  type PaymentRequestInit,
 } from "agentcommercekit"
 import { Hono, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
@@ -37,7 +37,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
   const didResolver = getDidResolver()
 
   const { did: receiptIssuerDid } = await getKeypairInfo(
-    env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX
+    env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX,
   )
   const trustedReceiptIssuers: string[] = [receiptIssuerDid]
 
@@ -65,7 +65,7 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
           currency: "USDC",
           recipient: serverIdentity.crypto.address, // This could be a did:pkh
           network: chainId, // eip155:84532
-          receiptService: RECEIPT_SERVICE_URL
+          receiptService: RECEIPT_SERVICE_URL,
         },
         // Stripe payment option
         {
@@ -76,9 +76,9 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
           decimals: 2,
           recipient: serverIdentity.did,
           paymentService: PAYMENT_SERVICE_URL,
-          receiptService: RECEIPT_SERVICE_URL
-        }
-      ]
+          receiptService: RECEIPT_SERVICE_URL,
+        },
+      ],
     }
 
     // Generate the ACK-Pay Payment Request, which is a signed JWT detailing what needs to be paid.
@@ -87,15 +87,15 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
       {
         issuer: serverIdentity.did,
         signer: serverIdentity.jwtSigner,
-        algorithm: curveToJwtAlgorithm(serverIdentity.keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(serverIdentity.keypair.curve),
+      },
     )
 
     const res = new Response(JSON.stringify(paymentRequestBody), {
       status: 402,
       headers: {
-        "Content-Type": "application/json"
-      }
+        "Content-Type": "application/json",
+      },
     })
 
     log(successMessage("Payment request generated"))
@@ -109,23 +109,23 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
       resolver: didResolver,
       trustedReceiptIssuers,
       paymentRequestIssuer: serverIdentity.did,
-      verifyPaymentRequestTokenJwt: true
+      verifyPaymentRequestTokenJwt: true,
     })
   } catch (e) {
     console.log(errorMessage("Error verifying receipt"), e)
 
     throw new HTTPException(400, {
-      message: "Invalid receipt"
+      message: "Invalid receipt",
     })
   }
 
   log(successMessage("Receipt verified successfully"))
   return c.json({
-    message: "Access granted"
+    message: "Access granted",
   })
 })
 
 serve({
   port: 4567,
-  fetch: app.fetch
+  fetch: app.fetch,
 })

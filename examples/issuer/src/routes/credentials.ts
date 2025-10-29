@@ -1,7 +1,7 @@
 import {
   createCredential as createDatabaseCredential,
   getCredential,
-  revokeCredential
+  revokeCredential,
 } from "@/db/queries/credentials"
 import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
 import type { CredentialResponse } from "@/lib/types"
@@ -10,18 +10,18 @@ import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"
 import {
   apiSuccessResponse,
-  type ApiResponse
+  type ApiResponse,
 } from "@repo/api-utils/api-response"
 import {
   internalServerError,
   notFound,
-  unauthorized
+  unauthorized,
 } from "@repo/api-utils/exceptions"
 import { signedPayloadValidator } from "@repo/api-utils/middleware/signed-payload-validator"
 import {
   createControllerCredential,
   isControllerCredential,
-  resolveDidWithController
+  resolveDidWithController,
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env } from "hono"
@@ -35,7 +35,7 @@ app.use("*", database())
 
 const bodySchema = v.object({
   controller: didUriSchema,
-  subject: didUriSchema
+  subject: didUriSchema,
 })
 
 /**
@@ -75,7 +75,7 @@ app.post(
     // Check that the subject is a valid did with a valid, resolvable controller
     const { did, controller } = await resolveDidWithController(
       payload.body.subject,
-      resolver
+      resolver,
     )
 
     if (controller.did !== payload.body.controller) {
@@ -85,12 +85,12 @@ app.post(
     const baseCredential = createControllerCredential({
       subject: did,
       controller: controller.did,
-      issuer: issuer.did
+      issuer: issuer.did,
     })
 
     const credential = await createDatabaseCredential(db, {
       credentialType: "ControllerCredential",
-      baseCredential
+      baseCredential,
     })
 
     const result = await buildSignedCredential({
@@ -98,11 +98,11 @@ app.post(
       path: "/credentials/controller",
       issuer,
       credential,
-      resolver
+      resolver,
     })
 
     return c.json(apiSuccessResponse(result))
-  }
+  },
 )
 
 /**
@@ -136,14 +136,14 @@ app.get("/:id", async (c): Promise<ApiResponse<CredentialResponse>> => {
     path: "/credentials/controller",
     issuer,
     credential,
-    resolver
+    resolver,
   })
 
   return c.json(apiSuccessResponse(result))
 })
 
 const deleteBodySchema = v.object({
-  id: v.number()
+  id: v.number(),
 })
 
 /**
@@ -189,7 +189,7 @@ app.delete(
     await revokeCredential(db, databaseCredential)
 
     return c.json(apiSuccessResponse(null))
-  }
+  },
 )
 
 export default app

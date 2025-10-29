@@ -12,7 +12,7 @@ import {
   type JwtSigner,
   type Keypair,
   type Verifiable,
-  type W3CCredential
+  type W3CCredential,
 } from "agentcommercekit"
 import type { CoreMessage } from "ai"
 import type { CredentialVerifier } from "./credential-verifier"
@@ -48,7 +48,7 @@ export abstract class Agent {
     baseUrl,
     ownerDid,
     verifier,
-    keypair
+    keypair,
   }: AgentConstructorParams) {
     const did = createDidWebUri(baseUrl)
     const didDocument = createDidDocumentFromKeypair({
@@ -59,14 +59,14 @@ export abstract class Agent {
         {
           id: `${did}/chat`,
           type: "ChatEndpoint",
-          serviceEndpoint: `${baseUrl}/chat`
+          serviceEndpoint: `${baseUrl}/chat`,
         },
         {
           id: `${did}/identity`,
           type: "IdentityService",
-          serviceEndpoint: `${baseUrl}/identity`
-        }
-      ]
+          serviceEndpoint: `${baseUrl}/identity`,
+        },
+      ],
     })
 
     this.did = did
@@ -82,7 +82,7 @@ export abstract class Agent {
 
   static async create<T extends Agent>(
     this: new (params: AgentConstructorParams) => T,
-    params: Omit<AgentConstructorParams, "keypair">
+    params: Omit<AgentConstructorParams, "keypair">,
   ): Promise<T> {
     const keypair = await generateKeypair("secp256k1")
     return new this({ ...params, keypair })
@@ -105,11 +105,11 @@ export abstract class Agent {
       { sub: challenge },
       {
         issuer: this.did,
-        signer: this.signer
+        signer: this.signer,
       },
       {
-        alg: curveToJwtAlgorithm(this.keypair.curve)
-      }
+        alg: curveToJwtAlgorithm(this.keypair.curve),
+      },
     )
 
     return challengeResponse
@@ -118,13 +118,13 @@ export abstract class Agent {
   async run(prompt: string): Promise<string> {
     console.log(
       `${colors.yellow(`\n> Agent ${this.did} processing prompt:`)} "${colors.dim(
-        prompt
-      )}"`
+        prompt,
+      )}"`,
     )
 
     this.messages.push({
       role: "user",
-      content: prompt
+      content: prompt,
     })
 
     const result = await this._run(this.messages)

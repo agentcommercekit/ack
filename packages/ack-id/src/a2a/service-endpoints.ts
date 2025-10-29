@@ -4,11 +4,11 @@ export type ServiceTypeAgentCard = typeof serviceTypeAgentCard
 
 export function createAgentCardServiceEndpoint(
   did: string,
-  agentCardUrl: string
+  agentCardUrl: string,
 ) {
   return {
     id: `${did}#agent-card`,
     type: "AgentCard",
-    serviceEndpoint: agentCardUrl
+    serviceEndpoint: agentCardUrl,
   }
 }

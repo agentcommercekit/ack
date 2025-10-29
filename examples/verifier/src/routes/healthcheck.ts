@@ -1,6 +1,6 @@
 import {
   apiSuccessResponse,
-  type ApiResponse
+  type ApiResponse,
 } from "@repo/api-utils/api-response"
 import { Hono, type Env } from "hono"
 

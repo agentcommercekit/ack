@@ -31,7 +31,7 @@ export function createControllerCredential({
   id,
   subject,
   controller,
-  issuer
+  issuer,
 }: CreateControllerCredentialParams): W3CCredential {
   return createCredential({
     id,
@@ -39,7 +39,7 @@ export function createControllerCredential({
     issuer: issuer ?? controller,
     subject,
     attestation: {
-      controller: controller
-    }
+      controller: controller,
+    },
   })
 }

@@ -12,7 +12,7 @@ import {
   type DidUri,
   type JwtString,
   type Keypair,
-  type Verifiable
+  type Verifiable,
 } from "agentcommercekit"
 
 export class CredentialVerifier {
@@ -26,7 +26,7 @@ export class CredentialVerifier {
     baseUrl,
     keypair,
     resolver,
-    trustedIssuers
+    trustedIssuers,
   }: {
     baseUrl: string
     keypair: Keypair
@@ -39,7 +39,7 @@ export class CredentialVerifier {
     // Did Document
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair: this.keypair,
-      baseUrl
+      baseUrl,
     })
     this.did = did
     this.didDocument = didDocument
@@ -53,7 +53,7 @@ export class CredentialVerifier {
   static async create({
     baseUrl,
     resolver,
-    trustedIssuers
+    trustedIssuers,
   }: {
     baseUrl: string
     resolver: DidResolver
@@ -64,7 +64,7 @@ export class CredentialVerifier {
       baseUrl,
       keypair,
       resolver,
-      trustedIssuers
+      trustedIssuers,
     })
   }
 
@@ -72,7 +72,7 @@ export class CredentialVerifier {
    * Verifies a credential JWT
    */
   async verifyCredential(
-    jwt: JwtString
+    jwt: JwtString,
   ): Promise<Verifiable<ControllerCredential>> {
     const parsedCredential = await parseJwtCredential(jwt, this.resolver)
 
@@ -83,7 +83,7 @@ export class CredentialVerifier {
     await verifyParsedCredential(parsedCredential, {
       resolver: this.resolver,
       trustedIssuers: this.trustedIssuers,
-      verifiers: [getControllerClaimVerifier()]
+      verifiers: [getControllerClaimVerifier()],
     })
 
     return parsedCredential

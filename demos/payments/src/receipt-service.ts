@@ -5,7 +5,7 @@ import {
   errorMessage,
   log,
   logJson,
-  successMessage
+  successMessage,
 } from "@repo/cli-tools"
 import {
   createPaymentReceipt,
@@ -14,11 +14,11 @@ import {
   parseJwtCredential,
   signCredential,
   verifyJwt,
-  verifyPaymentRequestToken
+  verifyPaymentRequestToken,
 } from "agentcommercekit"
 import {
   caip2ChainIdSchema,
-  type paymentOptionSchema
+  type paymentOptionSchema,
 } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
@@ -34,22 +34,22 @@ const app = new Hono<Env>()
 app.use(logger())
 
 const bodySchema = v.object({
-  payload: v.string()
+  payload: v.string(),
 })
 
 const paymentDetailsSchema = v.object({
   metadata: v.union([
     v.object({
       network: caip2ChainIdSchema,
-      txHash: v.string()
+      txHash: v.string(),
     }),
     v.object({
       network: v.literal("stripe"),
-      eventId: v.string()
-    })
+      eventId: v.string(),
+    }),
   ]),
   payerDid: v.string(),
-  paymentRequestToken: v.string()
+  paymentRequestToken: v.string(),
 })
 
 /**
@@ -60,7 +60,7 @@ const paymentDetailsSchema = v.object({
  */
 app.post("/", async (c) => {
   const serverIdentity = await getKeypairInfo(
-    env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX
+    env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX,
   )
   const didResolver = getDidResolver()
 
@@ -72,8 +72,8 @@ app.post("/", async (c) => {
   const parsed = await verifyJwt(payload, {
     resolver: didResolver,
     policies: {
-      aud: false
-    }
+      aud: false,
+    },
   })
 
   // This demo uses did:pkh for all issuers, so we add this check, however, this
@@ -93,14 +93,14 @@ app.post("/", async (c) => {
   const { paymentRequest } = await verifyPaymentRequestToken(
     paymentDetails.paymentRequestToken,
     {
-      resolver: didResolver
-    }
+      resolver: didResolver,
+    },
   )
 
   // Load the payment option from the payment request matching our
   // preferred network.
   const paymentOption = paymentRequest.paymentOptions.find(
-    (option) => option.network === paymentDetails.metadata.network
+    (option) => option.network === paymentDetails.metadata.network,
   )
 
   if (!paymentOption) {
@@ -115,7 +115,7 @@ app.post("/", async (c) => {
   } else {
     log(errorMessage("Invalid network"))
     throw new HTTPException(400, {
-      message: "Invalid network"
+      message: "Invalid network",
     })
   }
 
@@ -124,26 +124,26 @@ app.post("/", async (c) => {
     paymentRequestToken: paymentDetails.paymentRequestToken,
     paymentOptionId: paymentOption.id,
     issuer: serverIdentity.did,
-    payerDid: parsed.issuer
+    payerDid: parsed.issuer,
   })
 
   const jwt = await signCredential(receipt, {
     did: serverIdentity.did,
     signer: serverIdentity.jwtSigner,
-    alg: "ES256K"
+    alg: "ES256K",
   })
 
   log(successMessage("Receipt created successfully"))
   return c.json({
     receipt: jwt,
-    details: await parseJwtCredential(jwt, didResolver)
+    details: await parseJwtCredential(jwt, didResolver),
   })
 })
 
 async function verifyStripePayment(
   _issuer: string,
   _paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
-  _paymentOption: v.InferOutput<typeof paymentOptionSchema>
+  _paymentOption: v.InferOutput<typeof paymentOptionSchema>,
 ) {
   // Simulated stripe verification. In practice the receipt service and
   // the payment service would have a deeper connection to allow for
@@ -156,12 +156,12 @@ async function verifyStripePayment(
 async function verifyOnChainPayment(
   issuer: string,
   paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
-  paymentOption: v.InferOutput<typeof paymentOptionSchema>
+  paymentOption: v.InferOutput<typeof paymentOptionSchema>,
 ) {
   if (paymentDetails.metadata.network !== chainId) {
     log(errorMessage("Invalid network"))
     throw new HTTPException(400, {
-      message: "Invalid network"
+      message: "Invalid network",
     })
   }
 
@@ -175,7 +175,7 @@ async function verifyOnChainPayment(
   if (txReceipt.status !== "success") {
     log(errorMessage(`Transaction failed: ${txHash}`))
     throw new HTTPException(400, {
-      message: `Transaction failed: ${txHash}`
+      message: `Transaction failed: ${txHash}`,
     })
   }
 
@@ -186,19 +186,19 @@ async function verifyOnChainPayment(
     logs: txReceipt.logs,
     eventName: "Transfer",
     args: {
-      to: asAddress(paymentOption.recipient)
-    }
+      to: asAddress(paymentOption.recipient),
+    },
   })
 
   // Find the Transfer event in the logs
   const transferEvent = logs.find((log) =>
-    isAddressEqual(log.address, usdcAddress)
+    isAddressEqual(log.address, usdcAddress),
   )
 
   if (!transferEvent) {
     log(errorMessage("Transfer event not found in transaction logs"))
     throw new HTTPException(400, {
-      message: "Transfer event not found in transaction logs"
+      message: "Transfer event not found in transaction logs",
     })
   }
 
@@ -213,21 +213,21 @@ async function verifyOnChainPayment(
   ) {
     log(errorMessage("Invalid recipient address"))
     throw new HTTPException(400, {
-      message: "Invalid recipient address"
+      message: "Invalid recipient address",
     })
   }
 
   if (transferEvent.args.value !== BigInt(paymentOption.amount)) {
     log(errorMessage("Invalid amount"))
     throw new HTTPException(400, {
-      message: "Invalid amount"
+      message: "Invalid amount",
     })
   }
 
   if (!isAddressEqual(transferEvent.args.from, senderAddress)) {
     log(errorMessage("Invalid sender address"))
     throw new HTTPException(400, {
-      message: "Invalid sender address"
+      message: "Invalid sender address",
     })
   }
 
@@ -237,5 +237,5 @@ async function verifyOnChainPayment(
 
 serve({
   port: 4568,
-  fetch: app.fetch
+  fetch: app.fetch,
 })

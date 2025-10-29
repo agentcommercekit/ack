@@ -42,7 +42,7 @@ export type PublicKeyWithEncoding = {
 export function getPublicKeyFromPrivateKey(
   privateKey: Uint8Array,
   curve: KeyCurve,
-  compressed = false
+  compressed = false,
 ): Uint8Array {
   if (curve === "secp256k1") {
     return secp256k1.getPublicKeyBytes(privateKey, compressed)
@@ -67,7 +67,7 @@ export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
  */
 export function isValidPublicKey(
   publicKey: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): boolean {
   if (curve === "secp256k1") {
     return secp256k1.isValidPublicKey(publicKey)
@@ -85,12 +85,12 @@ export function isValidPublicKey(
  */
 function encodePublicKeyMultibase(
   publicKey: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PublicKeyWithEncoding & { encoding: "multibase" } {
   return {
     encoding: "multibase",
     curve,
-    value: bytesToMultibase(publicKey)
+    value: bytesToMultibase(publicKey),
   }
 }
 
@@ -99,12 +99,12 @@ function encodePublicKeyMultibase(
  */
 function encodePublicKeyJwk(
   publicKey: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PublicKeyWithEncoding & { encoding: "jwk" } {
   return {
     encoding: "jwk",
     curve,
-    value: publicKeyBytesToJwk(publicKey, curve)
+    value: publicKeyBytesToJwk(publicKey, curve),
   }
 }
 
@@ -113,12 +113,12 @@ function encodePublicKeyJwk(
  */
 function encodePublicKeyHex(
   publicKey: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PublicKeyWithEncoding & { encoding: "hex" } {
   return {
     encoding: "hex",
     curve,
-    value: bytesToHexString(publicKey)
+    value: bytesToHexString(publicKey),
   }
 }
 
@@ -127,12 +127,12 @@ function encodePublicKeyHex(
  */
 function encodePublicKeyBase58(
   publicKey: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PublicKeyWithEncoding & { encoding: "base58" } {
   return {
     encoding: "base58",
     curve,
-    value: bytesToBase58(publicKey)
+    value: bytesToBase58(publicKey),
   }
 }
 
@@ -142,13 +142,13 @@ function encodePublicKeyBase58(
 const publicKeyEncoders: {
   [K in PublicKeyEncoding]: (
     publicKey: Uint8Array,
-    curve: KeyCurve
+    curve: KeyCurve,
   ) => PublicKeyWithEncoding & { encoding: K }
 } = {
   hex: encodePublicKeyHex,
   jwk: encodePublicKeyJwk,
   multibase: encodePublicKeyMultibase,
-  base58: encodePublicKeyBase58
+  base58: encodePublicKeyBase58,
 } as const
 
 /**
@@ -157,7 +157,7 @@ const publicKeyEncoders: {
 export function encodePublicKey<T extends PublicKeyEncoding>(
   encoding: T,
   publicKey: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PublicKeyWithEncoding & { encoding: T } {
   return publicKeyEncoders[encoding](publicKey, curve)
 }
@@ -167,7 +167,7 @@ export function encodePublicKey<T extends PublicKeyEncoding>(
  */
 export function encodePublicKeyFromKeypair<T extends PublicKeyEncoding>(
   encoding: T,
-  keypair: Keypair
+  keypair: Keypair,
 ): PublicKeyWithEncoding & { encoding: T } {
   return encodePublicKey(encoding, keypair.publicKey, keypair.curve)
 }

@@ -11,7 +11,7 @@ import type { Verifiable, W3CCredential } from "../types"
  */
 export async function parseJwtCredential<T extends W3CCredential>(
   jwt: string,
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<Verifiable<T>> {
   const result = await verifyCredential(jwt, resolver)
 

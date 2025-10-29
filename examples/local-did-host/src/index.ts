@@ -18,14 +18,14 @@ app.get(
   vValidator(
     "param",
     v.object({
-      entity: v.picklist(["agent", "controller"])
-    })
+      entity: v.picklist(["agent", "controller"]),
+    }),
   ),
   (c) => {
     const { entity } = c.req.valid("param")
     const identities = c.get("identities")
     return c.json(identities[entity].didDocument)
-  }
+  },
 )
 
 /**
@@ -36,8 +36,8 @@ app.post(
   vValidator(
     "param",
     v.object({
-      entity: v.picklist(["agent", "controller"])
-    })
+      entity: v.picklist(["agent", "controller"]),
+    }),
   ),
   vValidator(
     "json",
@@ -45,8 +45,8 @@ app.post(
       subject: v.string(),
       payload: v.record(v.string(), v.unknown()),
       audience: v.optional(v.string()),
-      expiresIn: v.optional(v.number())
-    })
+      expiresIn: v.optional(v.number()),
+    }),
   ),
   async (c) => {
     const { signer, did, alg } = c.get("identities").agent
@@ -56,19 +56,19 @@ app.post(
       {
         ...payload,
         sub: subject,
-        aud: audience
+        aud: audience,
       },
       {
         alg,
         issuer: did,
         expiresIn,
         signer,
-        canonicalize: true
-      }
+        canonicalize: true,
+      },
     )
 
     return c.json({ jwt })
-  }
+  },
 )
 
 export default app

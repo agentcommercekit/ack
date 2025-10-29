@@ -6,7 +6,7 @@ import { Agent } from "./agent"
 import { getModel } from "./get-model"
 
 const agentResponseSchema = v.object({
-  text: v.string()
+  text: v.string(),
 })
 
 export class ClientAgent extends Agent {
@@ -27,9 +27,9 @@ export class ClientAgent extends Agent {
             v.object({
               message: v.pipe(
                 v.string(),
-                v.description("The message to send to the haiku agent")
-              )
-            })
+                v.description("The message to send to the haiku agent"),
+              ),
+            }),
           ),
           execute: async ({ message }) => {
             console.log(colors.dim(`> Agent ${this.did} calling haiku agent`))
@@ -38,18 +38,18 @@ export class ClientAgent extends Agent {
               method: "POST",
               body: JSON.stringify({ message }),
               headers: {
-                "Content-Type": "application/json"
-              }
+                "Content-Type": "application/json",
+              },
             })
 
             const { text } = v.parse(agentResponseSchema, await response.json())
 
             console.log(
-              colors.dim(`< Received response from haiku agent: ${text}`)
+              colors.dim(`< Received response from haiku agent: ${text}`),
             )
 
             return text
-          }
+          },
         }),
         isComplete: tool({
           description:
@@ -60,14 +60,14 @@ export class ClientAgent extends Agent {
             this.haikuComplete = true
 
             return Promise.resolve("success")
-          }
-        })
-      }
+          },
+        }),
+      },
     })
 
     return {
       text: result.text,
-      responseMessages: result.response.messages
+      responseMessages: result.response.messages,
     }
   }
 }

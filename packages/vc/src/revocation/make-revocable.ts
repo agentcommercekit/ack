@@ -25,7 +25,7 @@ type RevocationOptions = {
  */
 export function makeRevocable<T extends W3CCredential>(
   credential: T,
-  { id, statusListIndex, statusListUrl }: RevocationOptions
+  { id, statusListIndex, statusListUrl }: RevocationOptions,
 ): Revocable<T> {
   return {
     ...credential,
@@ -34,7 +34,7 @@ export function makeRevocable<T extends W3CCredential>(
       type: "BitstringStatusListEntry",
       statusPurpose: "revocation",
       statusListIndex: statusListIndex.toString(),
-      statusListCredential: statusListUrl
-    }
+      statusListCredential: statusListUrl,
+    },
   }
 }

@@ -5,7 +5,7 @@ import type { CredentialSubject } from "../types"
 import type { BitstringStatusListCredential } from "./types"
 
 function isStatusListClaim(
-  credentialSubject: CredentialSubject
+  credentialSubject: CredentialSubject,
 ): credentialSubject is v.InferOutput<typeof bitstringStatusListClaimSchema> {
   return v.is(bitstringStatusListClaimSchema, credentialSubject)
 }
@@ -17,7 +17,7 @@ function isStatusListClaim(
  * @returns `true` if the credential is a status list credential, `false` otherwise
  */
 export function isStatusListCredential(
-  credential: unknown
+  credential: unknown,
 ): credential is BitstringStatusListCredential {
   if (!isCredential(credential)) {
     return false

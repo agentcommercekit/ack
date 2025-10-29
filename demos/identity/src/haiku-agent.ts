@@ -14,14 +14,14 @@ export class HaikuAgent extends Agent {
       tools: {
         ...getIdentityTools({
           resolver: this.resolver,
-          verifier: this.verifier
-        })
-      }
+          verifier: this.verifier,
+        }),
+      },
     })
 
     return {
       text: result.text,
-      responseMessages: result.response.messages
+      responseMessages: result.response.messages,
     }
   }
 }

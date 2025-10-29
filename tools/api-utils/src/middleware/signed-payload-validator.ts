@@ -14,8 +14,8 @@ interface ValidatedSignedPayload<T> {
 const signedPayloadSchema = v.object({
   payload: v.custom<JwtString>(
     (v: unknown) => typeof v === "string" && isJwtString(v),
-    "Invalid JWT format"
-  )
+    "Invalid JWT format",
+  ),
 })
 
 /**
@@ -35,7 +35,7 @@ const signedPayloadSchema = v.object({
  */
 export const signedPayloadValidator = <T>(
   target: keyof ValidationTargets,
-  schema: v.GenericSchema<unknown, T>
+  schema: v.GenericSchema<unknown, T>,
 ) =>
   validator(target, async (value, c): Promise<ValidatedSignedPayload<T>> => {
     const didResolver = c.get("resolver") as Resolvable | undefined
@@ -45,7 +45,7 @@ export const signedPayloadValidator = <T>(
       const { parsed, body } = await validatePayload(
         data.payload,
         schema,
-        didResolver
+        didResolver,
       )
 
       // Enforces a DID for the issuer
@@ -55,7 +55,7 @@ export const signedPayloadValidator = <T>(
 
       return {
         issuer: parsed.issuer,
-        body
+        body,
       }
     } catch (error) {
       /**
@@ -68,7 +68,7 @@ export const signedPayloadValidator = <T>(
         if (isDidUri(issuer) && parsedPayload.success) {
           return {
             issuer,
-            body: parsedPayload.output
+            body: parsedPayload.output,
           }
         }
       }

@@ -14,7 +14,7 @@ export type JwtAlgorithm = (typeof jwtAlgorithms)[number]
 export const CURVE_TO_ALGORITHM: Record<KeyCurve, JwtAlgorithm> = {
   secp256k1: "ES256K",
   secp256r1: "ES256",
-  Ed25519: "EdDSA"
+  Ed25519: "EdDSA",
 }
 
 /**

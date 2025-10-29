@@ -10,7 +10,7 @@ import {
   select,
   successMessage,
   waitForEnter,
-  wordWrap
+  wordWrap,
 } from "@repo/cli-tools"
 import {
   addressFromDidPkhUri,
@@ -22,11 +22,11 @@ import {
   type JwtString,
   type PaymentReceiptCredential,
   type PaymentRequest,
-  type Verifiable
+  type Verifiable,
 } from "agentcommercekit"
 import {
   jwtStringSchema,
-  paymentRequestSchema
+  paymentRequestSchema,
 } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { isAddress } from "viem"
@@ -35,7 +35,7 @@ import {
   chainId,
   publicClient,
   SERVER_URL,
-  usdcAddress
+  usdcAddress,
 } from "./constants"
 import { ensureNonZeroBalances } from "./utils/ensure-balances"
 import { ensurePrivateKey } from "./utils/ensure-private-keys"
@@ -53,7 +53,7 @@ async function main() {
   log(demoHeader("ACK-Pay"), { wrap: false })
   log(
     colors.bold(
-      colors.magenta("\n✨ === Agent-Native Payments Protocol Demo === ✨")
+      colors.magenta("\n✨ === Agent-Native Payments Protocol Demo === ✨"),
     ),
     colors.cyan(`
 This demo will guide you through a typical payment flow between a Client and a Server. ACK-Pay enables secure, verifiable, and interoperable financial transactions among autonomous agents, services, and human participants. You can find more information at ${link("https://www.agentcommercekit.com")}.
@@ -66,7 +66,7 @@ The demo involves the following key components from the ACK-Pay protocol:`),
 2. ${colors.bold("Server:")} An API that protects a resource and requires payment for access, initiating the payment request.
 3. ${colors.bold("Payment Service:")} An intermediary that handles compliant payment execution. In this demo, the payment service is used for Credit Card payments, and is bypassed for on-chain payments using a crypto wallet and the Base Sepolia network to transfer USDC. In a full ACK-Pay deployment, a dedicated Payment Service offers more features like payment method abstraction (e.g., paying with different currencies or even credit cards), currency conversion, and enhanced compliance.
 4. ${colors.bold("Receipt Service:")} A service that verifies the payment and issues a cryptographically verifiable receipt (as a Verifiable Credential).
-`)
+`),
   )
 
   await waitForEnter("Press Enter to embark on the ACK-Pay journey...")
@@ -82,7 +82,7 @@ ${colors.dim("Checking for existing keys ...")}
       ensurePrivateKey("CLIENT_PRIVATE_KEY_HEX"),
       ensurePrivateKey("SERVER_PRIVATE_KEY_HEX"),
       ensurePrivateKey("RECEIPT_SERVICE_PRIVATE_KEY_HEX"),
-      ensurePrivateKey("PAYMENT_SERVICE_PRIVATE_KEY_HEX")
+      ensurePrivateKey("PAYMENT_SERVICE_PRIVATE_KEY_HEX"),
     ])
 
   const clientKeypairInfo = await getKeypairInfo(clientPrivateKeyHex)
@@ -95,7 +95,7 @@ Using the following public keys:
 ${colors.bold("Client:")} ${colors.dim(clientKeypairInfo.publicKeyHex)}
 ${colors.bold("Server:")} ${colors.dim(serverKeypairInfo.publicKeyHex)}
 `,
-    { wrap: false }
+    { wrap: false },
   )
 
   log(sectionHeader("🚪 Client Requests Protected Resource"))
@@ -103,15 +103,15 @@ ${colors.bold("Server:")} ${colors.dim(serverKeypairInfo.publicKeyHex)}
     colors.dim(
       `${colors.bold("Client Agent 👤 -> Server Agent 🖥️")}
 
-The Client attempts to access a protected resource on the Server. Since no valid payment receipt is presented, the Server will respond with an HTTP 402 'Payment Required' status. This response includes a cryptographically signed Payment Request (as a JWT), specifying the required amount, currency, and recipient for the payment.`
-    )
+The Client attempts to access a protected resource on the Server. Since no valid payment receipt is presented, the Server will respond with an HTTP 402 'Payment Required' status. This response includes a cryptographically signed Payment Request (as a JWT), specifying the required amount, currency, and recipient for the payment.`,
+    ),
   )
 
   await waitForEnter("Press Enter to make the request...")
 
   log(colors.dim("📡 Initiating GET request to the Server Agent..."))
   const response1 = await fetch(SERVER_URL, {
-    method: "GET"
+    method: "GET",
   })
 
   if (response1.status !== 402) {
@@ -121,9 +121,9 @@ The Client attempts to access a protected resource on the Server. Since no valid
   const { paymentRequestToken, paymentRequest } = v.parse(
     v.object({
       paymentRequestToken: jwtStringSchema,
-      paymentRequest: paymentRequestSchema
+      paymentRequest: paymentRequestSchema,
     }),
-    await response1.json()
+    await response1.json(),
   )
 
   // This demo uses JWT strings for the payment request token, but this is not a requirement of the protocol.
@@ -133,17 +133,17 @@ The Client attempts to access a protected resource on the Server. Since no valid
 
   log(
     successMessage(
-      "Successfully received 402 Payment Required response from Server Agent. 🛑"
-    )
+      "Successfully received 402 Payment Required response from Server Agent. 🛑",
+    ),
   )
   log(colors.bold("\n📜 Payment Request Details (from Server Agent):"))
   logJson(paymentRequest as Record<string, unknown>, colors.dim)
   log(
     colors.magenta(
       wordWrap(
-        "\n💡 The 'paymentRequestToken' is a JWT signed by the Server, ensuring the integrity and authenticity of the payment request. The Client will include this token when requesting a receipt, along with the payment option id and metadata."
-      )
-    )
+        "\n💡 The 'paymentRequestToken' is a JWT signed by the Server, ensuring the integrity and authenticity of the payment request. The Client will include this token when requesting a receipt, along with the payment option id and metadata.",
+      ),
+    ),
   )
 
   const paymentOptions = paymentRequest.paymentOptions
@@ -152,12 +152,12 @@ The Client attempts to access a protected resource on the Server. Since no valid
     choices: paymentOptions.map((option) => ({
       name: option.network === "stripe" ? "Stripe" : "Base Sepolia",
       value: option.id,
-      description: `Pay on ${option.network === "stripe" ? "Stripe" : "Base Sepolia"} using ${option.currency}`
-    }))
+      description: `Pay on ${option.network === "stripe" ? "Stripe" : "Base Sepolia"} using ${option.currency}`,
+    })),
   })
 
   const selectedPaymentOption = paymentOptions.find(
-    (option) => option.id === selectedPaymentOptionId
+    (option) => option.id === selectedPaymentOptionId,
   )
 
   if (!selectedPaymentOption) {
@@ -171,7 +171,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
     const paymentResult = await performStripePayment(
       clientKeypairInfo,
       selectedPaymentOption,
-      paymentRequestToken
+      paymentRequestToken,
     )
     receipt = paymentResult.receipt
     details = paymentResult.details
@@ -179,7 +179,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
     const paymentResult = await performOnChainPayment(
       clientKeypairInfo,
       selectedPaymentOption,
-      paymentRequestToken
+      paymentRequestToken,
     )
     receipt = paymentResult.receipt
     details = paymentResult.details
@@ -189,9 +189,9 @@ The Client attempts to access a protected resource on the Server. Since no valid
 
   log(
     successMessage(
-      "Verifiable Payment Receipt (VC) issued successfully by the Receipt Service! 🎉"
+      "Verifiable Payment Receipt (VC) issued successfully by the Receipt Service! 🎉",
     ),
-    colors.bold("📄 Receipt Details (Verifiable Credential):")
+    colors.bold("📄 Receipt Details (Verifiable Credential):"),
   )
   const resolver = getDidResolver()
   const parsedDetails =
@@ -201,14 +201,14 @@ The Client attempts to access a protected resource on the Server. Since no valid
   logJson(parsedDetails, colors.dim)
   log(
     colors.magenta(
-      "💡 This receipt is a Verifiable Credential (VC) in JWT format. It's cryptographically signed by the Receipt Service, making it tamper-proof and independently verifiable. It links the original payment request from the Server to the confirmed on-chain transaction and the Client's identity."
-    )
+      "💡 This receipt is a Verifiable Credential (VC) in JWT format. It's cryptographically signed by the Receipt Service, making it tamper-proof and independently verifiable. It links the original payment request from the Server to the confirmed on-chain transaction and the Client's identity.",
+    ),
   )
 
   log(
     sectionHeader(
-      "✅ Access Protected Resource with Receipt (Client Agent -> Server Agent)"
-    )
+      "✅ Access Protected Resource with Receipt (Client Agent -> Server Agent)",
+    ),
   )
   log(
     colors.dim(
@@ -220,25 +220,25 @@ ${colors.bold("The Server Agent then performs its own verifications:")}
 1. Validates the receipt's signature (ensuring it was issued by a trusted Receipt Service and hasn't been tampered with).
 2. Checks the receipt's claims: Confirms the receipt is for the correct payment (e.g., matches the 'paymentRequestToken' it originally issued), is not expired, and meets any other criteria for accessing the resource.
 
-If the receipt is valid, the Server grants access to the protected resource.`
-    )
+If the receipt is valid, the Server grants access to the protected resource.`,
+    ),
   )
 
   await waitForEnter(
-    "Press Enter to present the receipt to the Server and access the resource..."
+    "Press Enter to present the receipt to the Server and access the resource...",
   )
 
   log(
     colors.dim(
-      "🔐 Making authenticated GET request to the Server Agent with the receipt..."
-    )
+      "🔐 Making authenticated GET request to the Server Agent with the receipt...",
+    ),
   )
 
   const response3 = await fetch(SERVER_URL, {
     method: "GET",
     headers: {
-      Authorization: `Bearer ${receipt}`
-    }
+      Authorization: `Bearer ${receipt}`,
+    },
   })
 
   if (response3.status !== 200) {
@@ -252,20 +252,20 @@ If the receipt is valid, the Server grants access to the protected resource.`
     successMessage("Access granted to protected resource! 🔓"),
     colors.bold(colors.magenta("\n🎉 === ACK-Pay Demo Complete === 🎉\n")),
     colors.cyan(
-      "Congratulations! You've successfully completed the ACK-Pay payment flow. This demonstrates how agents can programmatically negotiate and settle payments, obtaining verifiable proof for services or data access."
+      "Congratulations! You've successfully completed the ACK-Pay payment flow. This demonstrates how agents can programmatically negotiate and settle payments, obtaining verifiable proof for services or data access.",
     ),
     colors.yellow(
-      `This demo was created by Catena Labs. For more information on ACK-Pay and other tools for the agent economy, please visit ${link("https://www.agentcommercekit.com")} 🌐.`
+      `This demo was created by Catena Labs. For more information on ACK-Pay and other tools for the agent economy, please visit ${link("https://www.agentcommercekit.com")} 🌐.`,
     ),
     demoFooter("Thank You!"),
-    { wrap: false }
+    { wrap: false },
   )
 }
 
 async function performOnChainPayment(
   client: KeypairInfo,
   paymentOption: PaymentRequest["paymentOptions"][number],
-  paymentRequestToken: JwtString
+  paymentRequestToken: JwtString,
 ) {
   const receiptServiceUrl = paymentOption.receiptService
   if (!receiptServiceUrl) {
@@ -276,21 +276,21 @@ async function performOnChainPayment(
   await ensureNonZeroBalances(chain, client.crypto.address, usdcAddress)
   log(
     successMessage(
-      "Balances verified! Client has sufficient ETH for gas and USDC for payment. ✅\n\n"
-    )
+      "Balances verified! Client has sufficient ETH for gas and USDC for payment. ✅\n\n",
+    ),
   )
 
   log(
     sectionHeader(
-      "💸 Execute Payment (Client Agent -> Payment Service / Blockchain)"
-    )
+      "💸 Execute Payment (Client Agent -> Payment Service / Blockchain)",
+    ),
   )
   log(
     colors.dim(
       `${colors.bold("Client Agent 👤 -> Blockchain 🔗 (acting as Payment Service)")}
 
-The Client Agent now uses the details from the Payment Request to make the payment. In this demo, the Client transfers the specified amount of USDC to the Server's address on the Base Sepolia testnet. The resulting transaction hash serves as a preliminary proof of payment. This interaction implicitly uses the blockchain as a Settlement Network and the wallet interaction as a form of Payment Service.`
-    )
+The Client Agent now uses the details from the Payment Request to make the payment. In this demo, the Client transfers the specified amount of USDC to the Server's address on the Base Sepolia testnet. The resulting transaction hash serves as a preliminary proof of payment. This interaction implicitly uses the blockchain as a Settlement Network and the wallet interaction as a form of Payment Service.`,
+    ),
   )
 
   await waitForEnter("Press Enter to proceed with the on-chain USDC payment...")
@@ -305,7 +305,7 @@ The Client Agent now uses the details from the Payment Request to make the payme
 
   if (paymentOption.currency !== "USDC") {
     throw new Error(
-      errorMessage(`Unsupported currency: ${paymentOption.currency}`)
+      errorMessage(`Unsupported currency: ${paymentOption.currency}`),
     )
   }
 
@@ -314,36 +314,36 @@ The Client Agent now uses the details from the Payment Request to make the payme
   const hash = await transferUsdc(
     client.crypto.account,
     payToAddress,
-    BigInt(paymentOption.amount)
+    BigInt(paymentOption.amount),
   )
 
   log(
     successMessage("Payment transaction submitted to the blockchain. 🚀"),
-    "Transaction hash:"
+    "Transaction hash:",
   )
   log(colors.cyan(hash), { wrap: false })
   log(colors.dim("View on BaseScan:"))
   log(link(`https://sepolia.basescan.org/tx/${hash}`), {
-    wrap: false
+    wrap: false,
   })
   log(
     colors.magenta(
-      "💡 This transaction is now being processed by the Base Sepolia network. We need to wait for it to be confirmed (included in a block) before we can reliably use it as proof of payment."
-    )
+      "💡 This transaction is now being processed by the Base Sepolia network. We need to wait for it to be confirmed (included in a block) before we can reliably use it as proof of payment.",
+    ),
   )
 
   log(
     colors.dim(
-      "⏳ Waiting for transaction confirmation (this might take a moment)..."
-    )
+      "⏳ Waiting for transaction confirmation (this might take a moment)...",
+    ),
   )
   await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` })
   log(successMessage("Transaction confirmed on the blockchain! ✅\n\n"))
 
   log(
     sectionHeader(
-      "🧾 Obtain Verifiable Receipt (Client Agent -> Receipt Service)"
-    )
+      "🧾 Obtain Verifiable Receipt (Client Agent -> Receipt Service)",
+    ),
   )
   log(
     colors.dim(
@@ -356,14 +356,14 @@ ${colors.bold("The Receipt Service then performs several crucial verifications:"
 2. Verifies the on-chain transaction: Confirms that the transaction hash is valid, the correct amount of the specified currency was transferred to the correct recipient address as per the 'paymentRequestToken'.
 3. Verifies the Client's signature on the request, ensuring the payer is who they claim to be (linking the payment action to the Client's DID).
 
-If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serving as the payment receipt.`
-    )
+If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serving as the payment receipt.`,
+    ),
   )
 
   await waitForEnter("Press Enter to request the verifiable receipt...")
 
   log(
-    colors.dim("✍️ Creating a signed payload (JWT) for the Receipt Service...")
+    colors.dim("✍️ Creating a signed payload (JWT) for the Receipt Service..."),
   )
 
   const payload = {
@@ -371,22 +371,22 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
     paymentOptionId: paymentOption.id,
     metadata: {
       txHash: hash,
-      network: chainId // eip155:84532
+      network: chainId, // eip155:84532
     },
-    payerDid: client.did
+    payerDid: client.did,
   }
 
   const signedPayload = await createJwt(payload, {
     issuer: client.did,
-    signer: client.jwtSigner
+    signer: client.jwtSigner,
   })
 
   log(colors.dim("Submitting to receipt service..."))
   const response2 = await fetch(receiptServiceUrl, {
     method: "POST",
     body: JSON.stringify({
-      payload: signedPayload
-    })
+      payload: signedPayload,
+    }),
   })
 
   const { receipt, details } = (await response2.json()) as {
@@ -400,7 +400,7 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
 async function performStripePayment(
   _client: KeypairInfo,
   paymentOption: PaymentRequest["paymentOptions"][number],
-  paymentRequestToken: JwtString
+  paymentRequestToken: JwtString,
 ) {
   const paymentServiceUrl = paymentOption.paymentService
   if (!paymentServiceUrl) {
@@ -409,8 +409,8 @@ async function performStripePayment(
 
   log(
     sectionHeader(
-      "💸 Execute Payment (Client Agent -> Payment Service / Stripe)"
-    )
+      "💸 Execute Payment (Client Agent -> Payment Service / Stripe)",
+    ),
   )
   log(
     colors.dim(
@@ -419,8 +419,8 @@ async function performStripePayment(
 The Client Agent now uses the details from the Payment Request to initiate a Stripe payment. The Payment Service will generate a Stripe payment URL where the payment can be completed. After successful payment, Stripe will redirect back to our callback URL with the payment confirmation.
 
 This flow is simulated in this example.
-`
-    )
+`,
+    ),
   )
 
   await waitForEnter("Press Enter to initiate the Stripe payment...")
@@ -432,8 +432,8 @@ This flow is simulated in this example.
     method: "POST",
     body: JSON.stringify({
       paymentOptionId: paymentOption.id,
-      paymentRequestToken
-    })
+      paymentRequestToken,
+    }),
   })
 
   if (!response1.ok) {
@@ -446,19 +446,19 @@ This flow is simulated in this example.
     successMessage("Stripe payment URL generated successfully! 🚀"),
     colors.dim("\nSample Stripe payment URL:"),
     colors.cyan(paymentUrl),
-    { wrap: false }
+    { wrap: false },
   )
   log(
     colors.magenta(
-      "\n💡 In a real implementation, this would open in a browser for the agent or user to complete the payment."
-    )
+      "\n💡 In a real implementation, this would open in a browser for the agent or user to complete the payment.",
+    ),
   )
 
   // Extract the return_to URL from the payment URL
   const returnToUrl = new URL(paymentUrl).searchParams.get("return_to")
   if (!returnToUrl) {
     throw new Error(
-      errorMessage("Invalid payment URL - missing return_to parameter")
+      errorMessage("Invalid payment URL - missing return_to parameter"),
     )
   }
 
@@ -473,9 +473,9 @@ This flow is simulated in this example.
       paymentOptionId: paymentOption.id,
       paymentRequestToken,
       metadata: {
-        eventId: "evt_" + Math.random().toString(36).substring(7) // Simulated Stripe event ID
-      }
-    })
+        eventId: "evt_" + Math.random().toString(36).substring(7), // Simulated Stripe event ID
+      },
+    }),
   })
 
   if (!response2.ok) {

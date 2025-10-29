@@ -10,7 +10,7 @@ export function getStatusListPosition(statusListIndex: number) {
   // Ensure the index is a positive integer
   if (!Number.isInteger(statusListIndex) || statusListIndex < 1) {
     throw new Error(
-      "Status list index must be a positive integer starting from 1"
+      "Status list index must be a positive integer starting from 1",
     )
   }
 
@@ -18,6 +18,6 @@ export function getStatusListPosition(statusListIndex: number) {
 
   return {
     id: Math.floor(zeroIndexed / STATUS_LIST_MAX_SIZE),
-    index: zeroIndexed % STATUS_LIST_MAX_SIZE
+    index: zeroIndexed % STATUS_LIST_MAX_SIZE,
   }
 }

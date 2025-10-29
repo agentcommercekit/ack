@@ -8,7 +8,7 @@ describe("makeRevocable", () => {
     type: ["VerifiableCredential"],
     issuer: { id: "did:example:issuer" },
     credentialSubject: { id: "did:example:subject" },
-    issuanceDate: new Date().toISOString()
+    issuanceDate: new Date().toISOString(),
   }
 
   const mockStatusListId = "https://example.com/status/1"
@@ -19,7 +19,7 @@ describe("makeRevocable", () => {
     const revocableCredential = makeRevocable(mockCredential, {
       id: mockStatusListId,
       statusListIndex: mockStatusListIndex,
-      statusListUrl: mockStatusListUrl
+      statusListUrl: mockStatusListUrl,
     })
 
     expect(revocableCredential.credentialStatus).toEqual({
@@ -27,7 +27,7 @@ describe("makeRevocable", () => {
       type: "BitstringStatusListEntry",
       statusPurpose: "revocation",
       statusListIndex: mockStatusListIndex.toString(),
-      statusListCredential: mockStatusListUrl
+      statusListCredential: mockStatusListUrl,
     })
   })
 })

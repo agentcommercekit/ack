@@ -5,7 +5,7 @@ import {
   logJson,
   sectionHeader,
   successMessage,
-  waitForEnter
+  waitForEnter,
 } from "@repo/cli-tools"
 import {
   caip2ChainIds,
@@ -13,7 +13,7 @@ import {
   getDidResolver,
   parseJwtCredential,
   type Keypair,
-  type PaymentRequest
+  type PaymentRequest,
 } from "agentcommercekit"
 import { Agent } from "./agent"
 import { CredentialIssuer } from "./credential-issuer"
@@ -44,23 +44,23 @@ const resolver = getDidResolver()
 
 const credentialIssuer = await CredentialIssuer.create({
   baseUrl: "https://issuer.example.com",
-  resolver
+  resolver,
 })
 
 const credentialVerifier = await CredentialVerifier.create({
   baseUrl: "https://verifier.example.com",
   resolver,
-  trustedIssuers: [credentialIssuer.did]
+  trustedIssuers: [credentialIssuer.did],
 })
 
 const receiptIssuer = await ReceiptIssuer.create({
   baseUrl: "https://receipt-issuer.example.com",
-  resolver
+  resolver,
 })
 
 const receiptVerifier = await ReceiptVerifier.create({
   baseUrl: "https://receipt-verifier.example.com",
-  resolver
+  resolver,
 })
 
 /**
@@ -73,7 +73,7 @@ async function main() {
 ${colors.bold("✨ === Agent Commerce Kit End-to-End Demo === ✨")}
 
 ${colors.dim(
-  "This demo will walk through a complete end-to-end flow, demonstrating how agents can interact securely and make payments. We'll see how identity verification, payment processing, and resource access all work seamlessly together in the Agent Commerce Kit."
+  "This demo will walk through a complete end-to-end flow, demonstrating how agents can interact securely and make payments. We'll see how identity verification, payment processing, and resource access all work seamlessly together in the Agent Commerce Kit.",
 )}
 `)
 
@@ -81,8 +81,8 @@ ${colors.dim(
 
   log(
     sectionHeader(`Creating User 1 (Client Owner) & Agent 1 (Client Agent)`, {
-      step: 1
-    })
+      step: 1,
+    }),
   )
   log(
     colors.dim(`
@@ -90,7 +90,7 @@ First, we'll set up a 'User' who owns an 'Agent'. The User has a Decentralized I
 
 The Agent also has its own DID and will be linked to its User via an Ownership Verifiable Credential (VC).
 
-Creating User 1 and Agent 1...`)
+Creating User 1 and Agent 1...`),
   )
 
   const user1 = await User.create(resolver, CHAIN_ID)
@@ -99,15 +99,15 @@ Creating User 1 and Agent 1...`)
     resolver,
     receiptVerifier,
     credentialVerifier,
-    preferredChainId: CHAIN_ID
+    preferredChainId: CHAIN_ID,
   })
   const payload = {
     controller: user1.did,
-    subject: agent1.did
+    subject: agent1.did,
   }
   const signedPayload = await createJwt(payload, {
     issuer: user1.did,
-    signer: user1.signer
+    signer: user1.signer,
   })
 
   const ownershipVc1 =
@@ -123,7 +123,7 @@ User 1 (Client Owner):
 Agent 1 (Client Agent):
   DID: ${agent1.did}
   Ownership VC:`),
-    { wrap: false }
+    { wrap: false },
   )
   logJson(await parseJwtCredential(ownershipVc1, resolver))
   log(`
@@ -138,8 +138,8 @@ ${colors.dim("Next, we'll create a second User and Agent, which will be used as 
 
   log(
     sectionHeader(`Creating User 2 (Server Owner) & Agent 2 (Server Agent)`, {
-      step: 2
-    })
+      step: 2,
+    }),
   )
 
   const user2 = await User.create(resolver, CHAIN_ID)
@@ -148,16 +148,16 @@ ${colors.dim("Next, we'll create a second User and Agent, which will be used as 
     resolver,
     receiptVerifier,
     credentialVerifier,
-    preferredChainId: CHAIN_ID
+    preferredChainId: CHAIN_ID,
   })
   const payload2 = {
     controller: user2.did,
-    subject: agent2.did
+    subject: agent2.did,
   }
 
   const signedPayload2 = await createJwt(payload2, {
     issuer: user2.did,
-    signer: user2.signer
+    signer: user2.signer,
   })
 
   const ownershipVc2 =
@@ -172,7 +172,7 @@ User 2 (Server Owner):
 
 Agent 2 (Server Agent):
   DID: ${agent2.did}
-  Ownership VC:`)
+  Ownership VC:`),
   )
   logJson(await parseJwtCredential(ownershipVc2, resolver))
   log(
@@ -182,7 +182,7 @@ This VC, issued by User 2, proves they control Agent 2.
 ${successMessage("User 2 and Agent 2 (Server) setup complete")}
 
 Next, the agents will begin communicating with each other.
-`)
+`),
   )
 
   await waitForEnter()
@@ -194,7 +194,7 @@ Agent 1 will now try to communicate with Agent 2 by sending a message.
 Agent 2 is configured to require payment for its services.
 Agent 2 will first verify Agent 1's identity and ownership using its VC.
 If identity is verified, Agent 2 will then respond with a 402 Payment Required error, including details for the payment.
-`)
+`),
   )
 
   const message = "What's the current price of AAPL stock?"
@@ -202,7 +202,7 @@ If identity is verified, Agent 2 will then respond with a 402 Payment Required e
   const { paymentRequest, paymentRequestToken } = await chat(
     agent1,
     agent2,
-    message
+    message,
   )
 
   log(
@@ -210,13 +210,13 @@ If identity is verified, Agent 2 will then respond with a 402 Payment Required e
 The server has verified Agent 1's identity and now requires payment.
 
 Next, we will perform the payment and fetch a Receipt.
-`)
+`),
   )
 
   await waitForEnter()
 
   log(
-    sectionHeader("Agent 1 makes payment and receives a Receipt", { step: 4 })
+    sectionHeader("Agent 1 makes payment and receives a Receipt", { step: 4 }),
   )
   logJson(paymentRequest)
   log(
@@ -224,41 +224,41 @@ Next, we will perform the payment and fetch a Receipt.
 Payment must be made using token:
 ${paymentRequestToken}
 
-`)
+`),
   )
 
   await waitForEnter("Press Enter to simulate making the on-chain payment...")
 
   const txHash = await makeOnChainPayment({
     payingWallet: agent1.wallet,
-    paymentRequest
+    paymentRequest,
   })
   log(
     successMessage(`Payment made.`),
     `Transaction Hash: ${colors.bold(txHash)}`,
-    ""
+    "",
   )
 
   await waitForEnter(
-    "Press Enter to request a payment receipt from the Receipt Issuer..."
+    "Press Enter to request a payment receipt from the Receipt Issuer...",
   )
 
   const receipt = await receiptIssuer.issueReceipt({
     payerDid: agent1.walletDid,
     txHash,
-    paymentRequestToken
+    paymentRequestToken,
   })
   log(successMessage("Payment Receipt VC Issued!"))
   logJson(await parseJwtCredential(receipt, resolver))
   log(
     colors.dim(
-      "This VC, issued by the Receipt Issuer, attests to the payment transaction."
+      "This VC, issued by the Receipt Issuer, attests to the payment transaction.",
     ),
-    ""
+    "",
   )
 
   await waitForEnter(
-    "Press Enter to retry the chat with Agent 2, this time including the payment receipt..."
+    "Press Enter to retry the chat with Agent 2, this time including the payment receipt...",
   )
 
   await agent1.chatWith(agent2, message, receipt)
@@ -266,9 +266,9 @@ ${paymentRequestToken}
   log(
     "",
     successMessage(
-      "The Client successfully used the Receipt to access the Server's protected resource."
+      "The Client successfully used the Receipt to access the Server's protected resource.",
     ),
-    "Demo complete."
+    "Demo complete.",
   )
 }
 
@@ -296,7 +296,7 @@ async function chat(agent1: Agent, agent2: Agent, message: string) {
     if (error instanceof PaymentRequiredError) {
       return {
         paymentRequest: error.paymentRequest,
-        paymentRequestToken: error.paymentRequestToken
+        paymentRequestToken: error.paymentRequestToken,
       }
     }
 

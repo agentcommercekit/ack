@@ -7,7 +7,7 @@ import {
   type DidResolver,
   type DidUri,
   type JwtSigner,
-  type Keypair
+  type Keypair,
 } from "agentcommercekit"
 import { publicKeyToAddress } from "./utils/evm-address"
 
@@ -31,7 +31,7 @@ export class User {
     didDocument,
     resolver,
     wallet,
-    preferredChainId
+    preferredChainId,
   }: ConstructorParams) {
     // Wallet
     this.wallet = wallet
@@ -46,13 +46,13 @@ export class User {
 
   static async create(
     resolver: DidResolver,
-    chainId: Caip2ChainId
+    chainId: Caip2ChainId,
   ): Promise<User> {
     const wallet = await generateKeypair("secp256k1")
     const address = publicKeyToAddress(wallet.publicKey)
     const { did, didDocument } = createDidPkhDocument({
       address,
-      chainId
+      chainId,
     })
 
     return new User({
@@ -60,7 +60,7 @@ export class User {
       did,
       didDocument,
       resolver,
-      preferredChainId: chainId
+      preferredChainId: chainId,
     })
   }
 }

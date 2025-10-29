@@ -4,37 +4,37 @@ import {
   keyCurves,
   publicKeyEncodings,
   type Keypair,
-  type PublicKeyEncoding
+  type PublicKeyEncoding,
 } from "@agentcommercekit/keys"
 import {
   bytesToMultibase,
-  publicKeyBytesToJwk
+  publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
 import { beforeEach, describe, expect, test } from "vitest"
 import {
   createDidDocument,
-  createDidDocumentFromKeypair
+  createDidDocumentFromKeypair,
 } from "./create-did-document"
 
 const keyTypeMap = {
   jwk: "JsonWebKey2020",
   multibase: "Multikey",
   hex: "Multikey",
-  base58: "Multikey"
+  base58: "Multikey",
 } as const
 
 const encodingMap = {
   hex: "multibase",
   jwk: "jwk",
   multibase: "multibase",
-  base58: "multibase"
+  base58: "multibase",
 }
 
 const contextMap = {
   jwk: "https://w3id.org/security/jwk/v1",
   multibase: "https://w3id.org/security/multikey/v1",
   hex: "https://w3id.org/security/multikey/v1",
-  base58: "https://w3id.org/security/multikey/v1"
+  base58: "https://w3id.org/security/multikey/v1",
 }
 
 describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
@@ -52,7 +52,7 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
   const keypairMap = {
     secp256k1: () => secp256k1Keypair,
     secp256r1: () => secp256r1Keypair,
-    Ed25519: () => ed25519Keypair
+    Ed25519: () => ed25519Keypair,
   } as const
 
   describe.each(keyCurves)("curve: %s", (curve) => {
@@ -65,12 +65,12 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
           const documentFromKeypair = createDidDocumentFromKeypair({
             did,
             keypair,
-            encoding
+            encoding,
           })
 
           const document = createDidDocument({
             did,
-            publicKey: encodePublicKeyFromKeypair(encoding, keypair)
+            publicKey: encodePublicKeyFromKeypair(encoding, keypair),
           })
 
           const keyId = `${did}#${encodingMap[encoding]}-1`
@@ -80,13 +80,13 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
                   id: keyId,
                   type: keyTypeMap[encoding],
                   controller: did,
-                  publicKeyJwk: publicKeyBytesToJwk(keypair.publicKey, curve)
+                  publicKeyJwk: publicKeyBytesToJwk(keypair.publicKey, curve),
                 }
               : {
                   id: keyId,
                   type: keyTypeMap[encoding],
                   controller: did,
-                  publicKeyMultibase: bytesToMultibase(keypair.publicKey)
+                  publicKeyMultibase: bytesToMultibase(keypair.publicKey),
                 }
 
           const expectedDocument = {
@@ -94,7 +94,7 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
             id: did,
             verificationMethod: [expectedVerificationMethod],
             authentication: [keyId],
-            assertionMethod: [keyId]
+            assertionMethod: [keyId],
           }
 
           expect(document).toEqual(expectedDocument)
@@ -102,7 +102,7 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
           expect(document.verificationMethod![0]!.id).toBe(keyId)
           expect(documentFromKeypair.verificationMethod![0]!.id).toBe(keyId)
         })
-      }
+      },
     )
   })
 
@@ -112,19 +112,19 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
     const documentFromKeypair = createDidDocumentFromKeypair({
       did,
       keypair: secp256k1Keypair,
-      controller
+      controller,
     })
 
     const document = createDidDocument({
       did,
       publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair),
-      controller
+      controller,
     })
 
     const expectedDocument = {
       "@context": [
         "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security/jwk/v1"
+        "https://w3id.org/security/jwk/v1",
       ],
       id: did,
       controller,
@@ -133,11 +133,11 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
           id: `${did}#jwk-1`,
           type: "JsonWebKey2020",
           controller: did,
-          publicKeyJwk: expect.any(Object) as unknown
-        }
+          publicKeyJwk: expect.any(Object) as unknown,
+        },
       ],
       authentication: [`${did}#jwk-1`],
-      assertionMethod: [`${did}#jwk-1`]
+      assertionMethod: [`${did}#jwk-1`],
     }
 
     expect(document).toEqual(expectedDocument)
@@ -150,41 +150,41 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
 
     const document1FromKeypair = createDidDocumentFromKeypair({
       did: did1,
-      keypair: secp256k1Keypair
+      keypair: secp256k1Keypair,
     })
     const document2FromKeypair = createDidDocumentFromKeypair({
       did: did2,
-      keypair: secp256k1Keypair
+      keypair: secp256k1Keypair,
     })
 
     const document1 = createDidDocument({
       did: did1,
-      publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair)
+      publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair),
     })
     const document2 = createDidDocument({
       did: did2,
-      publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair)
+      publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair),
     })
 
     expect(document1.verificationMethod![0]!.id).toBe(`${did1}#jwk-1`)
     expect(document1FromKeypair.verificationMethod![0]!.id).toBe(
-      `${did1}#jwk-1`
+      `${did1}#jwk-1`,
     )
     expect(document2.verificationMethod![0]!.id).toBe(`${did2}#jwk-1`)
     expect(document2FromKeypair.verificationMethod![0]!.id).toBe(
-      `${did2}#jwk-1`
+      `${did2}#jwk-1`,
     )
   })
 
   test("includes all required Did document fields", () => {
     const documentFromKeypair = createDidDocumentFromKeypair({
       did,
-      keypair: secp256k1Keypair
+      keypair: secp256k1Keypair,
     })
 
     const document = createDidDocument({
       did,
-      publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair)
+      publicKey: encodePublicKeyFromKeypair("jwk", secp256k1Keypair),
     })
 
     const requiredFields = [
@@ -192,7 +192,7 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
       "id",
       "verificationMethod",
       "authentication",
-      "assertionMethod"
+      "assertionMethod",
     ]
     requiredFields.forEach((field) => {
       expect(document).toHaveProperty(field)

@@ -6,13 +6,13 @@ type CreateStatusListParams = Pick<DatabaseStatusList, "id" | "credentialType">
 
 export async function maybeCreateStatusList(
   db: DatabaseClient,
-  { id, credentialType }: CreateStatusListParams
+  { id, credentialType }: CreateStatusListParams,
 ) {
   await db
     .insert(statusListsTable)
     .values({
       id,
-      credentialType
+      credentialType,
     })
     .onConflictDoNothing()
 }

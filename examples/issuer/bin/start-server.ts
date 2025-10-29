@@ -8,17 +8,23 @@ function startServer() {
   const db = getDb()
 
   migrate(db, {
-    migrationsFolder: join(import.meta.dirname, "..", "src", "db", "migrations")
+    migrationsFolder: join(
+      import.meta.dirname,
+      "..",
+      "src",
+      "db",
+      "migrations",
+    ),
   })
 
   serve(
     {
       fetch: app.fetch,
-      port: 3456
+      port: 3456,
     },
     ({ port }) => {
       console.log(`> issuer running at http://localhost:${port}`)
-    }
+    },
   )
 }
 

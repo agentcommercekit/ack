@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   curveToJwtAlgorithm,
   isJwtAlgorithm,
-  jwtAlgorithms
+  jwtAlgorithms,
 } from "./jwt-algorithm"
 
 describe("isJwtAlgorithm", () => {
@@ -33,7 +33,7 @@ describe("curveToJwtAlgorithm", () => {
   it("throws an error for an unsupported curve", () => {
     // @ts-expect-error - invalid curve
     expect(() => curveToJwtAlgorithm("invalid")).toThrow(
-      "Unsupported curve: 'invalid'"
+      "Unsupported curve: 'invalid'",
     )
   })
 })

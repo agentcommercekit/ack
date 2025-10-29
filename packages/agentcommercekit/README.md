@@ -51,7 +51,7 @@ const credential = createControllerCredential({
   controller: controllerDid,
   // Optional id and issuer can be provided
   id: "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
-  issuer: controllerDid // Defaults to controller if not provided
+  issuer: controllerDid, // Defaults to controller if not provided
 })
 ```
 
@@ -61,7 +61,7 @@ const credential = createControllerCredential({
 import {
   getControllerClaimVerifier,
   getDidResolver,
-  verifyParsedCredential
+  verifyParsedCredential,
 } from "agentcommercekit"
 
 // Get the claim verifier for controller credentials
@@ -73,7 +73,7 @@ try {
   await verifyParsedCredential(controllerCredential, {
     resolver,
     verifiers: [verifier],
-    trustedIssuers: [controllerDid] // Optional: list of trusted issuers
+    trustedIssuers: [controllerDid], // Optional: list of trusted issuers
   })
   console.log("Credential verified successfully")
 } catch (error) {
@@ -160,7 +160,7 @@ const receipt = createPaymentReceipt({
   paymentRequestToken: "<payment-request-token>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
-  payerDid: "did:web:customer.example.com"
+  payerDid: "did:web:customer.example.com",
 })
 ```
 
@@ -171,7 +171,7 @@ import { getDidResolver, verifyPaymentReceipt } from "agentcommercekit"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
-  trustedIssuers: ["did:web:merchant.example.com"]
+  trustedIssuers: ["did:web:merchant.example.com"],
 })
 ```
 
@@ -181,7 +181,7 @@ const verified = await verifyPaymentReceipt(receipt, {
 import {
   isPaymentReceiptClaim,
   isPaymentReceiptCredential,
-  isPaymentRequest
+  isPaymentRequest,
 } from "agentcommercekit"
 
 // Check if a value is a valid payment request

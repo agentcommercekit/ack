@@ -3,7 +3,7 @@ import {
   type DIDResolutionOptions,
   type DIDResolutionResult,
   type ResolverOptions,
-  type ResolverRegistry
+  type ResolverRegistry,
 } from "did-resolver"
 import type { DidDocument } from "../did-document"
 
@@ -27,7 +27,7 @@ export class DidResolver extends Resolver {
 
   async resolve(
     didUrl: string,
-    options: DIDResolutionOptions = {}
+    options: DIDResolutionOptions = {},
   ): Promise<DIDResolutionResult> {
     const cached = this._cache.get(didUrl)
     if (this._useCache && cached) {
@@ -39,7 +39,7 @@ export class DidResolver extends Resolver {
 
   addResolutionResultToCache(
     did: string,
-    resolutionResult: DIDResolutionResult
+    resolutionResult: DIDResolutionResult,
   ) {
     this._cache.set(did, resolutionResult)
     return this
@@ -48,13 +48,13 @@ export class DidResolver extends Resolver {
   addToCache(did: string, didDocument: DidDocument) {
     return this.addResolutionResultToCache(did, {
       didResolutionMetadata: {
-        contentType: "application/did+json"
+        contentType: "application/did+json",
       },
       didDocument,
       didDocumentMetadata: {
         created: new Date().toISOString(),
-        updated: new Date().toISOString()
-      }
+        updated: new Date().toISOString(),
+      },
     })
   }
 

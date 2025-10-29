@@ -1,6 +1,6 @@
 export type DidUri<
   TMethod extends string = string,
-  TIdentifier extends string = string
+  TIdentifier extends string = string,
 > = `did:${TMethod}:${TIdentifier}`
 
 /**

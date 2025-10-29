@@ -3,12 +3,12 @@ import {
   errorMessage,
   log,
   logJson,
-  successMessage
+  successMessage,
 } from "@repo/cli-tools"
 import {
   resolveDidWithController,
   type DidResolver,
-  type JwtString
+  type JwtString,
 } from "agentcommercekit"
 import type { CredentialVerifier } from "./credential-verifier"
 
@@ -20,7 +20,7 @@ import type { CredentialVerifier } from "./credential-verifier"
 export async function verifyAgentIdentityWithCredential(
   jwt: JwtString | undefined,
   resolver: DidResolver,
-  verifier: CredentialVerifier
+  verifier: CredentialVerifier,
 ): Promise<boolean> {
   if (!jwt) {
     log(colors.dim("[verification] Agent missing ownership credential"))
@@ -45,21 +45,21 @@ export async function verifyAgentIdentityWithCredential(
     // Resolve the agent's DID and controller
     const { controller } = await resolveDidWithController(
       credential.credentialSubject.id,
-      resolver
+      resolver,
     )
 
     log(
       colors.dim(
-        `[verification] Verification result issuer: ${credential.issuer.id}`
-      )
+        `[verification] Verification result issuer: ${credential.issuer.id}`,
+      ),
     )
 
     // Check if the DID controller matches the controller in the credential
     if (credential.credentialSubject.controller !== controller.did) {
       log(
         colors.dim(
-          `[verification] Credential verification failed: Issuer ${credential.credentialSubject.id} doesn't match expected owner ${controller.did}`
-        )
+          `[verification] Credential verification failed: Issuer ${credential.credentialSubject.id} doesn't match expected owner ${controller.did}`,
+        ),
       )
       return false
     }
@@ -67,8 +67,8 @@ export async function verifyAgentIdentityWithCredential(
     log(
       successMessage(
         `[verification] Credential verification succeeded: Agent is controlled by:
-        ${colors.bold(controller.did)}`
-      )
+        ${colors.bold(controller.did)}`,
+      ),
     )
     return true
   } catch (error) {

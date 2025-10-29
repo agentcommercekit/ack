@@ -8,57 +8,57 @@ vi.mock("did-jwt-vc", async () => {
   const actual = await vi.importActual("did-jwt-vc")
   return {
     ...actual,
-    verifyCredential: vi.fn()
+    verifyCredential: vi.fn(),
   }
 })
 
 vi.mock("./verify-credential-jwt", () => ({
-  verifyCredentialJwt: vi.fn()
+  verifyCredentialJwt: vi.fn(),
 }))
 
 describe("verifyProof", () => {
   const mockResolver = {
-    resolve: vi.fn()
+    resolve: vi.fn(),
   } as unknown as Resolvable
 
   it("throws for invalid proof payload", async () => {
     const invalidProof = {
-      type: "JwtProof2020"
+      type: "JwtProof2020",
       // Missing jwt field
     }
 
     await expect(verifyProof(invalidProof, mockResolver)).rejects.toThrow(
-      InvalidProofError
+      InvalidProofError,
     )
   })
 
   it("throws for unsupported proof type", async () => {
     const unsupportedProof = {
       type: "UnsupportedProofType",
-      jwt: "some.jwt.token"
+      jwt: "some.jwt.token",
     }
 
     await expect(verifyProof(unsupportedProof, mockResolver)).rejects.toThrow(
-      UnsupportedProofTypeError
+      UnsupportedProofTypeError,
     )
   })
 
   it("handles verification errors from verifyCredentialJwt", async () => {
     const proofWithInvalidJwt = {
       type: "JwtProof2020",
-      jwt: "invalid.jwt.token"
+      jwt: "invalid.jwt.token",
     }
 
     vi.mocked(verifyCredential).mockRejectedValueOnce(new Error("invalid_jwt"))
     await expect(
-      verifyProof(proofWithInvalidJwt, mockResolver)
+      verifyProof(proofWithInvalidJwt, mockResolver),
     ).rejects.toThrow(InvalidProofError)
   })
 
   it("successfully verifies a valid JwtProof2020", async () => {
     const validProof = {
       type: "JwtProof2020",
-      jwt: "valid.jwt.token"
+      jwt: "valid.jwt.token",
     }
 
     vi.mocked(verifyCredential).mockResolvedValueOnce({} as VerifiedCredential)

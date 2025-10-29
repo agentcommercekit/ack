@@ -3,16 +3,16 @@ import {
   caip10Parts,
   createCaip10AccountId,
   type Caip2ChainId,
-  type Caip10AccountId
+  type Caip10AccountId,
 } from "@agentcommercekit/caip"
 import {
   isCaip2ChainId,
-  isCaip10AccountId
+  isCaip10AccountId,
 } from "@agentcommercekit/caip/schemas/valibot"
 import {
   base58ToBytes,
   isBase58,
-  publicKeyBytesToJwk
+  publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
 import type { VerificationMethod } from "did-resolver"
 import { createDidDocument } from "../create-did-document"
@@ -50,7 +50,7 @@ export const isDidPkhChainId = isCaip2ChainId
  * @returns The components of the did:pkh URI
  */
 export function didPkhParts(
-  didUri: unknown
+  didUri: unknown,
 ): ["did", "pkh", string, string, string] {
   if (typeof didUri !== "string" || !didUri.startsWith("did:pkh:")) {
     throw new Error("Invalid did:pkh URI")
@@ -104,7 +104,7 @@ export function addressFromDidPkhUri(didUri: string): string {
 }
 
 export function caip10AccountIdFromDidPkhUri(
-  didUri: DidPkhUri
+  didUri: DidPkhUri,
 ): Caip10AccountId {
   const caip10AccountId = didUri.replace("did:pkh:", "")
   if (!isCaip10AccountId(caip10AccountId)) {
@@ -118,7 +118,7 @@ export function caip10AccountIdFromDidPkhUri(
  */
 export function createBlockchainAccountId(
   address: string,
-  chainId: Caip2ChainId
+  chainId: Caip2ChainId,
 ) {
   return createCaip10AccountId(chainId, address)
 }
@@ -141,7 +141,7 @@ export function createBlockchainAccountId(
  */
 export function createDidPkhUri(
   chainId: Caip2ChainId,
-  address: string
+  address: string,
 ): DidPkhUri {
   return `did:pkh:${createCaip10AccountId(chainId, address)}`
 }
@@ -150,7 +150,7 @@ export function createDidPkhUri(
  * Create a did:pkh URI from a CAIP-10 account ID
  */
 export function createDidPkhUriFromCaip10AccountId(
-  caip10AccountId: Caip10AccountId
+  caip10AccountId: Caip10AccountId,
 ): DidPkhUri {
   return `did:pkh:${caip10AccountId}`
 }
@@ -159,12 +159,12 @@ const jsonLdContexts = {
   Ed25519VerificationKey2020: [
     "https://w3id.org/security#blockchainAccountId",
     "https://w3id.org/security#publicKeyJwk",
-    "https://w3id.org/security/suites/ed25519-2020/v1"
+    "https://w3id.org/security/suites/ed25519-2020/v1",
   ],
   EcdsaSecp256k1RecoveryMethod2020: [
     "https://w3id.org/security#blockchainAccountId",
-    "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020#EcdsaSecp256k1RecoveryMethod2020"
-  ]
+    "https://identity.foundation/EcdsaSecp256k1RecoverySignature2020#EcdsaSecp256k1RecoveryMethod2020",
+  ],
 }
 
 /**
@@ -183,7 +183,7 @@ const jsonLdContexts = {
  */
 export function createDidPkhDocumentFromDidPkhUri(
   didUri: DidPkhUri,
-  controller?: DidUri
+  controller?: DidUri,
 ): DidUriWithDocument {
   const caip10AccountId = caip10AccountIdFromDidPkhUri(didUri)
   return createDidPkhDocumentFromCaip10AccountId(caip10AccountId, controller)
@@ -206,7 +206,7 @@ export function createDidPkhDocumentFromDidPkhUri(
  */
 export function createDidPkhDocumentFromCaip10AccountId(
   caip10AccountId: Caip10AccountId,
-  controller?: DidUri
+  controller?: DidUri,
 ): DidUriWithDocument<DidPkhUri> {
   const did = createDidPkhUriFromCaip10AccountId(caip10AccountId)
   const verificationMethod = createVerificationMethod(did, caip10AccountId)
@@ -218,7 +218,7 @@ export function createDidPkhDocumentFromCaip10AccountId(
     additionalContexts,
     verificationMethod,
     capabilityDelegation: [verificationMethod.id],
-    capabilityInvocation: [verificationMethod.id]
+    capabilityInvocation: [verificationMethod.id],
   })
 
   return { did, didDocument }
@@ -237,7 +237,7 @@ interface CreateDidPkhDocumentOptions {
 export function createDidPkhDocument({
   address,
   chainId,
-  controller
+  controller,
 }: CreateDidPkhDocumentOptions): DidUriWithDocument<DidPkhUri> {
   const caip10AccountId = createCaip10AccountId(chainId, address)
   return createDidPkhDocumentFromCaip10AccountId(caip10AccountId, controller)
@@ -251,7 +251,7 @@ export function createDidPkhDocument({
  */
 function createVerificationMethod(
   did: DidUri,
-  caip10AccountId: Caip10AccountId
+  caip10AccountId: Caip10AccountId,
 ): Omit<VerificationMethod, "type"> & {
   type: "Ed25519VerificationKey2020" | "EcdsaSecp256k1RecoveryMethod2020"
 } {
@@ -260,14 +260,14 @@ function createVerificationMethod(
   if (namespace.startsWith("solana") && isBase58(accountId)) {
     const publicKeyJwk = publicKeyBytesToJwk(
       base58ToBytes(accountId),
-      "Ed25519"
+      "Ed25519",
     )
     return {
       id: `${did}#controller`,
       type: "Ed25519VerificationKey2020",
       controller: did,
       blockchainAccountId: caip10AccountId,
-      publicKeyJwk
+      publicKeyJwk,
     }
   }
 
@@ -276,6 +276,6 @@ function createVerificationMethod(
     id: `${did}#blockchainAccountId`,
     type: "EcdsaSecp256k1RecoveryMethod2020",
     controller: did,
-    blockchainAccountId: caip10AccountId
+    blockchainAccountId: caip10AccountId,
   }
 }

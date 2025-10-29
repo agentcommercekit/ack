@@ -8,7 +8,7 @@ describe("createStatusListCredential", () => {
     const params = {
       url: "https://example.com/status-list",
       encodedList: "mockEncodedList",
-      issuer
+      issuer,
     }
 
     const credential = createStatusListCredential(params)

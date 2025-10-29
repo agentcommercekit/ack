@@ -2,7 +2,7 @@ import {
   createDidDocument,
   createDidDocumentFromKeypair,
   type CreateDidDocumentFromKeypairOptions,
-  type CreateDidDocumentOptions
+  type CreateDidDocumentOptions,
 } from "../create-did-document"
 import type { DidUri } from "../did-uri"
 import type { DidUriWithDocument } from "../types"
@@ -65,12 +65,12 @@ export function createDidWebDocument({
   const did = createDidWebUri(baseUrl)
   const didDocument = createDidDocument({
     did,
-    ...options
+    ...options,
   })
 
   return {
     did,
-    didDocument
+    didDocument,
   }
 }
 
@@ -94,12 +94,12 @@ export function createDidWebDocumentFromKeypair({
   const did = createDidWebUri(baseUrl)
   const didDocument = createDidDocumentFromKeypair({
     did,
-    ...options
+    ...options,
   })
 
   return {
     did,
-    didDocument
+    didDocument,
   }
 }
 

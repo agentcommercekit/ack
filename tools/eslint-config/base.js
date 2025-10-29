@@ -15,7 +15,7 @@ export function config({ root }) {
 
   return tseslint.config(
     {
-      ignores: ["dist/**", ".wrangler/**"]
+      ignores: ["dist/**", ".wrangler/**"],
     },
 
     /**
@@ -25,9 +25,9 @@ export function config({ root }) {
       extends: [cspell.recommended],
       settings: {
         cspell: {
-          configFile: "../../cspell.config.yaml"
-        }
-      }
+          configFile: "../../cspell.config.yaml",
+        },
+      },
     },
 
     /**
@@ -36,7 +36,7 @@ export function config({ root }) {
     {
       extends: [markdown.configs.recommended],
       files: ["**/*.md"],
-      language: "markdown/gfm"
+      language: "markdown/gfm",
     },
 
     /**
@@ -45,7 +45,7 @@ export function config({ root }) {
     {
       extends: [json.configs.recommended],
       files: ["**/*.json"],
-      language: "json/json"
+      language: "json/json",
     },
 
     /**
@@ -58,14 +58,14 @@ export function config({ root }) {
         tseslint.configs.strictTypeChecked,
         tseslint.configs.stylisticTypeChecked,
         importX.flatConfigs.recommended,
-        importX.flatConfigs.typescript
+        importX.flatConfigs.typescript,
       ],
       settings: {
         "import-x/resolver-next": [
           createTypeScriptImportResolver({
-            project: tsconfigPath
-          })
-        ]
+            project: tsconfigPath,
+          }),
+        ],
       },
       rules: {
         "@typescript-eslint/consistent-type-definitions": "off",
@@ -73,22 +73,22 @@ export function config({ root }) {
           "warn",
           {
             prefer: "type-imports",
-            fixStyle: "separate-type-imports" // Enforces: import type { Foo } (top-level)
-          }
+            fixStyle: "separate-type-imports", // Enforces: import type { Foo } (top-level)
+          },
         ],
         "@typescript-eslint/no-misused-promises": [
           "error",
           {
-            checksVoidReturn: false
-          }
+            checksVoidReturn: false,
+          },
         ],
         "@typescript-eslint/no-unused-vars": [
           "warn",
           {
             argsIgnorePattern: "^_",
             varsIgnorePattern: "^_",
-            caughtErrorsIgnorePattern: "^_"
-          }
+            caughtErrorsIgnorePattern: "^_",
+          },
         ],
         "@typescript-eslint/restrict-template-expressions": ["off"],
         // Disabled: Redundant with @typescript-eslint/consistent-type-imports
@@ -96,22 +96,25 @@ export function config({ root }) {
         // Disabled: Handled by @ianvs/prettier-plugin-sort-imports
         "import-x/order": "off",
         // Disabled: Handled by @ianvs/prettier-plugin-sort-imports
-        "sort-imports": "off"
-      }
+        "sort-imports": "off",
+      },
     },
 
     {
       files: ["**/*.md/*.{js,ts}"],
-      extends: [markdown.configs.processor, tseslint.configs.disableTypeChecked]
+      extends: [
+        markdown.configs.processor,
+        tseslint.configs.disableTypeChecked,
+      ],
     },
 
     {
       languageOptions: {
         parserOptions: {
           projectService: true,
-          warnOnUnsupportedTypeScriptVersion: false
-        }
-      }
+          warnOnUnsupportedTypeScriptVersion: false,
+        },
+      },
     },
 
     /**
@@ -119,11 +122,11 @@ export function config({ root }) {
      */
     {
       plugins: {
-        turbo
+        turbo,
       },
       rules: {
-        "turbo/no-undeclared-env-vars": "off"
-      }
+        "turbo/no-undeclared-env-vars": "off",
+      },
     },
 
     /**
@@ -133,8 +136,8 @@ export function config({ root }) {
       files: ["**/*.test.*"],
       rules: {
         "@cspell/spellchecker": "off",
-        "@typescript-eslint/no-non-null-assertion": "off"
-      }
+        "@typescript-eslint/no-non-null-assertion": "off",
+      },
     },
 
     /**
@@ -144,13 +147,13 @@ export function config({ root }) {
      */
     {
       files: ["**/*.js"],
-      extends: [tseslint.configs.disableTypeChecked]
+      extends: [tseslint.configs.disableTypeChecked],
     },
 
     /**
      * Disable rules that could conflict with prettier.
      * This should be the last rule.
      */
-    prettier
+    prettier,
   )
 }

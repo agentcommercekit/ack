@@ -4,12 +4,12 @@ import {
   type Keypair,
   type PublicKeyEncoding,
   type PublicKeyTypeMap,
-  type PublicKeyWithEncoding
+  type PublicKeyWithEncoding,
 } from "@agentcommercekit/keys"
 import {
   base58ToBytes,
   bytesToMultibase,
-  hexStringToBytes
+  hexStringToBytes,
 } from "@agentcommercekit/keys/encoding"
 import type { VerificationMethod } from "did-resolver"
 import type { DidDocument } from "./did-document"
@@ -35,16 +35,16 @@ interface CreateVerificationMethodOptions {
  */
 export function createVerificationMethod({
   did,
-  publicKey: publicKeyWithEncoding
+  publicKey: publicKeyWithEncoding,
 }: CreateVerificationMethodOptions): VerificationMethod {
   const { encoding, value: publicKey } = convertLegacyPublicKeyToMultibase(
-    publicKeyWithEncoding
+    publicKeyWithEncoding,
   )
 
   const verificationMethod: VerificationMethod = {
     id: `${did}#${encoding}-1`,
     type: "Multikey",
-    controller: did
+    controller: did,
   }
 
   // Add public key in the requested format
@@ -63,20 +63,20 @@ export function createVerificationMethod({
 }
 
 function convertLegacyPublicKeyToMultibase(
-  publicKey: PublicKeyWithEncoding
+  publicKey: PublicKeyWithEncoding,
 ): DidDocumentPublicKey {
   switch (publicKey.encoding) {
     case "hex":
       return {
         encoding: "multibase",
         curve: publicKey.curve,
-        value: bytesToMultibase(hexStringToBytes(publicKey.value))
+        value: bytesToMultibase(hexStringToBytes(publicKey.value)),
       }
     case "base58":
       return {
         encoding: "multibase",
         curve: publicKey.curve,
-        value: bytesToMultibase(base58ToBytes(publicKey.value))
+        value: bytesToMultibase(base58ToBytes(publicKey.value)),
       }
     default:
       return publicKey
@@ -182,7 +182,7 @@ export function createDidDocument({
   additionalContexts,
   verificationMethod,
   capabilityDelegation,
-  capabilityInvocation
+  capabilityInvocation,
 }: CreateDidDocumentOptions): DidDocument {
   if (!verificationMethod) {
     // If no verification method is provided, we need to create one from the
@@ -193,7 +193,7 @@ export function createDidDocument({
 
     verificationMethod ??= createVerificationMethod({
       did,
-      publicKey
+      publicKey,
     })
   }
 
@@ -218,7 +218,7 @@ export function createDidDocument({
     ...(alsoKnownAs && { alsoKnownAs }),
     ...(service && { service }),
     ...(capabilityDelegation && { capabilityDelegation }),
-    ...(capabilityInvocation && { capabilityInvocation })
+    ...(capabilityInvocation && { capabilityInvocation }),
   }
 
   return document
@@ -251,6 +251,6 @@ export function createDidDocumentFromKeypair({
 }: CreateDidDocumentFromKeypairOptions): DidDocument {
   return createDidDocument({
     ...options,
-    publicKey: encodePublicKeyFromKeypair(encoding, keypair)
+    publicKey: encodePublicKeyFromKeypair(encoding, keypair),
   })
 }

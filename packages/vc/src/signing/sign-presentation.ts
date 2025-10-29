@@ -18,12 +18,12 @@ type SignPresentationOptions = {
 export async function signPresentation(
   presentation: W3CPresentation,
   signer: Signer,
-  options: SignPresentationOptions = {}
+  options: SignPresentationOptions = {},
 ): Promise<JwtString> {
   const jwt = await createVerifiablePresentationJwt(
     presentation,
     signer,
-    options
+    options,
   )
 
   if (!isJwtString(jwt)) {

@@ -4,7 +4,7 @@ import {
   getMultibaseEncoding,
   isMultibase,
   multibaseToBytes,
-  type MultibaseEncoding
+  type MultibaseEncoding,
 } from "./multibase"
 
 describe("multibase", () => {
@@ -13,7 +13,7 @@ describe("multibase", () => {
   const testMultibases = {
     base58btc: "z72k1xXWG59fYdzSNoA",
     base64url: "uSGVsbG8sIFdvcmxkIQ",
-    base16: "f48656c6c6f2c20576f726c6421"
+    base16: "f48656c6c6f2c20576f726c6421",
   } as const
 
   describe("bytesToMultibase", () => {
@@ -27,10 +27,10 @@ describe("multibase", () => {
       (encoding, expected) => {
         const result = bytesToMultibase(
           testBytes,
-          encoding as MultibaseEncoding
+          encoding as MultibaseEncoding,
         )
         expect(result).toBe(expected)
-      }
+      },
     )
   })
 
@@ -40,7 +40,7 @@ describe("multibase", () => {
       (encoding, multibase) => {
         const result = multibaseToBytes(multibase)
         expect(result).toEqual(testBytes)
-      }
+      },
     )
 
     it("throws on empty string", () => {
@@ -49,7 +49,7 @@ describe("multibase", () => {
 
     it("throws on invalid prefix", () => {
       expect(() => multibaseToBytes("xinvalid")).toThrow(
-        "Unsupported multibase prefix"
+        "Unsupported multibase prefix",
       )
     })
 
@@ -64,7 +64,7 @@ describe("multibase", () => {
       (encoding, multibase) => {
         const result = getMultibaseEncoding(multibase)
         expect(result).toBe(encoding)
-      }
+      },
     )
 
     it("returns undefined for empty string", () => {
@@ -81,7 +81,7 @@ describe("multibase", () => {
       "validates %s multibase string",
       (encoding, multibase) => {
         expect(isMultibase(multibase)).toBe(true)
-      }
+      },
     )
 
     it("rejects non-string values", () => {
@@ -111,7 +111,7 @@ describe("multibase", () => {
         const bytes = multibaseToBytes(multibase)
         const result = bytesToMultibase(bytes, encoding as MultibaseEncoding)
         expect(result).toBe(multibase)
-      }
+      },
     )
   })
 })

@@ -12,11 +12,11 @@ export async function generateJwks() {
     crv: "P-256",
     use: "sig",
     kid: "skyfire-key-1",
-    alg: "ES256"
+    alg: "ES256",
   }
 
   return {
     jwks: { keys: [publicKeyJwk] },
-    keypair
+    keypair,
   }
 }

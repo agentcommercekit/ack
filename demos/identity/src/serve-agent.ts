@@ -25,7 +25,7 @@ export function serveAgent({ port, agent }: ServeAgentConfig) {
       const text = await agent.run(message)
 
       return c.json({ text })
-    }
+    },
   )
 
   app.post(
@@ -37,7 +37,7 @@ export function serveAgent({ port, agent }: ServeAgentConfig) {
       const signedChallenge = await agent.signChallenge(challenge)
 
       return c.json({ signedChallenge })
-    }
+    },
   )
 
   app.get("/identity/vc", (c) => {
@@ -46,7 +46,7 @@ export function serveAgent({ port, agent }: ServeAgentConfig) {
 
   serve({
     fetch: app.fetch,
-    port
+    port,
   })
 
   console.log(colors.green(`Agent '${agent.did}' ready on port ${port}`))

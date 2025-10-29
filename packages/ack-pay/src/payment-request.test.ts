@@ -10,9 +10,9 @@ describe("isPaymentRequest", () => {
         amount: BigInt(100).toString(),
         decimals: 2,
         currency: "USD",
-        recipient: "did:example:recipient"
-      }
-    ]
+        recipient: "did:example:recipient",
+      },
+    ],
   }
 
   it("returns true for a valid payment request", () => {
@@ -23,8 +23,8 @@ describe("isPaymentRequest", () => {
     expect(
       isPaymentRequest({
         ...validPaymentRequest,
-        id: undefined
-      })
+        id: undefined,
+      }),
     ).toBe(false)
   })
 

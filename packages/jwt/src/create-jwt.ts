@@ -2,7 +2,7 @@ import {
   createJWT as baseCreateJWT,
   type JWTHeader,
   type JWTOptions,
-  type JWTPayload
+  type JWTPayload,
 } from "did-jwt"
 import type { JwtAlgorithm } from "./jwt-algorithm"
 import { isJwtString, type JwtString } from "./jwt-string"
@@ -32,11 +32,11 @@ export interface JwtHeader extends Omit<JWTHeader, "alg" | "typ"> {
 export async function createJwt(
   payload: Partial<JwtPayload>,
   options: JwtOptions,
-  { alg = "ES256K", ...header }: Partial<JwtHeader> = {}
+  { alg = "ES256K", ...header }: Partial<JwtHeader> = {},
 ): Promise<JwtString> {
   const result = await baseCreateJWT(payload, options, {
     ...header,
-    alg
+    alg,
   })
 
   if (!isJwtString(result)) {

@@ -16,7 +16,7 @@ export type ApiSuccessResponse<T> = {
 export function apiSuccessResponse<T>(data: T): ApiSuccessResponse<T> {
   return {
     ok: true,
-    data
+    data,
   }
 }
 
@@ -28,19 +28,19 @@ export type ApiErrorResponse = {
 
 export function formatErrorResponse(
   error: Error,
-  message?: string
+  message?: string,
 ): ApiErrorResponse {
   if (error instanceof DidResolutionError) {
     return {
       ok: false,
-      error: message ?? error.message
+      error: message ?? error.message,
     }
   }
 
   if (error instanceof CredentialVerificationError) {
     return {
       ok: false,
-      error: message ?? error.message
+      error: message ?? error.message,
     }
   }
 
@@ -48,12 +48,12 @@ export function formatErrorResponse(
     return {
       ok: false,
       error: message ?? "Invalid request",
-      issues: error.issues
+      issues: error.issues,
     }
   }
 
   return {
     ok: false,
-    error: message ?? error.message
+    error: message ?? error.message,
   }
 }

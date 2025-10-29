@@ -25,7 +25,7 @@ type CreateStatusListCredentialParams = {
 export function createStatusListCredential({
   url,
   encodedList,
-  issuer
+  issuer,
 }: CreateStatusListCredentialParams): BitstringStatusListCredential {
   return createCredential({
     id: url,
@@ -35,7 +35,7 @@ export function createStatusListCredential({
     attestation: {
       type: "BitstringStatusList",
       statusPurpose: "revocation",
-      encodedList
-    }
+      encodedList,
+    },
   })
 }

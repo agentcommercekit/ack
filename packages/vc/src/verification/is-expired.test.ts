@@ -13,7 +13,7 @@ describe("isExpired", () => {
     pastDate.setFullYear(pastDate.getFullYear() - 1)
 
     const credential = {
-      expirationDate: pastDate.toISOString()
+      expirationDate: pastDate.toISOString(),
     } as Verifiable<W3CCredential>
 
     expect(isExpired(credential)).toBe(true)
@@ -24,7 +24,7 @@ describe("isExpired", () => {
     futureDate.setFullYear(futureDate.getFullYear() + 1)
 
     const credential = {
-      expirationDate: futureDate.toISOString()
+      expirationDate: futureDate.toISOString(),
     } as Verifiable<W3CCredential>
 
     expect(isExpired(credential)).toBe(false)
@@ -33,7 +33,7 @@ describe("isExpired", () => {
   it("handles expiration date exactly at current time", () => {
     const now = new Date()
     const credential = {
-      expirationDate: now.toISOString()
+      expirationDate: now.toISOString(),
     } as Verifiable<W3CCredential>
 
     vi.setSystemTime(now)
@@ -43,7 +43,7 @@ describe("isExpired", () => {
 
   it("handles invalid date strings gracefully", () => {
     const credential = {
-      expirationDate: "invalid-date"
+      expirationDate: "invalid-date",
     } as Verifiable<W3CCredential>
 
     expect(isExpired(credential)).toBe(false)

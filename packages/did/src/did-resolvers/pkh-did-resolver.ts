@@ -4,7 +4,7 @@
 import type { DIDResolutionResult, DIDResolver } from "did-resolver"
 import {
   createDidPkhDocumentFromDidPkhUri,
-  isDidPkhUri
+  isDidPkhUri,
 } from "../methods/did-pkh"
 
 export async function resolve(did: string): Promise<DIDResolutionResult> {
@@ -12,7 +12,7 @@ export async function resolve(did: string): Promise<DIDResolutionResult> {
     return {
       didDocument: null,
       didDocumentMetadata: {},
-      didResolutionMetadata: { error: "invalidDid" }
+      didResolutionMetadata: { error: "invalidDid" },
     }
   }
 
@@ -21,7 +21,7 @@ export async function resolve(did: string): Promise<DIDResolutionResult> {
   return Promise.resolve({
     didDocument,
     didDocumentMetadata: {},
-    didResolutionMetadata: { contentType: "application/did+ld+json" }
+    didResolutionMetadata: { contentType: "application/did+ld+json" },
   })
 }
 

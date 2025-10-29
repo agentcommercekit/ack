@@ -2,7 +2,7 @@ import { generateKeypair } from "@agentcommercekit/keys"
 import {
   createJWT as baseCreateJWT,
   type JWTOptions,
-  type JWTPayload
+  type JWTPayload,
 } from "did-jwt"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { createJwt } from "./create-jwt"
@@ -12,7 +12,7 @@ vi.mock("did-jwt", async () => {
   const actual = await vi.importActual("did-jwt")
   return {
     ...actual,
-    createJWT: vi.fn()
+    createJWT: vi.fn(),
   }
 })
 
@@ -20,14 +20,14 @@ describe("createJWT", () => {
   let mockOptions: JWTOptions
   const mockPayload: Partial<JWTPayload> = {
     sub: "did:example:123",
-    iss: "did:example:456"
+    iss: "did:example:456",
   }
 
   beforeEach(async () => {
     const keypair = await generateKeypair("secp256k1")
     mockOptions = {
       issuer: "did:example:456",
-      signer: createJwtSigner(keypair)
+      signer: createJwtSigner(keypair),
     }
   })
 
@@ -41,7 +41,7 @@ describe("createJWT", () => {
 
     expect(result).toBe(expectedJwt)
     expect(baseCreateJWT).toHaveBeenCalledWith(mockPayload, mockOptions, {
-      alg: "ES256K"
+      alg: "ES256K",
     })
   })
 
@@ -51,7 +51,7 @@ describe("createJWT", () => {
     vi.mocked(baseCreateJWT).mockResolvedValueOnce(invalidJwt)
 
     await expect(createJwt(mockPayload, mockOptions)).rejects.toThrow(
-      "Failed to create JWT"
+      "Failed to create JWT",
     )
   })
 })

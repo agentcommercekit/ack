@@ -32,7 +32,7 @@ const credential = createControllerCredential({
   controller: controllerDid,
   // Optional id and issuer can be provided
   id: "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
-  issuer: controllerDid // Defaults to controller if not provided
+  issuer: controllerDid, // Defaults to controller if not provided
 })
 ```
 
@@ -52,7 +52,7 @@ try {
   await verifyParsedCredential(controllerCredential, {
     resolver,
     verifiers: [verifier],
-    trustedIssuers: [controllerDid] // Optional: list of trusted issuers
+    trustedIssuers: [controllerDid], // Optional: list of trusted issuers
   })
   console.log("Credential verified successfully")
 } catch (error) {
@@ -65,7 +65,7 @@ try {
 ```ts
 import {
   isControllerClaim,
-  isControllerCredential
+  isControllerCredential,
 } from "@agentcommercekit/ack-id"
 
 // Check if a credential is specifically a controller credential
@@ -116,16 +116,16 @@ This package includes utilities for building secure, mutually authenticated agen
 ```ts
 import {
   createA2AHandshakeMessage,
-  generateRandomNonce
+  generateRandomNonce,
 } from "@agentcommercekit/ack-id/a2a"
 
 const handshake = await createA2AHandshakeMessage(
   "user", // role
   "did:web:bank.example.com", // recipient DID
   {
-    did: "did:web:customer.example.com" // sender DID
+    did: "did:web:customer.example.com", // sender DID
     // ...
-  }
+  },
 )
 
 // Send handshake message to the other agent
@@ -162,7 +162,7 @@ t const response = await createA2AHandshakeMessage(
 ```ts
 import {
   createSignedA2AMessage,
-  verifyA2ASignedMessage
+  verifyA2ASignedMessage,
 } from "@agentcommercekit/ack-id/a2a"
 
 // To send a signed message:
@@ -170,21 +170,21 @@ const signed = await createSignedA2AMessage(
   {
     role: "user",
     parts: [
-      { type: "text", text: "Please check the balance for account #12345" }
-    ]
+      { type: "text", text: "Please check the balance for account #12345" },
+    ],
     // metadata will be filled in
   },
   {
-    did: "did:web:customer.example.com"
+    did: "did:web:customer.example.com",
     // ...
-  }
+  },
 )
 // Send signed.message
 
 // To verify a signed message:
 const verified = await verifyA2ASignedMessage(signed.message, {
   did: "did:web:bank.example.com",
-  counterparty: "did:web:customer.example.com"
+  counterparty: "did:web:customer.example.com",
 })
 // verified.payload.message matches the message content
 ```

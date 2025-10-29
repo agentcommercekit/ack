@@ -9,7 +9,7 @@ import {
   type DidUri,
   type JwtSigner,
   type KeyCurve,
-  type Keypair
+  type Keypair,
 } from "agentcommercekit"
 import { privateKeyToAccount, type Account } from "viem/accounts"
 import { publicKeyToAddress } from "viem/utils"
@@ -34,12 +34,12 @@ export type KeypairInfo = {
  */
 export async function getKeypairInfo(
   privateKeyHex: string,
-  curve: KeyCurve = "secp256k1"
+  curve: KeyCurve = "secp256k1",
 ): Promise<KeypairInfo> {
   const keypair = await generateKeypair(curve, hexStringToBytes(privateKeyHex))
   const address = publicKeyToAddress(`0x${bytesToHexString(keypair.publicKey)}`)
   const account = privateKeyToAccount(
-    `0x${bytesToHexString(keypair.privateKey)}`
+    `0x${bytesToHexString(keypair.privateKey)}`,
   )
   const did = createDidPkhUri(chainId, address)
   const jwtSigner = createJwtSigner(keypair)
@@ -51,8 +51,8 @@ export async function getKeypairInfo(
     jwtSigner,
     crypto: {
       address,
-      account
-    }
+      account,
+    },
   }
 }
 

@@ -7,7 +7,7 @@ import { wordWrap } from "./formatters"
  */
 export async function waitForEnter(
   message = "Press Enter to continue...",
-  color = yellow
+  color = yellow,
 ) {
   await input({ message: color(message) })
   console.log("")
@@ -36,7 +36,7 @@ export function log(...args: (string | LogOptions)[]) {
   let options: Required<LogOptions> = {
     wrap: true,
     spacing: 1,
-    width: 80
+    width: 80,
   }
 
   if (typeof args[args.length - 1] === "object") {

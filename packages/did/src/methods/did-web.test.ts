@@ -2,7 +2,7 @@ import { generateKeypair } from "@agentcommercekit/keys"
 import {
   bytesToHexString,
   bytesToMultibase,
-  publicKeyBytesToJwk
+  publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
 import { createDidWebDocument, createDidWebUri } from "./did-web"
@@ -36,9 +36,9 @@ describe("createDidWebDocument", () => {
       publicKey: {
         encoding: "jwk",
         value: publicKeyJwk,
-        curve: keypair.curve
+        curve: keypair.curve,
       },
-      baseUrl: "https://example.com"
+      baseUrl: "https://example.com",
     })
 
     expect(did).toEqual("did:web:example.com")
@@ -46,7 +46,7 @@ describe("createDidWebDocument", () => {
     expect(didDocument).toEqual({
       "@context": [
         "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security/jwk/v1"
+        "https://w3id.org/security/jwk/v1",
       ],
       id: "did:web:example.com",
       verificationMethod: [
@@ -54,11 +54,11 @@ describe("createDidWebDocument", () => {
           id: "did:web:example.com#jwk-1",
           type: "JsonWebKey2020",
           controller: "did:web:example.com",
-          publicKeyJwk
-        }
+          publicKeyJwk,
+        },
       ],
       authentication: ["did:web:example.com#jwk-1"],
-      assertionMethod: ["did:web:example.com#jwk-1"]
+      assertionMethod: ["did:web:example.com#jwk-1"],
     })
   })
 
@@ -71,9 +71,9 @@ describe("createDidWebDocument", () => {
       publicKey: {
         encoding: "hex",
         value: publicKeyHex,
-        curve: keypair.curve
+        curve: keypair.curve,
       },
-      baseUrl: "https://example.com"
+      baseUrl: "https://example.com",
     })
 
     expect(did).toEqual("did:web:example.com")
@@ -81,7 +81,7 @@ describe("createDidWebDocument", () => {
     expect(didDocument).toEqual({
       "@context": [
         "https://www.w3.org/ns/did/v1",
-        "https://w3id.org/security/multikey/v1"
+        "https://w3id.org/security/multikey/v1",
       ],
       id: "did:web:example.com",
       verificationMethod: [
@@ -89,11 +89,11 @@ describe("createDidWebDocument", () => {
           id: "did:web:example.com#multibase-1",
           type: "Multikey",
           controller: "did:web:example.com",
-          publicKeyMultibase
-        }
+          publicKeyMultibase,
+        },
       ],
       authentication: ["did:web:example.com#multibase-1"],
-      assertionMethod: ["did:web:example.com#multibase-1"]
+      assertionMethod: ["did:web:example.com#multibase-1"],
     })
   })
 })

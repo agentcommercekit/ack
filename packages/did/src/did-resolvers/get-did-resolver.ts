@@ -5,7 +5,7 @@ import { DidResolver } from "./did-resolver"
 import { getResolver as getPkhDidResolver } from "./pkh-did-resolver"
 import {
   getResolver as getWebDidResolver,
-  type DidWebResolverOptions
+  type DidWebResolverOptions,
 } from "./web-did-resolver"
 
 interface GetDidResolverOptions extends ResolverOptions {
@@ -23,7 +23,7 @@ interface GetDidResolverOptions extends ResolverOptions {
  */
 export function getDidResolver({
   webOptions = {
-    allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"]
+    allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"],
   },
   ...options
 }: GetDidResolverOptions = {}): DidResolver {
@@ -37,9 +37,9 @@ export function getDidResolver({
       ...keyResolver,
       ...webResolver,
       ...jwksResolver,
-      ...pkhResolver
+      ...pkhResolver,
     },
-    options
+    options,
   )
 
   return didResolver

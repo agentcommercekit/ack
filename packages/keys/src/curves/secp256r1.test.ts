@@ -3,7 +3,7 @@ import { hexStringToBytes } from "../encoding/hex"
 import {
   generateKeypair,
   getPublicKeyBytes,
-  isValidPublicKey
+  isValidPublicKey,
 } from "./secp256r1"
 
 describe("secp256r1", () => {
@@ -29,7 +29,7 @@ describe("secp256r1", () => {
 
     test("generates a Keypair from valid private key", async () => {
       const privateKeyBytes = hexStringToBytes(
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
       )
 
       const keypair = await generateKeypair(privateKeyBytes)

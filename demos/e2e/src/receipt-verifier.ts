@@ -6,7 +6,7 @@ import {
   type DidResolver,
   type DidUri,
   type JwtString,
-  type Keypair
+  type Keypair,
 } from "agentcommercekit"
 
 export class ReceiptVerifier {
@@ -20,7 +20,7 @@ export class ReceiptVerifier {
     baseUrl,
     keypair,
     resolver,
-    trustedIssuers
+    trustedIssuers,
   }: {
     baseUrl: string
     keypair: Keypair
@@ -33,7 +33,7 @@ export class ReceiptVerifier {
     // Did Document
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair: this.keypair,
-      baseUrl
+      baseUrl,
     })
     this.did = did
     this.didDocument = didDocument
@@ -47,7 +47,7 @@ export class ReceiptVerifier {
   static async create({
     baseUrl,
     resolver,
-    trustedIssuers
+    trustedIssuers,
   }: {
     baseUrl: string
     resolver: DidResolver
@@ -65,7 +65,7 @@ export class ReceiptVerifier {
       resolver: this.resolver,
       trustedReceiptIssuers: this.trustedIssuers,
       paymentRequestIssuer: paymentRequestIssuer,
-      verifyPaymentRequestTokenJwt: true
+      verifyPaymentRequestTokenJwt: true,
     })
   }
 }

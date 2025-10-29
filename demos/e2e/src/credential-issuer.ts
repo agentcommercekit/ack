@@ -9,14 +9,14 @@ import {
   type DidResolver,
   type DidUri,
   type JwtString,
-  type Keypair
+  type Keypair,
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 
 const credentialPayloadSchema = v.object({
   controller: didUriSchema,
-  subject: didUriSchema
+  subject: didUriSchema,
 })
 
 export class CredentialIssuer {
@@ -30,7 +30,7 @@ export class CredentialIssuer {
   private constructor({
     baseUrl,
     keypair,
-    resolver
+    resolver,
   }: {
     baseUrl: string
     keypair: Keypair
@@ -46,7 +46,7 @@ export class CredentialIssuer {
     // Did Document
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair,
-      baseUrl: this.baseUrl
+      baseUrl: this.baseUrl,
     })
     this.did = did
     this.didDocument = didDocument
@@ -58,7 +58,7 @@ export class CredentialIssuer {
 
   static async create({
     baseUrl,
-    resolver
+    resolver,
   }: {
     baseUrl: string
     resolver: DidResolver
@@ -71,13 +71,13 @@ export class CredentialIssuer {
     const parsed = await verifyJwt(signedPayload, {
       resolver: this.resolver,
       policies: {
-        aud: false
-      }
+        aud: false,
+      },
     })
 
     const { controller, subject } = v.parse(
       credentialPayloadSchema,
-      parsed.payload
+      parsed.payload,
     )
 
     const id = `${this.baseUrl}/credentials/${parsed.payload.id}`
@@ -85,13 +85,13 @@ export class CredentialIssuer {
       id,
       subject,
       controller,
-      issuer: this.did
+      issuer: this.did,
     })
 
     const jwt = await signCredential(credential, {
       did: this.did,
       signer: this.signer,
-      alg: "ES256K"
+      alg: "ES256K",
     })
 
     return jwt

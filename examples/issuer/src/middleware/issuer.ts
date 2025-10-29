@@ -3,7 +3,7 @@ import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
   generateKeypair,
-  hexStringToBytes
+  hexStringToBytes,
 } from "agentcommercekit"
 import type { Env, MiddlewareHandler } from "hono"
 import { env } from "hono/adapter"
@@ -23,7 +23,7 @@ export function issuer(): MiddlewareHandler<Env> {
 
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair,
-      baseUrl: BASE_URL
+      baseUrl: BASE_URL,
     })
 
     const signer = createJwtSigner(keypair)
@@ -32,7 +32,7 @@ export function issuer(): MiddlewareHandler<Env> {
       did,
       didDocument,
       signer,
-      alg: "ES256K"
+      alg: "ES256K",
     })
 
     await next()

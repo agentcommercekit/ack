@@ -4,7 +4,7 @@ import {
   generateKeypair,
   type DidResolver,
   type DidUri,
-  type KeyCurve
+  type KeyCurve,
 } from "agentcommercekit"
 
 interface GenerateDidWebWithSignerOptions {
@@ -21,15 +21,15 @@ export async function createDidWebWithSigner(
   {
     controller,
     resolver,
-    curve = "secp256k1"
-  }: GenerateDidWebWithSignerOptions = {}
+    curve = "secp256k1",
+  }: GenerateDidWebWithSignerOptions = {},
 ) {
   const keypair = await generateKeypair(curve)
   const { did, didDocument } = createDidWebDocumentFromKeypair({
     keypair,
     baseUrl,
     controller,
-    encoding: "jwk"
+    encoding: "jwk",
   })
   const signer = createJwtSigner(keypair)
 
@@ -41,7 +41,7 @@ export async function createDidWebWithSigner(
     keypair,
     signer,
     did,
-    didDocument
+    didDocument,
   }
 }
 

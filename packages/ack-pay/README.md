@@ -65,7 +65,7 @@ const receipt = createPaymentReceipt({
   paymentRequestToken: "<payment-token-from-request>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
-  payerDid: "did:web:customer.example.com"
+  payerDid: "did:web:customer.example.com",
 })
 ```
 
@@ -77,7 +77,7 @@ import { getDidResolver } from "@agentcommercekit/did"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
-  trustedIssuers: ["did:web:merchant.example.com"]
+  trustedIssuers: ["did:web:merchant.example.com"],
 })
 ```
 

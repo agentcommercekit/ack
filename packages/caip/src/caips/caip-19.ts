@@ -25,10 +25,10 @@ export const caip19TokenIdPattern = "[-.%a-zA-Z0-9]{1,78}"
 export const caip19AssetIdPattern = `${caip19AssetTypePattern}/${caip19TokenIdPattern}`
 
 export const caip19AssetNamespaceRegex = new RegExp(
-  `^${caip19AssetNamespacePattern}$`
+  `^${caip19AssetNamespacePattern}$`,
 )
 export const caip19AssetReferenceRegex = new RegExp(
-  `^${caip19AssetReferencePattern}$`
+  `^${caip19AssetReferencePattern}$`,
 )
 export const caip19AssetNameRegex = new RegExp(`^${caip19AssetNamePattern}$`)
 export const caip19AssetTypeRegex = new RegExp(`^${caip19AssetTypePattern}$`)

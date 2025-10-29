@@ -9,7 +9,7 @@ import {
   type DidUri,
   type JwtSigner,
   type Keypair,
-  type W3CCredential
+  type W3CCredential,
 } from "agentcommercekit"
 
 interface CredentialVerifierParams {
@@ -28,7 +28,7 @@ export class CredentialVerifier {
   private readonly trustedIssuers?: DidUri[]
 
   static async create(
-    params: Omit<CredentialVerifierParams, "keypair">
+    params: Omit<CredentialVerifierParams, "keypair">,
   ): Promise<CredentialVerifier> {
     const keypair = await generateKeypair("secp256k1")
     return new this({ ...params, keypair })
@@ -38,7 +38,7 @@ export class CredentialVerifier {
     baseUrl,
     resolver,
     trustedIssuers,
-    keypair
+    keypair,
   }: CredentialVerifierParams) {
     // Keypair
     this.keypair = keypair
@@ -47,7 +47,7 @@ export class CredentialVerifier {
     // Did Document
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair: this.keypair,
-      baseUrl
+      baseUrl,
     })
     this.did = did
     this.didDocument = didDocument
@@ -62,7 +62,7 @@ export class CredentialVerifier {
     await verifyParsedCredential(credential, {
       resolver: this.resolver,
       trustedIssuers: this.trustedIssuers,
-      verifiers: [getControllerClaimVerifier()]
+      verifiers: [getControllerClaimVerifier()],
     })
   }
 }

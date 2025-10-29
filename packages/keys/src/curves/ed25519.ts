@@ -19,14 +19,14 @@ export function getPublicKeyBytes(privateKeyBytes: Uint8Array): Uint8Array {
  * Generate a keypair
  */
 export async function generateKeypair(
-  privateKeyBytes = generatePrivateKeyBytes()
+  privateKeyBytes = generatePrivateKeyBytes(),
 ): Promise<Keypair> {
   const publicKeyBytes = getPublicKeyBytes(privateKeyBytes)
 
   return Promise.resolve({
     publicKey: publicKeyBytes,
     privateKey: privateKeyBytes,
-    curve: "Ed25519"
+    curve: "Ed25519",
   })
 }
 

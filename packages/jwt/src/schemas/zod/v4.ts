@@ -10,14 +10,14 @@ export const jwtPayloadSchema = z
     aud: z.optional(z.union([z.string(), z.array(z.string())])),
     iat: z.optional(z.number()),
     nbf: z.optional(z.number()),
-    exp: z.optional(z.number())
+    exp: z.optional(z.number()),
   })
   .refine((val): val is JwtPayload => true)
 
 export const jwtHeaderSchema = z
   .looseObject({
     typ: z.literal("JWT"),
-    alg: z.enum(jwtAlgorithms)
+    alg: z.enum(jwtAlgorithms),
   })
   .refine((val): val is JwtHeader => true)
 
@@ -25,5 +25,5 @@ export const jwtStringSchema = z
   .string()
   .regex(/^[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+$/)
   .refine((input) => isJwtString(input), {
-    message: "Invalid JWT string"
+    message: "Invalid JWT string",
   })

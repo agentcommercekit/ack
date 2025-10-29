@@ -13,12 +13,12 @@ import type {
   DIDDocument,
   DIDResolutionResult,
   DIDResolver,
-  ParsedDID
+  ParsedDID,
 } from "did-resolver"
 import {
   isDidDocument,
   isDidDocumentForDid,
-  type DidDocument
+  type DidDocument,
 } from "../did-document"
 import { isDidWebUri } from "../methods/did-web"
 
@@ -57,13 +57,13 @@ const DEFAULT_DOC_PATH = "/.well-known/did.json"
  */
 async function fetchDidDocumentAtUrl(
   url: string | URL,
-  { fetch = globalThis.fetch }: { fetch?: Fetch } = {}
+  { fetch = globalThis.fetch }: { fetch?: Fetch } = {},
 ): Promise<DidDocument> {
   const res = await fetch(url, { mode: "cors" })
 
   if (!res.ok) {
     throw new Error(
-      `DID must resolve to a valid https URL containing a JSON document: Bad response ${res.statusText}`
+      `DID must resolve to a valid https URL containing a JSON document: Bad response ${res.statusText}`,
     )
   }
 
@@ -71,7 +71,7 @@ async function fetchDidDocumentAtUrl(
 
   if (!isDidDocument(json)) {
     throw new Error(
-      "DID must resolve to a valid https URL containing a JSON document: Invalid JSON DID document"
+      "DID must resolve to a valid https URL containing a JSON document: Invalid JSON DID document",
     )
   }
 
@@ -127,11 +127,11 @@ function getContentType(didDocument: DidDocument): string {
 export function getResolver({
   docPath = DEFAULT_DOC_PATH,
   fetch = globalThis.fetch,
-  allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS
+  allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
   async function resolve(
     did: string,
-    parsed: ParsedDID
+    parsed: ParsedDID,
   ): Promise<DIDResolutionResult> {
     const path = buildDidPath(parsed.did, docPath)
     const url = isHttpAllowed(path, allowedHttpHosts)
@@ -153,15 +153,15 @@ export function getResolver({
         didDocumentMetadata,
         didResolutionMetadata: {
           error: "notFound",
-          message: `resolver_error: ` + (error as Error).message
-        }
+          message: `resolver_error: ` + (error as Error).message,
+        },
       }
     }
 
     return {
       didDocument,
       didDocumentMetadata,
-      didResolutionMetadata: { contentType: getContentType(didDocument) }
+      didResolutionMetadata: { contentType: getContentType(didDocument) },
     }
   }
 

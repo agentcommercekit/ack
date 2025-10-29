@@ -7,7 +7,7 @@ describe("getStatusListPosition", () => {
     const result = getStatusListPosition(1)
     expect(result).toEqual({
       id: 0,
-      index: 0
+      index: 0,
     })
   })
 
@@ -15,7 +15,7 @@ describe("getStatusListPosition", () => {
     const result = getStatusListPosition(5)
     expect(result).toEqual({
       id: 0,
-      index: 4
+      index: 4,
     })
   })
 
@@ -23,7 +23,7 @@ describe("getStatusListPosition", () => {
     const result = getStatusListPosition(STATUS_LIST_MAX_SIZE + 1)
     expect(result).toEqual({
       id: 1,
-      index: 0
+      index: 0,
     })
   })
 
@@ -31,7 +31,7 @@ describe("getStatusListPosition", () => {
     const result = getStatusListPosition(STATUS_LIST_MAX_SIZE + 2)
     expect(result).toEqual({
       id: 1,
-      index: 1
+      index: 1,
     })
   })
 
@@ -39,7 +39,7 @@ describe("getStatusListPosition", () => {
     const result = getStatusListPosition(STATUS_LIST_MAX_SIZE * 3 + 42)
     expect(result).toEqual({
       id: 3,
-      index: 41
+      index: 41,
     })
   })
 

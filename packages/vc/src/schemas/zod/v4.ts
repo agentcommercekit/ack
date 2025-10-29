@@ -7,7 +7,7 @@ export const credentialSchema = z
     credentialStatus: z
       .object({
         id: z.string(),
-        type: z.string()
+        type: z.string(),
       })
       .optional(),
     credentialSubject: z.looseObject({ id: z.string().optional() }),
@@ -18,27 +18,27 @@ export const credentialSchema = z
     type: z.array(z.string()),
     proof: z
       .looseObject({
-        type: z.string().optional()
+        type: z.string().optional(),
       })
-      .optional()
+      .optional(),
   })
   .transform((v) => {
     const issuer = typeof v.issuer === "string" ? { id: v.issuer } : v.issuer
 
     return {
       ...v,
-      issuer
+      issuer,
     } as W3CCredential
   })
 
 export const jwtProofSchema = z.object({
   type: z.literal("JwtProof2020"),
-  jwt: z.string()
+  jwt: z.string(),
 })
 
 export const bitstringStatusListClaimSchema = z.object({
   id: z.string(),
   type: z.literal("BitstringStatusList"),
   statusPurpose: z.string(),
-  encodedList: z.string()
+  encodedList: z.string(),
 })

@@ -5,7 +5,7 @@ import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"
 import {
   apiSuccessResponse,
-  type ApiResponse
+  type ApiResponse,
 } from "@repo/api-utils/api-response"
 import { notFound } from "@repo/api-utils/exceptions"
 import {
@@ -13,7 +13,7 @@ import {
   parseJwtCredential,
   signCredential,
   type BitstringStatusListCredential,
-  type Verifiable
+  type Verifiable,
 } from "agentcommercekit"
 import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
@@ -37,7 +37,7 @@ app.use("*", didResolver())
 app.get(
   "/:listId",
   async (
-    c
+    c,
   ): Promise<ApiResponse<Verifiable<BitstringStatusListCredential>>> => {
     const listId = c.req.param("listId")
     const db = c.get("db")
@@ -56,7 +56,7 @@ app.get(
     const credential = createStatusListCredential({
       url: `${BASE_URL}/status/${listId}`,
       encodedList,
-      issuer: issuer.did
+      issuer: issuer.did,
     })
 
     const jwt = await signCredential(credential, issuer)
@@ -65,7 +65,7 @@ app.get(
       await parseJwtCredential<BitstringStatusListCredential>(jwt, resolver)
 
     return c.json(apiSuccessResponse(verifiableCredential))
-  }
+  },
 )
 
 export default app

@@ -1,7 +1,7 @@
 import {
   createCredential as createDatabaseCredential,
   getCredential,
-  revokeCredential
+  revokeCredential,
 } from "@/db/queries/credentials"
 import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
 import type { CredentialResponse } from "@/lib/types"
@@ -10,12 +10,12 @@ import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"
 import {
   apiSuccessResponse,
-  type ApiResponse
+  type ApiResponse,
 } from "@repo/api-utils/api-response"
 import {
   internalServerError,
   notFound,
-  unauthorized
+  unauthorized,
 } from "@repo/api-utils/exceptions"
 import { signedPayloadValidator } from "@repo/api-utils/middleware/signed-payload-validator"
 import {
@@ -23,7 +23,7 @@ import {
   isPaymentReceiptCredential,
   verifyPaymentRequestToken,
   type DidUri,
-  type PaymentRequest
+  type PaymentRequest,
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env } from "hono"
@@ -38,11 +38,11 @@ app.use("*", database())
 
 const bodySchema = v.object({
   metadata: v.object({
-    txHash: v.string()
+    txHash: v.string(),
   }),
   payerDid: didUriSchema,
   paymentRequestToken: v.string(),
-  paymentOptionId: v.string()
+  paymentOptionId: v.string(),
 })
 
 /**
@@ -56,7 +56,7 @@ const bodySchema = v.object({
 async function verifyPayment(
   _paymentRequest: PaymentRequest,
   _txHash: string,
-  _walletDid: DidUri
+  _walletDid: DidUri,
 ) {
   return Promise.resolve(true)
 }
@@ -101,14 +101,14 @@ app.post(
     const { paymentRequest } = await verifyPaymentRequestToken(
       paymentRequestToken,
       {
-        resolver
-      }
+        resolver,
+      },
     )
 
     const verified = await verifyPayment(
       paymentRequest,
       metadata.txHash,
-      payload.issuer
+      payload.issuer,
     )
 
     if (!verified) {
@@ -119,12 +119,12 @@ app.post(
       paymentRequestToken,
       paymentOptionId,
       issuer: issuer.did,
-      payerDid
+      payerDid,
     })
 
     const dbCredential = await createDatabaseCredential(db, {
       credentialType: "PaymentReceiptCredential",
-      baseCredential: receipt
+      baseCredential: receipt,
     })
 
     const result = await buildSignedCredential({
@@ -132,11 +132,11 @@ app.post(
       path: "/credentials/receipts",
       issuer,
       credential: dbCredential,
-      resolver
+      resolver,
     })
 
     return c.json(apiSuccessResponse(result))
-  }
+  },
 )
 
 export default app
@@ -171,14 +171,14 @@ app.get("/:id", async (c): Promise<ApiResponse<CredentialResponse>> => {
     path: "/credentials/receipts",
     issuer,
     credential,
-    resolver
+    resolver,
   })
 
   return c.json(apiSuccessResponse(result))
 })
 
 const deleteBodySchema = v.object({
-  id: v.number()
+  id: v.number(),
 })
 
 /**
@@ -220,8 +220,8 @@ app.delete(
     const { parsed } = await verifyPaymentRequestToken(
       credential.credentialSubject.paymentRequestToken,
       {
-        resolver
-      }
+        resolver,
+      },
     )
 
     // For now, only allows the original issuer of the payment request token
@@ -233,5 +233,5 @@ app.delete(
     await revokeCredential(db, databaseCredential)
 
     return c.json(apiSuccessResponse(null))
-  }
+  },
 )

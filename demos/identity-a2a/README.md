@@ -41,10 +41,10 @@ The Customer Agent sends an authentication request as an A2A message containing 
     {
       "type": "data",
       "data": {
-        "jwt": "<signed-JWT-from-customer>"
-      }
-    }
-  ]
+        "jwt": "<signed-JWT-from-customer>",
+      },
+    },
+  ],
 }
 ```
 
@@ -57,7 +57,7 @@ The JWT payload includes:
   "nonce": "c-128bit-random", // Customer's random nonce
   "iat": 1718476800,
   "jti": "0e94d7ec-...", // Unique JWT ID
-  "exp": 1718477100 // 5-minute expiry
+  "exp": 1718477100, // 5-minute expiry
 }
 ```
 
@@ -74,10 +74,10 @@ The Bank Teller Agent verifies the customer's JWT signature and responds with it
     {
       "type": "data",
       "data": {
-        "jwt": "<signed-JWT-from-bank>"
-      }
-    }
-  ]
+        "jwt": "<signed-JWT-from-bank>",
+      },
+    },
+  ],
 }
 ```
 
@@ -91,7 +91,7 @@ The Bank's JWT payload:
   "replyNonce": "b-128bit-random", // Bank's new nonce
   "jti": "1f85c8fa-...", // Unique JWT ID
   "iat": 1718476805,
-  "exp": 1718477105 // Short expiry
+  "exp": 1718477105, // Short expiry
 }
 ```
 
@@ -107,12 +107,12 @@ After successful mutual authentication, all subsequent messages include a signat
   "parts": [
     {
       "type": "text",
-      "text": "Please check the balance for account #12345"
-    }
+      "text": "Please check the balance for account #12345",
+    },
   ],
   "metadata": {
-    "sig": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...Q" // JWT signature of the parts array
-  }
+    "sig": "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9...Q", // JWT signature of the parts array
+  },
 }
 ```
 

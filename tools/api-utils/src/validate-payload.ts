@@ -2,7 +2,7 @@ import type { Resolvable } from "@agentcommercekit/did"
 import {
   verifyJwt,
   type JwtString,
-  type JwtVerified
+  type JwtVerified,
 } from "@agentcommercekit/jwt"
 import * as v from "valibot"
 import { unauthorized } from "./exceptions"
@@ -21,7 +21,7 @@ export type ParsedPayload<T> = {
 export async function validatePayload<T>(
   payload: JwtString,
   bodySchema: v.GenericSchema<unknown, T>,
-  resolver?: Resolvable
+  resolver?: Resolvable,
 ): Promise<ParsedPayload<T>> {
   let parsed: JwtVerified
 
@@ -29,8 +29,8 @@ export async function validatePayload<T>(
     parsed = await verifyJwt(payload, {
       resolver,
       policies: {
-        aud: false
-      }
+        aud: false,
+      },
     })
   } catch (_e) {
     unauthorized("Invalid payload")
@@ -40,6 +40,6 @@ export async function validatePayload<T>(
 
   return {
     parsed,
-    body
+    body,
   }
 }

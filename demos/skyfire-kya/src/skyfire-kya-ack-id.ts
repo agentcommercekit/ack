@@ -5,7 +5,7 @@ import {
   type JwtPayload,
   type JwtString,
   type Verifiable,
-  type W3CCredential
+  type W3CCredential,
 } from "agentcommercekit"
 import * as jose from "jose"
 import type { SkyfireKyaJwtPayload } from "./kya-token"
@@ -21,7 +21,7 @@ export interface SkyfireKyaCredentialSubject {
 
 export async function convertSkyfireKyaToVerifiableCredential(
   jwks: jose.JSONWebKeySet,
-  kyaToken: JwtString
+  kyaToken: JwtString,
 ): Promise<Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>> {
   const verifier = jose.createLocalJWKSet(jwks)
   const { payload } = await jose.jwtVerify<SkyfireKyaJwtPayload>(
@@ -29,8 +29,8 @@ export async function convertSkyfireKyaToVerifiableCredential(
     verifier,
     {
       issuer: "https://api.skyfire.xyz/",
-      typ: "kya+JWT"
-    }
+      typ: "kya+JWT",
+    },
   )
 
   // Extract the signature from the JWT (third part after splitting by '.')
@@ -61,7 +61,7 @@ export async function convertSkyfireKyaToVerifiableCredential(
   const syntheticVC: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>> = {
     "@context": [
       "https://www.w3.org/2018/credentials/v1",
-      "https://agentcommercekit.com/contexts/skyfire/v1"
+      "https://agentcommercekit.com/contexts/skyfire/v1",
     ],
     id: `urn:uuid:${payload.jti}`,
     type: ["VerifiableCredential", "SkyFireKYACredential"],
@@ -74,7 +74,7 @@ export async function convertSkyfireKyaToVerifiableCredential(
       aud: payload.aud as string,
       bid: payload.bid,
       ssi: payload.ssi,
-      jti: payload.jti
+      jti: payload.jti,
     },
     // Use the actual JWT signature with proper proof format
     proof: {
@@ -83,8 +83,8 @@ export async function convertSkyfireKyaToVerifiableCredential(
       verificationMethod: "did:web:api.skyfire.xyz#key-1",
       proofPurpose: "assertionMethod",
       // Use the actual JWT signature (base64url encoded)
-      jws: `${jwtParts[0]}..${jwtSignature}` // detached JWS format
-    }
+      jws: `${jwtParts[0]}..${jwtSignature}`, // detached JWS format
+    },
   }
 
   return syntheticVC
@@ -94,7 +94,7 @@ export async function convertSkyfireKyaToVerifiableCredential(
  * Extract the buyer DID from a Skyfire KYA converted Verifiable Credential
  */
 export function getBuyerDidFromVC(
-  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>
+  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): DidWebUri {
   return vc.credentialSubject.id as DidWebUri
 }
@@ -103,7 +103,7 @@ export function getBuyerDidFromVC(
  * Extract the seller DID from a Skyfire KYA converted Verifiable Credential
  */
 export function getSellerDidFromVC(
-  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>
+  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): DidWebUri {
   return `did:web:api.skyfire.xyz:seller:${vc.credentialSubject.ssi}` as DidWebUri
 }
@@ -112,7 +112,7 @@ export function getSellerDidFromVC(
  * Extract the owner DID from a Skyfire KYA converted Verifiable Credential (if present)
  */
 export function getOwnerDidFromVC(
-  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>
+  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): DidWebUri | undefined {
   return vc.credentialSubject.bid.ownerId
     ? (`did:web:api.skyfire.xyz:owner:${vc.credentialSubject.bid.ownerId}` as DidWebUri)
@@ -129,7 +129,7 @@ export interface SkyFireKYAPayload extends JwtPayload {
 export async function verifySkyfireKyaAsAckId(
   jwks: jose.JSONWebKeySet,
   kyaToken: JwtString,
-  trustedIssuers: string[]
+  trustedIssuers: string[],
 ): Promise<boolean> {
   try {
     const vc = await convertSkyfireKyaToVerifiableCredential(jwks, kyaToken)
@@ -162,7 +162,7 @@ export async function verifySkyfireKyaAsAckId(
  * This demonstrates the bidirectional nature of the conversion
  */
 export function convertVerifiableCredentialToSkyfireKya(
-  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>
+  vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): JwtString {
   // Reconstruct the original JWT payload from VC data
   const { id, ...credentialData } = vc.credentialSubject
@@ -177,21 +177,21 @@ export function convertVerifiableCredentialToSkyfireKya(
     sub,
     iss: "https://api.skyfire.xyz/",
     iat: Math.floor(new Date(vc.issuanceDate).getTime() / 1000),
-    exp: Math.floor(new Date(vc.expirationDate ?? "").getTime() / 1000)
+    exp: Math.floor(new Date(vc.expirationDate ?? "").getTime() / 1000),
   }
 
   // Reconstruct the JWT header (Skyfire always uses ES256 with kya+JWT type)
   const header = {
     alg: "ES256",
-    typ: "kya+JWT"
+    typ: "kya+JWT",
   }
 
   // Base64url encode header and payload
   const encodedHeader = bytesToBase64url(
-    new TextEncoder().encode(JSON.stringify(header))
+    new TextEncoder().encode(JSON.stringify(header)),
   )
   const encodedPayload = bytesToBase64url(
-    new TextEncoder().encode(JSON.stringify(jwtPayload))
+    new TextEncoder().encode(JSON.stringify(jwtPayload)),
   )
 
   // Extract signature from the VC proof (format: "header..signature")

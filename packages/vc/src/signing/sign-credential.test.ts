@@ -1,7 +1,7 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
 } from "@agentcommercekit/did"
 import { createJwtSigner, verifyJwt } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
@@ -20,8 +20,8 @@ test("signCredential creates a valid JWT and verifiable credential", async () =>
     issuerDid,
     createDidDocumentFromKeypair({
       did: issuerDid,
-      keypair: issuerKeypair
-    })
+      keypair: issuerKeypair,
+    }),
   )
 
   const subjectDid = createDidWebUri("https://subject.example.com")
@@ -34,20 +34,20 @@ test("signCredential creates a valid JWT and verifiable credential", async () =>
     issuer: issuerDid,
     subject: subjectDid,
     attestation: {
-      test: "test"
-    }
+      test: "test",
+    },
   })
 
   // Sign the credential
   const jwt = await signCredential(credential, {
     did: issuerDid,
     signer: createJwtSigner(issuerKeypair),
-    alg: "ES256K"
+    alg: "ES256K",
   })
 
   // Verify the JWT using did-jwt verifier
   const result = await verifyJwt(jwt, {
-    resolver
+    resolver,
   })
 
   // Verify the basic structure of the decoded payload

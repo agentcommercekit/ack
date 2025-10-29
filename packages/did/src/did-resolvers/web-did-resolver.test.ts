@@ -7,7 +7,7 @@ describe("web-did-resolver", () => {
   const mockDidDocument = {
     "@context": "https://www.w3.org/ns/did/v1",
     id: "did:web:example.com",
-    verificationMethod: []
+    verificationMethod: [],
   }
 
   beforeEach(() => {
@@ -19,7 +19,7 @@ describe("web-did-resolver", () => {
     it("resolves a valid did:web document", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockDidDocument)
+        json: () => Promise.resolve(mockDidDocument),
       })
 
       const did = "did:web:example.com"
@@ -28,30 +28,30 @@ describe("web-did-resolver", () => {
         did,
         didUrl: did,
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       const result = await resolver.web(
         did,
         parsedDid,
         { resolve: vi.fn() },
-        {}
+        {},
       )
 
       expect(result).toEqual({
         didDocument: mockDidDocument,
         didDocumentMetadata: {},
-        didResolutionMetadata: { contentType: "application/did+ld+json" }
+        didResolutionMetadata: { contentType: "application/did+ld+json" },
       })
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/.well-known/did.json",
-        { mode: "cors" }
+        { mode: "cors" },
       )
     })
 
     it("uses custom docPath when provided", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockDidDocument)
+        json: () => Promise.resolve(mockDidDocument),
       })
 
       const did = "did:web:example.com"
@@ -60,20 +60,20 @@ describe("web-did-resolver", () => {
         did,
         didUrl: did,
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/custom/path/did.json",
-        { mode: "cors" }
+        { mode: "cors" },
       )
     })
 
     it("allows http for specified hosts", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockDidDocument)
+        json: () => Promise.resolve(mockDidDocument),
       })
 
       const did = "did:web:localhost%3A8787"
@@ -83,13 +83,13 @@ describe("web-did-resolver", () => {
         did,
         didUrl: did,
         method: "web",
-        id: "localhost"
+        id: "localhost",
       }
       await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/.well-known/did.json",
-        { mode: "cors" }
+        { mode: "cors" },
       )
     })
 
@@ -101,13 +101,13 @@ describe("web-did-resolver", () => {
         did: "did:web:example.com",
         didUrl: "did:web:example.com",
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
         { resolve: vi.fn() },
-        {}
+        {},
       )
 
       expect(result).toEqual({
@@ -115,15 +115,15 @@ describe("web-did-resolver", () => {
         didDocumentMetadata: {},
         didResolutionMetadata: {
           error: "notFound",
-          message: "resolver_error: Network error"
-        }
+          message: "resolver_error: Network error",
+        },
       })
     })
 
     it("handles non-OK responses", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
-        statusText: "Not Found"
+        statusText: "Not Found",
       })
 
       const resolver = getResolver()
@@ -131,13 +131,13 @@ describe("web-did-resolver", () => {
         did: "did:web:example.com",
         didUrl: "did:web:example.com",
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
         { resolve: vi.fn() },
-        {}
+        {},
       )
 
       expect(result).toEqual({
@@ -146,15 +146,15 @@ describe("web-did-resolver", () => {
         didResolutionMetadata: {
           error: "notFound",
           message:
-            "resolver_error: DID must resolve to a valid https URL containing a JSON document: Bad response Not Found"
-        }
+            "resolver_error: DID must resolve to a valid https URL containing a JSON document: Bad response Not Found",
+        },
       })
     })
 
     it("handles invalid DID documents", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve({ invalid: "document" })
+        json: () => Promise.resolve({ invalid: "document" }),
       })
 
       const resolver = getResolver()
@@ -162,13 +162,13 @@ describe("web-did-resolver", () => {
         did: "did:web:example.com",
         didUrl: "did:web:example.com",
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
         { resolve: vi.fn() },
-        {}
+        {},
       )
 
       expect(result).toEqual({
@@ -177,19 +177,19 @@ describe("web-did-resolver", () => {
         didResolutionMetadata: {
           error: "notFound",
           message:
-            "resolver_error: DID must resolve to a valid https URL containing a JSON document: Invalid JSON DID document"
-        }
+            "resolver_error: DID must resolve to a valid https URL containing a JSON document: Invalid JSON DID document",
+        },
       })
     })
 
     it("handles DID document with mismatched ID", async () => {
       const mismatchedDocument = {
         ...mockDidDocument,
-        id: "did:web:different.com"
+        id: "did:web:different.com",
       }
       mockFetch.mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mismatchedDocument)
+        json: () => Promise.resolve(mismatchedDocument),
       })
 
       const resolver = getResolver()
@@ -197,13 +197,13 @@ describe("web-did-resolver", () => {
         did: "did:web:example.com",
         didUrl: "did:web:example.com",
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
         { resolve: vi.fn() },
-        {}
+        {},
       )
 
       expect(result).toEqual({
@@ -212,15 +212,15 @@ describe("web-did-resolver", () => {
         didResolutionMetadata: {
           error: "notFound",
           message:
-            "resolver_error: DID document id does not match requested did"
-        }
+            "resolver_error: DID document id does not match requested did",
+        },
       })
     })
 
     it("uses custom fetch function when provided", async () => {
       const customFetch = vi.fn().mockResolvedValueOnce({
         ok: true,
-        json: () => Promise.resolve(mockDidDocument)
+        json: () => Promise.resolve(mockDidDocument),
       })
 
       const resolver = getResolver({ fetch: customFetch })
@@ -228,13 +228,13 @@ describe("web-did-resolver", () => {
         did: "did:web:example.com",
         didUrl: "did:web:example.com",
         method: "web",
-        id: "example.com"
+        id: "example.com",
       }
       await resolver.web(
         "did:web:example.com",
         parsedDid,
         { resolve: vi.fn() },
-        {}
+        {},
       )
 
       expect(customFetch).toHaveBeenCalled()

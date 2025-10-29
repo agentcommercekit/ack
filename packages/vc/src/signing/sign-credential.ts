@@ -12,7 +12,7 @@ import type { Signer } from "./types"
  */
 export async function signCredential(
   credential: W3CCredential,
-  signer: Signer
+  signer: Signer,
 ): Promise<JwtString> {
   // options.alg is already a JwtAlgorithm, no conversion needed
   const jwt = await createVerifiableCredentialJwt(credential, signer)

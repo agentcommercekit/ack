@@ -4,7 +4,7 @@ import {
   resolveDid,
   verifyJwt,
   type DidResolver,
-  type DidUri
+  type DidUri,
 } from "agentcommercekit"
 import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import { tool } from "ai"
@@ -12,7 +12,7 @@ import * as v from "valibot"
 import type { CredentialVerifier } from "./credential-verifier"
 
 const challengeResponseSchema = v.object({
-  signedChallenge: v.string()
+  signedChallenge: v.string(),
 })
 
 type IdentityToolsParams = {
@@ -23,13 +23,13 @@ type IdentityToolsParams = {
 async function verifyIdentity(
   did: DidUri,
   resolver: DidResolver,
-  verifier: CredentialVerifier
+  verifier: CredentialVerifier,
 ) {
   const didResolution = await resolveDid(did, resolver)
 
   // Extract the identity service endpoint from the DID document
   const identityService = didResolution.didDocument.service?.find(
-    (s) => s.type === "IdentityService"
+    (s) => s.type === "IdentityService",
   )
 
   if (!identityService) {
@@ -50,22 +50,22 @@ async function verifyIdentity(
       method: "POST",
       body: JSON.stringify({ challenge }),
       headers: {
-        "Content-Type": "application/json"
-      }
-    }
+        "Content-Type": "application/json",
+      },
+    },
   )
 
   const { signedChallenge } = v.parse(
     challengeResponseSchema,
-    await challengeResponse.json()
+    await challengeResponse.json(),
   )
 
   const parsed = await verifyJwt(signedChallenge, {
     resolver,
     issuer: did,
     policies: {
-      aud: false
-    }
+      aud: false,
+    },
   })
 
   if (parsed.payload.sub !== challenge) {
@@ -89,8 +89,8 @@ export function getIdentityTools({ resolver, verifier }: IdentityToolsParams) {
       description: "Validate counterparty identity",
       parameters: valibotSchema(
         v.object({
-          did: v.string()
-        })
+          did: v.string(),
+        }),
       ),
       execute: async ({ did }) => {
         console.log(colors.dim(`> Validating identity for ${did}`))
@@ -99,14 +99,14 @@ export function getIdentityTools({ resolver, verifier }: IdentityToolsParams) {
         } catch (_error: unknown) {
           return {
             success: false,
-            message: "Identity validation failed"
+            message: "Identity validation failed",
           }
         }
         return {
           success: true,
-          message: "Identity validated"
+          message: "Identity validated",
         }
-      }
-    })
+      },
+    }),
   }
 }

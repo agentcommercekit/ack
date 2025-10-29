@@ -13,7 +13,7 @@ export function generatePrivateKeyBytes(): Uint8Array {
  */
 export function getPublicKeyBytes(
   privateKeyBytes: Uint8Array,
-  compressed = false
+  compressed = false,
 ): Uint8Array {
   return secp256r1.getPublicKey(privateKeyBytes, compressed)
 }
@@ -22,14 +22,14 @@ export function getPublicKeyBytes(
  * Generate a keypair
  */
 export async function generateKeypair(
-  privateKeyBytes = generatePrivateKeyBytes()
+  privateKeyBytes = generatePrivateKeyBytes(),
 ): Promise<Keypair> {
   const publicKeyBytes = getPublicKeyBytes(privateKeyBytes, false)
 
   return Promise.resolve({
     publicKey: publicKeyBytes,
     privateKey: privateKeyBytes,
-    curve: "secp256r1"
+    curve: "secp256r1",
   })
 }
 

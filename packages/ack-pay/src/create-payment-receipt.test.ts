@@ -26,9 +26,9 @@ describe("createPaymentReceipt", () => {
           amount: 100,
           decimals: 2,
           currency: "USD",
-          recipient: "did:example:recipient"
-        }
-      ]
+          recipient: "did:example:recipient",
+        },
+      ],
     }
 
     const paymentRequiredBody = await createSignedPaymentRequest(
@@ -36,8 +36,8 @@ describe("createPaymentReceipt", () => {
       {
         issuer: createDidKeyUri(keypair),
         signer: createJwtSigner(keypair),
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     paymentRequestToken = paymentRequiredBody.paymentRequestToken
@@ -48,19 +48,19 @@ describe("createPaymentReceipt", () => {
       paymentRequestToken,
       paymentOptionId: "test-payment-option-id",
       issuer: "did:example:issuer",
-      payerDid: "did:example:payer"
+      payerDid: "did:example:payer",
     })
 
     expect(receipt).toMatchObject({
       type: ["VerifiableCredential", "PaymentReceiptCredential"],
       issuer: {
-        id: "did:example:issuer"
+        id: "did:example:issuer",
       },
       issuanceDate: date.toISOString(),
       credentialSubject: {
         id: "did:example:payer",
-        paymentRequestToken
-      }
+        paymentRequestToken,
+      },
     })
   })
 
@@ -71,23 +71,23 @@ describe("createPaymentReceipt", () => {
       issuer: "did:example:issuer",
       payerDid: "did:example:payer",
       metadata: {
-        test: "test"
-      }
+        test: "test",
+      },
     })
 
     expect(receipt).toMatchObject({
       type: ["VerifiableCredential", "PaymentReceiptCredential"],
       issuer: {
-        id: "did:example:issuer"
+        id: "did:example:issuer",
       },
       issuanceDate: date.toISOString(),
       credentialSubject: {
         id: "did:example:payer",
         paymentRequestToken,
         metadata: {
-          test: "test"
-        }
-      }
+          test: "test",
+        },
+      },
     })
   })
 
@@ -98,11 +98,11 @@ describe("createPaymentReceipt", () => {
       paymentOptionId: "test-payment-option-id",
       issuer: "did:example:issuer",
       payerDid: "did:example:payer",
-      expirationDate
+      expirationDate,
     })
 
     expect(receipt).toMatchObject({
-      expirationDate: expirationDate.toISOString()
+      expirationDate: expirationDate.toISOString(),
     })
   })
 })

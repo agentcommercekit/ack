@@ -1,6 +1,6 @@
 import {
   getPublicKeyFromPrivateKey,
-  type Keypair
+  type Keypair,
 } from "@agentcommercekit/keys"
 import { bytesToMultibase } from "@agentcommercekit/keys/encoding"
 import * as varint from "varint"
@@ -23,16 +23,16 @@ export type DidKeyUri = DidUri<"key", `z${string}`>
 export const KEY_CONFIG = {
   secp256k1: {
     multicodecPrefix: 0xe7,
-    keyLength: 33
+    keyLength: 33,
   },
   secp256r1: {
     multicodecPrefix: 0x1200,
-    keyLength: 33
+    keyLength: 33,
   },
   Ed25519: {
     multicodecPrefix: 0xed,
-    keyLength: 32
-  }
+    keyLength: 32,
+  },
 } as const
 
 /**
@@ -63,12 +63,12 @@ export function createDidKeyUri(keypair: Keypair): DidKeyUri {
   const publicKey = getPublicKeyFromPrivateKey(
     keypair.privateKey,
     keypair.curve,
-    true
+    true,
   )
 
   if (publicKey.length !== keyConfig.keyLength) {
     throw new Error(
-      `Invalid key length for ${keypair.curve}. Expected ${keyConfig.keyLength} bytes, got ${publicKey.length}`
+      `Invalid key length for ${keypair.curve}. Expected ${keyConfig.keyLength} bytes, got ${publicKey.length}`,
     )
   }
 

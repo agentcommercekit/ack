@@ -9,7 +9,7 @@ export type { DidDocument, Service }
  * @returns True if the value is a did document, false otherwise
  */
 export function isDidDocument(
-  didDocument: unknown
+  didDocument: unknown,
 ): didDocument is DidDocument {
   return (
     typeof didDocument === "object" &&
@@ -27,7 +27,7 @@ export function isDidDocument(
  */
 export function isDidDocumentForDid(
   didDocument: DidDocument,
-  did: string
+  did: string,
 ): boolean {
   return didDocument.id === did
 }

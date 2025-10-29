@@ -7,7 +7,7 @@ import { isRevocable, isRevoked } from "./is-revoked"
 describe("isRevocable", () => {
   it("returns false if no credential status is present", () => {
     const credential = {
-      credentialStatus: undefined
+      credentialStatus: undefined,
     } as Verifiable<W3CCredential>
 
     expect(isRevocable(credential)).toBe(false)
@@ -16,8 +16,8 @@ describe("isRevocable", () => {
   it("returns false if status list not present", () => {
     const credential = {
       credentialStatus: {
-        statusListIndex: "0"
-      }
+        statusListIndex: "0",
+      },
     } as unknown as Verifiable<W3CCredential>
 
     expect(isRevocable(credential)).toBe(false)
@@ -26,8 +26,8 @@ describe("isRevocable", () => {
   it("returns false if index is not present", () => {
     const credential = {
       credentialStatus: {
-        statusListCredential: "https://example.com/status-list/1"
-      }
+        statusListCredential: "https://example.com/status-list/1",
+      },
     } as unknown as Verifiable<W3CCredential>
 
     expect(isRevocable(credential)).toBe(false)
@@ -37,8 +37,8 @@ describe("isRevocable", () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "0",
-        statusListCredential: "https://example.com/status-list/1"
-      }
+        statusListCredential: "https://example.com/status-list/1",
+      },
     } as unknown as Verifiable<W3CCredential>
 
     expect(isRevocable(credential)).toBe(true)
@@ -56,7 +56,7 @@ describe("isRevoked", () => {
     return createStatusListCredential({
       url: "https://example.com/status-list/1",
       encodedList: bitBuffer.toBitstring(),
-      issuer: "did:example:123"
+      issuer: "did:example:123",
     })
   }
 
@@ -71,11 +71,11 @@ describe("isRevoked", () => {
 
   it("returns false for non-revocable credentials", async () => {
     const credential = {
-      credentialStatus: undefined
+      credentialStatus: undefined,
     } as Verifiable<W3CCredential>
 
     mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(getStatusListCredential())
+      json: () => Promise.resolve(getStatusListCredential()),
     })
 
     expect(await isRevoked(credential)).toBe(false)
@@ -85,8 +85,8 @@ describe("isRevoked", () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "0",
-        statusListCredential: "https://example.com/status-list/1"
-      }
+        statusListCredential: "https://example.com/status-list/1",
+      },
     } as unknown as Verifiable<W3CCredential>
 
     mockFetch.mockRejectedValueOnce(new Error("Network error"))
@@ -98,12 +98,12 @@ describe("isRevoked", () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "5",
-        statusListCredential: "https://example.com/status-list/1"
-      }
+        statusListCredential: "https://example.com/status-list/1",
+      },
     } as unknown as Verifiable<W3CCredential>
 
     mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(getStatusListCredential())
+      json: () => Promise.resolve(getStatusListCredential()),
     })
 
     expect(await isRevoked(credential)).toBe(false)
@@ -113,12 +113,12 @@ describe("isRevoked", () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "5",
-        statusListCredential: "https://example.com/status-list/1"
-      }
+        statusListCredential: "https://example.com/status-list/1",
+      },
     } as unknown as Verifiable<W3CCredential>
 
     mockFetch.mockResolvedValueOnce({
-      json: () => Promise.resolve(getStatusListCredential(5))
+      json: () => Promise.resolve(getStatusListCredential(5)),
     })
 
     expect(await isRevoked(credential)).toBe(true)

@@ -18,7 +18,7 @@ pnpm add @agentcommercekit/keys
 import {
   encodePublicKeyFromKeypair,
   generateKeypair,
-  keypairToJwk
+  keypairToJwk,
 } from "@agentcommercekit/keys"
 
 // Generate and format keypairs
