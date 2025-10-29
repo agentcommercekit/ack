@@ -22,7 +22,7 @@ describe("verifyProof", () => {
     resolve: vi.fn()
   } as unknown as Resolvable
 
-  it("should throw for invalid proof payload", async () => {
+  it("throws for invalid proof payload", async () => {
     const invalidProof = {
       type: "JwtProof2020"
       // Missing jwt field
@@ -33,7 +33,7 @@ describe("verifyProof", () => {
     )
   })
 
-  it("should throw for unsupported proof type", async () => {
+  it("throws for unsupported proof type", async () => {
     const unsupportedProof = {
       type: "UnsupportedProofType",
       jwt: "some.jwt.token"
@@ -44,7 +44,7 @@ describe("verifyProof", () => {
     )
   })
 
-  it("should handle verification errors from verifyCredentialJwt", async () => {
+  it("handles verification errors from verifyCredentialJwt", async () => {
     const proofWithInvalidJwt = {
       type: "JwtProof2020",
       jwt: "invalid.jwt.token"
@@ -56,7 +56,7 @@ describe("verifyProof", () => {
     ).rejects.toThrow(InvalidProofError)
   })
 
-  it("should successfully verify a valid JwtProof2020", async () => {
+  it("successfully verifies a valid JwtProof2020", async () => {
     const validProof = {
       type: "JwtProof2020",
       jwt: "valid.jwt.token"

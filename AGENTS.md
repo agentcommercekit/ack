@@ -43,7 +43,7 @@ pnpm demo:skyfire-kya   # Skyfire KYA token demonstration
 ### Testing
 
 - Run individual package tests: `pnpm --filter ./packages/[package-name] test`
-- All tests use **Vitest** framework and use assertive testing (`it('requires...')`, not `it('should require...')`)
+- All tests use **Vitest** framework with assertive testing patterns (`it('requires...')`, `it('throws...')`, `it('returns...')`)
 - Test configuration: individual `vitest.config.ts` files per package
 
 ## Architecture
@@ -53,6 +53,7 @@ pnpm demo:skyfire-kya   # Skyfire KYA token demonstration
 - **`agentcommercekit/`** - Main SDK package (exports everything)
 - **`ack-id/`** - Identity protocol implementation
 - **`ack-pay/`** - Payment protocol implementation
+- **`caip/`** - CAIP (Chain Agnostic Improvement Proposal) utilities for CAIP-2, CAIP-10, and CAIP-19
 - **`did/`** - Decentralized Identifier utilities
 - **`jwt/`** - JWT creation/verification utilities
 - **`keys/`** - Cryptographic key management (Ed25519, secp256k1, secp256r1)
@@ -71,7 +72,7 @@ Standalone service implementations including credential issuer, verifier, and lo
 - **Turbo**: Orchestrates builds across packages with dependency graph
 - **tsdown**: TypeScript compiler/bundler
 - **Output**: `dist/` directories with ESM and TypeScript definitions
-- **Dependency Management**: Packages have proper dependency relationships
+- **Dependency Management**: Exact versions for dependencies (enforced via `.npmrc`), ranges for peer dependencies
 
 ### Key Technical Patterns
 

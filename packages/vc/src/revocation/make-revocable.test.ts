@@ -15,7 +15,7 @@ describe("makeRevocable", () => {
   const mockStatusListUrl = "https://example.com/status/1"
   const mockStatusListIndex = 123
 
-  it("should add revocation status to credential", () => {
+  it("adds revocation status to credential", () => {
     const revocableCredential = makeRevocable(mockCredential, {
       id: mockStatusListId,
       statusListIndex: mockStatusListIndex,

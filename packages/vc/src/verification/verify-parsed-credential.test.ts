@@ -83,7 +83,7 @@ describe("verifyParsedCredential", () => {
     vi.clearAllMocks()
   })
 
-  it("should throw when no proof is present", async () => {
+  it("throws when no proof is present", async () => {
     const { vc: baseVc, issuerDid, resolver } = await setup()
 
     const vc = {
@@ -99,7 +99,7 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow(InvalidProofError)
   })
 
-  it("should throw for an expired credential", async () => {
+  it("throws for an expired credential", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     vi.mocked(isExpired).mockReturnValue(true)
@@ -112,7 +112,7 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow(CredentialExpiredError)
   })
 
-  it("should throw for a revoked credential", async () => {
+  it("throws for a revoked credential", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     vi.mocked(isRevoked).mockResolvedValue(true)
@@ -125,7 +125,7 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow(CredentialRevokedError)
   })
 
-  it("should throw for non-trusted issuer", async () => {
+  it("throws for non-trusted issuer", async () => {
     const { vc, resolver } = await setup()
 
     await expect(
@@ -136,7 +136,7 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow(UntrustedIssuerError)
   })
 
-  it("should throw for an invalid proof", async () => {
+  it("throws for an invalid proof", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     vi.mocked(verifyProof).mockRejectedValueOnce(new InvalidProofError())
@@ -171,7 +171,7 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow("Invalid credential subject")
   })
 
-  it("should throw if credential type does not match any verifiers", async () => {
+  it("throws if credential type does not match any verifiers", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     await expect(
@@ -188,7 +188,7 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow(UnsupportedCredentialTypeError)
   })
 
-  it("should verify a valid credential with verifiers", async () => {
+  it("verifies a valid credential with verifiers", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     await expect(
@@ -205,7 +205,7 @@ describe("verifyParsedCredential", () => {
     ).resolves.not.toThrow()
   })
 
-  it("should verify a valid credential with no verifiers", async () => {
+  it("verifies a valid credential with no verifiers", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     await expect(

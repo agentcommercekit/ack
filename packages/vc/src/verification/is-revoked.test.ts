@@ -5,7 +5,7 @@ import { createStatusListCredential } from "../revocation/status-list-credential
 import type { Verifiable, W3CCredential } from "../types"
 
 describe("isRevocable", () => {
-  it("should return false if no credential status is present", () => {
+  it("returns false if no credential status is present", () => {
     const credential = {
       credentialStatus: undefined
     } as Verifiable<W3CCredential>
@@ -13,7 +13,7 @@ describe("isRevocable", () => {
     expect(isRevocable(credential)).toBe(false)
   })
 
-  it("should return false if status list not present", () => {
+  it("returns false if status list not present", () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "0"
@@ -23,7 +23,7 @@ describe("isRevocable", () => {
     expect(isRevocable(credential)).toBe(false)
   })
 
-  it("should return false if index is not present", () => {
+  it("returns false if index is not present", () => {
     const credential = {
       credentialStatus: {
         statusListCredential: "https://example.com/status-list/1"
@@ -33,7 +33,7 @@ describe("isRevocable", () => {
     expect(isRevocable(credential)).toBe(false)
   })
 
-  it("should return true for a revocable credential", () => {
+  it("returns true for a revocable credential", () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "0",
@@ -69,7 +69,7 @@ describe("isRevoked", () => {
     mockFetch.mockReset()
   })
 
-  it("should return false for non-revocable credentials", async () => {
+  it("returns false for non-revocable credentials", async () => {
     const credential = {
       credentialStatus: undefined
     } as Verifiable<W3CCredential>
@@ -81,7 +81,7 @@ describe("isRevoked", () => {
     expect(await isRevoked(credential)).toBe(false)
   })
 
-  it("should return false when status list cannot be fetched", async () => {
+  it("returns false when status list cannot be fetched", async () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "0",
@@ -94,7 +94,7 @@ describe("isRevoked", () => {
     expect(await isRevoked(credential)).toBe(false)
   })
 
-  it("should return false when bit at index is not set", async () => {
+  it("returns false when bit at index is not set", async () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "5",
@@ -109,7 +109,7 @@ describe("isRevoked", () => {
     expect(await isRevoked(credential)).toBe(false)
   })
 
-  it("should return true when bit at index is set", async () => {
+  it("returns true when bit at index is set", async () => {
     const credential = {
       credentialStatus: {
         statusListIndex: "5",

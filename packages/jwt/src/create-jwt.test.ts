@@ -28,7 +28,7 @@ describe("createJWT", () => {
     }
   })
 
-  it("should create a valid JWT when baseCreateJWT returns a valid JWT string", async () => {
+  it("creates a valid JWT when baseCreateJWT returns a valid JWT string", async () => {
     const expectedJwt =
       "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.eyJpc3MiOiJkaWQ6ZXhhbXBsZTo0NTYifQ.sig"
 
@@ -42,7 +42,7 @@ describe("createJWT", () => {
     })
   })
 
-  it("should throw an error when baseCreateJWT returns an invalid JWT string", async () => {
+  it("throws an error when baseCreateJWT returns an invalid JWT string", async () => {
     const invalidJwt = "not-a-valid-jwt"
 
     vi.mocked(baseCreateJWT).mockResolvedValueOnce(invalidJwt)

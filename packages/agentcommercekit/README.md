@@ -20,6 +20,7 @@ Alternatively, you can install each sub-package individually. These are:
 
 - [@agentcommercekit/ack-id](https://github.com/agentcommercekit/ack/tree/main/packages/ack-id) - For ACK-ID specific schemas and functionality
 - [@agentcommercekit/ack-pay](https://github.com/agentcommercekit/ack/tree/main/packages/ack-pay) - For ACK-Pay specific schemas and functionality
+- [@agentcommercekit/caip](https://github.com/agentcommercekit/ack/tree/main/packages/caip) - For CAIP (Chain Agnostic Improvement Proposal) utilities
 - [@agentcommercekit/did](https://github.com/agentcommercekit/ack/tree/main/packages/did) - For DID resolution and manipulation
 - [@agentcommercekit/jwt](https://github.com/agentcommercekit/ack/tree/main/packages/jwt) - For JWT creation and verification
 - [@agentcommercekit/keys](https://github.com/agentcommercekit/ack/tree/main/packages/keys) - For public/private KeyPairs

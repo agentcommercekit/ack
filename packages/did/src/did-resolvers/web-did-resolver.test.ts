@@ -16,7 +16,7 @@ describe("web-did-resolver", () => {
   })
 
   describe("getResolver", () => {
-    it("should resolve a valid did:web document", async () => {
+    it("resolves a valid did:web document", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockDidDocument)
@@ -48,7 +48,7 @@ describe("web-did-resolver", () => {
       )
     })
 
-    it("should use custom docPath when provided", async () => {
+    it("uses custom docPath when provided", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockDidDocument)
@@ -70,7 +70,7 @@ describe("web-did-resolver", () => {
       )
     })
 
-    it("should allow http for specified hosts", async () => {
+    it("allows http for specified hosts", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockDidDocument)
@@ -93,7 +93,7 @@ describe("web-did-resolver", () => {
       )
     })
 
-    it("should handle fetch errors", async () => {
+    it("handles fetch errors", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"))
 
       const resolver = getResolver()
@@ -120,7 +120,7 @@ describe("web-did-resolver", () => {
       })
     })
 
-    it("should handle non-OK responses", async () => {
+    it("handles non-OK responses", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: false,
         statusText: "Not Found"
@@ -151,7 +151,7 @@ describe("web-did-resolver", () => {
       })
     })
 
-    it("should handle invalid DID documents", async () => {
+    it("handles invalid DID documents", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ invalid: "document" })
@@ -182,7 +182,7 @@ describe("web-did-resolver", () => {
       })
     })
 
-    it("should handle DID document with mismatched ID", async () => {
+    it("handles DID document with mismatched ID", async () => {
       const mismatchedDocument = {
         ...mockDidDocument,
         id: "did:web:different.com"
@@ -217,7 +217,7 @@ describe("web-did-resolver", () => {
       })
     })
 
-    it("should use custom fetch function when provided", async () => {
+    it("uses custom fetch function when provided", async () => {
       const customFetch = vi.fn().mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockDidDocument)

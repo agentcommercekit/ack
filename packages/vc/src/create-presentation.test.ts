@@ -16,7 +16,7 @@ describe("createPresentation", () => {
     }
   }
 
-  it("should create a basic presentation with required fields", () => {
+  it("creates a basic presentation with required fields", () => {
     const presentation = createPresentation({
       credentials: [mockCredential],
       holder: mockHolder
@@ -30,7 +30,7 @@ describe("createPresentation", () => {
     })
   })
 
-  it("should handle multiple credentials", () => {
+  it("handles multiple credentials", () => {
     const secondCredential = {
       ...mockCredential,
       credentialSubject: { id: "did:example:subject2" }
@@ -46,7 +46,7 @@ describe("createPresentation", () => {
     ])
   })
 
-  it("should handle custom presentation types", () => {
+  it("handles custom presentation types", () => {
     const customType = "CustomPresentation"
     const presentation = createPresentation({
       credentials: [mockCredential],
@@ -57,7 +57,7 @@ describe("createPresentation", () => {
     expect(presentation.type).toEqual(["VerifiablePresentation", customType])
   })
 
-  it("should handle multiple presentation types", () => {
+  it("handles multiple presentation types", () => {
     const types = ["CustomPresentation1", "CustomPresentation2"]
     const presentation = createPresentation({
       credentials: [mockCredential],
@@ -68,7 +68,7 @@ describe("createPresentation", () => {
     expect(presentation.type).toEqual(["VerifiablePresentation", ...types])
   })
 
-  it("should use provided issuance date", () => {
+  it("uses provided issuance date", () => {
     const issuanceDate = new Date("2024-01-01")
     const presentation = createPresentation({
       credentials: [mockCredential],
@@ -79,7 +79,7 @@ describe("createPresentation", () => {
     expect(presentation.issuanceDate).toBe(issuanceDate.toISOString())
   })
 
-  it("should use provided expiration date", () => {
+  it("uses provided expiration date", () => {
     const expirationDate = new Date("2024-12-31")
     const presentation = createPresentation({
       credentials: [mockCredential],
@@ -90,7 +90,7 @@ describe("createPresentation", () => {
     expect(presentation.expirationDate).toBe(expirationDate.toISOString())
   })
 
-  it("should include custom ID when provided", () => {
+  it("includes custom ID when provided", () => {
     const customId = "urn:uuid:12345678-1234-5678-1234-567812345678"
     const presentation = createPresentation({
       id: customId,
