@@ -79,15 +79,15 @@
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
     "@agentcommercekit/vc": "workspace:*",
-    "safe-stable-stringify": "2.5.0",
-    "uuid": "11.1.0",
-    "valibot": "1.1.0"
+    "safe-stable-stringify": "catalog:",
+    "uuid": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
-    "@a2a-js/sdk": "0.2.2",
+    "@a2a-js/sdk": "catalog:",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "zod": "3.25.4"
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "@a2a-js/sdk": "^0.2.2",

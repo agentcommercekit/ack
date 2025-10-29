@@ -29,14 +29,14 @@
     "@ai-sdk/anthropic": "1.2.11",
     "@ai-sdk/openai": "1.3.22",
     "@ai-sdk/valibot": "0.1.28",
-    "@hono/node-server": "1.14.2",
-    "@hono/valibot-validator": "0.5.2",
+    "@hono/node-server": "catalog:",
+    "@hono/standard-validator": "catalog:",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
     "ai": "4.3.16",
-    "hono": "4.7.10",
-    "valibot": "1.1.0"
+    "hono": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

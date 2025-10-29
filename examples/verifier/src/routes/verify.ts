@@ -1,4 +1,4 @@
-import { vValidator } from "@hono/valibot-validator"
+import { sValidator } from "@hono/standard-validator"
 import {
   apiSuccessResponse,
   type ApiResponse,
@@ -17,7 +17,6 @@ import {
   jwtStringSchema,
 } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env } from "hono"
-import { ValiError } from "valibot"
 import * as v from "valibot"
 
 const app = new Hono<Env>()
@@ -33,11 +32,7 @@ const bodySchema = v.object({
 
 app.post(
   "/",
-  vValidator("json", bodySchema, (result) => {
-    if (!result.success) {
-      throw new ValiError(result.issues)
-    }
-  }),
+  sValidator("json", bodySchema),
   async (c): Promise<ApiResponse<null>> => {
     const resolver = getDidResolver()
     let { credential } = c.req.valid("json")

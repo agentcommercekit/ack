@@ -58,14 +58,14 @@
     "@agentcommercekit/did": "workspace:*",
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
-    "bit-buffers": "1.0.2",
+    "bit-buffers": "catalog:",
     "did-jwt-vc": "4.0.13",
-    "valibot": "1.1.0"
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "zod": "3.25.4"
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "zod": "^3.25.0"

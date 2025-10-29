@@ -1,5 +1,5 @@
 import { createJwt } from "@agentcommercekit/jwt"
-import { vValidator } from "@hono/valibot-validator"
+import { sValidator } from "@hono/standard-validator"
 import { logger } from "@repo/api-utils/middleware/logger"
 import { Hono } from "hono"
 import * as v from "valibot"
@@ -15,7 +15,7 @@ app.use("*", identities())
  */
 app.get(
   "/:entity/.well-known/did.json",
-  vValidator(
+  sValidator(
     "param",
     v.object({
       entity: v.picklist(["agent", "controller"]),
@@ -33,13 +33,13 @@ app.get(
  */
 app.post(
   "/:entity/sign",
-  vValidator(
+  sValidator(
     "param",
     v.object({
       entity: v.picklist(["agent", "controller"]),
     }),
   ),
-  vValidator(
+  sValidator(
     "json",
     v.object({
       subject: v.string(),

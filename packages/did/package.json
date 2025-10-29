@@ -60,15 +60,15 @@
     "did-resolver": "4.1.0",
     "jwks-did-resolver": "0.3.0",
     "key-did-resolver": "4.0.0",
-    "valibot": "1.1.0",
+    "valibot": "catalog:",
     "varint": "6.0.0"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/varint": "6.0.3",
-    "standard-parse": "0.3.0",
-    "zod": "3.25.4"
+    "standard-parse": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "zod": "^3.25.0"

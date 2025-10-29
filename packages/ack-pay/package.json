@@ -59,12 +59,12 @@
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
     "@agentcommercekit/vc": "workspace:*",
-    "valibot": "1.1.0"
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "zod": "3.25.4"
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "zod": "^3.25.0"

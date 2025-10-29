@@ -1,5 +1,5 @@
 import { serve } from "@hono/node-server"
-import { vValidator } from "@hono/valibot-validator"
+import { sValidator } from "@hono/standard-validator"
 import { logger } from "@repo/api-utils/middleware/logger"
 import { colors } from "@repo/cli-tools"
 import { Hono } from "hono"
@@ -18,7 +18,7 @@ export function serveAgent({ port, agent }: ServeAgentConfig) {
   app.use("*", logger())
   app.post(
     "/chat",
-    vValidator("json", v.object({ message: v.string() })),
+    sValidator("json", v.object({ message: v.string() })),
     async (c) => {
       const { message } = c.req.valid("json")
 
@@ -30,7 +30,7 @@ export function serveAgent({ port, agent }: ServeAgentConfig) {
 
   app.post(
     "/identity/challenge",
-    vValidator("json", v.object({ challenge: v.string() })),
+    sValidator("json", v.object({ challenge: v.string() })),
     async (c) => {
       const { challenge } = c.req.valid("json")
 

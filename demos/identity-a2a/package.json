@@ -24,14 +24,14 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@a2a-js/sdk": "0.2.2",
+    "@a2a-js/sdk": "catalog:",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
     "express": "4.21.2",
-    "jose": "6.0.11",
-    "safe-stable-stringify": "2.5.0",
-    "uuid": "11.1.0",
-    "valibot": "1.1.0"
+    "jose": "catalog:",
+    "safe-stable-stringify": "catalog:",
+    "uuid": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

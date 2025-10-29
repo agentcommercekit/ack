@@ -84,11 +84,11 @@
     "@agentcommercekit/vc": "workspace:*"
   },
   "devDependencies": {
-    "@a2a-js/sdk": "0.2.2",
+    "@a2a-js/sdk": "catalog:",
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "valibot": "1.1.0",
-    "zod": "3.25.4"
+    "valibot": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "@a2a-js/sdk": "^0.2.2",

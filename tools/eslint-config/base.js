@@ -8,12 +8,16 @@ import prettier from "eslint-config-prettier"
 import { createTypeScriptImportResolver } from "eslint-import-resolver-typescript"
 import importX from "eslint-plugin-import-x"
 import turbo from "eslint-plugin-turbo"
+import { defineConfig } from "eslint/config"
 import tseslint from "typescript-eslint"
 
+/**
+ * @param {{ root: string }} options
+ */
 export function config({ root }) {
   const tsconfigPath = `${root}/tsconfig.json`
 
-  return tseslint.config(
+  return defineConfig(
     {
       ignores: ["dist/**", ".wrangler/**"],
     },
@@ -22,6 +26,7 @@ export function config({ root }) {
      * Spell checking
      */
     {
+      // @ts-expect-error - cspell.recommended is not a valid extends element
       extends: [cspell.recommended],
       settings: {
         cspell: {
@@ -112,6 +117,7 @@ export function config({ root }) {
       languageOptions: {
         parserOptions: {
           projectService: true,
+          tsconfigRootDir: root,
           warnOnUnsupportedTypeScriptVersion: false,
         },
       },

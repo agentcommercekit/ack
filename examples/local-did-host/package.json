@@ -29,11 +29,11 @@
     "@agentcommercekit/did": "workspace:*",
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
-    "@hono/node-server": "1.14.2",
-    "@hono/valibot-validator": "0.5.2",
+    "@hono/node-server": "catalog:",
+    "@hono/standard-validator": "catalog:",
     "@repo/api-utils": "workspace:*",
-    "hono": "4.7.10",
-    "valibot": "1.1.0"
+    "hono": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

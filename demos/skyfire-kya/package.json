@@ -26,8 +26,8 @@
   "dependencies": {
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "jose": "6.0.11",
-    "zod": "3.25.4"
+    "jose": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

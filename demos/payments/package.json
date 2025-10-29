@@ -26,13 +26,13 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "1.14.2",
+    "@hono/node-server": "catalog:",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "hono": "4.7.10",
-    "valibot": "1.1.0",
-    "viem": "2.29.4"
+    "hono": "catalog:",
+    "valibot": "catalog:",
+    "viem": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

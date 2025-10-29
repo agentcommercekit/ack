@@ -27,14 +27,14 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "1.14.2",
+    "@hono/node-server": "catalog:",
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
     "better-sqlite3": "11.10.0",
-    "bit-buffers": "1.0.2",
+    "bit-buffers": "catalog:",
     "drizzle-orm": "0.43.1",
-    "hono": "4.7.10",
-    "valibot": "1.1.0"
+    "hono": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

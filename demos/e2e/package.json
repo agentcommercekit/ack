@@ -27,8 +27,8 @@
   "dependencies": {
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "valibot": "1.1.0",
-    "viem": "2.29.4"
+    "valibot": "catalog:",
+    "viem": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",

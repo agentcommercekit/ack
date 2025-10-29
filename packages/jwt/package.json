@@ -61,8 +61,8 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "valibot": "1.1.0",
-    "zod": "3.25.4"
+    "valibot": "catalog:",
+    "zod": "catalog:"
   },
   "peerDependencies": {
     "valibot": "^1.0.0",

@@ -4,8 +4,24 @@ packages:
   - examples/*
   - packages/*
   - tools/*
+
+catalog:
+  "@a2a-js/sdk": 0.2.2
+  "@hono/node-server": 1.14.2
+  "@hono/standard-validator": 0.1.5
+  bit-buffers: 1.0.2
+  hono: 4.7.10
+  jose: 6.0.11
+  safe-stable-stringify: 2.5.0
+  standard-parse: 0.4.0
+  uuid: 11.1.0
+  valibot: 1.1.0
+  viem: 2.29.4
+  zod: 3.25.4
+
 ignoredBuiltDependencies:
   - puppeteer
+
 onlyBuiltDependencies:
   - better-sqlite3
   - esbuild
