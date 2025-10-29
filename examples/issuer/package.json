@@ -40,12 +40,7 @@
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/better-sqlite3": "7.6.13",
-    "@types/node": "22.18.13",
-    "dotenv-cli": "8.0.0",
     "drizzle-kit": "0.31.1",
-    "eslint": "9.27.0",
-    "tsx": "4.19.4",
-    "vite-tsconfig-paths": "5.1.4",
-    "vitest": "3.2.4"
+    "vite-tsconfig-paths": "5.1.4"
   }
 }

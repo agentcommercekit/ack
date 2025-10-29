@@ -23,6 +23,15 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:tools/typescript-config
+      '@types/node':
+        specifier: 22.18.13
+        version: 22.18.13
+      dotenv-cli:
+        specifier: 8.0.0
+        version: 8.0.0
+      eslint:
+        specifier: 9.27.0
+        version: 9.27.0(jiti@2.6.1)
       prettier:
         specifier: 3.6.2
         version: 3.6.2
@@ -32,12 +41,21 @@ importers:
       prettier-plugin-packagejson:
         specifier: 2.5.19
         version: 2.5.19(prettier@3.6.2)
+      tsdown:
+        specifier: 0.11.12
+        version: 0.11.12(typescript@5.7.3)
+      tsx:
+        specifier: 4.19.4
+        version: 4.19.4
       turbo:
         specifier: 2.5.3
         version: 2.5.3
       typescript:
         specifier: 5.7.3
         version: 5.7.3
+      vitest:
+        specifier: 3.2.4
+        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   demos/e2e:
     dependencies:
@@ -60,18 +78,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   demos/identity:
     dependencies:
@@ -115,24 +121,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      '@types/node':
-        specifier: 22.18.13
-        version: 22.18.13
-      dotenv-cli:
-        specifier: 8.0.0
-        version: 8.0.0
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   demos/identity-a2a:
     dependencies:
@@ -170,21 +158,6 @@ importers:
       '@types/express':
         specifier: 5.0.3
         version: 5.0.3
-      '@types/node':
-        specifier: 22.18.13
-        version: 22.18.13
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   demos/payments:
     dependencies:
@@ -216,24 +189,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      '@types/node':
-        specifier: 22.18.13
-        version: 22.18.13
-      dotenv-cli:
-        specifier: 8.0.0
-        version: 8.0.0
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   demos/skyfire-kya:
     dependencies:
@@ -256,18 +211,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   docs:
     devDependencies:
@@ -311,27 +254,12 @@ importers:
       '@types/better-sqlite3':
         specifier: 7.6.13
         version: 7.6.13
-      '@types/node':
-        specifier: 22.18.13
-        version: 22.18.13
-      dotenv-cli:
-        specifier: 8.0.0
-        version: 8.0.0
       drizzle-kit:
         specifier: 0.31.1
         version: 0.31.1
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
       vite-tsconfig-paths:
         specifier: 5.1.4
         version: 5.1.4(typescript@5.7.3)(vite@7.1.12(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1))
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   examples/local-did-host:
     dependencies:
@@ -366,18 +294,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      dotenv-cli:
-        specifier: 8.0.0
-        version: 8.0.0
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   examples/verifier:
     dependencies:
@@ -406,18 +322,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      dotenv-cli:
-        specifier: 8.0.0
-        version: 8.0.0
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsx:
-        specifier: 4.19.4
-        version: 4.19.4
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   packages/ack-id:
     dependencies:
@@ -452,18 +356,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4
@@ -492,18 +384,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4
@@ -541,21 +421,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.7.3)
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4
@@ -568,24 +436,12 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
       standard-parse:
         specifier: 0.3.0
         version: 0.3.0(valibot@1.1.0(typescript@5.7.3))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1))(zod@3.25.4)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.7.3)
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4
@@ -623,21 +479,9 @@ importers:
       '@types/varint':
         specifier: 6.0.3
         version: 6.0.3
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
       standard-parse:
         specifier: 0.3.0
         version: 0.3.0(valibot@1.1.0(typescript@5.7.3))(vitest@3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1))(zod@3.25.4)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4
@@ -657,21 +501,9 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
       valibot:
         specifier: 1.1.0
         version: 1.1.0(typescript@5.7.3)
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4
@@ -697,18 +529,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
 
   packages/vc:
     dependencies:
@@ -737,18 +557,6 @@ importers:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
-      eslint:
-        specifier: 9.27.0
-        version: 9.27.0(jiti@2.6.1)
-      tsdown:
-        specifier: 0.11.12
-        version: 0.11.12(typescript@5.7.3)
-      typescript:
-        specifier: 5.7.3
-        version: 5.7.3
-      vitest:
-        specifier: 3.2.4
-        version: 3.2.4(@types/debug@4.1.12)(@types/node@22.18.13)(jiti@2.6.1)(tsx@4.19.4)(yaml@2.8.1)
       zod:
         specifier: 3.25.4
         version: 3.25.4

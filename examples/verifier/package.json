@@ -35,10 +35,6 @@
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "dotenv-cli": "8.0.0",
-    "eslint": "9.27.0",
-    "tsx": "4.19.4",
-    "vitest": "3.2.4"
+    "@repo/typescript-config": "workspace:*"
   }
 }
