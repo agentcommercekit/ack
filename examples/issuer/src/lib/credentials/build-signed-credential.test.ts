@@ -1,15 +1,15 @@
+import type { DatabaseCredential } from "@/db/schema"
 import {
-  DidResolver,
   createCredential,
   createDidWebDocumentFromKeypair,
   createJwtSigner,
+  DidResolver,
   generateKeypair,
   isJwtString
 } from "agentcommercekit"
 import { describe, expect, it } from "vitest"
-import { buildSignedCredential } from "./build-signed-credential"
 import type { Issuer } from "../types"
-import type { DatabaseCredential } from "@/db/schema"
+import { buildSignedCredential } from "./build-signed-credential"
 
 describe("buildSignedCredential", async () => {
   const baseUrl = "https://test.example.com"

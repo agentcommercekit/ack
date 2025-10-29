@@ -1,4 +1,10 @@
-import { A2AError } from "@a2a-js/sdk"
+import {
+  A2AError,
+  type AgentCard,
+  type ExecutionEventBus,
+  type Message,
+  type RequestContext
+} from "@a2a-js/sdk"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
   curveToJwtAlgorithm,
@@ -14,12 +20,6 @@ import { v4 } from "uuid"
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { startAgentServer } from "./utils/server-utils"
-import type {
-  AgentCard,
-  ExecutionEventBus,
-  Message,
-  RequestContext
-} from "@a2a-js/sdk"
 
 const logger = createLogger("Bank Teller", colors.blue)
 

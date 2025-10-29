@@ -4,21 +4,18 @@ import { colors, errorMessage, log } from "@repo/cli-tools"
 import {
   createJwt,
   getDidResolver,
-  verifyPaymentRequestToken
+  verifyPaymentRequestToken,
+  type JwtString,
+  type PaymentReceiptCredential,
+  type Verifiable
 } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
-import { Hono } from "hono"
+import { Hono, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 import { PAYMENT_SERVICE_URL } from "./constants"
 import { getKeypairInfo } from "./utils/keypair-info"
-import type {
-  JwtString,
-  PaymentReceiptCredential,
-  Verifiable
-} from "agentcommercekit"
-import type { Env, TypedResponse } from "hono"
 
 const app = new Hono<Env>()
 app.use(logger())

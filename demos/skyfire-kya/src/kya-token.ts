@@ -1,9 +1,13 @@
 import { log, logJson } from "@repo/cli-tools"
-import { createJwt, createJwtSigner } from "agentcommercekit"
+import {
+  createJwt,
+  createJwtSigner,
+  type JwtString,
+  type Keypair
+} from "agentcommercekit"
 import { jwtPayloadSchema } from "agentcommercekit/schemas/zod/v4"
 import { decodeJwt } from "jose"
 import * as z from "zod/v4"
-import type { JwtString, Keypair } from "agentcommercekit"
 
 export const skyfireKyaJwtPayloadSchema = z.object({
   ...jwtPayloadSchema.shape,

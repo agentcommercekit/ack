@@ -48,7 +48,7 @@ const parts = caip2Parts("eip155:1")
 CAIP-10 defines account identifiers across chains: `chainId:accountAddress`
 
 ```ts
-import { createCaip10AccountId, caip10Parts } from "@agentcommercekit/caip"
+import { caip10Parts, createCaip10AccountId } from "@agentcommercekit/caip"
 
 // Create an account ID
 const accountId = createCaip10AccountId(
@@ -71,7 +71,7 @@ const parts = caip10Parts(accountId)
 CAIP-19 defines asset and token identifiers: `chainId/assetNamespace:assetReference/tokenId`
 
 ```ts
-import type { Caip19AssetType, Caip19AssetId } from "@agentcommercekit/caip"
+import type { Caip19AssetId, Caip19AssetType } from "@agentcommercekit/caip"
 
 // Asset type (e.g., ERC-721 contract)
 const nftContract: Caip19AssetType =
@@ -132,22 +132,21 @@ const nftToken: Caip19AssetId =
 
 ```ts
 // Zod v4 schemas
-import {
-  caip2ChainIdSchema,
-  caip10AccountIdSchema
-} from "@agentcommercekit/caip/schemas/zod/v4"
-
-// Zod v3 schemas
-import {
-  caip2ChainIdSchema,
-  caip10AccountIdSchema
-} from "@agentcommercekit/caip/schemas/zod/v3"
 
 // Valibot schemas
 import {
   caip2ChainIdSchema,
   caip10AccountIdSchema
 } from "@agentcommercekit/caip/schemas/valibot"
+// Zod v3 schemas
+import {
+  caip2ChainIdSchema,
+  caip10AccountIdSchema
+} from "@agentcommercekit/caip/schemas/zod/v3"
+import {
+  caip2ChainIdSchema,
+  caip10AccountIdSchema
+} from "@agentcommercekit/caip/schemas/zod/v4"
 ```
 
 ## Resources

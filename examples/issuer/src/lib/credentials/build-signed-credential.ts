@@ -1,12 +1,12 @@
+import type { DatabaseCredential } from "@/db/schema"
+import { getStatusListPosition } from "@/db/utils/get-status-list-position"
 import {
   makeRevocable,
   parseJwtCredential,
-  signCredential
+  signCredential,
+  type Resolvable
 } from "agentcommercekit"
-import { getStatusListPosition } from "@/db/utils/get-status-list-position"
 import type { CredentialResponse, Issuer } from "../types"
-import type { DatabaseCredential } from "@/db/schema"
-import type { Resolvable } from "agentcommercekit"
 
 type BuildSignedCredentialParams = {
   baseUrl: string

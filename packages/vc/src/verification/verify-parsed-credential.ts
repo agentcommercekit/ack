@@ -1,3 +1,5 @@
+import type { Resolvable } from "@agentcommercekit/did"
+import type { Verifiable, W3CCredential } from "../types"
 import {
   CredentialExpiredError,
   CredentialRevokedError,
@@ -7,10 +9,8 @@ import {
 } from "./errors"
 import { isExpired } from "./is-expired"
 import { isRevoked } from "./is-revoked"
-import { verifyProof } from "./verify-proof"
 import type { ClaimVerifier } from "./types"
-import type { Verifiable, W3CCredential } from "../types"
-import type { Resolvable } from "@agentcommercekit/did"
+import { verifyProof } from "./verify-proof"
 
 type VerifyCredentialOptions = {
   /**

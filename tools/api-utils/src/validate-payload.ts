@@ -1,8 +1,11 @@
-import { verifyJwt } from "@agentcommercekit/jwt"
+import type { Resolvable } from "@agentcommercekit/did"
+import {
+  verifyJwt,
+  type JwtString,
+  type JwtVerified
+} from "@agentcommercekit/jwt"
 import * as v from "valibot"
 import { unauthorized } from "./exceptions"
-import type { Resolvable } from "@agentcommercekit/did"
-import type { JwtString, JwtVerified } from "@agentcommercekit/jwt"
 
 export type ParsedPayload<T> = {
   parsed: JwtVerified

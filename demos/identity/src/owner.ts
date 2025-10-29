@@ -3,13 +3,11 @@ import {
   createDidKeyUri,
   createJwtSigner,
   curveToJwtAlgorithm,
-  generateKeypair
-} from "agentcommercekit"
-import type {
-  DidDocument,
-  DidUri,
-  JwtAlgorithm,
-  JwtSigner
+  generateKeypair,
+  type DidDocument,
+  type DidUri,
+  type JwtAlgorithm,
+  type JwtSigner
 } from "agentcommercekit"
 
 export interface Owner {

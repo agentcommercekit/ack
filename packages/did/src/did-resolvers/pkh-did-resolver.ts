@@ -1,11 +1,11 @@
 /**
  * A `did:pkh` resolver for use with `did-resolver`
  */
+import type { DIDResolutionResult, DIDResolver } from "did-resolver"
 import {
   createDidPkhDocumentFromDidPkhUri,
   isDidPkhUri
 } from "../methods/did-pkh"
-import type { DIDResolutionResult, DIDResolver } from "did-resolver"
 
 export async function resolve(did: string): Promise<DIDResolutionResult> {
   if (!isDidPkhUri(did)) {

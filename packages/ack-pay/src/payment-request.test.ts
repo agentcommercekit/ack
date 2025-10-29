@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isPaymentRequest } from "./payment-request"
-import type { PaymentRequestInit } from "./payment-request"
+import { isPaymentRequest, type PaymentRequestInit } from "./payment-request"
 
 describe("isPaymentRequest", () => {
   const validPaymentRequest: PaymentRequestInit = {

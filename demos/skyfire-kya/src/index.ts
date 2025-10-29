@@ -6,6 +6,8 @@ import {
   successMessage,
   waitForEnter
 } from "@repo/cli-tools"
+import type { JwtString, Verifiable, W3CCredential } from "agentcommercekit"
+import type * as jose from "jose"
 import { generateJwks } from "./jwk-keys"
 import { createMockSkyfireKyaToken } from "./kya-token"
 import {
@@ -14,11 +16,9 @@ import {
   getBuyerDidFromVC,
   getOwnerDidFromVC,
   getSellerDidFromVC,
-  verifySkyfireKyaAsAckId
+  verifySkyfireKyaAsAckId,
+  type SkyfireKyaCredentialSubject
 } from "./skyfire-kya-ack-id"
-import type { SkyfireKyaCredentialSubject } from "./skyfire-kya-ack-id"
-import type { JwtString, Verifiable, W3CCredential } from "agentcommercekit"
-import type * as jose from "jose"
 
 async function runDemo() {
   const { jwks, keypair } = await generateJwks()

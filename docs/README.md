@@ -63,7 +63,6 @@ We welcome contributions to the Agent Commerce Kit documentation and specificati
 5. **Commit Your Changes:** Commit your changes with clear and concise commit messages.
 6. **Push to Your Fork:** Push your feature branch to your fork on GitHub (e.g., `git push origin fix/typo-in-ack-id`).
 7. **Submit a Pull Request (PR):** Open a Pull Request from your feature branch in your fork to the `main` branch of the official ACK repository.
-
    - Provide a clear title and description for your PR, explaining the purpose and scope of your changes.
    - Reference any related GitHub issues (e.g., "Closes #123").
 

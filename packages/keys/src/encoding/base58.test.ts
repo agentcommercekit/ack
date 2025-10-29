@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 import {
-  base58ToBytes,
   base58btcToBytes,
+  base58ToBytes,
   bytesToBase58,
   bytesToBase58btc
 } from "./base58"

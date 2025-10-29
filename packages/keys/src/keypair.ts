@@ -5,9 +5,9 @@ import { base64urlToBytes } from "./encoding/base64"
 import {
   getPublicKeyJwk,
   privateKeyBytesToJwk,
-  publicKeyJwkToBytes
+  publicKeyJwkToBytes,
+  type PrivateKeyJwk
 } from "./encoding/jwk"
-import type { PrivateKeyJwk } from "./encoding/jwk"
 import type { KeyCurve } from "./key-curves"
 
 export interface Keypair {

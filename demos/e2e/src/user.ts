@@ -1,17 +1,15 @@
 import {
   createDidPkhDocument,
   createJwtSigner,
-  generateKeypair
+  generateKeypair,
+  type Caip2ChainId,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtSigner,
+  type Keypair
 } from "agentcommercekit"
 import { publicKeyToAddress } from "./utils/evm-address"
-import type {
-  Caip2ChainId,
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtSigner,
-  Keypair
-} from "agentcommercekit"
 
 interface ConstructorParams {
   wallet: Keypair

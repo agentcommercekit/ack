@@ -1,5 +1,8 @@
 import { vValidator } from "@hono/valibot-validator"
-import { apiSuccessResponse } from "@repo/api-utils/api-response"
+import {
+  apiSuccessResponse,
+  type ApiResponse
+} from "@repo/api-utils/api-response"
 import {
   createDidWebUri,
   getControllerClaimVerifier,
@@ -13,11 +16,9 @@ import {
   credentialSchema,
   jwtStringSchema
 } from "agentcommercekit/schemas/valibot"
-import { Hono } from "hono"
+import { Hono, type Env } from "hono"
 import { ValiError } from "valibot"
 import * as v from "valibot"
-import type { ApiResponse } from "@repo/api-utils/api-response"
-import type { Env } from "hono"
 
 const app = new Hono<Env>()
 

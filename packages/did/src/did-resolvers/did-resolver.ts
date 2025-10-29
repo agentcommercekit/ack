@@ -1,11 +1,11 @@
-import { Resolver } from "did-resolver"
-import type { DidDocument } from "../did-document"
-import type {
-  DIDResolutionOptions,
-  DIDResolutionResult,
-  ResolverOptions,
-  ResolverRegistry
+import {
+  Resolver,
+  type DIDResolutionOptions,
+  type DIDResolutionResult,
+  type ResolverOptions,
+  type ResolverRegistry
 } from "did-resolver"
+import type { DidDocument } from "../did-document"
 
 export type { Resolvable } from "did-resolver"
 /**

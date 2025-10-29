@@ -1,5 +1,5 @@
-import type { Verifiable, W3CCredential, W3CPresentation } from "./types"
 import type { DidUri } from "@agentcommercekit/did"
+import type { Verifiable, W3CCredential, W3CPresentation } from "./types"
 
 export type CreatePresentationParams = {
   /**

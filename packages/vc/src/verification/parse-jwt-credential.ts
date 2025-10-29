@@ -1,6 +1,6 @@
+import type { Resolvable } from "@agentcommercekit/did"
 import { verifyCredential } from "did-jwt-vc"
 import type { Verifiable, W3CCredential } from "../types"
-import type { Resolvable } from "@agentcommercekit/did"
 
 /**
  * Parse a JWT credential

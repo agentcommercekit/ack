@@ -1,10 +1,8 @@
 import {
   createDidDocument,
-  createDidDocumentFromKeypair
-} from "../create-did-document"
-import type {
-  CreateDidDocumentFromKeypairOptions,
-  CreateDidDocumentOptions
+  createDidDocumentFromKeypair,
+  type CreateDidDocumentFromKeypairOptions,
+  type CreateDidDocumentOptions
 } from "../create-did-document"
 import type { DidUri } from "../did-uri"
 import type { DidUriWithDocument } from "../types"

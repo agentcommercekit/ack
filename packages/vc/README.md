@@ -53,8 +53,8 @@ const { jwt, verifiableCredential } = await signCredential(credential, {
 
 ```ts
 import {
-  verifyParsedCredential,
-  parsedJwtCredential
+  parsedJwtCredential,
+  verifyParsedCredential
 } from "@agentcommercekit/vc"
 
 // Parse JWT credential
@@ -108,13 +108,12 @@ const revoked = await isRevoked(credential)
 
 ```ts
 // Zod v4 schemas
-import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v4"
-
-// Zod v3 schemas
-import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v3"
 
 // Valibot schemas
 import { credentialSchema } from "@agentcommercekit/vc/schemas/valibot"
+// Zod v3 schemas
+import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v3"
+import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v4"
 ```
 
 ## License (MIT)

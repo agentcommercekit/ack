@@ -18,7 +18,11 @@ import {
   getDidResolver,
   isDidPkhUri,
   isJwtString,
-  parseJwtCredential
+  parseJwtCredential,
+  type JwtString,
+  type PaymentReceiptCredential,
+  type PaymentRequest,
+  type Verifiable
 } from "agentcommercekit"
 import {
   jwtStringSchema,
@@ -27,23 +31,16 @@ import {
 import * as v from "valibot"
 import { isAddress } from "viem"
 import {
-  SERVER_URL,
   chain,
   chainId,
   publicClient,
+  SERVER_URL,
   usdcAddress
 } from "./constants"
 import { ensureNonZeroBalances } from "./utils/ensure-balances"
 import { ensurePrivateKey } from "./utils/ensure-private-keys"
-import { getKeypairInfo } from "./utils/keypair-info"
+import { getKeypairInfo, type KeypairInfo } from "./utils/keypair-info"
 import { transferUsdc } from "./utils/usdc-contract"
-import type { KeypairInfo } from "./utils/keypair-info"
-import type {
-  JwtString,
-  PaymentReceiptCredential,
-  PaymentRequest,
-  Verifiable
-} from "agentcommercekit"
 import "./server"
 import "./receipt-service"
 import "./payment-service"

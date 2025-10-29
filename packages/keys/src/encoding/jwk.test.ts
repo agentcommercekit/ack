@@ -4,9 +4,10 @@ import {
   isPrivateKeyJwk,
   isPublicKeyJwk,
   publicKeyBytesToJwk,
-  publicKeyJwkToBytes
+  publicKeyJwkToBytes,
+  type PublicKeyJwkEd25519,
+  type PublicKeyJwkSecp256k1
 } from "./jwk"
-import type { PublicKeyJwkEd25519, PublicKeyJwkSecp256k1 } from "./jwk"
 
 describe("JWK encoding", () => {
   // Test data: 32 bytes for Ed25519, 65 bytes for secp256k1

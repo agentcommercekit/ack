@@ -2,11 +2,14 @@ import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
   generateKeypair,
-  hexStringToBytes
+  hexStringToBytes,
+  type DidDocument,
+  type DidUri,
+  type JwtSigner
 } from "agentcommercekit"
-import { env } from "hono/adapter"
-import type { DidDocument, DidUri, JwtSigner } from "agentcommercekit"
 import type { Env, MiddlewareHandler } from "hono"
+import { env } from "hono/adapter"
+
 declare module "hono" {
   interface ContextVariableMap {
     verifier: {

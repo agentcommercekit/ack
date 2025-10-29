@@ -1,19 +1,21 @@
+import type { DatabaseClient } from "@/db/get-db"
+import { getCredential } from "@/db/queries/credentials"
+import type { DatabaseCredential } from "@/db/schema"
 import {
-  DidResolver,
+  createDidWebWithSigner,
+  type DidWithSigner
+} from "@/test-helpers/did-web-with-signer"
+import {
   bytesToHexString,
   createControllerCredential,
   createJwt,
+  DidResolver,
   getDidResolver
 } from "agentcommercekit"
 import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-import { getCredential } from "@/db/queries/credentials"
-import { createDidWebWithSigner } from "@/test-helpers/did-web-with-signer"
 import app from ".."
-import type { DatabaseClient } from "@/db/get-db"
-import type { DatabaseCredential } from "@/db/schema"
-import type { DidWithSigner } from "@/test-helpers/did-web-with-signer"
 
 // Mock the DID resolver
 vi.mock("agentcommercekit", async () => {

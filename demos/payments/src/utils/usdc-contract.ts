@@ -1,6 +1,12 @@
-import { createWalletClient, encodeFunctionData, erc20Abi, http } from "viem"
 import { chain, usdcAddress } from "@/constants"
-import type { Account, Address } from "viem"
+import {
+  createWalletClient,
+  encodeFunctionData,
+  erc20Abi,
+  http,
+  type Account,
+  type Address
+} from "viem"
 
 /**
  * Transfer USDC to the recipient

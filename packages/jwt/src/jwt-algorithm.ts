@@ -1,5 +1,4 @@
-import { isKeyCurve } from "@agentcommercekit/keys"
-import type { KeyCurve } from "@agentcommercekit/keys"
+import { isKeyCurve, type KeyCurve } from "@agentcommercekit/keys"
 
 /**
  * JWT signing algorithms supported by the JWT library

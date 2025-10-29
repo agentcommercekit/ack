@@ -1,12 +1,10 @@
-import { isDidUri } from "@agentcommercekit/did"
-import { isJwtString } from "@agentcommercekit/jwt"
+import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
+import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
+import type { ValidationTargets } from "hono"
 import { env } from "hono/adapter"
 import { validator } from "hono/validator"
 import * as v from "valibot"
 import { validatePayload } from "../validate-payload"
-import type { DidUri, Resolvable } from "@agentcommercekit/did"
-import type { JwtString } from "@agentcommercekit/jwt"
-import type { ValidationTargets } from "hono"
 
 interface ValidatedSignedPayload<T> {
   issuer: DidUri

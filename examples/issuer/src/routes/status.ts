@@ -1,23 +1,22 @@
-import { apiSuccessResponse } from "@repo/api-utils/api-response"
-import { notFound } from "@repo/api-utils/exceptions"
-import {
-  createStatusListCredential,
-  parseJwtCredential,
-  signCredential
-} from "agentcommercekit"
-import { Hono } from "hono"
-import { env } from "hono/adapter"
 import { getStatusList } from "@/db/queries/status-lists"
 import { compressBitString } from "@/lib/utils/compress-bit-string"
 import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"
-import type { ApiResponse } from "@repo/api-utils/api-response"
-import type {
-  BitstringStatusListCredential,
-  Verifiable
+import {
+  apiSuccessResponse,
+  type ApiResponse
+} from "@repo/api-utils/api-response"
+import { notFound } from "@repo/api-utils/exceptions"
+import {
+  createStatusListCredential,
+  parseJwtCredential,
+  signCredential,
+  type BitstringStatusListCredential,
+  type Verifiable
 } from "agentcommercekit"
-import type { Env } from "hono"
+import { Hono, type Env } from "hono"
+import { env } from "hono/adapter"
 
 const app = new Hono<Env>()
 

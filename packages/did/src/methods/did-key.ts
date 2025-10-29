@@ -1,8 +1,10 @@
-import { getPublicKeyFromPrivateKey } from "@agentcommercekit/keys"
+import {
+  getPublicKeyFromPrivateKey,
+  type Keypair
+} from "@agentcommercekit/keys"
 import { bytesToMultibase } from "@agentcommercekit/keys/encoding"
 import * as varint from "varint"
 import type { DidUri } from "../did-uri"
-import type { Keypair } from "@agentcommercekit/keys"
 
 /**
  * @see {@link https://w3c-ccg.github.io/did-key-spec/}

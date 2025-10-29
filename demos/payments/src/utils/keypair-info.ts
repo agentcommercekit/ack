@@ -1,16 +1,18 @@
+import { chainId } from "@/constants"
 import {
   bytesToHexString,
   createDidPkhUri,
   createJwtSigner,
   generateKeypair,
   generatePrivateKeyBytes,
-  hexStringToBytes
+  hexStringToBytes,
+  type DidUri,
+  type JwtSigner,
+  type KeyCurve,
+  type Keypair
 } from "agentcommercekit"
-import { privateKeyToAccount } from "viem/accounts"
+import { privateKeyToAccount, type Account } from "viem/accounts"
 import { publicKeyToAddress } from "viem/utils"
-import { chainId } from "@/constants"
-import type { DidUri, JwtSigner, KeyCurve, Keypair } from "agentcommercekit"
-import type { Account } from "viem/accounts"
 
 export type KeypairInfo = {
   publicKeyHex: `0x${string}`

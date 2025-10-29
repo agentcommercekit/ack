@@ -1,8 +1,7 @@
-import { generateText } from "ai"
+import { generateText, type CoreMessage } from "ai"
 import { Agent } from "./agent"
 import { getModel } from "./get-model"
 import { getIdentityTools } from "./identity-tools"
-import type { CoreMessage } from "ai"
 
 export class HaikuAgent extends Agent {
   protected async _run(messages: CoreMessage[]) {

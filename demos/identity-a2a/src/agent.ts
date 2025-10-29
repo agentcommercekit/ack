@@ -9,16 +9,6 @@
  * - Authentication uses DID-based JWT signing and verification
  */
 
-import { colors } from "@repo/cli-tools"
-import {
-  createDidDocumentFromKeypair,
-  createDidWebUri,
-  createJwtSigner,
-  generateKeypair
-} from "agentcommercekit"
-import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
-import { v4 } from "uuid"
-import { issueCredential } from "./issuer"
 import type {
   AgentCard,
   AgentExecutor,
@@ -26,15 +16,23 @@ import type {
   Message,
   RequestContext
 } from "@a2a-js/sdk"
-import type {
-  DidDocument,
-  DidUri,
-  JwtSigner,
-  KeyCurve,
-  Keypair,
-  Verifiable,
-  W3CCredential
+import { colors } from "@repo/cli-tools"
+import {
+  createDidDocumentFromKeypair,
+  createDidWebUri,
+  createJwtSigner,
+  generateKeypair,
+  type DidDocument,
+  type DidUri,
+  type JwtSigner,
+  type KeyCurve,
+  type Keypair,
+  type Verifiable,
+  type W3CCredential
 } from "agentcommercekit"
+import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
+import { v4 } from "uuid"
+import { issueCredential } from "./issuer"
 
 type AgentConfig = {
   agentCard: AgentCard

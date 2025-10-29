@@ -1,6 +1,6 @@
-import { base64urlToBytes, bytesToBase64url } from "./base64"
-import { getPublicKeyFromPrivateKey } from "../public-key"
 import type { KeyCurve } from "../key-curves"
+import { getPublicKeyFromPrivateKey } from "../public-key"
+import { base64urlToBytes, bytesToBase64url } from "./base64"
 
 /**
  * JWK-encoding

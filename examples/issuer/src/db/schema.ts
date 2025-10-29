@@ -1,3 +1,4 @@
+import type { W3CCredential } from "agentcommercekit"
 import { sql } from "drizzle-orm"
 import {
   index,
@@ -5,7 +6,6 @@ import {
   sqliteTable as table,
   text
 } from "drizzle-orm/sqlite-core"
-import type { W3CCredential } from "agentcommercekit"
 
 export const STATUS_LIST_MAX_SIZE = 8_192
 

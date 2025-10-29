@@ -5,23 +5,21 @@ import {
   createJwtSigner,
   createSignedPaymentRequest,
   curveToJwtAlgorithm,
-  generateKeypair
+  generateKeypair,
+  type Caip2ChainId,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtSigner,
+  type JwtString,
+  type Keypair,
+  type PaymentRequest
 } from "agentcommercekit"
+import type { CredentialVerifier } from "./credential-verifier"
 import { PaymentRequiredError } from "./payment-required-error"
+import type { ReceiptVerifier } from "./receipt-verifier"
 import { publicKeyToAddress } from "./utils/evm-address"
 import { verifyAgentIdentityWithCredential } from "./verification"
-import type { CredentialVerifier } from "./credential-verifier"
-import type { ReceiptVerifier } from "./receipt-verifier"
-import type {
-  Caip2ChainId,
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtSigner,
-  JwtString,
-  Keypair,
-  PaymentRequest
-} from "agentcommercekit"
 
 interface AgentConstructorParams {
   did: DidUri

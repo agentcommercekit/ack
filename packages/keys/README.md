@@ -16,9 +16,9 @@ pnpm add @agentcommercekit/keys
 
 ```ts
 import {
+  encodePublicKeyFromKeypair,
   generateKeypair,
-  keypairToJwk,
-  encodePublicKeyFromKeypair
+  keypairToJwk
 } from "@agentcommercekit/keys"
 
 // Generate and format keypairs
@@ -49,7 +49,7 @@ const base58PublicKey = encodePublicKeyFromKeypair("base58", keypair)
 Encoding utilities are also available via subpath exports:
 
 ```ts
-import { bytesToBase58, base58ToBytes } from "@agentcommercekit/keys/encoding"
+import { base58ToBytes, bytesToBase58 } from "@agentcommercekit/keys/encoding"
 ```
 
 ## License (MIT)

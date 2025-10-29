@@ -9,15 +9,18 @@
  * @see {@link https://github.com/decentralized-identity/web-did-resolver}
  * @see {@link ../../licenses/web-did-resolver.LICENSE}
  */
-import { isDidDocument, isDidDocumentForDid } from "../did-document"
-import { isDidWebUri } from "../methods/did-web"
-import type { DidDocument } from "../did-document"
 import type {
   DIDDocument,
   DIDResolutionResult,
   DIDResolver,
   ParsedDID
 } from "did-resolver"
+import {
+  isDidDocument,
+  isDidDocumentForDid,
+  type DidDocument
+} from "../did-document"
+import { isDidWebUri } from "../methods/did-web"
 
 type Fetch = typeof globalThis.fetch
 

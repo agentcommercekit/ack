@@ -1,20 +1,18 @@
 import {
-  InvalidCredentialSubjectError,
   createDidWebDocumentFromKeypair,
   generateKeypair,
   getControllerClaimVerifier,
+  InvalidCredentialSubjectError,
   isControllerCredential,
   parseJwtCredential,
-  verifyParsedCredential
-} from "agentcommercekit"
-import type {
-  ControllerCredential,
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair,
-  Verifiable
+  verifyParsedCredential,
+  type ControllerCredential,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair,
+  type Verifiable
 } from "agentcommercekit"
 
 export class CredentialVerifier {

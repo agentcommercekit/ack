@@ -1,9 +1,11 @@
-import * as v from "valibot"
-import { createPaymentRequestToken } from "./create-payment-request-token"
-import { paymentRequestSchema } from "./schemas/valibot"
-import type { PaymentRequestTokenOptions } from "./create-payment-request-token"
-import type { PaymentRequest, PaymentRequestInit } from "./payment-request"
 import type { JwtString } from "@agentcommercekit/jwt"
+import * as v from "valibot"
+import {
+  createPaymentRequestToken,
+  type PaymentRequestTokenOptions
+} from "./create-payment-request-token"
+import type { PaymentRequest, PaymentRequestInit } from "./payment-request"
+import { paymentRequestSchema } from "./schemas/valibot"
 
 /**
  * Create a signed payment request

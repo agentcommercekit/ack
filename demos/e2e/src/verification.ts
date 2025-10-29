@@ -5,9 +5,12 @@ import {
   logJson,
   successMessage
 } from "@repo/cli-tools"
-import { resolveDidWithController } from "agentcommercekit"
+import {
+  resolveDidWithController,
+  type DidResolver,
+  type JwtString
+} from "agentcommercekit"
 import type { CredentialVerifier } from "./credential-verifier"
-import type { DidResolver, JwtString } from "agentcommercekit"
 
 /**
  * Verify another agent's identity using their DID and ownership credential.

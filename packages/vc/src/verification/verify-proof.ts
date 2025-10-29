@@ -1,7 +1,7 @@
-import { verifyCredential } from "did-jwt-vc"
-import { InvalidProofError, UnsupportedProofTypeError } from "./errors"
-import type { Verifiable, W3CCredential } from "../types"
 import type { Resolvable } from "@agentcommercekit/did"
+import { verifyCredential } from "did-jwt-vc"
+import type { Verifiable, W3CCredential } from "../types"
+import { InvalidProofError, UnsupportedProofTypeError } from "./errors"
 
 interface JwtProof {
   type: "JwtProof2020"

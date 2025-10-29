@@ -5,19 +5,17 @@ import {
   generateKeypair,
   parseJwtCredential,
   signCredential,
-  verifyJwt
+  verifyJwt,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair,
+  type Verifiable,
+  type W3CCredential
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair,
-  Verifiable,
-  W3CCredential
-} from "agentcommercekit"
 
 interface CredentialIssuerParams {
   baseUrl: string

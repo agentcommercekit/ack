@@ -1,7 +1,8 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
+  type Resolvable
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 import {
@@ -10,7 +11,6 @@ import {
 } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
 import { getControllerClaimVerifier } from "./controller-claim-verifier"
-import type { Resolvable } from "@agentcommercekit/did"
 
 async function setup() {
   const resolver = getDidResolver()

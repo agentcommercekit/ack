@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest"
-import * as valibot from "./valibot"
-import * as zodv3 from "./zod/v3"
-import * as zodv4 from "./zod/v4"
 import type {
+  Caip2ChainId,
   Caip10AccountId,
   Caip19AssetId,
   Caip19AssetName,
-  Caip19AssetType,
-  Caip2ChainId
+  Caip19AssetType
 } from "../caips"
+import * as valibot from "./valibot"
+import * as zodv3 from "./zod/v3"
+import * as zodv4 from "./zod/v4"
 
 const schemas = {
   valibot,

@@ -1,5 +1,4 @@
-import { verifyJWT } from "did-jwt"
-import type { JWTVerified, JWTVerifyOptions } from "did-jwt"
+import { verifyJWT, type JWTVerified, type JWTVerifyOptions } from "did-jwt"
 
 export type JwtVerified = JWTVerified
 

@@ -84,7 +84,7 @@ try {
 #### Type Guards for Credential Validation
 
 ```ts
-import { isControllerCredential, isControllerClaim } from "agentcommercekit"
+import { isControllerClaim, isControllerCredential } from "agentcommercekit"
 
 // Check if a credential is specifically a controller credential
 isControllerCredential(credential)
@@ -167,7 +167,7 @@ const receipt = createPaymentReceipt({
 #### Verifying a Payment Receipt
 
 ```ts
-import { verifyPaymentReceipt, getDidResolver } from "agentcommercekit"
+import { getDidResolver, verifyPaymentReceipt } from "agentcommercekit"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
@@ -179,9 +179,9 @@ const verified = await verifyPaymentReceipt(receipt, {
 
 ```ts
 import {
-  isPaymentRequest,
+  isPaymentReceiptClaim,
   isPaymentReceiptCredential,
-  isPaymentReceiptClaim
+  isPaymentRequest
 } from "agentcommercekit"
 
 // Check if a value is a valid payment request

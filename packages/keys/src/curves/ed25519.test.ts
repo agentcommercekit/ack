@@ -1,10 +1,6 @@
 import { describe, expect, test } from "vitest"
-import {
-  generateKeypair,
-  generatePrivateKeyBytes,
-  isValidPublicKey
-} from "./ed25519"
 import { base58ToBytes } from "../encoding/base58"
+import { generateKeypair, isValidPublicKey } from "./ed25519"
 
 describe("Ed25519", () => {
   describe("generateKeypair()", () => {

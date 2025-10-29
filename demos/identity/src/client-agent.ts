@@ -1,10 +1,9 @@
 import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
-import { generateText, tool } from "ai"
+import { generateText, tool, type CoreMessage } from "ai"
 import * as v from "valibot"
 import { Agent } from "./agent"
 import { getModel } from "./get-model"
-import type { CoreMessage } from "ai"
 
 const agentResponseSchema = v.object({
   text: v.string()

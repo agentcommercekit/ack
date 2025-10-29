@@ -3,10 +3,9 @@ import {
   DefaultRequestHandler,
   InMemoryTaskStore
 } from "@a2a-js/sdk"
-import { colors, createLogger } from "@repo/cli-tools"
+import { colors, createLogger, type Logger } from "@repo/cli-tools"
 import express from "express"
 import type { Agent } from "../agent"
-import type { Logger } from "@repo/cli-tools"
 
 type Options = {
   logger?: Logger

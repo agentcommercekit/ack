@@ -3,9 +3,6 @@
   "ui": "stream",
   "concurrency": "15",
   "tasks": {
-    "//#check:format": {},
-    "//#check:packages": {},
-    "//#format": {},
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -32,7 +29,7 @@
       "persistent": true
     },
     "fix": {
-      "dependsOn": ["//#format", "lint:fix"]
+      "dependsOn": ["lint:fix", "//#format"]
     },
     "lint": {
       "dependsOn": ["^lint", "^build"]
@@ -46,7 +43,10 @@
     },
     "test": {
       "dependsOn": ["^test", "^build"]
-    }
+    },
+    "//#check:format": {},
+    "//#check:packages": {},
+    "//#format": {}
   },
   "globalEnv": ["NODE_ENV"]
 }

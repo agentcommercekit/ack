@@ -11,7 +11,9 @@ import {
   caip2ChainIds,
   createJwt,
   getDidResolver,
-  parseJwtCredential
+  parseJwtCredential,
+  type Keypair,
+  type PaymentRequest
 } from "agentcommercekit"
 import { Agent } from "./agent"
 import { CredentialIssuer } from "./credential-issuer"
@@ -21,7 +23,6 @@ import { ReceiptIssuer } from "./receipt-issuer"
 import { ReceiptVerifier } from "./receipt-verifier"
 import { User } from "./user"
 import { publicKeyToAddress } from "./utils/evm-address"
-import type { Keypair, PaymentRequest } from "agentcommercekit"
 
 /**
  * The chain id to use for payments in this example.

@@ -64,8 +64,8 @@ try {
 
 ```ts
 import {
-  isControllerCredential,
-  isControllerClaim
+  isControllerClaim,
+  isControllerCredential
 } from "@agentcommercekit/ack-id"
 
 // Check if a credential is specifically a controller credential
@@ -88,13 +88,12 @@ isControllerClaim(credential.credentialSubject)
 
 ```ts
 // Zod v4 schema
-import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v4"
-
-// Zod v3 schema
-import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v3"
 
 // Valibot schema
 import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/valibot"
+// Zod v3 schema
+import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v3"
+import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v4"
 ```
 
 ## A2A Support

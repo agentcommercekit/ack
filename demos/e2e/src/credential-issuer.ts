@@ -4,17 +4,15 @@ import {
   createJwtSigner,
   generateKeypair,
   signCredential,
-  verifyJwt
+  verifyJwt,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair
-} from "agentcommercekit"
 
 const credentialPayloadSchema = v.object({
   controller: didUriSchema,

@@ -1,24 +1,29 @@
 import {
   createDidKeyUri,
   createDidPkhUri,
-  getDidResolver
+  getDidResolver,
+  type DidUri,
+  type Resolvable
 } from "@agentcommercekit/did"
-import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
+import {
+  createJwtSigner,
+  curveToJwtAlgorithm,
+  type JwtString
+} from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import {
   InvalidCredentialError,
   parseJwtCredential,
-  signCredential
+  signCredential,
+  type Verifiable,
+  type W3CCredential
 } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
 import { InvalidPaymentRequestTokenError } from "./errors"
-import { verifyPaymentReceipt } from "./verify-payment-receipt"
 import type { PaymentRequestInit } from "./payment-request"
-import type { DidUri, Resolvable } from "@agentcommercekit/did"
-import type { JwtString } from "@agentcommercekit/jwt"
-import type { Verifiable, W3CCredential } from "@agentcommercekit/vc"
+import { verifyPaymentReceipt } from "./verify-payment-receipt"
 
 describe("verifyPaymentReceipt()", () => {
   let resolver: Resolvable

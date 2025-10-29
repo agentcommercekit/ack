@@ -1,14 +1,12 @@
 import {
   createDidWebDocumentFromKeypair,
   generateKeypair,
-  verifyPaymentReceipt
-} from "agentcommercekit"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair
+  verifyPaymentReceipt,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair
 } from "agentcommercekit"
 
 export class ReceiptVerifier {

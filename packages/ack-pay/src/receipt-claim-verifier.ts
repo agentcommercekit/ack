@@ -1,14 +1,12 @@
 import {
   InvalidCredentialSubjectError,
-  isCredential
+  isCredential,
+  type ClaimVerifier,
+  type CredentialSubject,
+  type W3CCredential
 } from "@agentcommercekit/vc"
 import * as v from "valibot"
 import { paymentReceiptClaimSchema } from "./schemas/valibot"
-import type {
-  ClaimVerifier,
-  CredentialSubject,
-  W3CCredential
-} from "@agentcommercekit/vc"
 
 export interface PaymentReceiptCredential extends W3CCredential {
   credentialSubject: v.InferOutput<typeof paymentReceiptClaimSchema>

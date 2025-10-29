@@ -1,17 +1,17 @@
-import { resolveDidWithController } from "@agentcommercekit/did"
+import {
+  resolveDidWithController,
+  type Resolvable
+} from "@agentcommercekit/did"
 import {
   InvalidControllerClaimError,
   InvalidCredentialSubjectError,
-  isCredential
+  isCredential,
+  type ClaimVerifier,
+  type CredentialSubject,
+  type W3CCredential
 } from "@agentcommercekit/vc"
 import * as v from "valibot"
 import { controllerClaimSchema } from "./schemas/valibot"
-import type { Resolvable } from "@agentcommercekit/did"
-import type {
-  ClaimVerifier,
-  CredentialSubject,
-  W3CCredential
-} from "@agentcommercekit/vc"
 
 export interface ControllerCredential extends W3CCredential {
   credentialSubject: v.InferOutput<typeof controllerClaimSchema>

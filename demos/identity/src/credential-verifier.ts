@@ -3,15 +3,13 @@ import {
   createJwtSigner,
   generateKeypair,
   getControllerClaimVerifier,
-  verifyParsedCredential
-} from "agentcommercekit"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtSigner,
-  Keypair,
-  W3CCredential
+  verifyParsedCredential,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtSigner,
+  type Keypair,
+  type W3CCredential
 } from "agentcommercekit"
 
 interface CredentialVerifierParams {

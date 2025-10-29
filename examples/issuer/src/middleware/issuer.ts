@@ -1,12 +1,12 @@
+import type { Issuer } from "@/lib/types"
 import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
   generateKeypair,
   hexStringToBytes
 } from "agentcommercekit"
-import { env } from "hono/adapter"
-import type { Issuer } from "@/lib/types"
 import type { Env, MiddlewareHandler } from "hono"
+import { env } from "hono/adapter"
 
 declare module "hono" {
   interface ContextVariableMap {

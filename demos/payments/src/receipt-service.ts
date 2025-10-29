@@ -16,8 +16,11 @@ import {
   verifyJwt,
   verifyPaymentRequestToken
 } from "agentcommercekit"
-import { caip2ChainIdSchema } from "agentcommercekit/schemas/valibot"
-import { Hono } from "hono"
+import {
+  caip2ChainIdSchema,
+  type paymentOptionSchema
+} from "agentcommercekit/schemas/valibot"
+import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
@@ -26,8 +29,6 @@ import { parseEventLogs } from "viem/utils"
 import { chainId, publicClient, usdcAddress } from "./constants"
 import { asAddress } from "./utils/as-address"
 import { getKeypairInfo } from "./utils/keypair-info"
-import type { paymentOptionSchema } from "agentcommercekit/schemas/valibot"
-import type { Env } from "hono"
 
 const app = new Hono<Env>()
 app.use(logger())

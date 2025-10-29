@@ -1,8 +1,8 @@
 import * as v from "valibot"
 import { isCredential } from "../is-credential"
 import { bitstringStatusListClaimSchema } from "../schemas/valibot"
-import type { BitstringStatusListCredential } from "./types"
 import type { CredentialSubject } from "../types"
+import type { BitstringStatusListCredential } from "./types"
 
 function isStatusListClaim(
   credentialSubject: CredentialSubject

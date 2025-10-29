@@ -1,14 +1,14 @@
-import { bytesToBase64url } from "agentcommercekit"
+import {
+  bytesToBase64url,
+  type DidUri,
+  type DidWebUri,
+  type JwtPayload,
+  type JwtString,
+  type Verifiable,
+  type W3CCredential
+} from "agentcommercekit"
 import * as jose from "jose"
 import type { SkyfireKyaJwtPayload } from "./kya-token"
-import type {
-  DidUri,
-  DidWebUri,
-  JwtPayload,
-  JwtString,
-  Verifiable,
-  W3CCredential
-} from "agentcommercekit"
 
 export interface SkyfireKyaCredentialSubject {
   id: DidUri // VC spec requires id in credentialSubject (represents the subject)

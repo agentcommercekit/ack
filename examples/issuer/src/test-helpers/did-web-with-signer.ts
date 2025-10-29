@@ -1,9 +1,11 @@
 import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
-  generateKeypair
+  generateKeypair,
+  type DidResolver,
+  type DidUri,
+  type KeyCurve
 } from "agentcommercekit"
-import type { DidResolver, DidUri, KeyCurve } from "agentcommercekit"
 
 interface GenerateDidWebWithSignerOptions {
   controller?: DidUri

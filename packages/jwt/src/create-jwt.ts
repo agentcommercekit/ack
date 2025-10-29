@@ -1,8 +1,11 @@
-import { createJWT as baseCreateJWT } from "did-jwt"
-import { isJwtString } from "./jwt-string"
+import {
+  createJWT as baseCreateJWT,
+  type JWTHeader,
+  type JWTOptions,
+  type JWTPayload
+} from "did-jwt"
 import type { JwtAlgorithm } from "./jwt-algorithm"
-import type { JwtString } from "./jwt-string"
-import type { JWTHeader, JWTOptions, JWTPayload } from "did-jwt"
+import { isJwtString, type JwtString } from "./jwt-string"
 
 export type JwtPayload = JWTPayload
 export type JwtOptions = JWTOptions

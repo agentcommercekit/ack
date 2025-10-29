@@ -1,13 +1,15 @@
-import { getDidResolver } from "@agentcommercekit/did"
+import type { Message } from "@a2a-js/sdk"
+import {
+  getDidResolver,
+  type DidResolver,
+  type DidUri
+} from "@agentcommercekit/did"
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
-import { verifyJwt } from "@agentcommercekit/jwt"
+import { verifyJwt, type JwtVerified } from "@agentcommercekit/jwt"
 import { credentialSchema } from "@agentcommercekit/vc/schemas/valibot"
 import { stringify } from "safe-stable-stringify"
 import * as v from "valibot"
 import { dataPartSchema, messageSchema } from "./schemas/valibot"
-import type { Message } from "@a2a-js/sdk"
-import type { DidResolver, DidUri } from "@agentcommercekit/did"
-import type { JwtVerified } from "@agentcommercekit/jwt"
 
 const jwtDataPartSchema = v.object({
   ...dataPartSchema.entries,

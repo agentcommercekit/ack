@@ -1,7 +1,11 @@
-import { createJwt } from "@agentcommercekit/jwt"
-import type { PaymentRequest } from "./payment-request"
 import type { DidUri } from "@agentcommercekit/did"
-import type { JwtAlgorithm, JwtSigner, JwtString } from "@agentcommercekit/jwt"
+import {
+  createJwt,
+  type JwtAlgorithm,
+  type JwtSigner,
+  type JwtString
+} from "@agentcommercekit/jwt"
+import type { PaymentRequest } from "./payment-request"
 
 export interface PaymentRequestTokenOptions {
   /**

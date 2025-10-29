@@ -6,9 +6,9 @@ import {
   generateKeypair,
   getDidResolver,
   parseJwtCredential,
-  signCredential
+  signCredential,
+  type DidUri
 } from "agentcommercekit"
-import type { DidUri } from "agentcommercekit"
 
 const issuerKeypair = await generateKeypair("Ed25519")
 

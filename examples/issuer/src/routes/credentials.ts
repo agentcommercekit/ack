@@ -1,4 +1,17 @@
-import { apiSuccessResponse } from "@repo/api-utils/api-response"
+import {
+  createCredential as createDatabaseCredential,
+  getCredential,
+  revokeCredential
+} from "@/db/queries/credentials"
+import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
+import type { CredentialResponse } from "@/lib/types"
+import { database } from "@/middleware/database"
+import { didResolver } from "@/middleware/did-resolver"
+import { issuer } from "@/middleware/issuer"
+import {
+  apiSuccessResponse,
+  type ApiResponse
+} from "@repo/api-utils/api-response"
 import {
   internalServerError,
   notFound,
@@ -11,21 +24,9 @@ import {
   resolveDidWithController
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
-import { Hono } from "hono"
+import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
 import * as v from "valibot"
-import {
-  createCredential as createDatabaseCredential,
-  getCredential,
-  revokeCredential
-} from "@/db/queries/credentials"
-import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
-import { database } from "@/middleware/database"
-import { didResolver } from "@/middleware/did-resolver"
-import { issuer } from "@/middleware/issuer"
-import type { CredentialResponse } from "@/lib/types"
-import type { ApiResponse } from "@repo/api-utils/api-response"
-import type { Env } from "hono"
 
 const app = new Hono<Env>()
 app.use("*", issuer())

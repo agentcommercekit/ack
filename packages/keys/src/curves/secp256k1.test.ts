@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest"
+import { hexStringToBytes } from "../encoding/hex"
 import {
   generateKeypair,
   getPublicKeyBytes,
   isValidPublicKey
 } from "./secp256k1"
-import { hexStringToBytes } from "../encoding/hex"
 
 describe("secp256k1", () => {
   describe("generateKeypair()", () => {

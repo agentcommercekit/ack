@@ -1,8 +1,7 @@
-import { env } from "hono/adapter"
 import { buildUrl } from "@/lib/build-url"
-import { getIdentity } from "@/lib/identity"
-import type { Identity } from "@/lib/identity"
+import { getIdentity, type Identity } from "@/lib/identity"
 import type { Env, MiddlewareHandler } from "hono"
+import { env } from "hono/adapter"
 
 declare module "hono" {
   interface ContextVariableMap {

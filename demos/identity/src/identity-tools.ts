@@ -1,11 +1,15 @@
 import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
-import { resolveDid, verifyJwt } from "agentcommercekit"
+import {
+  resolveDid,
+  verifyJwt,
+  type DidResolver,
+  type DidUri
+} from "agentcommercekit"
 import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import { tool } from "ai"
 import * as v from "valibot"
 import type { CredentialVerifier } from "./credential-verifier"
-import type { DidResolver, DidUri } from "agentcommercekit"
 
 const challengeResponseSchema = v.object({
   signedChallenge: v.string()

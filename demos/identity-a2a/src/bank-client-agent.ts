@@ -1,12 +1,19 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-condition */
 
-import { A2AClient } from "@a2a-js/sdk"
+import type { Server } from "node:http"
+import {
+  A2AClient,
+  type AgentCard,
+  type Message,
+  type TextPart
+} from "@a2a-js/sdk"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
   curveToJwtAlgorithm,
   getDidResolver,
   resolveDid,
-  verifyParsedCredential
+  verifyParsedCredential,
+  type DidUri
 } from "agentcommercekit"
 import {
   createA2AHandshakeMessage,
@@ -25,9 +32,6 @@ import {
   isRpcErrorResponse
 } from "./utils/response-parsers"
 import { startAgentServer } from "./utils/server-utils"
-import type { AgentCard, Message, TextPart } from "@a2a-js/sdk"
-import type { DidUri } from "agentcommercekit"
-import type { Server } from "node:http"
 
 const logger = createLogger("Bank Customer", colors.green)
 

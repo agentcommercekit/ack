@@ -1,5 +1,4 @@
-import { caip2ChainIdPattern } from "./caip-2"
-import type { Caip2ChainId } from "./caip-2"
+import { caip2ChainIdPattern, type Caip2ChainId } from "./caip-2"
 
 /**
  * CAIP-19 Spec - Asset Identification Components

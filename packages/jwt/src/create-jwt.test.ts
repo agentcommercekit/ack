@@ -1,9 +1,12 @@
 import { generateKeypair } from "@agentcommercekit/keys"
-import { createJWT as baseCreateJWT } from "did-jwt"
+import {
+  createJWT as baseCreateJWT,
+  type JWTOptions,
+  type JWTPayload
+} from "did-jwt"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { createJwt } from "./create-jwt"
 import { createJwtSigner } from "./signer"
-import type { JWTOptions, JWTPayload } from "did-jwt"
 
 vi.mock("did-jwt", async () => {
   const actual = await vi.importActual("did-jwt")

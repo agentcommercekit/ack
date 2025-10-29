@@ -1,20 +1,20 @@
-import { isJwtString } from "@agentcommercekit/jwt"
+import type { Resolvable } from "@agentcommercekit/did"
+import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import {
   InvalidCredentialError,
   InvalidCredentialSubjectError,
   isCredential,
   parseJwtCredential,
-  verifyParsedCredential
+  verifyParsedCredential,
+  type Verifiable,
+  type W3CCredential
 } from "@agentcommercekit/vc"
+import type { PaymentRequest } from "./payment-request"
 import {
   getReceiptClaimVerifier,
   isPaymentReceiptCredential
 } from "./receipt-claim-verifier"
 import { verifyPaymentRequestToken } from "./verify-payment-request-token"
-import type { PaymentRequest } from "./payment-request"
-import type { Resolvable } from "@agentcommercekit/did"
-import type { JwtString } from "@agentcommercekit/jwt"
-import type { Verifiable, W3CCredential } from "@agentcommercekit/vc"
 
 interface VerifyPaymentReceiptOptions {
   /**

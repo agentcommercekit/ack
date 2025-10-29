@@ -6,8 +6,10 @@ import * as v from "valibot"
 import { describe, expect, it } from "vitest"
 import { createPaymentRequestToken } from "./create-payment-request-token"
 import { getReceiptClaimVerifier } from "./receipt-claim-verifier"
-import { paymentRequestSchema } from "./schemas/valibot"
-import type { paymentReceiptClaimSchema } from "./schemas/valibot"
+import {
+  paymentRequestSchema,
+  type paymentReceiptClaimSchema
+} from "./schemas/valibot"
 
 describe("getReceiptClaimVerifier", () => {
   const resolver = getDidResolver()

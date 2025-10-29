@@ -2,7 +2,9 @@ import {
   encodePublicKeyFromKeypair,
   generateKeypair,
   keyCurves,
-  publicKeyEncodings
+  publicKeyEncodings,
+  type Keypair,
+  type PublicKeyEncoding
 } from "@agentcommercekit/keys"
 import {
   bytesToMultibase,
@@ -13,7 +15,6 @@ import {
   createDidDocument,
   createDidDocumentFromKeypair
 } from "./create-did-document"
-import type { Keypair, PublicKeyEncoding } from "@agentcommercekit/keys"
 
 const keyTypeMap = {
   jwk: "JsonWebKey2020",

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { getStatusListPosition } from "./get-status-list-position"
 import { STATUS_LIST_MAX_SIZE } from "../schema"
+import { getStatusListPosition } from "./get-status-list-position"
 
 describe("getStatusListPosition", () => {
   it("returns correct position for index 1", () => {

@@ -5,15 +5,14 @@ import {
   createSignedPaymentRequest,
   curveToJwtAlgorithm,
   getDidResolver,
-  verifyPaymentReceipt
+  verifyPaymentReceipt,
+  type PaymentRequestInit
 } from "agentcommercekit"
-import { Hono } from "hono"
+import { Hono, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
-import { PAYMENT_SERVICE_URL, RECEIPT_SERVICE_URL, chainId } from "./constants"
+import { chainId, PAYMENT_SERVICE_URL, RECEIPT_SERVICE_URL } from "./constants"
 import { getKeypairInfo } from "./utils/keypair-info"
-import type { PaymentRequestInit } from "agentcommercekit"
-import type { Env, TypedResponse } from "hono"
 
 const app = new Hono<Env>()
 app.use(logger())

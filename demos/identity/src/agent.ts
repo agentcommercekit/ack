@@ -5,19 +5,17 @@ import {
   createJwt,
   createJwtSigner,
   curveToJwtAlgorithm,
-  generateKeypair
-} from "agentcommercekit"
-import type { CredentialVerifier } from "./credential-verifier"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtSigner,
-  Keypair,
-  Verifiable,
-  W3CCredential
+  generateKeypair,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtSigner,
+  type Keypair,
+  type Verifiable,
+  type W3CCredential
 } from "agentcommercekit"
 import type { CoreMessage } from "ai"
+import type { CredentialVerifier } from "./credential-verifier"
 
 interface AgentConstructorParams {
   ownerDid: DidUri

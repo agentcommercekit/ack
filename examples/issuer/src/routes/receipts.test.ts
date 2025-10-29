@@ -1,12 +1,20 @@
+import type { DatabaseClient } from "@/db/get-db"
+import { getCredential } from "@/db/queries/credentials"
+import type { DatabaseCredential } from "@/db/schema"
 import {
-  DidResolver,
+  createDidWebWithSigner,
+  type DidWithSigner
+} from "@/test-helpers/did-web-with-signer"
+import {
   bytesToHexString,
   createJwt,
   createPaymentReceipt,
   createSignedPaymentRequest,
   curveToJwtAlgorithm,
+  DidResolver,
   getDidResolver,
-  verifyPaymentRequestToken
+  verifyPaymentRequestToken,
+  type PaymentRequestInit
 } from "agentcommercekit"
 import {
   credentialSchema,
@@ -14,13 +22,7 @@ import {
 } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getCredential } from "@/db/queries/credentials"
-import { createDidWebWithSigner } from "@/test-helpers/did-web-with-signer"
 import app from ".."
-import type { DatabaseClient } from "@/db/get-db"
-import type { DatabaseCredential } from "@/db/schema"
-import type { DidWithSigner } from "@/test-helpers/did-web-with-signer"
-import type { PaymentRequestInit } from "agentcommercekit"
 
 vi.mock("agentcommercekit", async () => {
   const actual = await vi.importActual("agentcommercekit")

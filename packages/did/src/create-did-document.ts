@@ -1,19 +1,19 @@
-import { encodePublicKeyFromKeypair } from "@agentcommercekit/keys"
+import {
+  encodePublicKeyFromKeypair,
+  type KeyCurve,
+  type Keypair,
+  type PublicKeyEncoding,
+  type PublicKeyTypeMap,
+  type PublicKeyWithEncoding
+} from "@agentcommercekit/keys"
 import {
   base58ToBytes,
   bytesToMultibase,
   hexStringToBytes
 } from "@agentcommercekit/keys/encoding"
+import type { VerificationMethod } from "did-resolver"
 import type { DidDocument } from "./did-document"
 import type { DidUri } from "./did-uri"
-import type {
-  KeyCurve,
-  Keypair,
-  PublicKeyEncoding,
-  PublicKeyTypeMap,
-  PublicKeyWithEncoding
-} from "@agentcommercekit/keys"
-import type { VerificationMethod } from "did-resolver"
 
 type LegacyPublicKeyEncoding = "hex" | "base58"
 
@@ -154,7 +154,7 @@ export type CreateDidDocumentOptions = {
  *     value: {
  *       kty: "OKP",
  *       crv: "Ed25519",
- *       x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo"
+ *       x: "..."
  *     }
  *   }
  * })

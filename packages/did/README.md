@@ -17,8 +17,7 @@ pnpm add @agentcommercekit/did
 ### Basic DID Resolution
 
 ```ts
-import { getDidResolver, resolveDid } from "@agentcommercekit/did"
-import type { DidUri } from "@agentcommercekit/did"
+import { getDidResolver, resolveDid, type DidUri } from "@agentcommercekit/did"
 
 // Create a resolver with support for did:web, did:key, and did:pkh methods
 const resolver = getDidResolver()
@@ -45,9 +44,9 @@ const { did, didDocument, controller } = await resolveDidWithController(
 
 ```ts
 import {
-  createDidWebUri,
   createDidKeyUri,
-  createDidPkhUri
+  createDidPkhUri,
+  createDidWebUri
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 
@@ -71,11 +70,11 @@ const pkhDid = createDidPkhUri(
 ### Creating DID Documents
 
 ```ts
-import { generateKeypair } from "@agentcommercekit/keys"
 import {
   createDidDocumentFromKeypair,
   createDidWebDocumentFromKeypair
 } from "@agentcommercekit/did"
+import { generateKeypair } from "@agentcommercekit/keys"
 
 const keypair = await generateKeypair("secp256k1")
 
@@ -128,13 +127,12 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 
 ```ts
 // Zod v4 schemas
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v4"
-
-// Zod v3 schemas
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
 
 // Valibot schemas
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
+// Zod v3 schemas
+import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
+import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v4"
 ```
 
 ## License (MIT)

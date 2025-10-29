@@ -1,9 +1,8 @@
-import { verifyCredential } from "did-jwt-vc"
+import type { Resolvable } from "@agentcommercekit/did"
+import { verifyCredential, type VerifiedCredential } from "did-jwt-vc"
 import { describe, expect, it, vi } from "vitest"
 import { InvalidProofError, UnsupportedProofTypeError } from "./errors"
 import { verifyProof } from "./verify-proof"
-import type { Resolvable } from "@agentcommercekit/did"
-import type { VerifiedCredential } from "did-jwt-vc"
 
 vi.mock("did-jwt-vc", async () => {
   const actual = await vi.importActual("did-jwt-vc")

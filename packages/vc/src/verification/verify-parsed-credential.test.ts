@@ -5,11 +5,8 @@ import {
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { isExpired } from "./is-expired"
-import { isRevoked } from "./is-revoked"
-import { verifyParsedCredential } from "./verify-parsed-credential"
-import { verifyProof } from "./verify-proof"
 import { createCredential } from "../create-credential"
+import type { Verifiable, W3CCredential } from "../types"
 import {
   CredentialExpiredError,
   CredentialRevokedError,
@@ -17,7 +14,10 @@ import {
   UnsupportedCredentialTypeError,
   UntrustedIssuerError
 } from "./errors"
-import type { Verifiable, W3CCredential } from "../types"
+import { isExpired } from "./is-expired"
+import { isRevoked } from "./is-revoked"
+import { verifyParsedCredential } from "./verify-parsed-credential"
+import { verifyProof } from "./verify-proof"
 
 vi.mock("./is-expired", () => ({
   isExpired: vi.fn()

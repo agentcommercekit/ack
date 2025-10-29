@@ -1,17 +1,15 @@
 import { z } from "zod/v3"
 import {
+  caip2ChainIdRegex,
   caip10AccountIdRegex,
   caip19AssetIdRegex,
   caip19AssetNameRegex,
   caip19AssetTypeRegex,
-  caip2ChainIdRegex
-} from "../../caips"
-import type {
-  Caip10AccountId,
-  Caip19AssetId,
-  Caip19AssetName,
-  Caip19AssetType,
-  Caip2ChainId
+  type Caip2ChainId,
+  type Caip10AccountId,
+  type Caip19AssetId,
+  type Caip19AssetName,
+  type Caip19AssetType
 } from "../../caips"
 
 export const caip2ChainIdSchema = z

@@ -3,9 +3,9 @@ import {
   bytesToMultibase,
   getMultibaseEncoding,
   isMultibase,
-  multibaseToBytes
+  multibaseToBytes,
+  type MultibaseEncoding
 } from "./multibase"
-import type { MultibaseEncoding } from "./multibase"
 
 describe("multibase", () => {
   // Test data: "Hello, World!" in different encodings

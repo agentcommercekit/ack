@@ -1,15 +1,15 @@
-import { createJwt } from "@agentcommercekit/jwt"
-import { v4 } from "uuid"
-import { generateRandomJti, generateRandomNonce } from "./random"
 import type { Message } from "@a2a-js/sdk"
 import type { DidUri } from "@agentcommercekit/did"
-import type {
-  JwtAlgorithm,
-  JwtPayload,
-  JwtSigner,
-  JwtString
+import {
+  createJwt,
+  type JwtAlgorithm,
+  type JwtPayload,
+  type JwtSigner,
+  type JwtString
 } from "@agentcommercekit/jwt"
 import type { W3CCredential } from "@agentcommercekit/vc"
+import { v4 } from "uuid"
+import { generateRandomJti, generateRandomNonce } from "./random"
 
 type SignMessageOptions = {
   did: DidUri
@@ -22,11 +22,6 @@ type SignedA2AMessage = {
   sig: string
   jti: string
   message: Message
-}
-
-type A2AHandshakeMessage = SignedA2AMessage & {
-  nonce: string
-  replyNonce?: string
 }
 
 /**

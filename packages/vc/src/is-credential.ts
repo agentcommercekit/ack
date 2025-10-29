@@ -1,6 +1,6 @@
+import type { W3CCredential } from "did-jwt-vc"
 import * as v from "valibot"
 import { credentialSchema } from "./schemas/valibot"
-import type { W3CCredential } from "did-jwt-vc"
 
 /**
  * Check if a value is a valid W3C credential

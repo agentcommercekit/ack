@@ -2,10 +2,10 @@ import { generateKeypair } from "@agentcommercekit/keys"
 import { bytesToHexString } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
 import { getDidResolver } from "./did-resolvers/get-did-resolver"
+import type { DidUri } from "./did-uri"
 import { DidDocumentNotFoundError, InvalidDidControllerError } from "./errors"
 import { createDidWebDocument } from "./methods/did-web"
 import { resolveDid, resolveDidWithController } from "./resolve-did"
-import type { DidUri } from "./did-uri"
 
 async function generateDid(baseUrl: string, controller?: DidUri) {
   const keypair = await generateKeypair("secp256k1")

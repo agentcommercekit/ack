@@ -1,16 +1,19 @@
 import {
-  DidResolver,
   createDidWebDocumentFromKeypair,
-  getDidResolver
+  DidResolver,
+  getDidResolver,
+  type createDidWebDocument
 } from "@agentcommercekit/did"
-import { createJwt, createJwtSigner } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import {
+  createJwt,
+  createJwtSigner,
+  type JwtSigner,
+  type JwtString
+} from "@agentcommercekit/jwt"
+import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
 import { validatePayload } from "./validate-payload"
-import type { createDidWebDocument } from "@agentcommercekit/did"
-import type { JwtSigner, JwtString } from "@agentcommercekit/jwt"
-import type { Keypair } from "@agentcommercekit/keys"
 
 const testBodySchema = v.object({
   test: v.string()

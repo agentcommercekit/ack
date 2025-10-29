@@ -14,16 +14,19 @@ import {
   updateEnvFile,
   waitForEnter
 } from "@repo/cli-tools"
-import { createJwt, getDidResolver, parseJwtCredential } from "agentcommercekit"
+import {
+  createJwt,
+  getDidResolver,
+  parseJwtCredential,
+  type DidUri
+} from "agentcommercekit"
 import { ClientAgent } from "./client-agent"
 import { CredentialIssuer } from "./credential-issuer"
 import { CredentialVerifier } from "./credential-verifier"
 import { providerKeySet } from "./get-model"
 import { HaikuAgent } from "./haiku-agent"
-import { createOwner } from "./owner"
+import { createOwner, type Owner } from "./owner"
 import { serveAgent } from "./serve-agent"
-import type { Owner } from "./owner"
-import type { DidUri } from "agentcommercekit"
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
 

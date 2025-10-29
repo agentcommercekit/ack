@@ -4,15 +4,13 @@ import {
   createPaymentReceipt,
   generateKeypair,
   signCredential,
-  verifyPaymentRequestToken
-} from "agentcommercekit"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair,
-  PaymentRequest
+  verifyPaymentRequestToken,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair,
+  type PaymentRequest
 } from "agentcommercekit"
 
 export class ReceiptIssuer {

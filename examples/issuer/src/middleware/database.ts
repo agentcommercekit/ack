@@ -1,5 +1,4 @@
-import { getDb } from "@/db/get-db"
-import type { DatabaseClient } from "@/db/get-db"
+import { getDb, type DatabaseClient } from "@/db/get-db"
 import type { Env, MiddlewareHandler } from "hono"
 
 declare module "hono" {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
-import { isExpired } from "./is-expired"
 import type { Verifiable, W3CCredential } from "../types"
+import { isExpired } from "./is-expired"
 
 describe("isExpired", () => {
   it("returns false when credential has no expiration date", () => {

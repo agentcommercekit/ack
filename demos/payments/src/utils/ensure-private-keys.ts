@@ -1,5 +1,5 @@
-import { colors, log, updateEnvFile } from "@repo/cli-tools"
 import { envFilePath } from "@/constants"
+import { colors, log, updateEnvFile } from "@repo/cli-tools"
 import { generatePrivateKeyHex } from "./keypair-info"
 
 export async function ensurePrivateKey(name: string) {

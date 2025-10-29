@@ -1,13 +1,17 @@
 import {
   createDidWebDocumentFromKeypair,
-  createDidWebUri
+  createDidWebUri,
+  type DidDocument,
+  type DidUri
 } from "@agentcommercekit/did"
-import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import {
+  createJwtSigner,
+  curveToJwtAlgorithm,
+  type JwtAlgorithm,
+  type JwtSigner
+} from "@agentcommercekit/jwt"
+import { generateKeypair, type KeyCurve } from "@agentcommercekit/keys"
 import { hexStringToBytes } from "@agentcommercekit/keys/encoding"
-import type { DidDocument, DidUri } from "@agentcommercekit/did"
-import type { JwtAlgorithm, JwtSigner } from "@agentcommercekit/jwt"
-import type { KeyCurve } from "@agentcommercekit/keys"
 
 export interface Identity {
   did: DidUri

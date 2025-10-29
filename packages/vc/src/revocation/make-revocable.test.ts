@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { makeRevocable } from "./make-revocable"
 import type { W3CCredential } from "../types"
+import { makeRevocable } from "./make-revocable"
 
 describe("makeRevocable", () => {
   const mockCredential: W3CCredential = {

@@ -1,21 +1,20 @@
 import {
   createDidDocumentFromKeypair,
   createDidKeyUri,
-  getDidResolver
+  getDidResolver,
+  type DidUri
 } from "@agentcommercekit/did"
 import {
   createJwtSigner,
   curveToJwtAlgorithm,
-  isJwtString
+  isJwtString,
+  type JwtSigner
 } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
-import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequestInit } from "./payment-request"
-import type { DidUri } from "@agentcommercekit/did"
-import type { JwtSigner } from "@agentcommercekit/jwt"
-import type { Keypair } from "@agentcommercekit/keys"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
 describe("createSignedPaymentRequest()", () => {
   let keypair: Keypair

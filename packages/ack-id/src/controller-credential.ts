@@ -1,6 +1,5 @@
-import { createCredential } from "@agentcommercekit/vc"
 import type { DidUri } from "@agentcommercekit/did"
-import type { W3CCredential } from "@agentcommercekit/vc"
+import { createCredential, type W3CCredential } from "@agentcommercekit/vc"
 
 type CreateControllerCredentialParams = {
   /**
