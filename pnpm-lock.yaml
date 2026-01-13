@@ -19,8 +19,8 @@ catalogs:
       specifier: 1.0.2
       version: 1.0.2
     hono:
-      specifier: 4.7.10
-      version: 4.7.10
+      specifier: 4.11.4
+      version: 4.11.4
     jose:
       specifier: 6.0.11
       version: 6.0.11
@@ -131,10 +131,10 @@ importers:
         version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.1.0(typescript@5.9.3)))(react@19.2.0)(valibot@1.1.0(typescript@5.9.3))(zod@3.25.76)
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.14.2(hono@4.7.10)
+        version: 1.14.2(hono@4.11.4)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.7.10)
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.11.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -149,7 +149,7 @@ importers:
         version: 4.3.16(react@19.2.0)(zod@3.25.76)
       hono:
         specifier: 'catalog:'
-        version: 4.7.10
+        version: 4.11.4
       valibot:
         specifier: 'catalog:'
         version: 1.1.0(typescript@5.9.3)
@@ -202,7 +202,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.14.2(hono@4.7.10)
+        version: 1.14.2(hono@4.11.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -214,7 +214,7 @@ importers:
         version: link:../../packages/agentcommercekit
       hono:
         specifier: 'catalog:'
-        version: 4.7.10
+        version: 4.11.4
       valibot:
         specifier: 'catalog:'
         version: 1.1.0(typescript@5.9.3)
@@ -261,7 +261,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.14.2(hono@4.7.10)
+        version: 1.14.2(hono@4.11.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -279,7 +279,7 @@ importers:
         version: 0.43.1(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)
       hono:
         specifier: 'catalog:'
-        version: 4.7.10
+        version: 4.11.4
       valibot:
         specifier: 'catalog:'
         version: 1.1.0(typescript@5.9.3)
@@ -313,16 +313,16 @@ importers:
         version: link:../../packages/keys
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.14.2(hono@4.7.10)
+        version: 1.14.2(hono@4.11.4)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.7.10)
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.11.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
       hono:
         specifier: 'catalog:'
-        version: 4.7.10
+        version: 4.11.4
       valibot:
         specifier: 'catalog:'
         version: 1.1.0(typescript@5.9.3)
@@ -338,10 +338,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.14.2(hono@4.7.10)
+        version: 1.14.2(hono@4.11.4)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.7.10)
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.11.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -350,7 +350,7 @@ importers:
         version: link:../../packages/agentcommercekit
       hono:
         specifier: 'catalog:'
-        version: 4.7.10
+        version: 4.11.4
       valibot:
         specifier: 'catalog:'
         version: 1.1.0(typescript@5.9.3)
@@ -619,7 +619,7 @@ importers:
         version: link:../../packages/vc
       hono:
         specifier: 'catalog:'
-        version: 4.7.10
+        version: 4.11.4
       valibot:
         specifier: 'catalog:'
         version: 1.1.0(typescript@5.9.3)
@@ -1834,6 +1834,7 @@ packages:
   '@mintlify/cli@4.0.787':
     resolution: {integrity: sha512-BZ2YdBdrBZ7q2/YhLLGqHi50lLrcjqF4d8MRPrjoAQg02VAQQh3ZFlM+12pTim67+fESqJPckvp457hFJQlDrQ==}
     engines: {node: '>=18.0.0'}
+    deprecated: This version is deprecated. Please upgrade to version 4.0.423 or later.
     hasBin: true
 
   '@mintlify/common@1.0.589':
@@ -4462,8 +4463,8 @@ packages:
     resolution: {integrity: sha512-NQO+lgVUCtHxZ792FodgW0zflK+ozS9X9dwGp9XvvmPlH7pyxd588cn24TD3rmPm/N0AIRXF10Otah8yKqGw4w==}
     engines: {node: '>=12'}
 
-  hono@4.7.10:
-    resolution: {integrity: sha512-QkACju9MiN59CKSY5JsGZCYmPZkA6sIW6OFCUp7qDjZu6S6KHtJHhAc9Uy9mV9F8PJ1/HQ3ybZF2yjCa/73fvQ==}
+  hono@4.11.4:
+    resolution: {integrity: sha512-U7tt8JsyrxSRKspfhtLET79pU8K+tInj5QZXs1jSugO1Vq5dFj3kmZsRldo29mTBfcjDRVRXrEZ6LS63Cog9ZA==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -5208,6 +5209,7 @@ packages:
   mintlify@4.2.183:
     resolution: {integrity: sha512-g+DKtDxvmyuEnGKqIeAViy58qpWNQ9EPcjFca9tnJEAGAKb89+NkX32bc2my5RSPBQgYeQ4DSIJkwfvPwp5KHA==}
     engines: {node: '>=18.0.0'}
+    deprecated: This version is deprecated. Please upgrade to version 4.0.423 or later.
     hasBin: true
 
   mitt@3.0.1:
@@ -7710,14 +7712,14 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@hono/node-server@1.14.2(hono@4.7.10)':
+  '@hono/node-server@1.14.2(hono@4.11.4)':
     dependencies:
-      hono: 4.7.10
+      hono: 4.11.4
 
-  '@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.7.10)':
+  '@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.11.4)':
     dependencies:
       '@standard-schema/spec': 1.0.0
-      hono: 4.7.10
+      hono: 4.11.4
 
   '@humanfs/core@0.19.1': {}
 
@@ -11075,7 +11077,7 @@ snapshots:
 
   hex-rgb@5.0.0: {}
 
-  hono@4.7.10: {}
+  hono@4.11.4: {}
 
   hookable@5.5.3: {}
 
