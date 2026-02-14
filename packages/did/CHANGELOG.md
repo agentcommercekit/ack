@@ -1,5 +1,15 @@
 # @agentcommercekit/did
 
+## 0.10.1
+
+### Patch Changes
+
+- [#48](https://github.com/agentcommercekit/ack/pull/48) [`e223835`](https://github.com/agentcommercekit/ack/commit/e2238355ced067c1a5f993fff52f3796055160e2) Thanks [@venables](https://github.com/venables)! - Fix `did:web` resolution URL construction to follow the spec:
+  - Keep root identifiers at `/.well-known/did.json` (for example, `did:web:example.com`)
+  - Resolve path-based identifiers to `/:path/did.json` (for example, `did:web:example.com:abc`)
+
+  Also adds regression tests for path-based resolution, including `allowedHttpHosts`.
+
 ## 0.9.0
 
 ### Patch Changes

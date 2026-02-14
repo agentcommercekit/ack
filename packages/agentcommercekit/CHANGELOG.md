@@ -1,5 +1,15 @@
 # agentcommercekit
 
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [[`e223835`](https://github.com/agentcommercekit/ack/commit/e2238355ced067c1a5f993fff52f3796055160e2)]:
+  - @agentcommercekit/did@0.10.1
+  - @agentcommercekit/ack-id@0.10.1
+  - @agentcommercekit/ack-pay@0.10.1
+  - @agentcommercekit/vc@0.10.1
+
 ## 0.10.0
 
 ### Minor Changes
