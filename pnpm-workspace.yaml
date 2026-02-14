@@ -23,7 +23,6 @@ ignoredBuiltDependencies:
   - puppeteer
 
 onlyBuiltDependencies:
-  - better-sqlite3
   - esbuild
   - sharp
   - unrs-resolver

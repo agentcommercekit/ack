@@ -2,12 +2,12 @@ import { join } from "node:path"
 import { getDb } from "@/db/get-db"
 import app from "@/index"
 import { serve } from "@hono/node-server"
-import { migrate } from "drizzle-orm/better-sqlite3/migrator"
+import { migrate } from "drizzle-orm/libsql/migrator"
 
-function startServer() {
+async function startServer() {
   const db = getDb()
 
-  migrate(db, {
+  await migrate(db, {
     migrationsFolder: join(
       import.meta.dirname,
       "..",
@@ -28,4 +28,4 @@ function startServer() {
   )
 }
 
-startServer()
+void startServer()
