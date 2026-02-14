@@ -26,3 +26,12 @@ export const publicClient = createPublicClient({
   chain,
   transport: http(),
 })
+
+export const solana = {
+  chainId: caip2ChainIds.solanaDevnet,
+  rpcUrl: process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com",
+  usdcMint:
+    process.env.SOLANA_USDC_MINT ??
+    "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
+  commitment: "confirmed" as const,
+}

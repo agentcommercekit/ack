@@ -13,8 +13,29 @@ import {
   wordWrap,
 } from "@repo/cli-tools"
 import {
+  findAssociatedTokenPda,
+  getCreateAssociatedTokenInstructionAsync,
+  getTransferCheckedInstruction,
+  TOKEN_PROGRAM_ADDRESS,
+} from "@solana-program/token"
+import {
+  address,
+  appendTransactionMessageInstructions,
+  createKeyPairSignerFromBytes,
+  createSolanaRpc,
+  createTransactionMessage,
+  getBase64EncodedWireTransaction,
+  pipe,
+  setTransactionMessageFeePayerSigner,
+  setTransactionMessageLifetimeUsingBlockhash,
+  signTransactionMessageWithSigners,
+} from "@solana/kit"
+import {
   addressFromDidPkhUri,
+  createDidPkhUri,
   createJwt,
+  createJwtSigner,
+  generateKeypair,
   getDidResolver,
   isDidPkhUri,
   isJwtString,
@@ -35,10 +56,14 @@ import {
   chainId,
   publicClient,
   SERVER_URL,
+  solana,
   usdcAddress,
 } from "./constants"
-import { ensureNonZeroBalances } from "./utils/ensure-balances"
-import { ensurePrivateKey } from "./utils/ensure-private-keys"
+import {
+  ensureNonZeroBalances,
+  ensureSolanaSolBalance,
+} from "./utils/ensure-balances"
+import { ensurePrivateKey, ensureSolanaKeys } from "./utils/ensure-private-keys"
 import { getKeypairInfo, type KeypairInfo } from "./utils/keypair-info"
 import { transferUsdc } from "./utils/usdc-contract"
 import "./server"
@@ -147,12 +172,19 @@ The Client attempts to access a protected resource on the Server. Since no valid
   )
 
   const paymentOptions = paymentRequest.paymentOptions
+
+  function networkLabel(network: string | undefined): string {
+    if (network === "stripe") return "Stripe"
+    if (network?.startsWith("solana:")) return "Solana"
+    return "Base Sepolia"
+  }
+
   const selectedPaymentOptionId = await select({
     message: "Select which payment option to use",
     choices: paymentOptions.map((option) => ({
-      name: option.network === "stripe" ? "Stripe" : "Base Sepolia",
+      name: networkLabel(option.network),
       value: option.id,
-      description: `Pay on ${option.network === "stripe" ? "Stripe" : "Base Sepolia"} using ${option.currency}`,
+      description: `Pay on ${networkLabel(option.network)} using ${option.currency}`,
     })),
   })
 
@@ -164,28 +196,37 @@ The Client attempts to access a protected resource on the Server. Since no valid
     throw new Error(errorMessage("Invalid payment option"))
   }
 
-  let receipt: string
-  let details: Verifiable<PaymentReceiptCredential>
-
-  if (selectedPaymentOption.network === "stripe") {
-    const paymentResult = await performStripePayment(
-      clientKeypairInfo,
-      selectedPaymentOption,
-      paymentRequestToken,
-    )
-    receipt = paymentResult.receipt
-    details = paymentResult.details
-  } else if (selectedPaymentOption.network === chainId) {
-    const paymentResult = await performOnChainPayment(
-      clientKeypairInfo,
-      selectedPaymentOption,
-      paymentRequestToken,
-    )
-    receipt = paymentResult.receipt
-    details = paymentResult.details
-  } else {
+  function executePayment(
+    option: PaymentRequest["paymentOptions"][number],
+  ): Promise<{
+    receipt: string
+    details: Verifiable<PaymentReceiptCredential>
+  }> {
+    if (option.network === "stripe") {
+      return performStripePayment(
+        clientKeypairInfo,
+        option,
+        paymentRequestToken,
+      )
+    }
+    if (option.network?.startsWith("solana:")) {
+      return performSolanaPayment(
+        clientKeypairInfo,
+        option,
+        paymentRequestToken,
+      )
+    }
+    if (option.network === chainId) {
+      return performOnChainPayment(
+        clientKeypairInfo,
+        option,
+        paymentRequestToken,
+      )
+    }
     throw new Error(errorMessage("Invalid payment option"))
   }
+
+  const { receipt, details } = await executePayment(selectedPaymentOption)
 
   log(
     successMessage(
@@ -390,6 +431,161 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
   })
 
   const { receipt, details } = (await response2.json()) as {
+    receipt: string
+    details: Verifiable<PaymentReceiptCredential>
+  }
+
+  return { receipt, details }
+}
+
+async function performSolanaPayment(
+  client: KeypairInfo,
+  paymentOption: PaymentRequest["paymentOptions"][number],
+  paymentRequestToken: JwtString,
+) {
+  const receiptServiceUrl = paymentOption.receiptService
+  if (!receiptServiceUrl) {
+    throw new Error(errorMessage("Receipt service URL is required"))
+  }
+
+  log(sectionHeader("💸 Execute Payment (Client Agent -> Solana / SPL Token)"))
+
+  const rpc = createSolanaRpc(solana.rpcUrl)
+  const clientSolKeys = await ensureSolanaKeys(
+    "SOLANA_CLIENT_PUBLIC_KEY",
+    "SOLANA_CLIENT_SECRET_KEY_JSON",
+  )
+  const keyBytes = new Uint8Array(
+    JSON.parse(clientSolKeys.secretKeyJson) as number[],
+  )
+  const payerSigner = await createKeyPairSignerFromBytes(keyBytes)
+
+  const mint = address(solana.usdcMint)
+
+  // Ensure payer has SOL for fees
+  await ensureSolanaSolBalance(clientSolKeys.publicKey)
+
+  const recipient = address(paymentOption.recipient)
+
+  const [senderAta] = await findAssociatedTokenPda({
+    mint,
+    owner: payerSigner.address,
+    tokenProgram: TOKEN_PROGRAM_ADDRESS,
+  })
+  const [recipientAta] = await findAssociatedTokenPda({
+    mint,
+    owner: recipient,
+    tokenProgram: TOKEN_PROGRAM_ADDRESS,
+  })
+
+  // Ensure sender has USDC balance; if not, prompt Circle faucet
+  let tokenBal: { amount: string }
+  try {
+    ;({ value: tokenBal } = await rpc
+      .getTokenAccountBalance(senderAta, { commitment: solana.commitment })
+      .send())
+  } catch {
+    tokenBal = { amount: "0" }
+  }
+  while (tokenBal.amount === "0") {
+    log(
+      colors.dim(
+        "USDC balance is 0. Please request devnet USDC from Circle's faucet, then press Enter to retry.",
+      ),
+    )
+    log(colors.dim(`Send USDC to your wallet: ${clientSolKeys.publicKey}`))
+    log(colors.cyan("https://faucet.circle.com/"))
+    await waitForEnter("Press Enter after funding USDC...")
+    try {
+      ;({ value: tokenBal } = await rpc
+        .getTokenAccountBalance(senderAta, { commitment: solana.commitment })
+        .send())
+    } catch {
+      tokenBal = { amount: "0" }
+    }
+  }
+  const { value: recipientAtaInfo } = await rpc
+    .getAccountInfo(recipientAta, {
+      commitment: solana.commitment,
+      encoding: "base64",
+    })
+    .send()
+  const maybeCreateRecipientAtaInstruction = !recipientAtaInfo
+    ? await getCreateAssociatedTokenInstructionAsync({
+        payer: payerSigner,
+        owner: recipient,
+        mint,
+        ata: recipientAta,
+        tokenProgram: TOKEN_PROGRAM_ADDRESS,
+      })
+    : undefined
+
+  const amount = BigInt(paymentOption.amount)
+  const transferIx = getTransferCheckedInstruction({
+    source: senderAta,
+    destination: recipientAta,
+    mint,
+    authority: payerSigner.address,
+    amount,
+    decimals: paymentOption.decimals,
+  })
+
+  const { value: latestBlockhash } = await rpc.getLatestBlockhash().send()
+  const txMessage = pipe(
+    createTransactionMessage({ version: 0 }),
+    (m) => setTransactionMessageFeePayerSigner(payerSigner, m),
+    (m) => setTransactionMessageLifetimeUsingBlockhash(latestBlockhash, m),
+    (m) =>
+      appendTransactionMessageInstructions(
+        [
+          ...(maybeCreateRecipientAtaInstruction
+            ? [maybeCreateRecipientAtaInstruction]
+            : []),
+          transferIx,
+        ],
+        m,
+      ),
+  )
+  const signedTx = await signTransactionMessageWithSigners(txMessage)
+  const wireTx = getBase64EncodedWireTransaction(signedTx)
+  const signature = await rpc
+    .sendTransaction(wireTx, { encoding: "base64" })
+    .send()
+  log(colors.dim("View on Solana Explorer:"))
+  log(link(`https://explorer.solana.com/tx/${signature}?cluster=devnet`), {
+    wrap: false,
+  })
+
+  // Build an ACK Ed25519 signer from the Solana payer seed to sign the receipt request
+  const ackEd25519Keypair = await generateKeypair(
+    "Ed25519",
+    new Uint8Array(Array.from(keyBytes).slice(0, 32)),
+  )
+  const ackEd25519JwtSigner = createJwtSigner(ackEd25519Keypair)
+  const payerDid = createDidPkhUri(solana.chainId, clientSolKeys.publicKey)
+  const payload = {
+    paymentRequestToken,
+    paymentOptionId: paymentOption.id,
+    metadata: {
+      network: solana.chainId,
+      txHash: signature,
+    },
+    payerDid,
+  }
+  const signedPayload = await createJwt(
+    payload,
+    {
+      issuer: payerDid,
+      signer: ackEd25519JwtSigner,
+    },
+    { alg: "EdDSA" },
+  )
+
+  const response = await fetch(receiptServiceUrl, {
+    method: "POST",
+    body: JSON.stringify({ payload: signedPayload }),
+  })
+  const { receipt, details } = (await response.json()) as {
     receipt: string
     details: Verifiable<PaymentReceiptCredential>
   }

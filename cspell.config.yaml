@@ -2,13 +2,18 @@ language: en
 words:
   - agentcommercekit
   - bitstring
+  - blockhash
   - caip
   - dbname
+  - devnet
   - healthcheck
   - keypair
+  - lamports
   - multibase
+  - multicall
   - multicodec
   - multikey
+  - pubkeys
   - secp256
   - skyfire
   - solana

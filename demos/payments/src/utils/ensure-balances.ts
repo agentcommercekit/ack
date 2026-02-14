@@ -1,4 +1,6 @@
-import { waitForEnter } from "@repo/cli-tools"
+import { solana } from "@/constants"
+import { colors, log, waitForEnter } from "@repo/cli-tools"
+import { createSolanaRpc, address as solAddress } from "@solana/kit"
 import { createPublicClient, erc20Abi, http, type Chain } from "viem"
 import { formatUnits } from "viem/utils"
 
@@ -10,36 +12,61 @@ export async function ensureNonZeroBalances(
   address: `0x${string}`,
   usdcAddress: `0x${string}`,
 ) {
-  // 2. Make sure the client wallet has been funded
   let balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
   let balanceEth = await getEthBalance(chain, address)
 
   while (balanceUsdc.value === BigInt(0)) {
-    console.log(
+    log(
       "We need to fund this address with testnet USDC and testnet ETH:",
       address,
     )
-
-    console.log(
+    log(
       "You can get testnet tokens from the following faucets:",
       "ETH: https://docs.base.org/chain/network-faucets",
       "USDC: https://faucet.circle.com/",
     )
-    console.log("Once funded, press enter to check balance again")
+    log("Once funded, press enter to check balance again")
     await waitForEnter()
-    console.log("Attempting to fetch USDC balance...")
+    log(colors.dim("Fetching balances..."))
     balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
-    console.log("USDC balance fetched:", balanceUsdc)
-    console.log("Attempting to fetch ETH balance...")
     balanceEth = await getEthBalance(chain, address)
-    console.log("ETH balance fetched:", balanceEth)
   }
 
-  console.log("Client wallet balances:")
-  console.log("  USDC: ", formatUnits(balanceUsdc.value, balanceUsdc.decimals))
-  console.log("   ETH: ", formatUnits(balanceEth.value, balanceUsdc.decimals))
+  log("Client wallet balances:")
+  log("  USDC: ", formatUnits(balanceUsdc.value, balanceUsdc.decimals))
+  log("   ETH: ", formatUnits(balanceEth.value, balanceEth.decimals))
 
   return { balanceUsdc, balanceEth }
+}
+
+export async function ensureSolanaSolBalance(address: string): Promise<bigint> {
+  const rpc = createSolanaRpc(solana.rpcUrl)
+  const pubkey = solAddress(address)
+
+  async function fetchBalance(): Promise<bigint> {
+    try {
+      const balance = await rpc
+        .getBalance(pubkey, { commitment: solana.commitment })
+        .send()
+      return balance.value
+    } catch {
+      return 0n
+    }
+  }
+
+  let lamports = await fetchBalance()
+
+  while (lamports === 0n) {
+    log("We need to fund this Solana address with devnet SOL:", address)
+    log("Faucet: https://faucet.solana.com/")
+    log("Once funded, press enter to check balance again")
+    await waitForEnter()
+    log(colors.dim("Fetching SOL balance..."))
+    lamports = await fetchBalance()
+  }
+
+  log(colors.dim(`SOL balance (lamports): ${lamports}`))
+  return lamports
 }
 
 async function getEthBalance(chain: Chain, address: `0x${string}`) {
@@ -68,7 +95,6 @@ async function getErc20Balance(
     transport: http(),
   })
 
-  // eslint-disable-next-line @cspell/spellchecker
   const [balance, decimals] = await publicClient.multicall({
     contracts: [
       {

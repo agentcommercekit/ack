@@ -7,7 +7,9 @@ import {
   logJson,
   successMessage,
 } from "@repo/cli-tools"
+import { createSolanaRpc, signature as toSignature } from "@solana/kit"
 import {
+  addressFromDidPkhUri,
   createPaymentReceipt,
   getDidResolver,
   isDidPkhUri,
@@ -26,7 +28,7 @@ import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 import { erc20Abi, isAddressEqual } from "viem"
 import { parseEventLogs } from "viem/utils"
-import { chainId, publicClient, usdcAddress } from "./constants"
+import { chainId, publicClient, solana, usdcAddress } from "./constants"
 import { asAddress } from "./utils/as-address"
 import { getKeypairInfo } from "./utils/keypair-info"
 
@@ -38,6 +40,7 @@ const bodySchema = v.object({
 })
 
 const paymentDetailsSchema = v.object({
+  paymentOptionId: v.string(),
   metadata: v.union([
     v.object({
       network: caip2ChainIdSchema,
@@ -97,10 +100,8 @@ app.post("/", async (c) => {
     },
   )
 
-  // Load the payment option from the payment request matching our
-  // preferred network.
   const paymentOption = paymentRequest.paymentOptions.find(
-    (option) => option.network === paymentDetails.metadata.network,
+    (option) => option.id === paymentDetails.paymentOptionId,
   )
 
   if (!paymentOption) {
@@ -108,10 +109,17 @@ app.post("/", async (c) => {
     return c.json({ error: "Payment option not found" }, 400)
   }
 
+  if (paymentOption.network !== paymentDetails.metadata.network) {
+    log(errorMessage("Payment option network mismatch"))
+    return c.json({ error: "Payment option network mismatch" }, 400)
+  }
+
   if (paymentOption.network === "stripe") {
     await verifyStripePayment(parsed.issuer, paymentDetails, paymentOption)
   } else if (paymentOption.network === chainId) {
     await verifyOnChainPayment(parsed.issuer, paymentDetails, paymentOption)
+  } else if (paymentOption.network === solana.chainId) {
+    await verifySolanaPayment(parsed.issuer, paymentDetails, paymentOption)
   } else {
     log(errorMessage("Invalid network"))
     throw new HTTPException(400, {
@@ -233,6 +241,125 @@ async function verifyOnChainPayment(
 
   // Optional:
   // Additional checks, like checking txHash block number timestamp occurred after payment_request issued
+}
+
+async function fetchTransaction(
+  rpc: ReturnType<typeof createSolanaRpc>,
+  txSignature: string,
+) {
+  return rpc
+    .getTransaction(toSignature(txSignature), {
+      commitment: solana.commitment,
+      encoding: "jsonParsed",
+      maxSupportedTransactionVersion: 0 as const,
+    })
+    .send()
+}
+
+type SolanaTransaction = Awaited<ReturnType<typeof fetchTransaction>>
+
+type ParsedAccountKey = Readonly<{
+  pubkey: string | { toBase58(): string }
+  signer?: boolean
+}>
+
+type MessageWithAccountKeys = Readonly<{
+  accountKeys?: readonly ParsedAccountKey[]
+}>
+
+function extractSignerPubkeys(tx: NonNullable<SolanaTransaction>): Set<string> {
+  const msg = tx.transaction.message as unknown as MessageWithAccountKeys
+  const signers = new Set<string>()
+  for (const key of msg.accountKeys ?? []) {
+    if (key.signer) {
+      const pub =
+        typeof key.pubkey === "string" ? key.pubkey : key.pubkey.toBase58()
+      if (pub) signers.add(pub)
+    }
+  }
+  return signers
+}
+
+type TokenBalance = {
+  mint: string
+  owner: string
+  uiTokenAmount: { amount: string; decimals: number }
+}
+
+function toBigInt(value: unknown): bigint {
+  if (typeof value === "string") return BigInt(value)
+  if (typeof value === "number") return BigInt(value)
+  if (typeof value === "bigint") return value
+  return 0n
+}
+
+async function verifySolanaPayment(
+  issuer: string,
+  paymentDetails: v.InferOutput<typeof paymentDetailsSchema>,
+  paymentOption: v.InferOutput<typeof paymentOptionSchema>,
+) {
+  if (paymentDetails.metadata.network !== solana.chainId) {
+    log(errorMessage("Invalid network"))
+    throw new HTTPException(400, { message: "Invalid network" })
+  }
+  const signature = paymentDetails.metadata.txHash
+  const rpc = createSolanaRpc(solana.rpcUrl)
+  log(colors.dim("Loading Solana transaction details..."))
+
+  let tx: SolanaTransaction | null = null
+  const maxAttempts = 20
+  const delayMs = 1500
+
+  for (let i = 0; i < maxAttempts; i++) {
+    tx = await fetchTransaction(rpc, signature)
+    if (tx && !tx.meta?.err) break
+    await new Promise((r) => setTimeout(r, delayMs))
+  }
+  if (!tx || tx.meta?.err) {
+    log(errorMessage("Solana transaction not found or failed"))
+    throw new HTTPException(400, { message: "Invalid transaction" })
+  }
+
+  let issuerAddress: string
+  try {
+    issuerAddress = addressFromDidPkhUri(issuer)
+  } catch {
+    throw new HTTPException(400, { message: "Invalid issuer DID" })
+  }
+
+  const signerPubkeys = extractSignerPubkeys(tx)
+  if (!signerPubkeys.has(issuerAddress)) {
+    log(errorMessage("Issuer DID did not sign the transaction"))
+    throw new HTTPException(400, { message: "Invalid payer DID" })
+  }
+
+  const mint = solana.usdcMint
+  const recipient = paymentOption.recipient
+  const expectedDecimals = paymentOption.decimals
+  const expectedAmount = BigInt(paymentOption.amount)
+
+  const post = (tx.meta?.postTokenBalances ?? []) as unknown as TokenBalance[]
+  const pre = (tx.meta?.preTokenBalances ?? []) as unknown as TokenBalance[]
+
+  const preBal = pre.find((b) => b.mint === mint && b.owner === recipient)
+  const postBal = post.find((b) => b.mint === mint && b.owner === recipient)
+
+  if (!postBal) {
+    log(errorMessage("Recipient post token balance not found"))
+    throw new HTTPException(400, { message: "Recipient not credited" })
+  }
+  if (postBal.uiTokenAmount.decimals !== expectedDecimals) {
+    log(errorMessage("Invalid token decimals"))
+    throw new HTTPException(400, { message: "Invalid token decimals" })
+  }
+
+  const preAmount = toBigInt(preBal?.uiTokenAmount.amount ?? "0")
+  const postAmount = toBigInt(postBal.uiTokenAmount.amount)
+  const delta = postAmount - preAmount
+  if (delta !== expectedAmount) {
+    log(errorMessage("Invalid amount"))
+    throw new HTTPException(400, { message: "Invalid amount" })
+  }
 }
 
 serve({

@@ -46,6 +46,16 @@ Every Payment Request payload contains essential properties:
         "recipient": "acct_StripeAccountID",
         "paymentService": "https://payments.example.com/stripe",
         "receiptService": "https://receipts.example.com/stripe"
+      },
+      {
+        // Option 3: USDC on Solana devnet
+        "id": "usdc-solana-devnet",
+        "currency": "USDC",
+        "network": "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "amount": 10000000,
+        "decimals": 6,
+        "recipient": "ExAmPLeSoLaNaAddReSS111111111111111111111111",
+        "receiptService": "https://receipts.example.com/solana"
       }
       // ... more options ...
     ]
