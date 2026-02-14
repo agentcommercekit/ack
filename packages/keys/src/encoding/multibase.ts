@@ -8,7 +8,7 @@ import { base64url } from "multiformats/bases/base64"
 const MULTIBASE_PREFIX = {
   base58btc: "z", // Bitcoin's base58 (default)
   base64url: "u", // URL-safe base64
-  base16: "f" // hex
+  base16: "f", // hex
 } as const
 
 export type MultibaseEncoding = keyof typeof MULTIBASE_PREFIX
@@ -24,7 +24,7 @@ export type MultibaseString<T extends MultibaseEncoding> = T extends "base58btc"
 const multibaseEncoders = {
   base58btc,
   base64url,
-  base16
+  base16,
 } as const
 
 /**
@@ -35,7 +35,7 @@ const multibaseEncoders = {
  */
 export function bytesToMultibase<T extends MultibaseEncoding = "base58btc">(
   bytes: Uint8Array,
-  encoding?: T
+  encoding?: T,
 ): MultibaseString<T> {
   const actualEncoding = (encoding ?? "base58btc") as T
   const encoder = multibaseEncoders[actualEncoding]
@@ -70,7 +70,7 @@ export function multibaseToBytes(multibase: string): Uint8Array {
  * @returns The encoding type or undefined if invalid
  */
 export function getMultibaseEncoding(
-  multibase: string
+  multibase: string,
 ): MultibaseEncoding | undefined {
   if (multibase.length === 0) return undefined
 

@@ -1,25 +1,25 @@
-import { A2AError } from "@a2a-js/sdk"
+import {
+  A2AError,
+  type AgentCard,
+  type ExecutionEventBus,
+  type Message,
+  type RequestContext,
+} from "@a2a-js/sdk"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
   curveToJwtAlgorithm,
   isDidUri,
-  verifyParsedCredential
+  verifyParsedCredential,
 } from "agentcommercekit"
 import {
   createA2AHandshakeMessage,
   verifyA2AHandshakeMessage,
-  verifyA2ASignedMessage
+  verifyA2ASignedMessage,
 } from "agentcommercekit/a2a"
 import { v4 } from "uuid"
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { startAgentServer } from "./utils/server-utils"
-import type {
-  AgentCard,
-  ExecutionEventBus,
-  Message,
-  RequestContext
-} from "@a2a-js/sdk"
 
 const logger = createLogger("Bank Teller", colors.blue)
 
@@ -28,7 +28,7 @@ class BankTellerAgent extends Agent {
 
   async execute(
     requestContext: RequestContext,
-    eventBus: ExecutionEventBus
+    eventBus: ExecutionEventBus,
   ): Promise<void> {
     // Access message from request params
     const userMessage = requestContext.userMessage
@@ -44,11 +44,11 @@ class BankTellerAgent extends Agent {
     try {
       logger.log(
         "🔐 Verifying authentication request\n",
-        colors.dim(JSON.stringify(userMessage, null, 2))
+        colors.dim(JSON.stringify(userMessage, null, 2)),
       )
 
       const { issuer: clientDid } = await verifyA2ASignedMessage(userMessage, {
-        did: this.did
+        did: this.did,
       })
 
       if (!isDidUri(clientDid)) {
@@ -67,9 +67,9 @@ class BankTellerAgent extends Agent {
         parts: [
           {
             kind: "text",
-            text: `Verified ${clientDid}.  You can now access your account.`
-          }
-        ]
+            text: `Verified ${clientDid}.  You can now access your account.`,
+          },
+        ],
       }
 
       eventBus.publish(message)
@@ -80,27 +80,27 @@ class BankTellerAgent extends Agent {
 
   private isAuthRequest(message: Message): boolean {
     return message.parts.some(
-      (part) => part.kind === "data" && "jwt" in part.data
+      (part) => part.kind === "data" && "jwt" in part.data,
     )
   }
 
   private async handleAuthentication(
-    requestContext: RequestContext
+    requestContext: RequestContext,
   ): Promise<Message> {
     try {
       console.log("")
       console.log(
-        colors.yellow("📚 BANK PERSPECTIVE: Verifying Customer Identity")
+        colors.yellow("📚 BANK PERSPECTIVE: Verifying Customer Identity"),
       )
       console.log(colors.yellow("   Bank receives a JWT from unknown customer"))
       console.log(
         colors.yellow(
-          "   Must verify: 1) JWT signature is valid, 2) Customer controls the DID"
-        )
+          "   Must verify: 1) JWT signature is valid, 2) Customer controls the DID",
+        ),
       )
       console.log("")
       await waitForEnter(
-        "Press Enter for bank to begin identity verification..."
+        "Press Enter for bank to begin identity verification...",
       )
 
       logger.log("🔐 Processing customer identity verification request...")
@@ -108,25 +108,25 @@ class BankTellerAgent extends Agent {
       const {
         nonce: clientNonce,
         iss: clientDid,
-        vc: clientVc
+        vc: clientVc,
       } = await verifyA2AHandshakeMessage(requestContext.userMessage, {
-        did: this.did
+        did: this.did,
       })
 
       await verifyParsedCredential(clientVc, {
         resolver: didResolverWithIssuer,
-        trustedIssuers: [issuerDid]
+        trustedIssuers: [issuerDid],
       })
 
       console.log(
         colors.yellow(
-          "✅ TRUST ESTABLISHED: Customer cryptographically proved their identity"
-        )
+          "✅ TRUST ESTABLISHED: Customer cryptographically proved their identity",
+        ),
       )
       console.log(
         colors.yellow(
-          "   Bank now knows this customer controls the private key for their DID"
-        )
+          "   Bank now knows this customer controls the private key for their DID",
+        ),
       )
       console.log("")
       await waitForEnter("Press Enter for bank to create response JWT...")
@@ -138,14 +138,14 @@ class BankTellerAgent extends Agent {
         {
           recipient: clientDid,
           requestNonce: clientNonce,
-          vc: this.vc
+          vc: this.vc,
         },
         {
           did: this.did,
           jwtSigner: this.jwtSigner,
           alg: curveToJwtAlgorithm(this.keypair.curve),
-          expiresIn: 5 * 60
-        }
+          expiresIn: 5 * 60,
+        },
       )
 
       // Add client to authenticated list
@@ -153,27 +153,27 @@ class BankTellerAgent extends Agent {
 
       console.log(
         colors.yellow(
-          "🔐 RESPONSE: Bank sends back signed proof of successful verification"
-        )
+          "🔐 RESPONSE: Bank sends back signed proof of successful verification",
+        ),
       )
       console.log(
         colors.yellow(
-          "   Bank creates a response JWT that includes the customer's nonce"
-        )
+          "   Bank creates a response JWT that includes the customer's nonce",
+        ),
       )
       console.log(
         colors.yellow(
-          "   This proves to customer that bank verified their identity correctly"
-        )
+          "   This proves to customer that bank verified their identity correctly",
+        ),
       )
       console.log("")
       await waitForEnter(
-        "Press Enter to send authentication response back to customer..."
+        "Press Enter to send authentication response back to customer...",
       )
 
       logger.log(
         "🔐 Identity verification successful for customer:",
-        colors.dim(clientDid)
+        colors.dim(clientDid),
       )
 
       logger.log(colors.dim(JSON.stringify(message, null, 2)))
@@ -185,7 +185,7 @@ class BankTellerAgent extends Agent {
         -32603,
         "Identity verification failed",
         {},
-        requestContext.taskId
+        requestContext.taskId,
       )
     }
   }
@@ -210,10 +210,10 @@ const agentCard: AgentCard = {
       examples: [
         "verify my identity",
         "I need banking services",
-        "access my account"
-      ]
-    }
-  ]
+        "access my account",
+      ],
+    },
+  ],
 }
 
 export async function startTellerServer() {
@@ -221,12 +221,12 @@ export async function startTellerServer() {
   const bankTellerAgent = await BankTellerAgent.create({
     agentCard,
     curve: "secp256k1",
-    controller: "did:web:bank.com"
+    controller: "did:web:bank.com",
   })
 
   // Start the server using shared utility
   return startAgentServer(bankTellerAgent, {
     logger,
-    port: 3001
+    port: 3001,
   })
 }

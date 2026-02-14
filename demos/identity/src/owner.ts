@@ -3,13 +3,11 @@ import {
   createDidKeyUri,
   createJwtSigner,
   curveToJwtAlgorithm,
-  generateKeypair
-} from "agentcommercekit"
-import type {
-  DidDocument,
-  DidUri,
-  JwtAlgorithm,
-  JwtSigner
+  generateKeypair,
+  type DidDocument,
+  type DidUri,
+  type JwtAlgorithm,
+  type JwtSigner,
 } from "agentcommercekit"
 
 export interface Owner {
@@ -24,7 +22,7 @@ export async function createOwner(): Promise<Owner> {
   const did = createDidKeyUri(keypair)
   const didDocument = createDidDocumentFromKeypair({
     did,
-    keypair
+    keypair,
   })
   const signer = createJwtSigner(keypair)
 
@@ -32,6 +30,6 @@ export async function createOwner(): Promise<Owner> {
     did,
     didDocument,
     signer,
-    algorithm: curveToJwtAlgorithm(keypair.curve)
+    algorithm: curveToJwtAlgorithm(keypair.curve),
   }
 }

@@ -5,9 +5,9 @@ import { base64urlToBytes } from "./encoding/base64"
 import {
   getPublicKeyJwk,
   privateKeyBytesToJwk,
-  publicKeyJwkToBytes
+  publicKeyJwkToBytes,
+  type PrivateKeyJwk,
 } from "./encoding/jwk"
-import type { PrivateKeyJwk } from "./encoding/jwk"
 import type { KeyCurve } from "./key-curves"
 
 export interface Keypair {
@@ -37,7 +37,7 @@ export function generatePrivateKeyBytes(curve: KeyCurve): Uint8Array {
  */
 export async function generateKeypair(
   curve: KeyCurve,
-  privateKeyBytes?: Uint8Array
+  privateKeyBytes?: Uint8Array,
 ): Promise<Keypair> {
   if (curve === "secp256k1") {
     return secp256k1.generateKeypair(privateKeyBytes)
@@ -72,6 +72,6 @@ export function jwkToKeypair(jwk: PrivateKeyJwk): Keypair {
   return {
     publicKey: publicKeyJwkToBytes(publicKeyJwk),
     privateKey: base64urlToBytes(jwk.d),
-    curve: jwk.crv
+    curve: jwk.crv,
   }
 }

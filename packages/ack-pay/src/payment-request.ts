@@ -1,6 +1,8 @@
 import * as v from "valibot"
-import { paymentRequestSchema } from "./schemas/valibot"
-import type { paymentOptionSchema } from "./schemas/valibot"
+import {
+  paymentRequestSchema,
+  type paymentOptionSchema,
+} from "./schemas/valibot"
 
 export type PaymentRequestInit = v.InferInput<typeof paymentRequestSchema>
 export type PaymentRequest = v.InferOutput<typeof paymentRequestSchema>

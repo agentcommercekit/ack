@@ -1,8 +1,7 @@
-import { generateText } from "ai"
+import { generateText, type CoreMessage } from "ai"
 import { Agent } from "./agent"
 import { getModel } from "./get-model"
 import { getIdentityTools } from "./identity-tools"
-import type { CoreMessage } from "ai"
 
 export class HaikuAgent extends Agent {
   protected async _run(messages: CoreMessage[]) {
@@ -15,14 +14,14 @@ export class HaikuAgent extends Agent {
       tools: {
         ...getIdentityTools({
           resolver: this.resolver,
-          verifier: this.verifier
-        })
-      }
+          verifier: this.verifier,
+        }),
+      },
     })
 
     return {
       text: result.text,
-      responseMessages: result.response.messages
+      responseMessages: result.response.messages,
     }
   }
 }

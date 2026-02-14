@@ -1,14 +1,14 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
 } from "@agentcommercekit/did"
 import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { expect, test } from "vitest"
-import { parseJwtCredential } from "./parse-jwt-credential"
 import { createCredential } from "../create-credential"
 import { signCredential } from "../signing/sign-credential"
+import { parseJwtCredential } from "./parse-jwt-credential"
 
 test("parseJwtCredential should parse a valid credential", async () => {
   const resolver = getDidResolver()
@@ -20,8 +20,8 @@ test("parseJwtCredential should parse a valid credential", async () => {
     issuerDid,
     createDidDocumentFromKeypair({
       did: issuerDid,
-      keypair: issuerKeypair
-    })
+      keypair: issuerKeypair,
+    }),
   )
 
   const subjectDid = createDidWebUri("https://subject.example.com")
@@ -33,14 +33,14 @@ test("parseJwtCredential should parse a valid credential", async () => {
     issuer: issuerDid,
     subject: subjectDid,
     attestation: {
-      test: "test"
-    }
+      test: "test",
+    },
   })
 
   const jwt = await signCredential(credential, {
     did: issuerDid,
     signer: createJwtSigner(issuerKeypair),
-    alg: "ES256K"
+    alg: "ES256K",
   })
 
   const vc = await parseJwtCredential(jwt, resolver)
@@ -55,6 +55,6 @@ test("verifyCredentialJwt should throw for invalid credential", async () => {
   const invalidCredential = "invalid.jwt.token"
 
   await expect(
-    parseJwtCredential(invalidCredential, resolver)
+    parseJwtCredential(invalidCredential, resolver),
   ).rejects.toThrow()
 })

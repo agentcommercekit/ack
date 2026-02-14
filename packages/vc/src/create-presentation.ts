@@ -1,5 +1,5 @@
-import type { Verifiable, W3CCredential, W3CPresentation } from "./types"
 import type { DidUri } from "@agentcommercekit/did"
+import type { Verifiable, W3CCredential, W3CPresentation } from "./types"
 
 export type CreatePresentationParams = {
   /**
@@ -34,7 +34,7 @@ export function createPresentation({
   id,
   type,
   issuanceDate,
-  expirationDate
+  expirationDate,
 }: CreatePresentationParams): W3CPresentation {
   const credentialTypes = [type]
     .flat()
@@ -47,6 +47,6 @@ export function createPresentation({
     holder,
     verifiableCredential: credentials,
     issuanceDate: issuanceDate?.toISOString(),
-    expirationDate: expirationDate?.toISOString()
+    expirationDate: expirationDate?.toISOString(),
   }
 }

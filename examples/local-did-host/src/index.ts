@@ -1,5 +1,5 @@
 import { createJwt } from "@agentcommercekit/jwt"
-import { vValidator } from "@hono/valibot-validator"
+import { sValidator } from "@hono/standard-validator"
 import { logger } from "@repo/api-utils/middleware/logger"
 import { Hono } from "hono"
 import * as v from "valibot"
@@ -15,17 +15,17 @@ app.use("*", identities())
  */
 app.get(
   "/:entity/.well-known/did.json",
-  vValidator(
+  sValidator(
     "param",
     v.object({
-      entity: v.picklist(["agent", "controller"])
-    })
+      entity: v.picklist(["agent", "controller"]),
+    }),
   ),
   (c) => {
     const { entity } = c.req.valid("param")
     const identities = c.get("identities")
     return c.json(identities[entity].didDocument)
-  }
+  },
 )
 
 /**
@@ -33,20 +33,20 @@ app.get(
  */
 app.post(
   "/:entity/sign",
-  vValidator(
+  sValidator(
     "param",
     v.object({
-      entity: v.picklist(["agent", "controller"])
-    })
+      entity: v.picklist(["agent", "controller"]),
+    }),
   ),
-  vValidator(
+  sValidator(
     "json",
     v.object({
       subject: v.string(),
       payload: v.record(v.string(), v.unknown()),
       audience: v.optional(v.string()),
-      expiresIn: v.optional(v.number())
-    })
+      expiresIn: v.optional(v.number()),
+    }),
   ),
   async (c) => {
     const { signer, did, alg } = c.get("identities").agent
@@ -56,19 +56,19 @@ app.post(
       {
         ...payload,
         sub: subject,
-        aud: audience
+        aud: audience,
       },
       {
         alg,
         issuer: did,
         expiresIn,
         signer,
-        canonicalize: true
-      }
+        canonicalize: true,
+      },
     )
 
     return c.json({ jwt })
-  }
+  },
 )
 
 export default app

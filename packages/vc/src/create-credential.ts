@@ -44,7 +44,7 @@ export function createCredential<T extends W3CCredential>({
   subject,
   attestation,
   issuanceDate,
-  expirationDate
+  expirationDate,
 }: CreateCredentialParams<T>): T {
   const credentialTypes = [type]
     .flat()
@@ -57,6 +57,6 @@ export function createCredential<T extends W3CCredential>({
     issuer: { id: issuer },
     credentialSubject: { id: subject, ...attestation },
     issuanceDate: (issuanceDate ?? new Date()).toISOString(),
-    expirationDate: expirationDate?.toISOString()
+    expirationDate: expirationDate?.toISOString(),
   } as T
 }

@@ -1,6 +1,5 @@
-import { createCredential } from "@agentcommercekit/vc"
 import type { DidUri } from "@agentcommercekit/did"
-import type { W3CCredential } from "@agentcommercekit/vc"
+import { createCredential, type W3CCredential } from "@agentcommercekit/vc"
 
 type CreateControllerCredentialParams = {
   /**
@@ -32,7 +31,7 @@ export function createControllerCredential({
   id,
   subject,
   controller,
-  issuer
+  issuer,
 }: CreateControllerCredentialParams): W3CCredential {
   return createCredential({
     id,
@@ -40,7 +39,7 @@ export function createControllerCredential({
     issuer: issuer ?? controller,
     subject,
     attestation: {
-      controller: controller
-    }
+      controller: controller,
+    },
   })
 }

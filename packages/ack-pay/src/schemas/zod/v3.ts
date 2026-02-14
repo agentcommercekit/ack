@@ -12,7 +12,7 @@ export const paymentOptionSchema = z.object({
   recipient: z.string(),
   network: z.string().optional(),
   paymentService: urlOrDidUri.optional(),
-  receiptService: urlOrDidUri.optional()
+  receiptService: urlOrDidUri.optional(),
 })
 
 export const paymentRequestSchema = z.object({
@@ -23,11 +23,11 @@ export const paymentRequestSchema = z.object({
     .union([z.date(), z.string()])
     .transform((val) => new Date(val).toISOString())
     .optional(),
-  paymentOptions: z.array(paymentOptionSchema).nonempty()
+  paymentOptions: z.array(paymentOptionSchema).nonempty(),
 })
 
 export const paymentReceiptClaimSchema = z.object({
   paymentRequestToken: jwtStringSchema,
   paymentOptionId: z.string(),
-  metadata: z.record(z.string(), z.unknown()).optional()
+  metadata: z.record(z.string(), z.unknown()).optional(),
 })

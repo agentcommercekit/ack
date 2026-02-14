@@ -1,6 +1,5 @@
-import { createCredential } from "@agentcommercekit/vc"
 import type { DidUri } from "@agentcommercekit/did"
-import type { W3CCredential } from "@agentcommercekit/vc"
+import { createCredential, type W3CCredential } from "@agentcommercekit/vc"
 
 const PAYMENT_RECEIPT_TYPE = "PaymentReceiptCredential"
 
@@ -25,11 +24,11 @@ export function createPaymentReceipt({
   issuer,
   payerDid,
   expirationDate,
-  metadata
+  metadata,
 }: CreatePaymentReceiptParams): W3CCredential {
   const attestation: Record<string, unknown> = {
     paymentRequestToken,
-    paymentOptionId
+    paymentOptionId,
   }
 
   if (metadata) {
@@ -41,6 +40,6 @@ export function createPaymentReceipt({
     issuer: issuer,
     subject: payerDid,
     expirationDate,
-    attestation
+    attestation,
   })
 }

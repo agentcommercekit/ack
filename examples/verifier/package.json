@@ -26,19 +26,15 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.2",
-    "@hono/valibot-validator": "^0.5.2",
+    "@hono/node-server": "catalog:",
+    "@hono/standard-validator": "catalog:",
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0"
+    "hono": "catalog:",
+    "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:^",
-    "@repo/typescript-config": "workspace:*",
-    "dotenv-cli": "^8.0.0",
-    "eslint": "^9.27.0",
-    "tsx": "^4.19.4",
-    "vitest": "^3.2.4"
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*"
   }
 }

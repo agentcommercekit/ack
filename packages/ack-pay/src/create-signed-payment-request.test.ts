@@ -1,21 +1,20 @@
 import {
   createDidDocumentFromKeypair,
   createDidKeyUri,
-  getDidResolver
+  getDidResolver,
+  type DidUri,
 } from "@agentcommercekit/did"
 import {
   createJwtSigner,
   curveToJwtAlgorithm,
-  isJwtString
+  isJwtString,
+  type JwtSigner,
 } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
-import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequestInit } from "./payment-request"
-import type { DidUri } from "@agentcommercekit/did"
-import type { JwtSigner } from "@agentcommercekit/jwt"
-import type { Keypair } from "@agentcommercekit/keys"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
 describe("createSignedPaymentRequest()", () => {
   let keypair: Keypair
@@ -30,9 +29,9 @@ describe("createSignedPaymentRequest()", () => {
         amount: 10,
         decimals: 2,
         currency: "USD",
-        recipient: "sol:123"
-      }
-    ]
+        recipient: "sol:123",
+      },
+    ],
   }
 
   beforeEach(async () => {
@@ -45,7 +44,7 @@ describe("createSignedPaymentRequest()", () => {
     const result = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
+      algorithm: curveToJwtAlgorithm(keypair.curve),
     })
 
     expect(result.paymentRequest).toEqual({
@@ -56,9 +55,9 @@ describe("createSignedPaymentRequest()", () => {
           amount: 10,
           decimals: 2,
           currency: "USD",
-          recipient: "sol:123"
-        }
-      ]
+          recipient: "sol:123",
+        },
+      ],
     })
 
     expect(isJwtString(result.paymentRequestToken)).toBe(true)
@@ -68,7 +67,7 @@ describe("createSignedPaymentRequest()", () => {
     const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
+      algorithm: curveToJwtAlgorithm(keypair.curve),
     })
 
     const resolver = getDidResolver()
@@ -76,12 +75,12 @@ describe("createSignedPaymentRequest()", () => {
       issuerDid,
       createDidDocumentFromKeypair({
         did: issuerDid,
-        keypair
-      })
+        keypair,
+      }),
     )
 
     const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
-      resolver
+      resolver,
     })
 
     expect(result.parsed.payload.iss).toBe(issuerDid)
@@ -99,8 +98,8 @@ describe("createSignedPaymentRequest()", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     expect(result.paymentRequest.expiresAt).toBe("2024-12-31T23:59:59.000Z")

@@ -12,90 +12,90 @@ describe("createPresentation", () => {
     credentialSubject: { id: "did:example:subject" },
     issuanceDate: new Date().toISOString(),
     proof: {
-      type: "Ed25519Signature2018"
-    }
+      type: "Ed25519Signature2018",
+    },
   }
 
-  it("should create a basic presentation with required fields", () => {
+  it("creates a basic presentation with required fields", () => {
     const presentation = createPresentation({
       credentials: [mockCredential],
-      holder: mockHolder
+      holder: mockHolder,
     })
 
     expect(presentation).toEqual({
       "@context": ["https://www.w3.org/2018/credentials/v1"],
       type: ["VerifiablePresentation"],
       holder: mockHolder,
-      verifiableCredential: [mockCredential]
+      verifiableCredential: [mockCredential],
     })
   })
 
-  it("should handle multiple credentials", () => {
+  it("handles multiple credentials", () => {
     const secondCredential = {
       ...mockCredential,
-      credentialSubject: { id: "did:example:subject2" }
+      credentialSubject: { id: "did:example:subject2" },
     }
     const presentation = createPresentation({
       credentials: [mockCredential, secondCredential],
-      holder: mockHolder
+      holder: mockHolder,
     })
 
     expect(presentation.verifiableCredential).toEqual([
       mockCredential,
-      secondCredential
+      secondCredential,
     ])
   })
 
-  it("should handle custom presentation types", () => {
+  it("handles custom presentation types", () => {
     const customType = "CustomPresentation"
     const presentation = createPresentation({
       credentials: [mockCredential],
       holder: mockHolder,
-      type: customType
+      type: customType,
     })
 
     expect(presentation.type).toEqual(["VerifiablePresentation", customType])
   })
 
-  it("should handle multiple presentation types", () => {
+  it("handles multiple presentation types", () => {
     const types = ["CustomPresentation1", "CustomPresentation2"]
     const presentation = createPresentation({
       credentials: [mockCredential],
       holder: mockHolder,
-      type: types
+      type: types,
     })
 
     expect(presentation.type).toEqual(["VerifiablePresentation", ...types])
   })
 
-  it("should use provided issuance date", () => {
+  it("uses provided issuance date", () => {
     const issuanceDate = new Date("2024-01-01")
     const presentation = createPresentation({
       credentials: [mockCredential],
       holder: mockHolder,
-      issuanceDate
+      issuanceDate,
     })
 
     expect(presentation.issuanceDate).toBe(issuanceDate.toISOString())
   })
 
-  it("should use provided expiration date", () => {
+  it("uses provided expiration date", () => {
     const expirationDate = new Date("2024-12-31")
     const presentation = createPresentation({
       credentials: [mockCredential],
       holder: mockHolder,
-      expirationDate
+      expirationDate,
     })
 
     expect(presentation.expirationDate).toBe(expirationDate.toISOString())
   })
 
-  it("should include custom ID when provided", () => {
+  it("includes custom ID when provided", () => {
     const customId = "urn:uuid:12345678-1234-5678-1234-567812345678"
     const presentation = createPresentation({
       id: customId,
       credentials: [mockCredential],
-      holder: mockHolder
+      holder: mockHolder,
     })
 
     expect(presentation.id).toBe(customId)

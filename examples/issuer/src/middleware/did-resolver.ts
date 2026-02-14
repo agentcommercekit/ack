@@ -1,5 +1,4 @@
-import { getDidResolver } from "agentcommercekit"
-import type { DidResolver } from "agentcommercekit"
+import { getDidResolver, type DidResolver } from "agentcommercekit"
 import type { Env, MiddlewareHandler } from "hono"
 
 declare module "hono" {

@@ -1,19 +1,22 @@
 import {
-  DidResolver,
   createDidWebDocumentFromKeypair,
-  getDidResolver
+  DidResolver,
+  getDidResolver,
+  type createDidWebDocument,
 } from "@agentcommercekit/did"
-import { createJwt, createJwtSigner } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import {
+  createJwt,
+  createJwtSigner,
+  type JwtSigner,
+  type JwtString,
+} from "@agentcommercekit/jwt"
+import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
 import { validatePayload } from "./validate-payload"
-import type { createDidWebDocument } from "@agentcommercekit/did"
-import type { JwtSigner, JwtString } from "@agentcommercekit/jwt"
-import type { Keypair } from "@agentcommercekit/keys"
 
 const testBodySchema = v.object({
-  test: v.string()
+  test: v.string(),
 })
 
 describe("validatePayload", () => {
@@ -22,14 +25,14 @@ describe("validatePayload", () => {
   let signer: JwtSigner
 
   const payload: v.InferOutput<typeof testBodySchema> = {
-    test: "testValue"
+    test: "testValue",
   }
 
   beforeEach(async () => {
     keypair = await generateKeypair("secp256k1")
     did = createDidWebDocumentFromKeypair({
       keypair,
-      baseUrl: "https://test.example.com"
+      baseUrl: "https://test.example.com",
     })
     signer = createJwtSigner(keypair)
   })
@@ -40,14 +43,14 @@ describe("validatePayload", () => {
 
     const jwt = await createJwt(payload, {
       issuer: did.did,
-      signer
+      signer,
     })
 
     // Validate the JWT
     const { parsed, body } = await validatePayload(
       jwt,
       testBodySchema,
-      resolver
+      resolver,
     )
 
     expect(parsed.issuer).toBe(did.did)
@@ -59,7 +62,7 @@ describe("validatePayload", () => {
     const resolver = new DidResolver()
 
     await expect(
-      validatePayload(invalidJwt, testBodySchema, resolver)
+      validatePayload(invalidJwt, testBodySchema, resolver),
     ).rejects.toThrow("Invalid payload")
   })
 
@@ -68,11 +71,11 @@ describe("validatePayload", () => {
 
     const jwt = await createJwt(payload, {
       issuer: did.did,
-      signer
+      signer,
     })
 
     await expect(
-      validatePayload(jwt, testBodySchema, resolver)
+      validatePayload(jwt, testBodySchema, resolver),
     ).rejects.toThrow("Invalid payload")
   })
 
@@ -83,7 +86,7 @@ describe("validatePayload", () => {
     // Create a JWT
     const payload = {
       sub: "did:example:123",
-      aud: "did:example:456"
+      aud: "did:example:456",
     }
 
     const differentKeypair = await generateKeypair("secp256k1")
@@ -91,11 +94,11 @@ describe("validatePayload", () => {
 
     const jwt = await createJwt(payload, {
       issuer: did.did,
-      signer: differentSigner
+      signer: differentSigner,
     })
 
     await expect(
-      validatePayload(jwt, testBodySchema, resolver)
+      validatePayload(jwt, testBodySchema, resolver),
     ).rejects.toThrow("Invalid payload")
   })
 
@@ -104,16 +107,16 @@ describe("validatePayload", () => {
     resolver.addToCache(did.did, did.didDocument)
 
     const payload = {
-      invalid: "invalid"
+      invalid: "invalid",
     }
 
     const jwt = await createJwt(payload, {
       issuer: did.did,
-      signer
+      signer,
     })
 
     await expect(
-      validatePayload(jwt, testBodySchema, resolver)
+      validatePayload(jwt, testBodySchema, resolver),
     ).rejects.toBeInstanceOf(v.ValiError)
   })
 })

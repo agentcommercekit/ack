@@ -35,7 +35,7 @@ describe("generateKeypair()", () => {
 
   test("generates a Keypair from valid private key for both algorithms", async () => {
     const privateKeyBytes = hexStringToBytes(
-      "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+      "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
     )
 
     const secpKeypair = await generateKeypair("secp256k1", privateKeyBytes)
@@ -54,10 +54,10 @@ describe("generateKeypair()", () => {
     const invalidPrivateKey = new Uint8Array([1, 2, 3])
 
     await expect(
-      generateKeypair("secp256k1", invalidPrivateKey)
+      generateKeypair("secp256k1", invalidPrivateKey),
     ).rejects.toThrow()
     await expect(
-      generateKeypair("Ed25519", invalidPrivateKey)
+      generateKeypair("Ed25519", invalidPrivateKey),
     ).rejects.toThrow()
   })
 })

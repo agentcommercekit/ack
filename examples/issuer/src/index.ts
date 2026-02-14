@@ -1,12 +1,11 @@
 import { errorHandler } from "@repo/api-utils/middleware/error-handler"
 import { logger } from "@repo/api-utils/middleware/logger"
-import { Hono } from "hono"
+import { Hono, type Env } from "hono"
 import credentials from "./routes/credentials"
 import healthcheck from "./routes/healthcheck"
 import receipts from "./routes/receipts"
 import status from "./routes/status"
 import wellKnown from "./routes/well-known"
-import type { Env } from "hono"
 
 const app = new Hono<Env>()
 

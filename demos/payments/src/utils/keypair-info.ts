@@ -1,16 +1,18 @@
+import { chainId } from "@/constants"
 import {
   bytesToHexString,
   createDidPkhUri,
   createJwtSigner,
   generateKeypair,
   generatePrivateKeyBytes,
-  hexStringToBytes
+  hexStringToBytes,
+  type DidUri,
+  type JwtSigner,
+  type KeyCurve,
+  type Keypair,
 } from "agentcommercekit"
-import { privateKeyToAccount } from "viem/accounts"
+import { privateKeyToAccount, type Account } from "viem/accounts"
 import { publicKeyToAddress } from "viem/utils"
-import { chainId } from "@/constants"
-import type { DidUri, JwtSigner, KeyCurve, Keypair } from "agentcommercekit"
-import type { Account } from "viem/accounts"
 
 export type KeypairInfo = {
   publicKeyHex: `0x${string}`
@@ -32,12 +34,12 @@ export type KeypairInfo = {
  */
 export async function getKeypairInfo(
   privateKeyHex: string,
-  curve: KeyCurve = "secp256k1"
+  curve: KeyCurve = "secp256k1",
 ): Promise<KeypairInfo> {
   const keypair = await generateKeypair(curve, hexStringToBytes(privateKeyHex))
   const address = publicKeyToAddress(`0x${bytesToHexString(keypair.publicKey)}`)
   const account = privateKeyToAccount(
-    `0x${bytesToHexString(keypair.privateKey)}`
+    `0x${bytesToHexString(keypair.privateKey)}`,
   )
   const did = createDidPkhUri(chainId, address)
   const jwtSigner = createJwtSigner(keypair)
@@ -49,8 +51,8 @@ export async function getKeypairInfo(
     jwtSigner,
     crypto: {
       address,
-      account
-    }
+      account,
+    },
   }
 }
 

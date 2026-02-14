@@ -1,17 +1,16 @@
 import { generateKeypair } from "@agentcommercekit/keys"
-import { verifyJWT } from "did-jwt"
+import { verifyJWT, type JWTVerified } from "did-jwt"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { createJwt } from "./create-jwt"
 import { createJwtSigner } from "./signer"
 import { verifyJwt } from "./verify"
-import type { JWTVerified } from "did-jwt"
 
 // Mock did-jwt for testing
 vi.mock("did-jwt", async () => {
   const actual = await vi.importActual("did-jwt")
   return {
     ...actual,
-    verifyJWT: vi.fn()
+    verifyJWT: vi.fn(),
   }
 })
 
@@ -28,12 +27,12 @@ describe("verifyJwt()", () => {
     const jwt = await createJwt(
       {
         sub: "did:example:subject",
-        aud: "did:example:audience"
+        aud: "did:example:audience",
       },
       {
         issuer: "did:example:issuer",
-        signer
-      }
+        signer,
+      },
     )
 
     const mockVerifiedResult: JWTVerified = {
@@ -41,21 +40,21 @@ describe("verifyJwt()", () => {
       payload: {
         iss: "did:example:issuer",
         sub: "did:example:subject",
-        aud: "did:example:audience"
+        aud: "did:example:audience",
       },
       didResolutionResult: {
         didResolutionMetadata: {},
         didDocument: null,
-        didDocumentMetadata: {}
+        didDocumentMetadata: {},
       },
       issuer: "did:example:issuer",
       signer: {
         id: "did:example:issuer#key-1",
         type: "Multikey",
         controller: "did:example:issuer",
-        publicKeyHex: "02..."
+        publicKeyHex: "02...",
       },
-      jwt
+      jwt,
     }
 
     vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
@@ -71,39 +70,39 @@ describe("verifyJwt()", () => {
     const jwt = await createJwt(
       {
         iss: "did:example:issuer",
-        sub: "did:example:subject"
+        sub: "did:example:subject",
       },
       {
         issuer: "did:example:issuer",
-        signer
-      }
+        signer,
+      },
     )
 
     const mockVerifiedResult: JWTVerified = {
       verified: true,
       payload: {
         iss: "did:example:issuer",
-        sub: "did:example:subject"
+        sub: "did:example:subject",
       },
       didResolutionResult: {
         didResolutionMetadata: {},
         didDocument: null,
-        didDocumentMetadata: {}
+        didDocumentMetadata: {},
       },
       issuer: "did:example:issuer",
       signer: {
         id: "did:example:issuer#key-1",
         type: "Multikey",
         controller: "did:example:issuer",
-        publicKeyHex: "02..."
+        publicKeyHex: "02...",
       },
-      jwt
+      jwt,
     }
 
     vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
 
     const result = await verifyJwt(jwt, {
-      issuer: "did:example:issuer"
+      issuer: "did:example:issuer",
     })
 
     expect(result.payload.iss).toBe("did:example:issuer")
@@ -113,43 +112,43 @@ describe("verifyJwt()", () => {
     const jwt = await createJwt(
       {
         iss: "did:example:issuer",
-        sub: "did:example:subject"
+        sub: "did:example:subject",
       },
       {
         issuer: "did:example:issuer",
-        signer
-      }
+        signer,
+      },
     )
 
     const mockVerifiedResult: JWTVerified = {
       verified: true,
       payload: {
         iss: "did:example:issuer",
-        sub: "did:example:subject"
+        sub: "did:example:subject",
       },
       didResolutionResult: {
         didResolutionMetadata: {},
         didDocument: null,
-        didDocumentMetadata: {}
+        didDocumentMetadata: {},
       },
       issuer: "did:example:issuer",
       signer: {
         id: "did:example:issuer#key-1",
         type: "Multikey",
         controller: "did:example:issuer",
-        publicKeyHex: "02..."
+        publicKeyHex: "02...",
       },
-      jwt
+      jwt,
     }
 
     vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
 
     await expect(
       verifyJwt(jwt, {
-        issuer: "did:example:different"
-      })
+        issuer: "did:example:different",
+      }),
     ).rejects.toThrow(
-      "Expected issuer did:example:different, got did:example:issuer"
+      "Expected issuer did:example:different, got did:example:issuer",
     )
   })
 })

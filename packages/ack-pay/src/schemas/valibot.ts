@@ -12,7 +12,7 @@ export const paymentOptionSchema = v.object({
   recipient: v.string(),
   network: v.optional(v.string()),
   paymentService: v.optional(urlOrDidUri),
-  receiptService: v.optional(urlOrDidUri)
+  receiptService: v.optional(urlOrDidUri),
 })
 
 export const paymentRequestSchema = v.object({
@@ -22,17 +22,17 @@ export const paymentRequestSchema = v.object({
   expiresAt: v.optional(
     v.pipe(
       v.union([v.date(), v.string()]),
-      v.transform((input) => new Date(input).toISOString())
-    )
+      v.transform((input) => new Date(input).toISOString()),
+    ),
   ),
   paymentOptions: v.pipe(
     v.tupleWithRest([paymentOptionSchema], paymentOptionSchema),
-    v.nonEmpty()
-  )
+    v.nonEmpty(),
+  ),
 })
 
 export const paymentReceiptClaimSchema = v.object({
   paymentRequestToken: jwtStringSchema,
   paymentOptionId: v.string(),
-  metadata: v.optional(v.record(v.string(), v.unknown()))
+  metadata: v.optional(v.record(v.string(), v.unknown())),
 })

@@ -5,19 +5,17 @@ import {
   generateKeypair,
   parseJwtCredential,
   signCredential,
-  verifyJwt
+  verifyJwt,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair,
+  type Verifiable,
+  type W3CCredential,
 } from "agentcommercekit"
 import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair,
-  Verifiable,
-  W3CCredential
-} from "agentcommercekit"
 
 interface CredentialIssuerParams {
   baseUrl: string
@@ -27,7 +25,7 @@ interface CredentialIssuerParams {
 
 const credentialPayloadSchema = v.object({
   controller: didUriSchema,
-  subject: didUriSchema
+  subject: didUriSchema,
 })
 
 export class CredentialIssuer {
@@ -39,7 +37,7 @@ export class CredentialIssuer {
   private readonly resolver: DidResolver
 
   static async create(
-    params: Omit<CredentialIssuerParams, "keypair">
+    params: Omit<CredentialIssuerParams, "keypair">,
   ): Promise<CredentialIssuer> {
     const keypair = await generateKeypair("secp256k1")
     return new this({ ...params, keypair })
@@ -56,7 +54,7 @@ export class CredentialIssuer {
     // Did Document
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair: this.keypair,
-      baseUrl: this.baseUrl
+      baseUrl: this.baseUrl,
     })
     this.did = did
     this.didDocument = didDocument
@@ -67,18 +65,18 @@ export class CredentialIssuer {
   }
 
   async issueAgentOwnershipVc(
-    signedPayload: JwtString
+    signedPayload: JwtString,
   ): Promise<Verifiable<W3CCredential>> {
     const parsed = await verifyJwt(signedPayload, {
       resolver: this.resolver,
       policies: {
-        aud: false
-      }
+        aud: false,
+      },
     })
 
     const { controller, subject } = v.parse(
       credentialPayloadSchema,
-      parsed.payload
+      parsed.payload,
     )
 
     const id = `${this.baseUrl}/credentials/${parsed.payload.id}`
@@ -86,13 +84,13 @@ export class CredentialIssuer {
       id,
       subject,
       controller,
-      issuer: this.did
+      issuer: this.did,
     })
 
     const jwt = await signCredential(credential, {
       did: this.did,
       signer: this.signer,
-      alg: "ES256K"
+      alg: "ES256K",
     })
 
     const verifiableCredential = await parseJwtCredential(jwt, this.resolver)

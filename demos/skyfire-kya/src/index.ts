@@ -4,8 +4,10 @@ import {
   log,
   logJson,
   successMessage,
-  waitForEnter
+  waitForEnter,
 } from "@repo/cli-tools"
+import type { JwtString, Verifiable, W3CCredential } from "agentcommercekit"
+import type * as jose from "jose"
 import { generateJwks } from "./jwk-keys"
 import { createMockSkyfireKyaToken } from "./kya-token"
 import {
@@ -14,11 +16,9 @@ import {
   getBuyerDidFromVC,
   getOwnerDidFromVC,
   getSellerDidFromVC,
-  verifySkyfireKyaAsAckId
+  verifySkyfireKyaAsAckId,
+  type SkyfireKyaCredentialSubject,
 } from "./skyfire-kya-ack-id"
-import type { SkyfireKyaCredentialSubject } from "./skyfire-kya-ack-id"
-import type { JwtString, Verifiable, W3CCredential } from "agentcommercekit"
-import type * as jose from "jose"
 
 async function runDemo() {
   const { jwks, keypair } = await generateJwks()
@@ -38,7 +38,7 @@ async function runDemo() {
 
   // create mock kya token
   log(
-    `In this first step, we'll work with a Skyfire KYA token that contains buyer identity data, service scope, and a cryptographic proof.`
+    `In this first step, we'll work with a Skyfire KYA token that contains buyer identity data, service scope, and a cryptographic proof.`,
   )
   await waitForEnter()
 
@@ -50,7 +50,7 @@ async function runDemo() {
 
   // verify and extract ack-id identity
   log(
-    `\nNext, we'll convert the Skyfire KYA JWT into an ACK-ID compatible Verifiable Credential. This creates a W3C standard Verifiable Credential that preserves the original JWT's signature and payload.`
+    `\nNext, we'll convert the Skyfire KYA JWT into an ACK-ID compatible Verifiable Credential. This creates a W3C standard Verifiable Credential that preserves the original JWT's signature and payload.`,
   )
   await waitForEnter()
 
@@ -77,7 +77,7 @@ Details:
 
   // demonstrate bidirectional conversion
   log(
-    `\nNow we'll demonstrate that the conversion maintains full cryptographic integrity by converting the VC back to the original JWT format with perfect fidelity.`
+    `\nNow we'll demonstrate that the conversion maintains full cryptographic integrity by converting the VC back to the original JWT format with perfect fidelity.`,
   )
   await waitForEnter()
 
@@ -98,14 +98,14 @@ Details:
 
   // verify using ack-id style verification
   log(
-    `\nNext, we'll verify the Skyfire KYA token using ACK-ID's verification infrastructure, demonstrating how Skyfire can work on top of ACK-ID.`
+    `\nNext, we'll verify the Skyfire KYA token using ACK-ID's verification infrastructure, demonstrating how Skyfire can work on top of ACK-ID.`,
   )
   await waitForEnter()
 
   log("4. Running ACK-ID style verification...")
 
   const isValid = await verifySkyfireKyaAsAckId(jwks, kyaToken, [
-    "did:web:api.skyfire.xyz"
+    "did:web:api.skyfire.xyz",
   ])
 
   if (isValid) {
@@ -117,7 +117,7 @@ Details:
 
   // simulate service interaction
   log(
-    `\nFinally, we'll simulate how services built on ACK-ID can seamlessly work with Skyfire KYA tokens without any modifications.`
+    `\nFinally, we'll simulate how services built on ACK-ID can seamlessly work with Skyfire KYA tokens without any modifications.`,
   )
   await waitForEnter()
 
@@ -136,7 +136,7 @@ Details:
 
 async function simulateServiceCall(
   jwks: jose.JSONWebKeySet,
-  kyaToken: JwtString
+  kyaToken: JwtString,
 ) {
   log("   📞 Incoming request with KYA token...")
 

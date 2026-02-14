@@ -1,6 +1,6 @@
-import { base64urlToBytes, bytesToBase64url } from "./base64"
-import { getPublicKeyFromPrivateKey } from "../public-key"
 import type { KeyCurve } from "../key-curves"
+import { getPublicKeyFromPrivateKey } from "../public-key"
+import { base64urlToBytes, bytesToBase64url } from "./base64"
 
 /**
  * JWK-encoding
@@ -74,7 +74,7 @@ export type PrivateKeyJwk =
  */
 function isJwkSecp256(
   jwk: unknown,
-  crv: "secp256k1" | "secp256r1"
+  crv: "secp256k1" | "secp256r1",
 ): jwk is JwkSecp256k1 | JwkSecp256r1 {
   if (typeof jwk !== "object" || jwk === null) {
     return false
@@ -157,19 +157,19 @@ export function isPublicKeyJwk(jwk: unknown): jwk is PublicKeyJwk {
 }
 
 export function isPublicKeyJwkSecp256k1(
-  jwk: unknown
+  jwk: unknown,
 ): jwk is PublicKeyJwkSecp256k1 {
   return isJwkSecp256k1(jwk) && isPublicKeyJwk(jwk)
 }
 
 export function isPublicKeyJwkSecp256r1(
-  jwk: unknown
+  jwk: unknown,
 ): jwk is PublicKeyJwkSecp256r1 {
   return isJwkSecp256r1(jwk) && isPublicKeyJwk(jwk)
 }
 
 export function isPublicKeyJwkEd25519(
-  jwk: unknown
+  jwk: unknown,
 ): jwk is PublicKeyJwkEd25519 {
   return isJwkEd25519(jwk) && isPublicKeyJwk(jwk)
 }
@@ -182,19 +182,19 @@ export function isPrivateKeyJwk(jwk: unknown): jwk is PrivateKeyJwk {
 }
 
 export function isPrivateKeyJwkSecp256k1(
-  jwk: unknown
+  jwk: unknown,
 ): jwk is PrivateKeyJwkSecp256k1 {
   return isJwkSecp256k1(jwk) && isPrivateKeyJwk(jwk)
 }
 
 export function isPrivateKeyJwkSecp256r1(
-  jwk: unknown
+  jwk: unknown,
 ): jwk is PrivateKeyJwkSecp256r1 {
   return isJwkSecp256r1(jwk) && isPrivateKeyJwk(jwk)
 }
 
 export function isPrivateKeyJwkEd25519(
-  jwk: unknown
+  jwk: unknown,
 ): jwk is PrivateKeyJwkEd25519 {
   return isJwkEd25519(jwk) && isPrivateKeyJwk(jwk)
 }
@@ -206,7 +206,7 @@ export function isPrivateKeyJwkEd25519(
  * @returns The public key JWK
  */
 export function getPublicKeyJwk(
-  jwk: PrivateKeyJwk | PublicKeyJwk
+  jwk: PrivateKeyJwk | PublicKeyJwk,
 ): PublicKeyJwk {
   if (isPrivateKeyJwk(jwk)) {
     const { d: _d, ...publicKeyJwk } = jwk
@@ -221,14 +221,14 @@ export function getPublicKeyJwk(
  */
 export function publicKeyBytesToJwk(
   bytes: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PublicKeyJwk {
   switch (curve) {
     case "Ed25519":
       return {
         kty: "OKP",
         crv: "Ed25519",
-        x: bytesToBase64url(bytes)
+        x: bytesToBase64url(bytes),
       } as const
 
     case "secp256k1":
@@ -244,7 +244,7 @@ export function publicKeyBytesToJwk(
         kty: "EC",
         crv: curve,
         x: bytesToBase64url(xBytes),
-        y: bytesToBase64url(yBytes)
+        y: bytesToBase64url(yBytes),
       } as const
     }
 
@@ -255,14 +255,14 @@ export function publicKeyBytesToJwk(
 
 export function privateKeyBytesToJwk(
   bytes: Uint8Array,
-  curve: KeyCurve
+  curve: KeyCurve,
 ): PrivateKeyJwk {
   const publicKeyBytes = getPublicKeyFromPrivateKey(bytes, curve)
   const publicKeyJwk = publicKeyBytesToJwk(publicKeyBytes, curve)
 
   return {
     ...publicKeyJwk,
-    d: bytesToBase64url(bytes)
+    d: bytesToBase64url(bytes),
   }
 }
 

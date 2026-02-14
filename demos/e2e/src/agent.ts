@@ -5,23 +5,21 @@ import {
   createJwtSigner,
   createSignedPaymentRequest,
   curveToJwtAlgorithm,
-  generateKeypair
+  generateKeypair,
+  type Caip2ChainId,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtSigner,
+  type JwtString,
+  type Keypair,
+  type PaymentRequest,
 } from "agentcommercekit"
+import type { CredentialVerifier } from "./credential-verifier"
 import { PaymentRequiredError } from "./payment-required-error"
+import type { ReceiptVerifier } from "./receipt-verifier"
 import { publicKeyToAddress } from "./utils/evm-address"
 import { verifyAgentIdentityWithCredential } from "./verification"
-import type { CredentialVerifier } from "./credential-verifier"
-import type { ReceiptVerifier } from "./receipt-verifier"
-import type {
-  Caip2ChainId,
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtSigner,
-  JwtString,
-  Keypair,
-  PaymentRequest
-} from "agentcommercekit"
 
 interface AgentConstructorParams {
   did: DidUri
@@ -61,7 +59,7 @@ export class Agent {
     receiptVerifier,
     credentialVerifier,
     wallet,
-    preferredChainId
+    preferredChainId,
   }: AgentConstructorParams) {
     // DID
     this.did = did
@@ -80,7 +78,7 @@ export class Agent {
     const { did: walletDid, didDocument: walletDidDocument } =
       createDidPkhDocument({
         address: this.walletAddress,
-        chainId: this.preferredChainId
+        chainId: this.preferredChainId,
       })
     this.walletDid = walletDid
     resolver.addToCache(walletDid, walletDidDocument)
@@ -101,7 +99,7 @@ export class Agent {
     preferredChainId,
     resolver,
     receiptVerifier,
-    credentialVerifier
+    credentialVerifier,
   }: {
     ownerDid: DidUri
     preferredChainId: Caip2ChainId
@@ -121,7 +119,7 @@ export class Agent {
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair,
       baseUrl,
-      controller: ownerDid
+      controller: ownerDid,
     })
 
     return new Agent({
@@ -133,7 +131,7 @@ export class Agent {
       receiptVerifier,
       credentialVerifier,
       wallet: walletKeypair,
-      preferredChainId
+      preferredChainId,
     })
   }
 
@@ -154,13 +152,13 @@ ${colors.bold(otherAgent.did)}
 
 [chat] Verifying other agent's identity:
 ${colors.bold(otherAgent.did)}
-`)
+`),
     )
 
     const verified = await verifyAgentIdentityWithCredential(
       otherAgent.ownershipVc,
       this.resolver,
-      this.credentialVerifier
+      this.credentialVerifier,
     )
     if (!verified) {
       throw new Error("Other agent's credential verification failed")
@@ -171,7 +169,7 @@ ${colors.bold(otherAgent.did)}
       this.did,
       this.ownershipVc,
       message,
-      receipt
+      receipt,
     )
   }
 
@@ -182,7 +180,7 @@ ${colors.bold(otherAgent.did)}
     fromDid: DidUri,
     fromOwnershipVc: JwtString | undefined,
     message: string,
-    receipt?: JwtString
+    receipt?: JwtString,
   ) {
     log(
       colors.dim(
@@ -190,14 +188,14 @@ ${colors.bold(otherAgent.did)}
 [chat] ${this.did} handling chat from ${fromDid}
 [chat] Message: ${message}
 [chat] Verifying other agent's identity: ${fromDid}
-`
+`,
       ),
-      { wrap: false }
+      { wrap: false },
     )
     const verified = await verifyAgentIdentityWithCredential(
       fromOwnershipVc,
       this.resolver,
-      this.credentialVerifier
+      this.credentialVerifier,
     )
     if (!verified) {
       throw new Error("Other agent's credential verification failed")
@@ -216,15 +214,15 @@ ${colors.bold(otherAgent.did)}
                 amount: BigInt(500).toString(),
                 decimals: 2,
                 currency: "USD",
-                recipient: this.walletDid
-              }
-            ]
+                recipient: this.walletDid,
+              },
+            ],
           },
           {
             issuer: this.did,
             signer: this.signer,
-            algorithm: curveToJwtAlgorithm(this.keypair.curve)
-          }
+            algorithm: curveToJwtAlgorithm(this.keypair.curve),
+          },
         )
 
       // Optional: Store the pending payment request tokens.
@@ -236,7 +234,7 @@ ${colors.bold(otherAgent.did)}
     // Verify the receipt
     const { paymentRequestToken } = await this.receiptVerifier.verifyReceipt(
       receipt,
-      this.did
+      this.did,
     )
 
     // Optional: Ensure the payment request token was for this same type of request.
@@ -250,7 +248,7 @@ ${colors.bold(otherAgent.did)}
     // Provide the service
     return {
       data: "Response to: " + message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     }
   }
 }

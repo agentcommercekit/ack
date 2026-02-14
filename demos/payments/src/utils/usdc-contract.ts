@@ -1,6 +1,12 @@
-import { createWalletClient, encodeFunctionData, erc20Abi, http } from "viem"
 import { chain, usdcAddress } from "@/constants"
-import type { Account, Address } from "viem"
+import {
+  createWalletClient,
+  encodeFunctionData,
+  erc20Abi,
+  http,
+  type Account,
+  type Address,
+} from "viem"
 
 /**
  * Transfer USDC to the recipient
@@ -13,7 +19,7 @@ import type { Account, Address } from "viem"
 export async function transferUsdc(
   fromAccount: Account,
   toAddress: Address,
-  amount: bigint
+  amount: bigint,
 ) {
   // If you'd like to bypass actual transactions on subsequent runs with the same
   // client wallet to the same server, you can set the SIMULATED_PAYMENT_TX_HASH
@@ -25,7 +31,7 @@ export async function transferUsdc(
   const walletClient = createWalletClient({
     chain,
     transport: http(),
-    account: fromAccount
+    account: fromAccount,
   })
 
   return walletClient.sendTransaction({
@@ -34,7 +40,7 @@ export async function transferUsdc(
     data: encodeFunctionData({
       abi: erc20Abi,
       functionName: "transfer",
-      args: [toAddress, amount]
-    })
+      args: [toAddress, amount],
+    }),
   })
 }

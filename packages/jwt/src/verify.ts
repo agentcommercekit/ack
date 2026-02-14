@@ -1,5 +1,4 @@
-import { verifyJWT } from "did-jwt"
-import type { JWTVerified, JWTVerifyOptions } from "did-jwt"
+import { verifyJWT, type JWTVerified, type JWTVerifyOptions } from "did-jwt"
 
 export type JwtVerified = JWTVerified
 
@@ -12,7 +11,7 @@ export type VerifyJwtOptions = JWTVerifyOptions & {
  */
 export async function verifyJwt(
   jwt: string,
-  { issuer, ...options }: VerifyJwtOptions = {}
+  { issuer, ...options }: VerifyJwtOptions = {},
 ): Promise<JwtVerified> {
   const result = await verifyJWT(jwt, options)
 

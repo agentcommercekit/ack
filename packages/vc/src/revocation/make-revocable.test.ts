@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest"
-import { makeRevocable } from "./make-revocable"
 import type { W3CCredential } from "../types"
+import { makeRevocable } from "./make-revocable"
 
 describe("makeRevocable", () => {
   const mockCredential: W3CCredential = {
@@ -8,18 +8,18 @@ describe("makeRevocable", () => {
     type: ["VerifiableCredential"],
     issuer: { id: "did:example:issuer" },
     credentialSubject: { id: "did:example:subject" },
-    issuanceDate: new Date().toISOString()
+    issuanceDate: new Date().toISOString(),
   }
 
   const mockStatusListId = "https://example.com/status/1"
   const mockStatusListUrl = "https://example.com/status/1"
   const mockStatusListIndex = 123
 
-  it("should add revocation status to credential", () => {
+  it("adds revocation status to credential", () => {
     const revocableCredential = makeRevocable(mockCredential, {
       id: mockStatusListId,
       statusListIndex: mockStatusListIndex,
-      statusListUrl: mockStatusListUrl
+      statusListUrl: mockStatusListUrl,
     })
 
     expect(revocableCredential.credentialStatus).toEqual({
@@ -27,7 +27,7 @@ describe("makeRevocable", () => {
       type: "BitstringStatusListEntry",
       statusPurpose: "revocation",
       statusListIndex: mockStatusListIndex.toString(),
-      statusListCredential: mockStatusListUrl
+      statusListCredential: mockStatusListUrl,
     })
   })
 })

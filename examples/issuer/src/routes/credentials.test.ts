@@ -1,26 +1,28 @@
+import type { DatabaseClient } from "@/db/get-db"
+import { getCredential } from "@/db/queries/credentials"
+import type { DatabaseCredential } from "@/db/schema"
 import {
-  DidResolver,
+  createDidWebWithSigner,
+  type DidWithSigner,
+} from "@/test-helpers/did-web-with-signer"
+import {
   bytesToHexString,
   createControllerCredential,
   createJwt,
-  getDidResolver
+  DidResolver,
+  getDidResolver,
 } from "agentcommercekit"
 import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
-import { getCredential } from "@/db/queries/credentials"
-import { createDidWebWithSigner } from "@/test-helpers/did-web-with-signer"
 import app from ".."
-import type { DatabaseClient } from "@/db/get-db"
-import type { DatabaseCredential } from "@/db/schema"
-import type { DidWithSigner } from "@/test-helpers/did-web-with-signer"
 
 // Mock the DID resolver
 vi.mock("agentcommercekit", async () => {
   const actual = await vi.importActual("agentcommercekit")
   return {
     ...actual,
-    getDidResolver: vi.fn()
+    getDidResolver: vi.fn(),
   }
 })
 
@@ -34,15 +36,15 @@ vi.mock("@/db/queries/credentials", async () => {
         credential: Omit<
           DatabaseCredential,
           "id" | "statusListIndex" | "issuedAt" | "revokedAt"
-        >
+        >,
       ): Promise<DatabaseCredential> =>
         Promise.resolve({
           id: 1,
           credentialType: credential.credentialType,
           baseCredential: credential.baseCredential,
           issuedAt: new Date(),
-          revokedAt: null
-        })
+          revokedAt: null,
+        }),
     ),
     getCredential: vi.fn().mockImplementation(async (_db, id: number) => {
       return Promise.resolve({
@@ -51,11 +53,11 @@ vi.mock("@/db/queries/credentials", async () => {
         baseCredential: createControllerCredential({
           controller: "did:web:controller.example.com",
           subject: "did:web:subject.example.com",
-          issuer: "did:web:issuer.example.com"
-        })
+          issuer: "did:web:issuer.example.com",
+        }),
       })
     }),
-    revokeCredential: vi.fn()
+    revokeCredential: vi.fn(),
   }
 })
 
@@ -63,8 +65,8 @@ const responseSchema = v.object({
   ok: v.literal(true),
   data: v.object({
     credential: credentialSchema,
-    jwt: v.string()
-  })
+    jwt: v.string(),
+  }),
 })
 
 describe("POST /credentials/controller", () => {
@@ -76,7 +78,7 @@ describe("POST /credentials/controller", () => {
     issuer = await createDidWebWithSigner("https://issuer.example.com")
     controller = await createDidWebWithSigner("https://controller.example.com")
     target = await createDidWebWithSigner(`https://target.example.com`, {
-      controller: controller.did
+      controller: controller.did,
     })
 
     process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
@@ -95,20 +97,20 @@ describe("POST /credentials/controller", () => {
 
     const payload = {
       controller: controller.did,
-      subject: target.did
+      subject: target.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: controller.did,
-      signer: controller.signer
+      signer: controller.signer,
     })
 
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(200)
@@ -124,7 +126,7 @@ describe("POST /credentials/controller", () => {
   it("responds with an error when the target DID does not have a controller listed", async () => {
     const resolver = new DidResolver()
     const targetNoController = await createDidWebWithSigner(
-      `https://stray.example.com`
+      `https://stray.example.com`,
     )
     resolver.addToCache(controller.did, controller.didDocument)
     resolver.addToCache(targetNoController.did, targetNoController.didDocument)
@@ -132,26 +134,26 @@ describe("POST /credentials/controller", () => {
 
     const payload = {
       controller: controller.did,
-      subject: targetNoController.did
+      subject: targetNoController.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: controller.did,
-      signer: controller.signer
+      signer: controller.signer,
     })
 
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(400)
     expect(await res.json()).toEqual({
       error: `DID ${targetNoController.did} is missing a controller`,
-      ok: false
+      ok: false,
     })
   })
 
@@ -159,38 +161,38 @@ describe("POST /credentials/controller", () => {
     const resolver = new DidResolver()
     const targetBadController = await createDidWebWithSigner(
       `https://target2.example.com`,
-      { controller: issuer.did } // Uses the 'issuer' instead of the `controller`
+      { controller: issuer.did }, // Uses the 'issuer' instead of the `controller`
     )
     resolver.addToCache(issuer.did, issuer.didDocument)
     resolver.addToCache(controller.did, controller.didDocument)
     resolver.addToCache(
       targetBadController.did,
-      targetBadController.didDocument
+      targetBadController.didDocument,
     )
     vi.mocked(getDidResolver).mockReturnValue(resolver)
 
     const payload = {
       controller: controller.did,
-      subject: targetBadController.did
+      subject: targetBadController.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: controller.did,
-      signer: controller.signer
+      signer: controller.signer,
     })
 
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(401)
     expect(await res.json()).toEqual({
       error: "Target controller does not match",
-      ok: false
+      ok: false,
     })
   })
 
@@ -202,26 +204,26 @@ describe("POST /credentials/controller", () => {
 
     const payload = {
       controller: controller.did,
-      subject: target.did
+      subject: target.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: target.did, // The target attempting to prove ownership
-      signer: target.signer
+      signer: target.signer,
     })
 
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(401)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Target controller does not match"
+      error: "Target controller does not match",
     })
   })
 
@@ -231,26 +233,26 @@ describe("POST /credentials/controller", () => {
 
     const payload = {
       controller: controller.did,
-      subject: target.did
+      subject: target.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: controller.did,
-      signer: controller.signer
+      signer: controller.signer,
     })
 
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(401)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Invalid payload"
+      error: "Invalid payload",
     })
   })
 
@@ -262,9 +264,9 @@ describe("POST /credentials/controller", () => {
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: "not-a-valid-jwt"
+        payload: "not-a-valid-jwt",
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
     expect(res.status).toBe(400)
     expect(await res.json()).toMatchObject({
@@ -278,9 +280,9 @@ describe("POST /credentials/controller", () => {
           received: '"not-a-valid-jwt"',
           input: "not-a-valid-jwt",
           message: "Invalid JWT format",
-          path: [{ key: "payload", value: "not-a-valid-jwt" }]
-        }
-      ]
+          path: [{ key: "payload", value: "not-a-valid-jwt" }],
+        },
+      ],
     })
   })
 
@@ -291,20 +293,20 @@ describe("POST /credentials/controller", () => {
 
     const payload = {
       controller: "not-a-valid-did",
-      subject: target.did
+      subject: target.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: controller.did,
-      signer: controller.signer
+      signer: controller.signer,
     })
 
     const res = await app.request("/credentials/controller", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(400)
@@ -319,9 +321,9 @@ describe("POST /credentials/controller", () => {
           received: '"not-a-valid-did"',
           input: "not-a-valid-did",
           message: "Invalid DID format",
-          path: [{ key: "controller", value: "not-a-valid-did" }]
-        }
-      ]
+          path: [{ key: "controller", value: "not-a-valid-did" }],
+        },
+      ],
     })
   })
 })
@@ -335,12 +337,12 @@ describe("DELETE /credentials/controller", () => {
     controller = await createDidWebWithSigner("https://controller.example.com")
 
     const payload = {
-      id: 1
+      id: 1,
     }
 
     signedPayload = await createJwt(payload, {
       issuer: controller.did,
-      signer: controller.signer
+      signer: controller.signer,
     })
 
     process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
@@ -359,15 +361,15 @@ describe("DELETE /credentials/controller", () => {
     const res = await app.request("/credentials/controller", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({
       ok: true,
-      data: null
+      data: null,
     })
   })
 
@@ -380,26 +382,26 @@ describe("DELETE /credentials/controller", () => {
     const res = await app.request("/credentials/controller", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(404)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Credential not found"
+      error: "Credential not found",
     })
   })
 
   it("throws an error if credential controller is not the request signer", async () => {
     const resolver = new DidResolver()
     const differentController = await createDidWebWithSigner(
-      "https://different-controller.example.com"
+      "https://different-controller.example.com",
     )
     resolver.addToCache(
       differentController.did,
-      differentController.didDocument
+      differentController.didDocument,
     )
     vi.mocked(getDidResolver).mockReturnValue(resolver)
 
@@ -407,23 +409,23 @@ describe("DELETE /credentials/controller", () => {
       { id: 1 },
       {
         issuer: differentController.did,
-        signer: differentController.signer
-      }
+        signer: differentController.signer,
+      },
     )
 
     const res = await app.request("/credentials/controller", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(401)
 
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Unauthorized"
+      error: "Unauthorized",
     })
   })
 
@@ -435,7 +437,7 @@ describe("DELETE /credentials/controller", () => {
     const invalidCredential = createControllerCredential({
       controller: "did:web:controller.example.com",
       subject: "did:web:subject.example.com",
-      issuer: "did:web:issuer.example.com"
+      issuer: "did:web:issuer.example.com",
     })
 
     delete invalidCredential.credentialSubject.controller
@@ -443,21 +445,21 @@ describe("DELETE /credentials/controller", () => {
     vi.mocked(getCredential).mockResolvedValueOnce({
       id: 1,
       credentialType: "ControllerCredential",
-      baseCredential: invalidCredential
+      baseCredential: invalidCredential,
     } as DatabaseCredential)
 
     const res = await app.request("/credentials/controller", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(500)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Invalid stored credential"
+      error: "Invalid stored credential",
     })
   })
 })

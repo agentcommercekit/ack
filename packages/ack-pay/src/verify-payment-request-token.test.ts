@@ -1,28 +1,28 @@
 import {
   createDidDocumentFromKeypair,
   createDidKeyUri,
-  getDidResolver
+  getDidResolver,
+  type DidDocument,
+  type DidUri,
 } from "@agentcommercekit/did"
 import {
   createJwt,
   createJwtSigner,
-  curveToJwtAlgorithm
+  curveToJwtAlgorithm,
+  type JwtSigner,
 } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
-import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 import type { PaymentRequestInit } from "./payment-request"
-import type { DidDocument, DidUri } from "@agentcommercekit/did"
-import type { JwtSigner } from "@agentcommercekit/jwt"
-import type { Keypair } from "@agentcommercekit/keys"
+import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
 /**
  * Removes undefined values from the payment request
  */
 function cleanPaymentRequest(paymentRequest: PaymentRequestInit) {
   return Object.fromEntries(
-    Object.entries(paymentRequest).filter(([_, v]) => v)
+    Object.entries(paymentRequest).filter(([_, v]) => v),
   )
 }
 
@@ -40,9 +40,9 @@ describe("verifyPaymentRequestToken", () => {
         amount: 10,
         decimals: 2,
         currency: "USD",
-        recipient: "sol:123"
-      }
-    ]
+        recipient: "sol:123",
+      },
+    ],
   }
 
   beforeEach(async () => {
@@ -51,7 +51,7 @@ describe("verifyPaymentRequestToken", () => {
     issuerDid = createDidKeyUri(keypair)
     issuerDidDocument = createDidDocumentFromKeypair({
       did: issuerDid,
-      keypair
+      keypair,
     })
   })
 
@@ -60,7 +60,7 @@ describe("verifyPaymentRequestToken", () => {
     const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
+      algorithm: curveToJwtAlgorithm(keypair.curve),
     })
 
     const resolver = getDidResolver()
@@ -68,11 +68,11 @@ describe("verifyPaymentRequestToken", () => {
 
     // Verify the token
     const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
-      resolver
+      resolver,
     })
 
     expect(result.paymentRequest).toStrictEqual(
-      cleanPaymentRequest(body.paymentRequest)
+      cleanPaymentRequest(body.paymentRequest),
     )
     expect(result.parsed.issuer).toEqual(issuerDid)
   })
@@ -83,8 +83,8 @@ describe("verifyPaymentRequestToken", () => {
 
     await expect(
       verifyPaymentRequestToken("invalid.jwt.token", {
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow("Invalid payment request token")
   })
 
@@ -93,18 +93,18 @@ describe("verifyPaymentRequestToken", () => {
     const expiredPayload = {
       ...paymentRequest,
       sub: paymentRequest.id,
-      exp: Math.floor(Date.now() / 1000) - 3600 // 1 hour in the past
+      exp: Math.floor(Date.now() / 1000) - 3600, // 1 hour in the past
     }
 
     const expiredToken = await createJwt(
       expiredPayload,
       {
         issuer: issuerDid,
-        signer
+        signer,
       },
       {
-        alg: curveToJwtAlgorithm(keypair.curve)
-      }
+        alg: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     const resolver = getDidResolver()
@@ -112,8 +112,8 @@ describe("verifyPaymentRequestToken", () => {
 
     await expect(
       verifyPaymentRequestToken(expiredToken, {
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow("Invalid payment request token")
   })
 
@@ -122,18 +122,18 @@ describe("verifyPaymentRequestToken", () => {
     const expiredPayload = {
       ...paymentRequest,
       sub: paymentRequest.id,
-      exp: Math.floor(Date.now() / 1000) - 3600 // 1 hour in the past
+      exp: Math.floor(Date.now() / 1000) - 3600, // 1 hour in the past
     }
 
     const expiredToken = await createJwt(
       expiredPayload,
       {
         issuer: issuerDid,
-        signer
+        signer,
       },
       {
-        alg: curveToJwtAlgorithm(keypair.curve)
-      }
+        alg: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     const resolver = getDidResolver()
@@ -142,7 +142,7 @@ describe("verifyPaymentRequestToken", () => {
     // Verify with verifyExpiry set to false
     const result = await verifyPaymentRequestToken(expiredToken, {
       resolver,
-      verifyExpiry: false
+      verifyExpiry: false,
     })
 
     expect(result.paymentRequest).toBeDefined()
@@ -153,7 +153,7 @@ describe("verifyPaymentRequestToken", () => {
     const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
-      algorithm: curveToJwtAlgorithm(keypair.curve)
+      algorithm: curveToJwtAlgorithm(keypair.curve),
     })
 
     // Create a resolver with a different public key to make signature verification fail
@@ -163,14 +163,14 @@ describe("verifyPaymentRequestToken", () => {
       issuerDid,
       createDidDocumentFromKeypair({
         did: issuerDid,
-        keypair: differentKeypair
-      })
+        keypair: differentKeypair,
+      }),
     )
 
     await expect(
       verifyPaymentRequestToken(body.paymentRequestToken, {
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow("Invalid payment request token")
   })
 
@@ -180,8 +180,8 @@ describe("verifyPaymentRequestToken", () => {
       { sub: "test-payment-request-id" },
       {
         issuer: issuerDid,
-        signer
-      }
+        signer,
+      },
     )
 
     const resolver = getDidResolver()
@@ -189,8 +189,8 @@ describe("verifyPaymentRequestToken", () => {
 
     await expect(
       verifyPaymentRequestToken(invalidToken, {
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow("Payment Request token is not a valid PaymentRequest")
   })
 })

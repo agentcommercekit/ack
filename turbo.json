@@ -21,7 +21,7 @@
       ]
     },
     "check:types": {
-      "dependsOn": ["^check:types", "^build"]
+      "dependsOn": ["^build"]
     },
     "clean": {
       "dependsOn": ["^clean"]
@@ -32,20 +32,20 @@
       "persistent": true
     },
     "fix": {
-      "dependsOn": ["//#format", "lint:fix"]
+      "dependsOn": ["lint:fix", "//#format"]
     },
     "lint": {
-      "dependsOn": ["^lint", "^build"]
+      "dependsOn": ["^build"]
     },
     "lint:fix": {
-      "dependsOn": ["^lint:fix", "^build"]
+      "dependsOn": ["^build"]
     },
     "setup": {
       "dependsOn": ["^setup"],
       "cache": false
     },
     "test": {
-      "dependsOn": ["^test", "^build"]
+      "dependsOn": ["^build"]
     }
   },
   "globalEnv": ["NODE_ENV"]

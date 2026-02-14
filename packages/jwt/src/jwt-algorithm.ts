@@ -1,5 +1,4 @@
-import { isKeyCurve } from "@agentcommercekit/keys"
-import type { KeyCurve } from "@agentcommercekit/keys"
+import { isKeyCurve, type KeyCurve } from "@agentcommercekit/keys"
 
 /**
  * JWT signing algorithms supported by the JWT library
@@ -15,7 +14,7 @@ export type JwtAlgorithm = (typeof jwtAlgorithms)[number]
 export const CURVE_TO_ALGORITHM: Record<KeyCurve, JwtAlgorithm> = {
   secp256k1: "ES256K",
   secp256r1: "ES256",
-  Ed25519: "EdDSA"
+  Ed25519: "EdDSA",
 }
 
 /**

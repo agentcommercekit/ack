@@ -1,12 +1,10 @@
-import { isDidUri } from "@agentcommercekit/did"
-import { isJwtString } from "@agentcommercekit/jwt"
+import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
+import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
+import type { ValidationTargets } from "hono"
 import { env } from "hono/adapter"
 import { validator } from "hono/validator"
 import * as v from "valibot"
 import { validatePayload } from "../validate-payload"
-import type { DidUri, Resolvable } from "@agentcommercekit/did"
-import type { JwtString } from "@agentcommercekit/jwt"
-import type { ValidationTargets } from "hono"
 
 interface ValidatedSignedPayload<T> {
   issuer: DidUri
@@ -16,8 +14,8 @@ interface ValidatedSignedPayload<T> {
 const signedPayloadSchema = v.object({
   payload: v.custom<JwtString>(
     (v: unknown) => typeof v === "string" && isJwtString(v),
-    "Invalid JWT format"
-  )
+    "Invalid JWT format",
+  ),
 })
 
 /**
@@ -37,7 +35,7 @@ const signedPayloadSchema = v.object({
  */
 export const signedPayloadValidator = <T>(
   target: keyof ValidationTargets,
-  schema: v.GenericSchema<unknown, T>
+  schema: v.GenericSchema<unknown, T>,
 ) =>
   validator(target, async (value, c): Promise<ValidatedSignedPayload<T>> => {
     const didResolver = c.get("resolver") as Resolvable | undefined
@@ -47,7 +45,7 @@ export const signedPayloadValidator = <T>(
       const { parsed, body } = await validatePayload(
         data.payload,
         schema,
-        didResolver
+        didResolver,
       )
 
       // Enforces a DID for the issuer
@@ -57,7 +55,7 @@ export const signedPayloadValidator = <T>(
 
       return {
         issuer: parsed.issuer,
-        body
+        body,
       }
     } catch (error) {
       /**
@@ -70,7 +68,7 @@ export const signedPayloadValidator = <T>(
         if (isDidUri(issuer) && parsedPayload.success) {
           return {
             issuer,
-            body: parsedPayload.output
+            body: parsedPayload.output,
           }
         }
       }

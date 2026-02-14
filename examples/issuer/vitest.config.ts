@@ -5,6 +5,6 @@ export default defineConfig({
   plugins: [tsconfigPaths()],
   test: {
     passWithNoTests: true,
-    watch: false
-  }
+    watch: false,
+  },
 })

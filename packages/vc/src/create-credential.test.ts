@@ -11,10 +11,10 @@ describe("createCredential", () => {
     vi.setSystemTime(date)
   })
 
-  it("should create a basic credential with required fields", () => {
+  it("creates a basic credential with required fields", () => {
     const credential = createCredential({
       issuer: mockIssuer,
-      subject: mockSubject
+      subject: mockSubject,
     })
 
     expect(credential).toEqual({
@@ -22,62 +22,62 @@ describe("createCredential", () => {
       type: ["VerifiableCredential"],
       issuer: { id: mockIssuer },
       credentialSubject: { id: mockSubject },
-      issuanceDate: date.toISOString()
+      issuanceDate: date.toISOString(),
     })
   })
 
-  it("should include optional attestation data", () => {
+  it("includes optional attestation data", () => {
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      attestation: mockAttestation
+      attestation: mockAttestation,
     })
 
     expect(credential.credentialSubject).toEqual({
       id: mockSubject,
-      ...mockAttestation
+      ...mockAttestation,
     })
   })
 
-  it("should handle custom credential types", () => {
+  it("handles custom credential types", () => {
     const customType = "CustomCredential"
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      type: customType
+      type: customType,
     })
 
     expect(credential.type).toEqual(["VerifiableCredential", customType])
   })
 
-  it("should handle multiple credential types", () => {
+  it("handles multiple credential types", () => {
     const types = ["CustomCredential1", "CustomCredential2"]
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      type: types
+      type: types,
     })
 
     expect(credential.type).toEqual(["VerifiableCredential", ...types])
   })
 
-  it("should use provided issuance date", () => {
+  it("uses provided issuance date", () => {
     const issuanceDate = new Date("2024-01-01")
     const credential = createCredential({
       issuer: mockIssuer,
       subject: mockSubject,
-      issuanceDate
+      issuanceDate,
     })
 
     expect(credential.issuanceDate).toBe(issuanceDate.toISOString())
   })
 
-  it("should include custom ID when provided", () => {
+  it("includes custom ID when provided", () => {
     const customId = "urn:uuid:12345678-1234-5678-1234-567812345678"
     const credential = createCredential({
       id: customId,
       issuer: mockIssuer,
-      subject: mockSubject
+      subject: mockSubject,
     })
 
     expect(credential.id).toBe(customId)

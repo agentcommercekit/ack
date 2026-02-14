@@ -1,6 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { isPaymentRequest } from "./payment-request"
-import type { PaymentRequestInit } from "./payment-request"
+import { isPaymentRequest, type PaymentRequestInit } from "./payment-request"
 
 describe("isPaymentRequest", () => {
   const validPaymentRequest: PaymentRequestInit = {
@@ -11,9 +10,9 @@ describe("isPaymentRequest", () => {
         amount: BigInt(100).toString(),
         decimals: 2,
         currency: "USD",
-        recipient: "did:example:recipient"
-      }
-    ]
+        recipient: "did:example:recipient",
+      },
+    ],
   }
 
   it("returns true for a valid payment request", () => {
@@ -24,8 +23,8 @@ describe("isPaymentRequest", () => {
     expect(
       isPaymentRequest({
         ...validPaymentRequest,
-        id: undefined
-      })
+        id: undefined,
+      }),
     ).toBe(false)
   })
 

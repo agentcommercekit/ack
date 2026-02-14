@@ -20,6 +20,7 @@ Alternatively, you can install each sub-package individually. These are:
 
 - [@agentcommercekit/ack-id](https://github.com/agentcommercekit/ack/tree/main/packages/ack-id) - For ACK-ID specific schemas and functionality
 - [@agentcommercekit/ack-pay](https://github.com/agentcommercekit/ack/tree/main/packages/ack-pay) - For ACK-Pay specific schemas and functionality
+- [@agentcommercekit/caip](https://github.com/agentcommercekit/ack/tree/main/packages/caip) - For CAIP (Chain Agnostic Improvement Proposal) utilities
 - [@agentcommercekit/did](https://github.com/agentcommercekit/ack/tree/main/packages/did) - For DID resolution and manipulation
 - [@agentcommercekit/jwt](https://github.com/agentcommercekit/ack/tree/main/packages/jwt) - For JWT creation and verification
 - [@agentcommercekit/keys](https://github.com/agentcommercekit/ack/tree/main/packages/keys) - For public/private KeyPairs
@@ -50,7 +51,7 @@ const credential = createControllerCredential({
   controller: controllerDid,
   // Optional id and issuer can be provided
   id: "urn:uuid:123e4567-e89b-12d3-a456-426614174000",
-  issuer: controllerDid // Defaults to controller if not provided
+  issuer: controllerDid, // Defaults to controller if not provided
 })
 ```
 
@@ -60,7 +61,7 @@ const credential = createControllerCredential({
 import {
   getControllerClaimVerifier,
   getDidResolver,
-  verifyParsedCredential
+  verifyParsedCredential,
 } from "agentcommercekit"
 
 // Get the claim verifier for controller credentials
@@ -72,7 +73,7 @@ try {
   await verifyParsedCredential(controllerCredential, {
     resolver,
     verifiers: [verifier],
-    trustedIssuers: [controllerDid] // Optional: list of trusted issuers
+    trustedIssuers: [controllerDid], // Optional: list of trusted issuers
   })
   console.log("Credential verified successfully")
 } catch (error) {
@@ -83,7 +84,7 @@ try {
 #### Type Guards for Credential Validation
 
 ```ts
-import { isControllerCredential, isControllerClaim } from "agentcommercekit"
+import { isControllerClaim, isControllerCredential } from "agentcommercekit"
 
 // Check if a credential is specifically a controller credential
 isControllerCredential(credential)
@@ -159,18 +160,18 @@ const receipt = createPaymentReceipt({
   paymentRequestToken: "<payment-request-token>",
   paymentOptionId: "<payment-option-id-from-request>",
   issuer: "did:web:receipt-service.example.com",
-  payerDid: "did:web:customer.example.com"
+  payerDid: "did:web:customer.example.com",
 })
 ```
 
 #### Verifying a Payment Receipt
 
 ```ts
-import { verifyPaymentReceipt, getDidResolver } from "agentcommercekit"
+import { getDidResolver, verifyPaymentReceipt } from "agentcommercekit"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
-  trustedIssuers: ["did:web:merchant.example.com"]
+  trustedIssuers: ["did:web:merchant.example.com"],
 })
 ```
 
@@ -178,9 +179,9 @@ const verified = await verifyPaymentReceipt(receipt, {
 
 ```ts
 import {
-  isPaymentRequest,
+  isPaymentReceiptClaim,
   isPaymentReceiptCredential,
-  isPaymentReceiptClaim
+  isPaymentRequest,
 } from "agentcommercekit"
 
 // Check if a value is a valid payment request

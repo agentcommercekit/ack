@@ -1,17 +1,15 @@
 import * as z from "zod/v4"
 import {
+  caip2ChainIdRegex,
   caip10AccountIdRegex,
   caip19AssetIdRegex,
   caip19AssetNameRegex,
   caip19AssetTypeRegex,
-  caip2ChainIdRegex
-} from "../../caips"
-import type {
-  Caip10AccountId,
-  Caip19AssetId,
-  Caip19AssetName,
-  Caip19AssetType,
-  Caip2ChainId
+  type Caip2ChainId,
+  type Caip10AccountId,
+  type Caip19AssetId,
+  type Caip19AssetName,
+  type Caip19AssetType,
 } from "../../caips"
 
 export const caip2ChainIdSchema = z
@@ -29,7 +27,7 @@ export const caip10AccountIdSchema = z
   .pipe(z.custom<Caip10AccountId>(() => true))
 
 export function isCaip10AccountId(
-  accountId: unknown
+  accountId: unknown,
 ): accountId is Caip10AccountId {
   return caip10AccountIdSchema.safeParse(accountId).success
 }
@@ -40,7 +38,7 @@ export const caip19AssetNameSchema = z
   .pipe(z.custom<Caip19AssetName>(() => true))
 
 export function isCaip19AssetName(
-  assetName: unknown
+  assetName: unknown,
 ): assetName is Caip19AssetName {
   return caip19AssetNameSchema.safeParse(assetName).success
 }
@@ -51,7 +49,7 @@ export const caip19AssetTypeSchema = z
   .pipe(z.custom<Caip19AssetType>(() => true))
 
 export function isCaip19AssetType(
-  assetType: unknown
+  assetType: unknown,
 ): assetType is Caip19AssetType {
   return caip19AssetTypeSchema.safeParse(assetType).success
 }

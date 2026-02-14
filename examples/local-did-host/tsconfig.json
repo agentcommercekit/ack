@@ -6,5 +6,6 @@
       "@/*": ["src/*"]
     }
   },
-  "include": ["bin", "src", "vitest.config.ts"]
+  "include": ["**/*"],
+  "exclude": ["node_modules", "dist"]
 }

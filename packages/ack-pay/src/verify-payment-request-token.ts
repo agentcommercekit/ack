@@ -1,10 +1,9 @@
-import { verifyJwt } from "@agentcommercekit/jwt"
+import type { Resolvable } from "@agentcommercekit/did"
+import { verifyJwt, type JwtVerified } from "@agentcommercekit/jwt"
 import * as v from "valibot"
 import { InvalidPaymentRequestTokenError } from "./errors"
-import { paymentRequestSchema } from "./schemas/valibot"
 import type { PaymentRequest } from "./payment-request"
-import type { Resolvable } from "@agentcommercekit/did"
-import type { JwtVerified } from "@agentcommercekit/jwt"
+import { paymentRequestSchema } from "./schemas/valibot"
 
 interface ValidatePaymentRequestTokenOptions {
   /**
@@ -30,7 +29,7 @@ interface ValidatePaymentRequestTokenOptions {
  */
 export async function verifyPaymentRequestToken(
   token: string,
-  options: ValidatePaymentRequestTokenOptions = {}
+  options: ValidatePaymentRequestTokenOptions = {},
 ): Promise<{ paymentRequest: PaymentRequest; parsed: JwtVerified }> {
   let parsedPaymentRequestToken: JwtVerified
 
@@ -40,8 +39,8 @@ export async function verifyPaymentRequestToken(
       issuer: options.issuer,
       policies: {
         aud: false,
-        exp: options.verifyExpiry ?? true
-      }
+        exp: options.verifyExpiry ?? true,
+      },
     })
   } catch (_err) {
     throw new InvalidPaymentRequestTokenError()
@@ -49,17 +48,17 @@ export async function verifyPaymentRequestToken(
 
   const { success, output } = v.safeParse(
     paymentRequestSchema,
-    parsedPaymentRequestToken.payload
+    parsedPaymentRequestToken.payload,
   )
 
   if (!success) {
     throw new InvalidPaymentRequestTokenError(
-      "Payment Request token is not a valid PaymentRequest"
+      "Payment Request token is not a valid PaymentRequest",
     )
   }
 
   return {
     paymentRequest: output,
-    parsed: parsedPaymentRequestToken
+    parsed: parsedPaymentRequestToken,
   }
 }

@@ -4,9 +4,10 @@ import {
   isPrivateKeyJwk,
   isPublicKeyJwk,
   publicKeyBytesToJwk,
-  publicKeyJwkToBytes
+  publicKeyJwkToBytes,
+  type PublicKeyJwkEd25519,
+  type PublicKeyJwkSecp256k1,
 } from "./jwk"
-import type { PublicKeyJwkEd25519, PublicKeyJwkSecp256k1 } from "./jwk"
 
 describe("JWK encoding", () => {
   // Test data: 32 bytes for Ed25519, 65 bytes for secp256k1
@@ -24,12 +25,12 @@ describe("JWK encoding", () => {
     test("converts Ed25519 public key to JWK", () => {
       const jwk = publicKeyBytesToJwk(
         Ed25519Bytes,
-        "Ed25519"
+        "Ed25519",
       ) as PublicKeyJwkEd25519
       expect(jwk).toEqual({
         kty: "OKP",
         crv: "Ed25519",
-        x: expect.any(String) as unknown
+        x: expect.any(String) as unknown,
       })
       expect(isBase64url(jwk.x)).toBe(true)
     })
@@ -37,13 +38,13 @@ describe("JWK encoding", () => {
     test("converts secp256k1 public key to JWK", () => {
       const jwk = publicKeyBytesToJwk(
         secp256k1Bytes,
-        "secp256k1"
+        "secp256k1",
       ) as PublicKeyJwkSecp256k1
       expect(jwk).toEqual({
         kty: "EC",
         crv: "secp256k1",
         x: expect.any(String) as unknown,
-        y: expect.any(String) as unknown
+        y: expect.any(String) as unknown,
       })
       expect(isBase64url(jwk.x)).toBe(true)
       expect(isBase64url(jwk.y)).toBe(true)
@@ -55,7 +56,7 @@ describe("JWK encoding", () => {
       const jwk: PublicKeyJwkEd25519 = {
         kty: "OKP",
         crv: "Ed25519",
-        x: base64String
+        x: base64String,
       }
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(Ed25519Bytes)
@@ -66,7 +67,7 @@ describe("JWK encoding", () => {
         kty: "EC",
         crv: "secp256k1",
         x: base64String,
-        y: base64String2
+        y: base64String2,
       }
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(secp256k1Bytes)
@@ -78,7 +79,7 @@ describe("JWK encoding", () => {
       const jwk: PublicKeyJwkEd25519 = {
         kty: "OKP",
         crv: "Ed25519",
-        x: base64String
+        x: base64String,
       }
       expect(isPublicKeyJwk(jwk)).toBe(true)
     })
@@ -87,7 +88,7 @@ describe("JWK encoding", () => {
       const invalid = {
         kty: "RSA",
         crv: "Ed25519",
-        x: base64String
+        x: base64String,
       } as const
       expect(isPublicKeyJwk(invalid)).toBe(false)
     })
@@ -96,7 +97,7 @@ describe("JWK encoding", () => {
       const invalid = {
         kty: "OKP",
         crv: "P-256",
-        x: base64String
+        x: base64String,
       } as const
       expect(isPublicKeyJwk(invalid)).toBe(false)
     })
@@ -105,7 +106,7 @@ describe("JWK encoding", () => {
       const invalid = {
         kty: "OKP",
         crv: "Ed25519",
-        x: ""
+        x: "",
       } as const
       expect(isPublicKeyJwk(invalid)).toBe(false)
     })
@@ -114,7 +115,7 @@ describe("JWK encoding", () => {
       const invalid = {
         kty: "EC",
         crv: "secp256k1",
-        x: base64String
+        x: base64String,
       } as const
       expect(isPublicKeyJwk(invalid)).toBe(false)
     })
@@ -124,7 +125,7 @@ describe("JWK encoding", () => {
         kty: "OKP",
         crv: "Ed25519",
         x: base64String,
-        y: base64String
+        y: base64String,
       } as const
       expect(isPublicKeyJwk(invalid)).toBe(false)
     })
@@ -144,7 +145,7 @@ describe("JWK encoding", () => {
         crv: "secp256k1" as const,
         x: "base64x",
         y: "base64y",
-        d: "base64d"
+        d: "base64d",
       }
       expect(isPrivateKeyJwk(validJwk)).toBe(true)
     })
@@ -154,7 +155,7 @@ describe("JWK encoding", () => {
         kty: "OKP" as const,
         crv: "Ed25519" as const,
         x: "base64x",
-        d: "base64d"
+        d: "base64d",
       }
       expect(isPrivateKeyJwk(validJwk)).toBe(true)
     })
@@ -164,7 +165,7 @@ describe("JWK encoding", () => {
         kty: "EC" as const,
         crv: "secp256k1" as const,
         x: "base64x",
-        y: "base64y"
+        y: "base64y",
         // missing d
       }
       expect(isPrivateKeyJwk(invalidJwk)).toBe(false)
@@ -175,7 +176,7 @@ describe("JWK encoding", () => {
     test("roundtrips Ed25519 public key through JWK", () => {
       const jwk = publicKeyBytesToJwk(
         Ed25519Bytes,
-        "Ed25519"
+        "Ed25519",
       ) as PublicKeyJwkEd25519
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(Ed25519Bytes)
@@ -184,7 +185,7 @@ describe("JWK encoding", () => {
     test("roundtrips secp256k1 public key through JWK", () => {
       const jwk = publicKeyBytesToJwk(
         secp256k1Bytes,
-        "secp256k1"
+        "secp256k1",
       ) as PublicKeyJwkSecp256k1
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(secp256k1Bytes)

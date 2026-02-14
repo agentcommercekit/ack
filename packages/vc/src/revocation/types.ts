@@ -1,6 +1,6 @@
+import type * as v from "valibot"
 import type { bitstringStatusListClaimSchema } from "../schemas/valibot"
 import type { W3CCredential } from "../types"
-import type * as v from "valibot"
 
 type BitstringStatusListEntry = {
   id: string

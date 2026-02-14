@@ -1,8 +1,7 @@
-import { env } from "hono/adapter"
 import { buildUrl } from "@/lib/build-url"
-import { getIdentity } from "@/lib/identity"
-import type { Identity } from "@/lib/identity"
+import { getIdentity, type Identity } from "@/lib/identity"
 import type { Env, MiddlewareHandler } from "hono"
+import { env } from "hono/adapter"
 
 declare module "hono" {
   interface ContextVariableMap {
@@ -20,19 +19,19 @@ export function identities(): MiddlewareHandler<Env> {
     const controller = await getIdentity({
       baseUrl: buildUrl(HOSTNAME, PORT, "/controller"),
       privateKey: CONTROLLER_PRIVATE_KEY,
-      curve: "Ed25519"
+      curve: "Ed25519",
     })
 
     const agent = await getIdentity({
       baseUrl: buildUrl(HOSTNAME, PORT, "/agent"),
       privateKey: AGENT_PRIVATE_KEY,
       controller: controller.did,
-      curve: "secp256k1"
+      curve: "secp256k1",
     })
 
     c.set("identities", {
       agent,
-      controller
+      controller,
     })
 
     await next()

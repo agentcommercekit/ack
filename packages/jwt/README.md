@@ -29,7 +29,7 @@ const signer = createJwtSigner(keypair)
 // Create a JWT
 const jwt = await createJwt(
   { sub: "did:web:subject.com", foo: "bar" },
-  { issuer: "did:web:issuer.com", signer }
+  { issuer: "did:web:issuer.com", signer },
 )
 ```
 
@@ -42,7 +42,7 @@ import { verifyJwt } from "@agentcommercekit/jwt"
 const resolver = getDidResolver()
 
 const parsed = await verifyJwt(payload, {
-  resolver: didResolver
+  resolver: didResolver,
 })
 
 console.log(parsed.payload)
@@ -54,13 +54,12 @@ The package provides schemas for validating JWT strings with Zod and Valibot:
 
 ```ts
 // Zod v4
-import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v4"
-
-// Zod v3
-import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v3"
 
 // Valibot
 import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/valibot"
+// Zod v3
+import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v3"
+import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v4"
 ```
 
 ## API

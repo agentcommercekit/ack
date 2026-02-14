@@ -1,12 +1,11 @@
 import {
   A2AExpressApp,
   DefaultRequestHandler,
-  InMemoryTaskStore
+  InMemoryTaskStore,
 } from "@a2a-js/sdk"
-import { colors, createLogger } from "@repo/cli-tools"
+import { colors, createLogger, type Logger } from "@repo/cli-tools"
 import express from "express"
 import type { Agent } from "../agent"
-import type { Logger } from "@repo/cli-tools"
 
 type Options = {
   logger?: Logger
@@ -22,8 +21,8 @@ export function startAgentServer(
   {
     logger = createLogger("server"),
     host = "0.0.0.0",
-    port = 3001
-  }: Options = {}
+    port = 3001,
+  }: Options = {},
 ) {
   logger.log(`🏦 Starting ${agent.constructor.name} on port ${port}...`)
   logger.log(`🆔 Bank Teller DID: ${colors.dim(agent.did)}`)
@@ -38,7 +37,7 @@ export function startAgentServer(
   const requestHandler = new DefaultRequestHandler(
     agent.agentCard,
     new InMemoryTaskStore(),
-    agent
+    agent,
   )
   const appBuilder = new A2AExpressApp(requestHandler)
 
@@ -47,7 +46,7 @@ export function startAgentServer(
 
   // Add DID document endpoint for did:web resolution
   app.get("/.well-known/did.json", (req, res) => {
-    logger.log("🔍 Request for DID document:", colors.dim(req.url.toString()))
+    logger.log("🔍 Request for DID document:", colors.dim(req.url))
     const didDocument = agent.didDocument
     logger.log("🌐 Serving DID document for did:web resolution")
     res.json(didDocument)
@@ -55,14 +54,14 @@ export function startAgentServer(
 
   logger.log(
     "🌐 DID document endpoint added at:",
-    colors.dim("/.well-known/did.json")
+    colors.dim("/.well-known/did.json"),
   )
 
   // Start the server using the same app instance
   const expressServer = app.listen(port, host, () => {
     logger.log(`A2A Server running at ${colors.dim(`http://${host}:${port}`)}`)
     logger.log(
-      `🌐 DID document available at: ${colors.dim(`http://localhost:${port}/.well-known/did.json`)}`
+      `🌐 DID document available at: ${colors.dim(`http://localhost:${port}/.well-known/did.json`)}`,
     )
   })
 

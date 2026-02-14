@@ -1,33 +1,35 @@
+import type { DatabaseClient } from "@/db/get-db"
+import { getCredential } from "@/db/queries/credentials"
+import type { DatabaseCredential } from "@/db/schema"
 import {
-  DidResolver,
+  createDidWebWithSigner,
+  type DidWithSigner,
+} from "@/test-helpers/did-web-with-signer"
+import {
   bytesToHexString,
   createJwt,
   createPaymentReceipt,
   createSignedPaymentRequest,
   curveToJwtAlgorithm,
+  DidResolver,
   getDidResolver,
-  verifyPaymentRequestToken
+  verifyPaymentRequestToken,
+  type PaymentRequestInit,
 } from "agentcommercekit"
 import {
   credentialSchema,
-  paymentRequestSchema
+  paymentRequestSchema,
 } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getCredential } from "@/db/queries/credentials"
-import { createDidWebWithSigner } from "@/test-helpers/did-web-with-signer"
 import app from ".."
-import type { DatabaseClient } from "@/db/get-db"
-import type { DatabaseCredential } from "@/db/schema"
-import type { DidWithSigner } from "@/test-helpers/did-web-with-signer"
-import type { PaymentRequestInit } from "agentcommercekit"
 
 vi.mock("agentcommercekit", async () => {
   const actual = await vi.importActual("agentcommercekit")
   return {
     ...actual,
     verifyPaymentRequestToken: vi.fn(),
-    getDidResolver: vi.fn()
+    getDidResolver: vi.fn(),
   }
 })
 
@@ -41,15 +43,15 @@ vi.mock("@/db/queries/credentials", async () => {
         credential: Omit<
           DatabaseCredential,
           "id" | "statusListIndex" | "issuedAt" | "revokedAt"
-        >
+        >,
       ): Promise<DatabaseCredential> =>
         Promise.resolve({
           id: 1,
           credentialType: credential.credentialType,
           baseCredential: credential.baseCredential,
           issuedAt: new Date(),
-          revokedAt: null
-        })
+          revokedAt: null,
+        }),
     ),
     getCredential: vi.fn().mockImplementation(async (_db, id: string) => {
       return Promise.resolve({
@@ -59,11 +61,11 @@ vi.mock("@/db/queries/credentials", async () => {
           paymentRequestToken: "test.payment.token",
           paymentOptionId: "test-payment-option-id",
           issuer: "did:web:issuer.example.com",
-          payerDid: "did:web:payer.example.com"
-        })
+          payerDid: "did:web:payer.example.com",
+        }),
       })
     }),
-    revokeCredential: vi.fn()
+    revokeCredential: vi.fn(),
   }
 })
 
@@ -71,8 +73,8 @@ const responseSchema = v.object({
   ok: v.literal(true),
   data: v.object({
     credential: credentialSchema,
-    jwt: v.string()
-  })
+    jwt: v.string(),
+  }),
 })
 
 const paymentRequestInit: PaymentRequestInit = {
@@ -83,9 +85,9 @@ const paymentRequestInit: PaymentRequestInit = {
       amount: 10,
       decimals: 2,
       currency: "USD",
-      recipient: "sol:123"
-    }
-  ]
+      recipient: "sol:123",
+    },
+  ],
 }
 
 const paymentRequest = v.parse(paymentRequestSchema, paymentRequestInit)
@@ -93,27 +95,27 @@ const paymentRequest = v.parse(paymentRequestSchema, paymentRequestInit)
 async function generatePayload(
   payer: DidWithSigner,
   resourceServer: DidWithSigner,
-  paymentService: DidWithSigner
+  paymentService: DidWithSigner,
 ) {
   const { paymentRequestToken, paymentRequest } =
     await createSignedPaymentRequest(paymentRequestInit, {
       issuer: resourceServer.did,
       signer: resourceServer.signer,
-      algorithm: curveToJwtAlgorithm(resourceServer.keypair.curve)
+      algorithm: curveToJwtAlgorithm(resourceServer.keypair.curve),
     })
 
   const payload = {
     paymentRequestToken,
     paymentOptionId: paymentRequest.paymentOptions[0].id,
     metadata: {
-      txHash: "test-tx-hash"
+      txHash: "test-tx-hash",
     },
-    payerDid: payer.did
+    payerDid: payer.did,
   }
 
   const signedPayload = await createJwt(payload, {
     issuer: paymentService.did,
-    signer: paymentService.signer
+    signer: paymentService.signer,
   })
 
   return signedPayload
@@ -131,22 +133,22 @@ describe("POST /credentials/receipts", () => {
     vi.mocked(getDidResolver).mockReturnValue(resolver)
 
     issuer = await createDidWebWithSigner("https://issuer.example.com", {
-      resolver
+      resolver,
     })
     payer = await createDidWebWithSigner("https://payer.example.com", {
-      resolver
+      resolver,
     })
     resourceServer = await createDidWebWithSigner(
       "https://resource-server.example.com",
       {
-        resolver
-      }
+        resolver,
+      },
     )
     paymentService = await createDidWebWithSigner(
       "https://payment-service.example.com",
       {
-        resolver
-      }
+        resolver,
+      },
     )
 
     process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
@@ -158,8 +160,8 @@ describe("POST /credentials/receipts", () => {
       parsed: {
         payload: paymentRequestInit,
         issuer: resourceServer.did,
-        verified: true
-      }
+        verified: true,
+      },
     })
   })
 
@@ -171,15 +173,15 @@ describe("POST /credentials/receipts", () => {
     const signedPayload = await generatePayload(
       payer,
       resourceServer,
-      paymentService
+      paymentService,
     )
 
     const res = await app.request("/credentials/receipts", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(200)
@@ -201,21 +203,21 @@ describe("POST /credentials/receipts", () => {
     const signedPayload = await generatePayload(
       payer,
       resourceServer,
-      paymentService
+      paymentService,
     )
 
     const res = await app.request("/credentials/receipts", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(401)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Invalid payload"
+      error: "Invalid payload",
     })
   })
 
@@ -225,22 +227,22 @@ describe("POST /credentials/receipts", () => {
         paymentRequestToken: "test.jwt.token",
         paymentOptionId: "test-payment-option-id",
         metadata: {
-          txHash: "test-tx-hash"
+          txHash: "test-tx-hash",
         },
-        payerDid: "invalid-did"
+        payerDid: "invalid-did",
       },
       {
         issuer: paymentService.did,
-        signer: paymentService.signer
-      }
+        signer: paymentService.signer,
+      },
     )
 
     const res = await app.request("/credentials/receipts", {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(400)
@@ -255,9 +257,9 @@ describe("POST /credentials/receipts", () => {
           received: '"invalid-did"',
           input: "invalid-did",
           message: "Invalid DID format",
-          path: [{ key: "payerDid", value: "invalid-did" }]
-        }
-      ]
+          path: [{ key: "payerDid", value: "invalid-did" }],
+        },
+      ],
     })
   })
 })
@@ -272,23 +274,23 @@ describe("DELETE /credentials/receipts", () => {
     vi.mocked(getDidResolver).mockReturnValue(resolver)
 
     const issuer = await createDidWebWithSigner("https://issuer.example.com", {
-      resolver
+      resolver,
     })
 
     tokenIssuer = await createDidWebWithSigner(
       "https://token-issuer.example.com",
       {
-        resolver
-      }
+        resolver,
+      },
     )
 
     const payload = {
-      id: 1
+      id: 1,
     }
 
     signedPayload = await createJwt(payload, {
       issuer: tokenIssuer.did,
-      signer: tokenIssuer.signer
+      signer: tokenIssuer.signer,
     })
 
     process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
@@ -300,8 +302,8 @@ describe("DELETE /credentials/receipts", () => {
       parsed: {
         issuer: tokenIssuer.did,
         payload: paymentRequestInit,
-        verified: true
-      }
+        verified: true,
+      },
     })
   })
 
@@ -313,15 +315,15 @@ describe("DELETE /credentials/receipts", () => {
     const res = await app.request("/credentials/receipts", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(200)
     expect(await res.json()).toEqual({
       ok: true,
-      data: null
+      data: null,
     })
   })
 
@@ -331,15 +333,15 @@ describe("DELETE /credentials/receipts", () => {
     const res = await app.request("/credentials/receipts", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(404)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Credential not found"
+      error: "Credential not found",
     })
   })
 
@@ -347,31 +349,31 @@ describe("DELETE /credentials/receipts", () => {
     const unknownSigner = await createDidWebWithSigner(
       "https://unknown-signer.example.com",
       {
-        resolver
-      }
+        resolver,
+      },
     )
 
     const signedPayload = await createJwt(
       { id: 1 },
       {
         issuer: unknownSigner.did,
-        signer: unknownSigner.signer
-      }
+        signer: unknownSigner.signer,
+      },
     )
 
     const res = await app.request("/credentials/receipts", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(401)
 
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Unauthorized"
+      error: "Unauthorized",
     })
   })
 
@@ -380,7 +382,7 @@ describe("DELETE /credentials/receipts", () => {
       paymentRequestToken: "test.payment.token",
       paymentOptionId: "test-payment-option-id",
       issuer: "did:web:issuer.example.com",
-      payerDid: "did:web:payer.example.com"
+      payerDid: "did:web:payer.example.com",
     })
 
     delete invalidCredential.credentialSubject.paymentRequestToken
@@ -388,21 +390,21 @@ describe("DELETE /credentials/receipts", () => {
     vi.mocked(getCredential).mockResolvedValueOnce({
       id: 1,
       credentialType: "PaymentReceiptCredential",
-      baseCredential: invalidCredential
+      baseCredential: invalidCredential,
     } as DatabaseCredential)
 
     const res = await app.request("/credentials/receipts", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload
+        payload: signedPayload,
       }),
-      headers: new Headers({ "Content-Type": "application/json" })
+      headers: new Headers({ "Content-Type": "application/json" }),
     })
 
     expect(res.status).toBe(500)
     expect(await res.json()).toEqual({
       ok: false,
-      error: "Invalid stored credential"
+      error: "Invalid stored credential",
     })
   })
 })

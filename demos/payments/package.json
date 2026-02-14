@@ -4,15 +4,15 @@
   "private": true,
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agentcommercekit/ack.git",
-    "directory": "demos/payments"
-  },
   "license": "MIT",
   "author": {
     "name": "Catena Labs",
     "url": "https://catenalabs.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "demos/payments"
   },
   "type": "module",
   "main": "./src/index.ts",
@@ -26,7 +26,7 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@hono/node-server": "^1.14.2",
+    "@hono/node-server": "catalog:",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "@solana-program/system": "^0.9.0",
@@ -37,18 +37,12 @@
     "agentcommercekit": "workspace:*",
     "bs58": "^6.0.0",
     "gill": "^0.12.0",
-    "hono": "^4.7.10",
-    "valibot": "^1.1.0",
-    "viem": "^2.29.4"
+    "hono": "catalog:",
+    "valibot": "catalog:",
+    "viem": "catalog:"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
-    "@repo/typescript-config": "workspace:*",
-    "@types/node": "^22",
-    "dotenv-cli": "^8.0.0",
-    "eslint": "^9.27.0",
-    "tsx": "^4.19.4",
-    "typescript": "^5",
-    "vitest": "^3.2.4"
+    "@repo/typescript-config": "workspace:*"
   }
 }

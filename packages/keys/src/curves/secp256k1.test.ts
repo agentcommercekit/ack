@@ -1,10 +1,10 @@
 import { describe, expect, test } from "vitest"
+import { hexStringToBytes } from "../encoding/hex"
 import {
   generateKeypair,
   getPublicKeyBytes,
-  isValidPublicKey
+  isValidPublicKey,
 } from "./secp256k1"
-import { hexStringToBytes } from "../encoding/hex"
 
 describe("secp256k1", () => {
   describe("generateKeypair()", () => {
@@ -29,7 +29,7 @@ describe("secp256k1", () => {
 
     test("generates a Keypair from valid private key", async () => {
       const privateKeyBytes = hexStringToBytes(
-        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef"
+        "0x1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
       )
 
       const keypair = await generateKeypair(privateKeyBytes)

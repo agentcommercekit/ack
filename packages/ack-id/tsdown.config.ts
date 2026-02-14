@@ -9,8 +9,8 @@ export default defineConfig({
     "src/a2a/index.ts",
     "src/a2a/schemas/zod/v3.ts",
     "src/a2a/schemas/zod/v4.ts",
-    "src/a2a/schemas/valibot.ts"
+    "src/a2a/schemas/valibot.ts",
   ],
   dts: true,
-  silent: true
+  silent: true,
 })

@@ -4,28 +4,25 @@ import { colors, errorMessage, log } from "@repo/cli-tools"
 import {
   createJwt,
   getDidResolver,
-  verifyPaymentRequestToken
+  verifyPaymentRequestToken,
+  type JwtString,
+  type PaymentReceiptCredential,
+  type Verifiable,
 } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
-import { Hono } from "hono"
+import { Hono, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 import { PAYMENT_SERVICE_URL } from "./constants"
 import { getKeypairInfo } from "./utils/keypair-info"
-import type {
-  JwtString,
-  PaymentReceiptCredential,
-  Verifiable
-} from "agentcommercekit"
-import type { Env, TypedResponse } from "hono"
 
 const app = new Hono<Env>()
 app.use(logger())
 
 const bodySchema = v.object({
   paymentOptionId: v.string(),
-  paymentRequestToken: jwtStringSchema
+  paymentRequestToken: jwtStringSchema,
 })
 
 const name = colors.green(colors.bold("[Payment Service]"))
@@ -38,7 +35,7 @@ const name = colors.green(colors.bold("[Payment Service]"))
 app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
   const { paymentOptionId, paymentRequestToken } = v.parse(
     bodySchema,
-    await c.req.json()
+    await c.req.json(),
   )
 
   // Verify the payment request token and payment option are valid
@@ -51,33 +48,33 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
   const paymentUrl = `https://payments.stripe.com/payment-url/?return_to=${PAYMENT_SERVICE_URL}/stripe-callback`
 
   return c.json({
-    paymentUrl
+    paymentUrl,
   })
 })
 
 const callbackSchema = v.object({
   ...bodySchema.entries,
   metadata: v.object({
-    eventId: v.string()
-  })
+    eventId: v.string(),
+  }),
 })
 
 app.post(
   "/stripe-callback",
   async (c): Promise<TypedResponse<{ receipt: string }>> => {
     const serverIdentity = await getKeypairInfo(
-      env(c).PAYMENT_SERVICE_PRIVATE_KEY_HEX
+      env(c).PAYMENT_SERVICE_PRIVATE_KEY_HEX,
     )
 
     const { paymentOptionId, paymentRequestToken, metadata } = v.parse(
       callbackSchema,
-      await c.req.json()
+      await c.req.json(),
     )
 
     // Verify the payment request token and payment option are valid
     const { paymentOption } = await validatePaymentOption(
       paymentOptionId,
-      paymentRequestToken
+      paymentRequestToken,
     )
     const receiptServiceUrl = paymentOption.receiptService
     if (!receiptServiceUrl) {
@@ -89,22 +86,22 @@ app.post(
       paymentOptionId,
       metadata: {
         network: "stripe",
-        eventId: metadata.eventId
+        eventId: metadata.eventId,
       },
-      payerDid: serverIdentity.did
+      payerDid: serverIdentity.did,
     }
 
     const signedPayload = await createJwt(payload, {
       issuer: serverIdentity.did,
-      signer: serverIdentity.jwtSigner
+      signer: serverIdentity.jwtSigner,
     })
 
     log(colors.dim(`${name} Getting receipt from Receipt Service...`))
     const response = await fetch(receiptServiceUrl, {
       method: "POST",
       body: JSON.stringify({
-        payload: signedPayload
-      })
+        payload: signedPayload,
+      }),
     })
 
     const { receipt, details } = (await response.json()) as {
@@ -114,14 +111,14 @@ app.post(
 
     return c.json({
       receipt,
-      details
+      details,
     })
-  }
+  },
 )
 
 async function validatePaymentOption(
   paymentOptionId: string,
-  paymentRequestToken: JwtString
+  paymentRequestToken: JwtString,
 ) {
   const didResolver = getDidResolver()
 
@@ -129,29 +126,29 @@ async function validatePaymentOption(
   const { paymentRequest } = await verifyPaymentRequestToken(
     paymentRequestToken,
     {
-      resolver: didResolver
-    }
+      resolver: didResolver,
+    },
   )
 
   log(colors.dim(`${name} Checking for payment option...`))
   const paymentOption = paymentRequest.paymentOptions.find(
-    (option) => option.id === paymentOptionId
+    (option) => option.id === paymentOptionId,
   )
 
   if (!paymentOption) {
     log(errorMessage(`${name} Invalid payment option`))
     throw new HTTPException(400, {
-      message: "Invalid payment option"
+      message: "Invalid payment option",
     })
   }
 
   return {
     paymentRequest,
-    paymentOption
+    paymentOption,
   }
 }
 
 serve({
   port: 4569,
-  fetch: app.fetch
+  fetch: app.fetch,
 })

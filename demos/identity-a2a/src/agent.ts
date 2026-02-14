@@ -9,32 +9,30 @@
  * - Authentication uses DID-based JWT signing and verification
  */
 
-import { colors } from "@repo/cli-tools"
-import {
-  createDidDocumentFromKeypair,
-  createDidWebUri,
-  createJwtSigner,
-  generateKeypair
-} from "agentcommercekit"
-import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
-import { v4 } from "uuid"
-import { issueCredential } from "./issuer"
 import type {
   AgentCard,
   AgentExecutor,
   ExecutionEventBus,
   Message,
-  RequestContext
+  RequestContext,
 } from "@a2a-js/sdk"
-import type {
-  DidDocument,
-  DidUri,
-  JwtSigner,
-  KeyCurve,
-  Keypair,
-  Verifiable,
-  W3CCredential
+import { colors } from "@repo/cli-tools"
+import {
+  createDidDocumentFromKeypair,
+  createDidWebUri,
+  createJwtSigner,
+  generateKeypair,
+  type DidDocument,
+  type DidUri,
+  type JwtSigner,
+  type KeyCurve,
+  type Keypair,
+  type Verifiable,
+  type W3CCredential,
 } from "agentcommercekit"
+import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
+import { v4 } from "uuid"
+import { issueCredential } from "./issuer"
 
 type AgentConfig = {
   agentCard: AgentCard
@@ -48,7 +46,7 @@ export abstract class Agent implements AgentExecutor {
     public did: DidUri,
     public jwtSigner: JwtSigner,
     public didDocument: DidDocument,
-    public vc: Verifiable<W3CCredential>
+    public vc: Verifiable<W3CCredential>,
   ) {}
 
   static async create<T extends Agent>(
@@ -58,9 +56,9 @@ export abstract class Agent implements AgentExecutor {
       did: DidUri,
       jwtSigner: JwtSigner,
       didDocument: DidDocument,
-      vc: Verifiable<W3CCredential>
+      vc: Verifiable<W3CCredential>,
     ) => T,
-    config: AgentConfig
+    config: AgentConfig,
   ) {
     const { agentCard, curve, controller } = config
 
@@ -72,19 +70,19 @@ export abstract class Agent implements AgentExecutor {
     const didDocument = createDidDocumentFromKeypair({
       did,
       keypair,
-      service: [createAgentCardServiceEndpoint(did, agentCardUrl)]
+      service: [createAgentCardServiceEndpoint(did, agentCardUrl)],
     })
 
     console.log(`🌐 Generated ${curve} keypair with did:web for ${this.name}`)
     console.log("   DID:", colors.dim(did))
     console.log(
       "   Public key:",
-      colors.dim(Buffer.from(keypair.publicKey).toString("hex"))
+      colors.dim(Buffer.from(keypair.publicKey).toString("hex")),
     )
 
     const vc = await issueCredential({
       subject: did,
-      controller
+      controller,
     })
 
     console.log("Generated sample VC for ownership attestation")
@@ -95,7 +93,7 @@ export abstract class Agent implements AgentExecutor {
 
   async execute(
     requestContext: RequestContext,
-    eventBus: ExecutionEventBus
+    eventBus: ExecutionEventBus,
   ): Promise<void> {
     const message: Message = {
       kind: "message",
@@ -104,9 +102,9 @@ export abstract class Agent implements AgentExecutor {
       parts: [
         {
           kind: "text",
-          text: `User message ${requestContext.userMessage.messageId} received and processed`
-        }
-      ]
+          text: `User message ${requestContext.userMessage.messageId} received and processed`,
+        },
+      ],
     }
 
     eventBus.publish(message)
@@ -114,7 +112,7 @@ export abstract class Agent implements AgentExecutor {
 
   async cancelTask(
     _taskId: string,
-    _eventBus: ExecutionEventBus
+    _eventBus: ExecutionEventBus,
   ): Promise<void> {
     // Task canceled
     return Promise.resolve()

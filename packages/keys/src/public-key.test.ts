@@ -5,7 +5,7 @@ import { isHexString } from "./encoding/hex"
 import {
   isPublicKeyJwkEd25519,
   isPublicKeyJwkSecp256k1,
-  isPublicKeyJwkSecp256r1
+  isPublicKeyJwkSecp256r1,
 } from "./encoding/jwk"
 import { isMultibase } from "./encoding/multibase"
 import { keyCurves } from "./key-curves"
@@ -13,7 +13,7 @@ import { generateKeypair } from "./keypair"
 import {
   encodePublicKeyFromKeypair,
   isValidPublicKey,
-  publicKeyEncodings
+  publicKeyEncodings,
 } from "./public-key"
 
 describe("public-key methods", () => {
@@ -25,7 +25,7 @@ describe("public-key methods", () => {
 
         const tooShort = keypair.publicKey.slice(
           0,
-          keypair.publicKey.length - 1
+          keypair.publicKey.length - 1,
         )
         expect(isValidPublicKey(tooShort, curve)).toBe(false)
       })
@@ -48,7 +48,7 @@ describe("public-key methods", () => {
                 !isPublicKeyJwkSecp256r1(publicKeyValue)
               ) {
                 throw new Error(
-                  `Invalid JWK: ${JSON.stringify(publicKeyValue)}`
+                  `Invalid JWK: ${JSON.stringify(publicKeyValue)}`,
                 )
               }
 
@@ -56,7 +56,7 @@ describe("public-key methods", () => {
                 kty: "EC",
                 crv: curve,
                 x: expect.any(String) as unknown,
-                y: expect.any(String) as unknown
+                y: expect.any(String) as unknown,
               })
               expect(isBase64url(publicKeyValue.x)).toBe(true)
               expect(isBase64url(publicKeyValue.y)).toBe(true)
@@ -72,7 +72,7 @@ describe("public-key methods", () => {
               expect(publicKeyValue).toEqual({
                 kty: "OKP",
                 crv: "Ed25519",
-                x: expect.any(String) as unknown
+                x: expect.any(String) as unknown,
               })
               expect(isBase64url(publicKeyValue.x)).toBe(true)
               const xBytes = base64urlToBytes(publicKeyValue.x)
@@ -106,13 +106,13 @@ describe("public-key methods", () => {
             kty: "EC",
             crv: curve,
             x: expect.any(String) as unknown,
-            y: expect.any(String) as unknown
+            y: expect.any(String) as unknown,
           })
         } else {
           expect(jwk.value).toEqual({
             kty: "OKP",
             crv: "Ed25519",
-            x: expect.any(String) as unknown
+            x: expect.any(String) as unknown,
           })
         }
       })

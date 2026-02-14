@@ -1,9 +1,9 @@
 import { generateKeypair, jwkToKeypair } from "@agentcommercekit/keys"
+import type { PrivateKeyJwk } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
-import { createDidKeyUri, isDidKeyUri } from "./did-key"
 import { getDidResolver } from "../did-resolvers/get-did-resolver"
 import type { DidUri } from "../did-uri"
-import type { PrivateKeyJwk } from "@agentcommercekit/keys/encoding"
+import { createDidKeyUri, isDidKeyUri } from "./did-key"
 
 const KNOWN_DID_KEYS: { did: DidUri; jwk: PrivateKeyJwk }[] = [
   {
@@ -13,8 +13,8 @@ const KNOWN_DID_KEYS: { did: DidUri; jwk: PrivateKeyJwk }[] = [
       crv: "secp256k1",
       x: "C70KP9BXCdKBTfjtkQA9xH7uzd7R8hYC6cSpE6CUpro",
       y: "2kmbH7YTM-RJ2G596UidxkB3SiG66gi9htsriop766g",
-      d: "ca66hYvhFSAbm_5YsBTydV2R_hDal-ISv3trPNCFYWg"
-    }
+      d: "ca66hYvhFSAbm_5YsBTydV2R_hDal-ISv3trPNCFYWg",
+    },
   },
   {
     did: "did:key:z6MknEES6VA14awWdV27ab5r1jtz3d6ct2wULmvU4YgE1wQ8",
@@ -22,9 +22,9 @@ const KNOWN_DID_KEYS: { did: DidUri; jwk: PrivateKeyJwk }[] = [
       kty: "OKP",
       crv: "Ed25519",
       x: "c4cfSJSiOFUJffpI06i5Q20X8qc8Vdcw5gCxvcZy9kU",
-      d: "FIQVa6NvaYXJdRCoI-pNl_ScNKgf_jVjGZf7bHDxEBw"
-    }
-  }
+      d: "FIQVa6NvaYXJdRCoI-pNl_ScNKgf_jVjGZf7bHDxEBw",
+    },
+  },
 ]
 
 describe("createDidKeyUri()", () => {
@@ -42,7 +42,7 @@ describe("createDidKeyUri()", () => {
       const resolvedDid = await didResolver.resolve(didKey)
       expect(resolvedDid.didDocument).toBeDefined()
       expect(resolvedDid.didDocument?.id).toBe(did)
-    }
+    },
   )
 
   it("uses the compressed public key", async () => {

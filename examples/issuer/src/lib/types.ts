@@ -5,7 +5,7 @@ import type {
   JwtSigner,
   JwtString,
   Verifiable,
-  W3CCredential
+  W3CCredential,
 } from "agentcommercekit"
 
 export type Issuer = {

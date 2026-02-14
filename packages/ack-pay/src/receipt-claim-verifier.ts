@@ -1,21 +1,19 @@
 import {
   InvalidCredentialSubjectError,
-  isCredential
+  isCredential,
+  type ClaimVerifier,
+  type CredentialSubject,
+  type W3CCredential,
 } from "@agentcommercekit/vc"
 import * as v from "valibot"
 import { paymentReceiptClaimSchema } from "./schemas/valibot"
-import type {
-  ClaimVerifier,
-  CredentialSubject,
-  W3CCredential
-} from "@agentcommercekit/vc"
 
 export interface PaymentReceiptCredential extends W3CCredential {
   credentialSubject: v.InferOutput<typeof paymentReceiptClaimSchema>
 }
 
 function isPaymentReceiptClaim(
-  credentialSubject: CredentialSubject
+  credentialSubject: CredentialSubject,
 ): credentialSubject is v.InferOutput<typeof paymentReceiptClaimSchema> {
   return v.is(paymentReceiptClaimSchema, credentialSubject)
 }
@@ -27,7 +25,7 @@ function isPaymentReceiptClaim(
  * @returns `true` if the credential is a payment receipt credential, `false` otherwise
  */
 export function isPaymentReceiptCredential(
-  credential: unknown
+  credential: unknown,
 ): credential is PaymentReceiptCredential {
   if (!isCredential(credential)) {
     return false
@@ -36,7 +34,7 @@ export function isPaymentReceiptCredential(
 }
 
 async function verifyPaymentReceiptClaim(
-  credentialSubject: CredentialSubject
+  credentialSubject: CredentialSubject,
 ): Promise<void> {
   if (!isPaymentReceiptClaim(credentialSubject)) {
     throw new InvalidCredentialSubjectError()
@@ -54,6 +52,6 @@ export function getReceiptClaimVerifier(): ClaimVerifier {
   return {
     accepts: (type: string[]) => type.includes("PaymentReceiptCredential"),
     // For now, we just verify the credential subject matches the expected schema
-    verify: verifyPaymentReceiptClaim
+    verify: verifyPaymentReceiptClaim,
   }
 }

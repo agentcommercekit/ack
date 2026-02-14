@@ -2,10 +2,10 @@ import { generateKeypair } from "@agentcommercekit/keys"
 import { bytesToHexString } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
 import { getDidResolver } from "./did-resolvers/get-did-resolver"
+import type { DidUri } from "./did-uri"
 import { DidDocumentNotFoundError, InvalidDidControllerError } from "./errors"
 import { createDidWebDocument } from "./methods/did-web"
 import { resolveDid, resolveDidWithController } from "./resolve-did"
-import type { DidUri } from "./did-uri"
 
 async function generateDid(baseUrl: string, controller?: DidUri) {
   const keypair = await generateKeypair("secp256k1")
@@ -14,10 +14,10 @@ async function generateDid(baseUrl: string, controller?: DidUri) {
     publicKey: {
       encoding: "hex",
       value: bytesToHexString(keypair.publicKey),
-      curve: keypair.curve
+      curve: keypair.curve,
     },
     baseUrl,
-    controller
+    controller,
   })
 }
 
@@ -30,7 +30,7 @@ describe("resolveDid", () => {
     const result = await resolveDid(did, resolver)
     expect(result).toEqual({
       did,
-      didDocument
+      didDocument,
     })
   })
 
@@ -38,7 +38,7 @@ describe("resolveDid", () => {
     const controller = await generateDid("https://controller.example.com")
     const subject = await generateDid(
       "https://subject.example.com",
-      controller.did
+      controller.did,
     )
     const resolver = getDidResolver()
     resolver.addToCache(controller.did, controller.didDocument)
@@ -47,7 +47,7 @@ describe("resolveDid", () => {
     const result = await resolveDid(subject.did, resolver)
     expect(result).toEqual({
       did: subject.did,
-      didDocument: subject.didDocument
+      didDocument: subject.didDocument,
     })
   })
 
@@ -57,14 +57,14 @@ describe("resolveDid", () => {
     resolver.addResolutionResultToCache(did, {
       didResolutionMetadata: {
         error: "notFound",
-        message: "not found"
+        message: "not found",
       },
       didDocument: null,
-      didDocumentMetadata: {}
+      didDocumentMetadata: {},
     })
 
     await expect(resolveDid(did, resolver)).rejects.toThrow(
-      DidDocumentNotFoundError
+      DidDocumentNotFoundError,
     )
   })
 })
@@ -74,7 +74,7 @@ describe("resolveDidWithController", () => {
     const controller = await generateDid("https://controller.example.com")
     const subject = await generateDid(
       "https://subject.example.com",
-      controller.did
+      controller.did,
     )
     const resolver = getDidResolver()
     resolver.addToCache(controller.did, controller.didDocument)
@@ -87,8 +87,8 @@ describe("resolveDidWithController", () => {
       didDocument: subject.didDocument,
       controller: {
         did: controller.did,
-        didDocument: controller.didDocument
-      }
+        didDocument: controller.didDocument,
+      },
     })
   })
 
@@ -98,20 +98,20 @@ describe("resolveDidWithController", () => {
     resolver.addToCache(did, didDocument)
 
     await expect(resolveDidWithController(did, resolver)).rejects.toThrow(
-      InvalidDidControllerError
+      InvalidDidControllerError,
     )
   })
 
   it("throws if the controller is the same as the subject", async () => {
     const subject = await generateDid(
       "https://subject.example.com",
-      "did:web:subject.example.com"
+      "did:web:subject.example.com",
     )
     const resolver = getDidResolver()
     resolver.addToCache(subject.did, subject.didDocument)
 
     await expect(
-      resolveDidWithController(subject.did, resolver)
+      resolveDidWithController(subject.did, resolver),
     ).rejects.toThrow(InvalidDidControllerError)
   })
 
@@ -121,14 +121,14 @@ describe("resolveDidWithController", () => {
     resolver.addResolutionResultToCache(did, {
       didResolutionMetadata: {
         error: "notFound",
-        message: "not found"
+        message: "not found",
       },
       didDocument: null,
-      didDocumentMetadata: {}
+      didDocumentMetadata: {},
     })
 
     await expect(resolveDidWithController(did, resolver)).rejects.toThrow(
-      DidDocumentNotFoundError
+      DidDocumentNotFoundError,
     )
   })
 
@@ -136,13 +136,13 @@ describe("resolveDidWithController", () => {
     const controller = await generateDid("https://controller.example.com")
     const subject = await generateDid(
       "https://subject.example.com",
-      controller.did
+      controller.did,
     )
     const resolver = getDidResolver()
     resolver.addToCache(subject.did, subject.didDocument)
 
     await expect(
-      resolveDidWithController(subject.did, resolver)
+      resolveDidWithController(subject.did, resolver),
     ).rejects.toThrow(DidDocumentNotFoundError)
   })
 })

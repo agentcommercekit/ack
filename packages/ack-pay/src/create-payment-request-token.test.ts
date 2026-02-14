@@ -1,23 +1,22 @@
 import {
   createDidDocumentFromKeypair,
   createDidKeyUri,
-  getDidResolver
+  getDidResolver,
+  type DidUri,
 } from "@agentcommercekit/did"
 import {
   createJwtSigner,
   curveToJwtAlgorithm,
   isJwtString,
-  verifyJwt
+  verifyJwt,
+  type JwtSigner,
 } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
 import { createPaymentRequestToken } from "./create-payment-request-token"
-import { paymentRequestSchema } from "./schemas/valibot"
 import type { PaymentRequestInit } from "./payment-request"
-import type { DidUri } from "@agentcommercekit/did"
-import type { JwtSigner } from "@agentcommercekit/jwt"
-import type { Keypair } from "@agentcommercekit/keys"
+import { paymentRequestSchema } from "./schemas/valibot"
 
 describe("createPaymentRequestToken()", () => {
   let keypair: Keypair
@@ -32,9 +31,9 @@ describe("createPaymentRequestToken()", () => {
         amount: 10,
         decimals: 2,
         currency: "USD",
-        recipient: "sol:123"
-      }
-    ]
+        recipient: "sol:123",
+      },
+    ],
   }
   const paymentRequest = v.parse(paymentRequestSchema, paymentRequestInit)
 
@@ -50,8 +49,8 @@ describe("createPaymentRequestToken()", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     expect(isJwtString(paymentRequestToken)).toBe(true)
@@ -63,8 +62,8 @@ describe("createPaymentRequestToken()", () => {
       {
         issuer: issuerDid,
         signer,
-        algorithm: curveToJwtAlgorithm(keypair.curve)
-      }
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
     )
 
     const resolver = getDidResolver()
@@ -72,14 +71,14 @@ describe("createPaymentRequestToken()", () => {
       issuerDid,
       createDidDocumentFromKeypair({
         did: issuerDid,
-        keypair
-      })
+        keypair,
+      }),
     )
 
     // Verify the JWT is valid (disable audience validation)
     // TODO: Use parsePaymentRequestToken when it returns the issuer
     const result = await verifyJwt(paymentRequestToken, {
-      resolver
+      resolver,
     })
 
     expect(result.payload.iss).toBe(issuerDid)

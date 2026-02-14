@@ -5,7 +5,7 @@ import { errorMessage, successMessage } from "@repo/cli-tools"
 // Helper function to update .env file
 export async function updateEnvFile(
   newValues: Record<string, string>,
-  envPath: string
+  envPath: string,
 ) {
   try {
     let envContent = ""
@@ -53,8 +53,8 @@ export async function updateEnvFile(
     await fs.writeFile(envPath, finalContent)
     console.log(
       successMessage(
-        `Successfully updated ${path.basename(envPath)} with new keys. ✨`
-      )
+        `Successfully updated ${path.basename(envPath)} with new keys. ✨`,
+      ),
     )
   } catch (error) {
     console.error(errorMessage(`Failed to update .env file: ${error}`))

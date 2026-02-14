@@ -1,23 +1,22 @@
-import { apiSuccessResponse } from "@repo/api-utils/api-response"
-import { notFound } from "@repo/api-utils/exceptions"
-import {
-  createStatusListCredential,
-  parseJwtCredential,
-  signCredential
-} from "agentcommercekit"
-import { Hono } from "hono"
-import { env } from "hono/adapter"
 import { getStatusList } from "@/db/queries/status-lists"
 import { compressBitString } from "@/lib/utils/compress-bit-string"
 import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"
-import type { ApiResponse } from "@repo/api-utils/api-response"
-import type {
-  BitstringStatusListCredential,
-  Verifiable
+import {
+  apiSuccessResponse,
+  type ApiResponse,
+} from "@repo/api-utils/api-response"
+import { notFound } from "@repo/api-utils/exceptions"
+import {
+  createStatusListCredential,
+  parseJwtCredential,
+  signCredential,
+  type BitstringStatusListCredential,
+  type Verifiable,
 } from "agentcommercekit"
-import type { Env } from "hono"
+import { Hono, type Env } from "hono"
+import { env } from "hono/adapter"
 
 const app = new Hono<Env>()
 
@@ -38,7 +37,7 @@ app.use("*", didResolver())
 app.get(
   "/:listId",
   async (
-    c
+    c,
   ): Promise<ApiResponse<Verifiable<BitstringStatusListCredential>>> => {
     const listId = c.req.param("listId")
     const db = c.get("db")
@@ -57,7 +56,7 @@ app.get(
     const credential = createStatusListCredential({
       url: `${BASE_URL}/status/${listId}`,
       encodedList,
-      issuer: issuer.did
+      issuer: issuer.did,
     })
 
     const jwt = await signCredential(credential, issuer)
@@ -66,7 +65,7 @@ app.get(
       await parseJwtCredential<BitstringStatusListCredential>(jwt, resolver)
 
     return c.json(apiSuccessResponse(verifiableCredential))
-  }
+  },
 )
 
 export default app

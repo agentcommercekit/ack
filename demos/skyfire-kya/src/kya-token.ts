@@ -1,9 +1,13 @@
 import { log, logJson } from "@repo/cli-tools"
-import { createJwt, createJwtSigner } from "agentcommercekit"
+import {
+  createJwt,
+  createJwtSigner,
+  type JwtString,
+  type Keypair,
+} from "agentcommercekit"
 import { jwtPayloadSchema } from "agentcommercekit/schemas/zod/v4"
 import { decodeJwt } from "jose"
 import * as z from "zod/v4"
-import type { JwtString, Keypair } from "agentcommercekit"
 
 export const skyfireKyaJwtPayloadSchema = z.object({
   ...jwtPayloadSchema.shape,
@@ -13,8 +17,8 @@ export const skyfireKyaJwtPayloadSchema = z.object({
     agentName: z.string(),
     ownerId: z.string(),
     nameFirst: z.string(),
-    nameLast: z.string()
-  })
+    nameLast: z.string(),
+  }),
 })
 
 export type SkyfireKyaJwtPayload = z.output<typeof skyfireKyaJwtPayloadSchema>
@@ -25,7 +29,7 @@ export type SkyfireKyaJwtPayload = z.output<typeof skyfireKyaJwtPayloadSchema>
  * @returns
  */
 export async function createMockSkyfireKyaToken(
-  keypair: Keypair
+  keypair: Keypair,
 ): Promise<JwtString> {
   const payload: SkyfireKyaJwtPayload = {
     aud: "seller-service-123",
@@ -34,10 +38,10 @@ export async function createMockSkyfireKyaToken(
       agentName: "BuyerAgent",
       ownerId: "buyer-org-789",
       nameFirst: "Alice",
-      nameLast: "Johnson"
+      nameLast: "Johnson",
     },
     ssi: "seller-service-123",
-    jti: crypto.randomUUID()
+    jti: crypto.randomUUID(),
   }
 
   const jwt = await createJwt(
@@ -45,13 +49,13 @@ export async function createMockSkyfireKyaToken(
     {
       issuer: "https://api.skyfire.xyz/",
       signer: createJwtSigner(keypair),
-      expiresIn: 3600
+      expiresIn: 3600,
     },
     {
       // @ts-expect-error - TODO: fix this
       typ: "kya+JWT",
-      alg: "ES256"
-    }
+      alg: "ES256",
+    },
   )
 
   const parsed = decodeJwt(jwt)

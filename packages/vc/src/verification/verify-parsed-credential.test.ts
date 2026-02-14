@@ -1,34 +1,34 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { isExpired } from "./is-expired"
-import { isRevoked } from "./is-revoked"
-import { verifyParsedCredential } from "./verify-parsed-credential"
-import { verifyProof } from "./verify-proof"
 import { createCredential } from "../create-credential"
+import type { Verifiable, W3CCredential } from "../types"
 import {
   CredentialExpiredError,
   CredentialRevokedError,
   InvalidProofError,
   UnsupportedCredentialTypeError,
-  UntrustedIssuerError
+  UntrustedIssuerError,
 } from "./errors"
-import type { Verifiable, W3CCredential } from "../types"
+import { isExpired } from "./is-expired"
+import { isRevoked } from "./is-revoked"
+import { verifyParsedCredential } from "./verify-parsed-credential"
+import { verifyProof } from "./verify-proof"
 
 vi.mock("./is-expired", () => ({
-  isExpired: vi.fn()
+  isExpired: vi.fn(),
 }))
 
 vi.mock("./is-revoked", () => ({
-  isRevoked: vi.fn()
+  isRevoked: vi.fn(),
 }))
 
 vi.mock("./verify-proof", () => ({
-  verifyProof: vi.fn()
+  verifyProof: vi.fn(),
 }))
 
 async function setup() {
@@ -41,8 +41,8 @@ async function setup() {
     issuerDid,
     createDidDocumentFromKeypair({
       did: issuerDid,
-      keypair: issuerKeypair
-    })
+      keypair: issuerKeypair,
+    }),
   )
 
   // Generate an unsigned attestation
@@ -52,12 +52,12 @@ async function setup() {
     subject: subjectDid,
     issuer: issuerDid,
     attestation: {
-      test: "test"
-    }
+      test: "test",
+    },
   })
 
   credential.issuer = {
-    id: issuerDid
+    id: issuerDid,
   }
 
   const vc = {
@@ -65,8 +65,8 @@ async function setup() {
     // just dummy fields, we mock the actual proof verification
     proof: {
       type: "JwtProof2020",
-      jwt: "test.jwt.token"
-    }
+      jwt: "test.jwt.token",
+    },
   } as unknown as Verifiable<W3CCredential>
 
   return { vc, issuerDid, resolver }
@@ -83,23 +83,23 @@ describe("verifyParsedCredential", () => {
     vi.clearAllMocks()
   })
 
-  it("should throw when no proof is present", async () => {
+  it("throws when no proof is present", async () => {
     const { vc: baseVc, issuerDid, resolver } = await setup()
 
     const vc = {
       ...baseVc,
-      proof: undefined
+      proof: undefined,
     }
 
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(InvalidProofError)
   })
 
-  it("should throw for an expired credential", async () => {
+  it("throws for an expired credential", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     vi.mocked(isExpired).mockReturnValue(true)
@@ -107,12 +107,12 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(CredentialExpiredError)
   })
 
-  it("should throw for a revoked credential", async () => {
+  it("throws for a revoked credential", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     vi.mocked(isRevoked).mockResolvedValue(true)
@@ -120,23 +120,23 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(CredentialRevokedError)
   })
 
-  it("should throw for non-trusted issuer", async () => {
+  it("throws for non-trusted issuer", async () => {
     const { vc, resolver } = await setup()
 
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: ["did:example:123"],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(UntrustedIssuerError)
   })
 
-  it("should throw for an invalid proof", async () => {
+  it("throws for an invalid proof", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     vi.mocked(verifyProof).mockRejectedValueOnce(new InvalidProofError())
@@ -144,8 +144,8 @@ describe("verifyParsedCredential", () => {
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).rejects.toThrow(InvalidProofError)
   })
 
@@ -159,19 +159,19 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => true,
-            verify: () => Promise.resolve()
+            verify: () => Promise.resolve(),
           },
           {
             accepts: () => true,
             verify: () =>
-              Promise.reject(new Error("Invalid credential subject"))
-          }
-        ]
-      })
+              Promise.reject(new Error("Invalid credential subject")),
+          },
+        ],
+      }),
     ).rejects.toThrow("Invalid credential subject")
   })
 
-  it("should throw if credential type does not match any verifiers", async () => {
+  it("throws if credential type does not match any verifiers", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     await expect(
@@ -181,14 +181,14 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => false,
-            verify: () => Promise.resolve()
-          }
-        ]
-      })
+            verify: () => Promise.resolve(),
+          },
+        ],
+      }),
     ).rejects.toThrow(UnsupportedCredentialTypeError)
   })
 
-  it("should verify a valid credential with verifiers", async () => {
+  it("verifies a valid credential with verifiers", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     await expect(
@@ -198,21 +198,21 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => true,
-            verify: () => Promise.resolve()
-          }
-        ]
-      })
+            verify: () => Promise.resolve(),
+          },
+        ],
+      }),
     ).resolves.not.toThrow()
   })
 
-  it("should verify a valid credential with no verifiers", async () => {
+  it("verifies a valid credential with no verifiers", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     await expect(
       verifyParsedCredential(vc, {
         trustedIssuers: [issuerDid],
-        resolver
-      })
+        resolver,
+      }),
     ).resolves.not.toThrow()
   })
 
@@ -225,10 +225,10 @@ describe("verifyParsedCredential", () => {
         verifiers: [
           {
             accepts: () => true,
-            verify: () => Promise.resolve()
-          }
-        ]
-      })
+            verify: () => Promise.resolve(),
+          },
+        ],
+      }),
     ).resolves.not.toThrow()
   })
 })

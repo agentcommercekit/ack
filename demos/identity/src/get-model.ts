@@ -7,11 +7,11 @@ export const providerKeySet =
 export const getModel = () => {
   if (process.env.ANTHROPIC_API_KEY) {
     return createAnthropic({
-      apiKey: process.env.ANTHROPIC_API_KEY
+      apiKey: process.env.ANTHROPIC_API_KEY,
     })("claude-3-7-sonnet-20250219")
   } else if (process.env.OPENAI_API_KEY) {
     return createOpenAI({
-      apiKey: process.env.OPENAI_API_KEY
+      apiKey: process.env.OPENAI_API_KEY,
     })("gpt-4o")
   }
 

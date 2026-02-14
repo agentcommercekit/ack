@@ -1,15 +1,15 @@
+import type { DatabaseCredential } from "@/db/schema"
 import {
-  DidResolver,
   createCredential,
   createDidWebDocumentFromKeypair,
   createJwtSigner,
+  DidResolver,
   generateKeypair,
-  isJwtString
+  isJwtString,
 } from "agentcommercekit"
 import { describe, expect, it } from "vitest"
-import { buildSignedCredential } from "./build-signed-credential"
 import type { Issuer } from "../types"
-import type { DatabaseCredential } from "@/db/schema"
+import { buildSignedCredential } from "./build-signed-credential"
 
 describe("buildSignedCredential", async () => {
   const baseUrl = "https://test.example.com"
@@ -19,14 +19,14 @@ describe("buildSignedCredential", async () => {
 
   const { did, didDocument } = createDidWebDocumentFromKeypair({
     keypair,
-    baseUrl
+    baseUrl,
   })
 
   const issuer: Issuer = {
     did,
     didDocument,
     signer: createJwtSigner(keypair),
-    alg: "ES256K"
+    alg: "ES256K",
   }
 
   const credential: DatabaseCredential = {
@@ -40,9 +40,9 @@ describe("buildSignedCredential", async () => {
       issuer: issuer.did,
       subject: "did:example:123",
       attestation: {
-        test: "data"
-      }
-    })
+        test: "data",
+      },
+    }),
   }
 
   it("should set the id on the credential", async () => {
@@ -54,7 +54,7 @@ describe("buildSignedCredential", async () => {
       path,
       issuer,
       credential,
-      resolver
+      resolver,
     })
 
     expect(signedCredential.id).toBe(`${baseUrl}/credentials/${credential.id}`)
@@ -69,7 +69,7 @@ describe("buildSignedCredential", async () => {
       path,
       issuer,
       credential,
-      resolver
+      resolver,
     })
 
     expect(signedCredential.credentialStatus).toBeDefined()
@@ -84,7 +84,7 @@ describe("buildSignedCredential", async () => {
       path,
       issuer,
       credential,
-      resolver
+      resolver,
     })
 
     expect(signedCredential.proof).toBeDefined()

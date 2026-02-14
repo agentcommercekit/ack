@@ -1,5 +1,8 @@
-import { caip2ChainIdPattern } from "./caip-2"
-import type { Caip2ChainId, Caip2ChainIdParts } from "./caip-2"
+import {
+  caip2ChainIdPattern,
+  type Caip2ChainId,
+  type Caip2ChainIdParts,
+} from "./caip-2"
 
 /**
  * CAIP-10 Spec - Account ID Components
@@ -19,7 +22,7 @@ export const caip10AccountAddressPattern = "[-.%a-zA-Z0-9]{1,128}"
 export const caip10AccountIdPattern = `${caip2ChainIdPattern}:${caip10AccountAddressPattern}`
 
 export const caip10AccountAddressRegex = new RegExp(
-  `^${caip10AccountAddressPattern}$`
+  `^${caip10AccountAddressPattern}$`,
 )
 export const caip10AccountIdRegex = new RegExp(`^${caip10AccountIdPattern}$`)
 
@@ -32,7 +35,7 @@ export const caip10AccountIdRegex = new RegExp(`^${caip10AccountIdPattern}$`)
  */
 export function createCaip10AccountId(
   chainId: Caip2ChainId,
-  address: string
+  address: string,
 ): Caip10AccountId {
   return `${chainId}:${address}`
 }

@@ -1,16 +1,16 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
+  type Resolvable,
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 import {
   InvalidControllerClaimError,
-  InvalidCredentialSubjectError
+  InvalidCredentialSubjectError,
 } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
 import { getControllerClaimVerifier } from "./controller-claim-verifier"
-import type { Resolvable } from "@agentcommercekit/did"
 
 async function setup() {
   const resolver = getDidResolver()
@@ -22,8 +22,8 @@ async function setup() {
     controllerDid,
     createDidDocumentFromKeypair({
       did: controllerDid,
-      keypair: controllerKeypair
-    })
+      keypair: controllerKeypair,
+    }),
   )
 
   // Generate keypair for the agent
@@ -34,8 +34,8 @@ async function setup() {
     createDidDocumentFromKeypair({
       did: agentDid,
       keypair: agentKeypair,
-      controller: controllerDid
-    })
+      controller: controllerDid,
+    }),
   )
 
   return { resolver, controllerDid, agentDid }
@@ -69,11 +69,11 @@ describe("getControllerClaimVerifier", () => {
 
     const invalidSubject = {
       id: agentDid,
-      someOtherField: "value"
+      someOtherField: "value",
     }
 
     await expect(verifier.verify(invalidSubject, resolver)).rejects.toThrow(
-      InvalidCredentialSubjectError
+      InvalidCredentialSubjectError,
     )
   })
 
@@ -82,7 +82,7 @@ describe("getControllerClaimVerifier", () => {
 
     const credential = {
       id: "did:example:non-existent",
-      controller: "did:example:controller"
+      controller: "did:example:controller",
     }
 
     await expect(verifier.verify(credential, resolver)).rejects.toThrow()
@@ -93,11 +93,11 @@ describe("getControllerClaimVerifier", () => {
 
     const credential = {
       id: agentDid,
-      controller: "did:example:wrong-controller"
+      controller: "did:example:wrong-controller",
     }
 
     await expect(verifier.verify(credential, resolver)).rejects.toThrow(
-      InvalidControllerClaimError
+      InvalidControllerClaimError,
     )
   })
 
@@ -106,7 +106,7 @@ describe("getControllerClaimVerifier", () => {
 
     const credential = {
       id: agentDid,
-      controller: controllerDid
+      controller: controllerDid,
     }
 
     await expect(verifier.verify(credential, resolver)).resolves.not.toThrow()

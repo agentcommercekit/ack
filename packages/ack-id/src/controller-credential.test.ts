@@ -17,7 +17,7 @@ describe("createControllerCredential", () => {
     const credential = createControllerCredential({
       subject: subjectDid,
       controller: controllerDid,
-      issuer: issuerDid
+      issuer: issuerDid,
     })
 
     // Check basic structure
@@ -28,9 +28,9 @@ describe("createControllerCredential", () => {
       issuer: { id: issuerDid },
       credentialSubject: {
         id: subjectDid,
-        controller: controllerDid
+        controller: controllerDid,
       },
-      issuanceDate: new Date().toISOString()
+      issuanceDate: new Date().toISOString(),
     })
 
     // Verify issuanceDate is a valid ISO date string
@@ -43,7 +43,7 @@ describe("createControllerCredential", () => {
 
     const credential = createControllerCredential({
       subject: subjectDid,
-      controller: controllerDid
+      controller: controllerDid,
     })
 
     expect(credential.issuer).toEqual({ id: controllerDid })

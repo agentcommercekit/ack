@@ -1,6 +1,6 @@
+import type { Resolvable } from "@agentcommercekit/did"
 import { verifyCredential } from "did-jwt-vc"
 import type { Verifiable, W3CCredential } from "../types"
-import type { Resolvable } from "@agentcommercekit/did"
 
 /**
  * Parse a JWT credential
@@ -11,7 +11,7 @@ import type { Resolvable } from "@agentcommercekit/did"
  */
 export async function parseJwtCredential<T extends W3CCredential>(
   jwt: string,
-  resolver: Resolvable
+  resolver: Resolvable,
 ): Promise<Verifiable<T>> {
   const result = await verifyCredential(jwt, resolver)
 

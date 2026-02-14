@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { resolve } from "./pkh-did-resolver"
 import fixtureEthereumMainnet from "../../test-fixtures/did-pkh/did:pkh:eip155:1:0xb9c5714089478a327f09197987f16f9e5d936e8a.json"
 import fixtureBaseSepolia from "../../test-fixtures/did-pkh/did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011.json"
 import fixtureSolana from "../../test-fixtures/did-pkh/did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:CKg5d12Jhpej1JqtmxLJgaFqqeYjxgPqToJ4LBdvG9Ev.json"
+import { resolve } from "./pkh-did-resolver"
 
 /**
  * Test vectors from the did-pkh spec
@@ -11,16 +11,16 @@ import fixtureSolana from "../../test-fixtures/did-pkh/did:pkh:solana:4sGjMW1sUn
 const fixtures = {
   ethereumMainnet: {
     did: "did:pkh:eip155:1:0xb9c5714089478a327f09197987f16f9e5d936e8a",
-    fixture: fixtureEthereumMainnet
+    fixture: fixtureEthereumMainnet,
   },
   baseSepolia: {
     did: "did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011",
-    fixture: fixtureBaseSepolia
+    fixture: fixtureBaseSepolia,
   },
   solana: {
     did: "did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:CKg5d12Jhpej1JqtmxLJgaFqqeYjxgPqToJ4LBdvG9Ev",
-    fixture: fixtureSolana
-  }
+    fixture: fixtureSolana,
+  },
 }
 
 describe("pkh-did-resolver", () => {
@@ -30,7 +30,7 @@ describe("pkh-did-resolver", () => {
       const result = await resolve(did)
 
       expect(result.didDocument).toEqual(fixture)
-    }
+    },
   )
 
   it("returns an error for unknown did:pkh URIs", async () => {
@@ -39,7 +39,7 @@ describe("pkh-did-resolver", () => {
     expect(result).toEqual({
       didDocument: null,
       didDocumentMetadata: {},
-      didResolutionMetadata: { error: "invalidDid" }
+      didResolutionMetadata: { error: "invalidDid" },
     })
   })
 })

@@ -1,15 +1,15 @@
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
-  getDidResolver
+  getDidResolver,
 } from "@agentcommercekit/did"
 import { createJwtSigner, verifyJwt } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { describe, expect, it } from "vitest"
 import { createPresentation } from "../create-presentation"
+import type { Verifiable, W3CCredential } from "../types"
 import { signPresentation } from "./sign-presentation"
 import type { Signer } from "./types"
-import type { Verifiable, W3CCredential } from "../types"
 
 const resolver = getDidResolver()
 const holderKeypair = await generateKeypair("secp256k1")
@@ -19,14 +19,14 @@ resolver.addToCache(
   holderDid,
   createDidDocumentFromKeypair({
     did: holderDid,
-    keypair: holderKeypair
-  })
+    keypair: holderKeypair,
+  }),
 )
 
 const signer: Signer = {
   did: holderDid,
   signer: createJwtSigner(holderKeypair),
-  alg: "ES256K"
+  alg: "ES256K",
 }
 
 // Create a mock credential for the presentation
@@ -37,8 +37,8 @@ const mockCredential: Verifiable<W3CCredential> = {
   credentialSubject: { id: "did:example:subject" },
   issuanceDate: new Date().toISOString(),
   proof: {
-    type: "Ed25519Signature2018"
-  }
+    type: "Ed25519Signature2018",
+  },
 }
 
 // Generate an unsigned presentation
@@ -46,7 +46,7 @@ const presentation = createPresentation({
   credentials: [mockCredential],
   holder: holderDid,
   id: "test-presentation",
-  type: "TestPresentation"
+  type: "TestPresentation",
 })
 
 describe("signPresentation", () => {
@@ -56,7 +56,7 @@ describe("signPresentation", () => {
 
     // Verify the JWT using did-jwt verifier
     const result = await verifyJwt(jwt, {
-      resolver
+      resolver,
     })
 
     expect(result.payload.iss).toBe(holderDid)
@@ -68,14 +68,14 @@ describe("signPresentation", () => {
   it("includes a challenge and domain", async () => {
     const jwt = await signPresentation(presentation, signer, {
       challenge: "test-challenge",
-      domain: "https://example.com"
+      domain: "https://example.com",
     })
 
     const result = await verifyJwt(jwt, {
       resolver,
       policies: {
-        aud: false
-      }
+        aud: false,
+      },
     })
 
     expect(result.payload.nonce).toBe("test-challenge")

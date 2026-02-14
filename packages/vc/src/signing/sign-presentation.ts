@@ -1,8 +1,7 @@
-import { isJwtString } from "@agentcommercekit/jwt"
+import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import { createVerifiablePresentationJwt } from "did-jwt-vc"
-import type { Signer } from "./types"
 import type { W3CPresentation } from "../types"
-import type { JwtString } from "@agentcommercekit/jwt"
+import type { Signer } from "./types"
 
 type SignPresentationOptions = {
   challenge?: string
@@ -19,12 +18,12 @@ type SignPresentationOptions = {
 export async function signPresentation(
   presentation: W3CPresentation,
   signer: Signer,
-  options: SignPresentationOptions = {}
+  options: SignPresentationOptions = {},
 ): Promise<JwtString> {
   const jwt = await createVerifiablePresentationJwt(
     presentation,
     signer,
-    options
+    options,
   )
 
   if (!isJwtString(jwt)) {

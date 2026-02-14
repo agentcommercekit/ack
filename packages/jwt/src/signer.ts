@@ -1,6 +1,5 @@
-import { ES256KSigner, ES256Signer, EdDSASigner } from "did-jwt"
 import type { Keypair } from "@agentcommercekit/keys"
-import type { Signer } from "did-jwt"
+import { EdDSASigner, ES256KSigner, ES256Signer, type Signer } from "did-jwt"
 
 export type JwtSigner = Signer
 

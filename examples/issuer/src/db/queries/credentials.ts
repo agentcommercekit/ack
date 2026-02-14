@@ -1,13 +1,17 @@
-import { eq } from "drizzle-orm"
-import { credentialsTable, statusListsTable } from "@/db/schema"
+import {
+  credentialsTable,
+  statusListsTable,
+  type DatabaseCredential,
+  type NewDatabaseCredential,
+} from "@/db/schema"
 import { getStatusListPosition } from "@/db/utils/get-status-list-position"
-import { maybeCreateStatusList } from "./status-lists"
+import { eq } from "drizzle-orm"
 import type { DatabaseClient } from "../get-db"
-import type { DatabaseCredential, NewDatabaseCredential } from "@/db/schema"
+import { maybeCreateStatusList } from "./status-lists"
 
 export async function createCredential(
   db: DatabaseClient,
-  credential: NewDatabaseCredential
+  credential: NewDatabaseCredential,
 ): Promise<DatabaseCredential> {
   const [result] = await db
     .insert(credentialsTable)
@@ -22,7 +26,7 @@ export async function createCredential(
 
   await maybeCreateStatusList(db, {
     id: statusListId,
-    credentialType: credential.credentialType
+    credentialType: credential.credentialType,
   })
 
   return result
@@ -30,7 +34,7 @@ export async function createCredential(
 
 export async function getCredential(
   db: DatabaseClient,
-  id: number
+  id: number,
 ): Promise<DatabaseCredential | undefined> {
   const [credential] = await db
     .select()
@@ -42,11 +46,11 @@ export async function getCredential(
 
 export async function revokeCredential(
   db: DatabaseClient,
-  credential: DatabaseCredential
+  credential: DatabaseCredential,
 ) {
   // Set revocation bit in the status list
   const { id: statusListId, index: listIndex } = getStatusListPosition(
-    credential.id
+    credential.id,
   )
 
   await db
@@ -75,7 +79,7 @@ export async function revokeCredential(
   await db
     .update(statusListsTable)
     .set({
-      data: updatedString
+      data: updatedString,
     })
     .where(eq(statusListsTable.id, statusListId))
 }

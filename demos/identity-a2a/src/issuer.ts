@@ -6,16 +6,16 @@ import {
   generateKeypair,
   getDidResolver,
   parseJwtCredential,
-  signCredential
+  signCredential,
+  type DidUri,
 } from "agentcommercekit"
-import type { DidUri } from "agentcommercekit"
 
 const issuerKeypair = await generateKeypair("Ed25519")
 
 export const issuerDid = createDidKeyUri(issuerKeypair)
 export const issuerDidDocument = createDidDocumentFromKeypair({
   did: issuerDid,
-  keypair: issuerKeypair
+  keypair: issuerKeypair,
 })
 
 const signer = createJwtSigner(issuerKeypair)
@@ -27,7 +27,7 @@ export const didResolverWithIssuer = resolver
 
 export async function issueCredential({
   subject,
-  controller
+  controller,
 }: {
   subject: DidUri
   controller: DidUri
@@ -35,13 +35,13 @@ export async function issueCredential({
   const credential = createControllerCredential({
     subject,
     controller,
-    issuer: issuerDid
+    issuer: issuerDid,
   })
 
   const jwt = await signCredential(credential, {
     did: issuerDid,
     signer,
-    alg: "EdDSA"
+    alg: "EdDSA",
   })
 
   const verifiableCredential = await parseJwtCredential(jwt, resolver)

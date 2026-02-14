@@ -2,7 +2,7 @@ import { BitBuffer } from "bit-buffers"
 import { isStatusListCredential } from "../revocation/is-status-list-credential"
 import type {
   BitstringStatusListCredential,
-  Revocable
+  Revocable,
 } from "../revocation/types"
 import type { W3CCredential } from "../types"
 
@@ -13,7 +13,7 @@ import type { W3CCredential } from "../types"
  * @returns `true` if the credential is revocable, `false` otherwise
  */
 export function isRevocable<T extends W3CCredential>(
-  credential: T
+  credential: T,
 ): credential is Revocable<T> {
   return (
     credential.credentialStatus !== undefined &&
@@ -23,7 +23,7 @@ export function isRevocable<T extends W3CCredential>(
 }
 
 async function fetchStatusList(
-  credential: Revocable<W3CCredential>
+  credential: Revocable<W3CCredential>,
 ): Promise<BitstringStatusListCredential | undefined> {
   const statusListUrl = credential.credentialStatus.statusListCredential
 
@@ -60,7 +60,7 @@ export async function isRevoked(credential: W3CCredential): Promise<boolean> {
   }
 
   const statusList = BitBuffer.fromBitstring(
-    statusListVc.credentialSubject.encodedList
+    statusListVc.credentialSubject.encodedList,
   )
 
   const index = parseInt(credential.credentialStatus.statusListIndex, 10)

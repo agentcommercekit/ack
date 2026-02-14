@@ -4,15 +4,13 @@ import {
   createPaymentReceipt,
   generateKeypair,
   signCredential,
-  verifyPaymentRequestToken
-} from "agentcommercekit"
-import type {
-  DidDocument,
-  DidResolver,
-  DidUri,
-  JwtString,
-  Keypair,
-  PaymentRequest
+  verifyPaymentRequestToken,
+  type DidDocument,
+  type DidResolver,
+  type DidUri,
+  type JwtString,
+  type Keypair,
+  type PaymentRequest,
 } from "agentcommercekit"
 
 export class ReceiptIssuer {
@@ -25,7 +23,7 @@ export class ReceiptIssuer {
   private constructor({
     baseUrl,
     keypair,
-    resolver
+    resolver,
   }: {
     baseUrl: string
     keypair: Keypair
@@ -38,7 +36,7 @@ export class ReceiptIssuer {
     // Did Document
     const { did, didDocument } = createDidWebDocumentFromKeypair({
       keypair: this.keypair,
-      baseUrl
+      baseUrl,
     })
     this.did = did
     this.didDocument = didDocument
@@ -50,7 +48,7 @@ export class ReceiptIssuer {
 
   static async create({
     baseUrl,
-    resolver
+    resolver,
   }: {
     baseUrl: string
     resolver: DidResolver
@@ -65,7 +63,7 @@ export class ReceiptIssuer {
   async issueReceipt({
     payerDid,
     txHash,
-    paymentRequestToken
+    paymentRequestToken,
   }: {
     payerDid: DidUri
     txHash: string
@@ -74,14 +72,14 @@ export class ReceiptIssuer {
     const { paymentRequest } = await verifyPaymentRequestToken(
       paymentRequestToken,
       {
-        resolver: this.resolver
-      }
+        resolver: this.resolver,
+      },
     )
 
     // Verify the payment on-chain
     const paymentVerified = await this.verifyPaymentOnChain(
       txHash,
-      paymentRequest
+      paymentRequest,
     )
     if (!paymentVerified) {
       throw new Error("Payment verification failed")
@@ -92,13 +90,13 @@ export class ReceiptIssuer {
       paymentRequestToken,
       paymentOptionId: paymentRequest.paymentOptions[0].id,
       issuer: this.did,
-      payerDid
+      payerDid,
     })
 
     const jwt = await signCredential(credential, {
       did: this.did,
       signer: this.signer,
-      alg: "ES256K"
+      alg: "ES256K",
     })
 
     return jwt
@@ -109,7 +107,7 @@ export class ReceiptIssuer {
    */
   private async verifyPaymentOnChain(
     txHash: string,
-    _paymentRequest: PaymentRequest
+    _paymentRequest: PaymentRequest,
   ): Promise<boolean> {
     // Implementation will use your local libraries
     // This is where you would verify the transaction on-chain
