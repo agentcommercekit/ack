@@ -1,97 +1,120 @@
 # Agent Commerce Kit (ACK)
 
-## Project Overview
+TypeScript monorepo providing verifiable AI identity (ACK-ID) and automated payment processing (ACK-Pay) protocols built on W3C DIDs and Verifiable Credentials.
 
-**Agent Commerce Kit (ACK)** is an open-source TypeScript framework enabling AI agents to participate in commerce through two core protocols:
-
-1. **ACK-ID**: Verifiable AI identities with compliance controls using W3C DIDs and Verifiable Credentials
-2. **ACK-Pay**: Secure, automated payment processing with auditable receipt verification
-
-The project is structured as a **pnpm monorepo** with Turbo build orchestration, requiring Node.js 22+ and pnpm 10+.
-
-## Essential Commands
-
-### Setup & Development
+## Commands
 
 ```bash
-pnpm run setup          # Initialize repository (install deps, build packages)
-pnpm run build          # Build all packages
-pnpm run dev:examples   # Run all example services
-pnpm run dev:docs       # Run documentation site locally
+pnpm run setup                        # Install deps + build (safe to re-run)
+pnpm run build                        # Build all packages
+pnpm run check                        # Full CI: format + types + lint + test
+pnpm run test                         # All tests
+pnpm run fix                          # lint:fix + format
+pnpm --filter ./packages/[name] test  # Single package test
+pnpm --filter ./packages/[name] build # Single package build
 ```
 
-### Quality Assurance
+## Package Dependency Graph
 
-```bash
-pnpm run check          # Run comprehensive checks (format, types, lint, test)
-pnpm run test           # Run all tests
-pnpm run lint           # Run ESLint
-pnpm run check:types    # TypeScript type checking
-pnpm run format         # Format code with Prettier
+```
+agentcommercekit  (umbrella re-export)
+├── ack-id        → did, jwt, keys, vc
+├── ack-pay       → did, jwt, keys, vc
+├── vc            → did, jwt, keys
+├── did           → caip, keys
+├── jwt           → keys
+├── caip          (leaf)
+└── keys          (leaf)
 ```
 
-### Demos
-
-```bash
-pnpm demo:identity      # ACK-ID protocol demonstration
-pnpm demo:identity-a2a  # ACK-ID with Google A2A protocol
-pnpm demo:payments      # ACK-Pay protocol demonstration
-pnpm demo:e2e           # End-to-end demo (ACK-ID + ACK-Pay)
-pnpm demo:skyfire-kya   # Skyfire KYA token demonstration
-```
-
-### Testing
-
-- Run individual package tests: `pnpm --filter ./packages/[package-name] test`
-- All tests use **Vitest** framework with assertive testing patterns (`it('requires...')`, `it('throws...')`, `it('returns...')`)
-- Test configuration: individual `vitest.config.ts` files per package
+Changes to a leaf package require rebuilding everything above it. Turbo handles this via `"dependsOn": ["^build"]`. Demos and examples import from built `dist/` output, not source.
 
 ## Architecture
 
-### Core Packages (`/packages/` - Published to NPM)
+### Directory Layout
 
-- **`agentcommercekit/`** - Main SDK package (exports everything)
-- **`ack-id/`** - Identity protocol implementation
-- **`ack-pay/`** - Payment protocol implementation
-- **`caip/`** - CAIP (Chain Agnostic Improvement Proposal) utilities for CAIP-2, CAIP-10, and CAIP-19
-- **`did/`** - Decentralized Identifier utilities
-- **`jwt/`** - JWT creation/verification utilities
-- **`keys/`** - Cryptographic key management (Ed25519, secp256k1, secp256r1)
-- **`vc/`** - Verifiable Credentials utilities
+- **`packages/`** - Core NPM-published packages (8 packages, see dependency graph above)
+- **`demos/`** - Interactive protocol demonstrations (each runnable independently)
+- **`examples/`** - Standalone services: credential issuer, verifier, local DID host
+- **`tools/`** - Internal workspace packages (not published):
+  - `api-utils` - Hono API helpers, middleware, JWT validation
+  - `cli-tools` - Demo CLI utilities
+  - `eslint-config` - Shared ESLint flat config
+  - `typescript-config` - Shared tsconfig bases
+- **`docs/`** - Mintlify documentation site (`pnpm dev:docs`)
 
-### Demonstrations (`/demos/`)
+### Build Pipeline
 
-Interactive demos showcasing protocol functionality - each can be run independently.
+Each package uses **tsdown** (not tsc) for building:
 
-### Example Services (`/examples/`)
+- Config: `tsdown.config.ts` per package with multiple entry points
+- Output: `dist/` with ESM (.js) + TypeScript declarations (.d.ts)
+- TypeScript target: ES2022, module: ESNext, bundler resolution
+- All packages are ESM-only (`"type": "module"`)
 
-Standalone service implementations including credential issuer, verifier, and local DID host.
+### Dual Validation Schema Pattern
 
-### Build System
+Most packages export validation schemas through **three files** with **four export paths**:
 
-- **Turbo**: Orchestrates builds across packages with dependency graph
-- **tsdown**: TypeScript compiler/bundler
-- **Output**: `dist/` directories with ESM and TypeScript definitions
-- **Dependency Management**: Exact versions for dependencies (enforced via `.npmrc`), ranges for peer dependencies
+```
+src/schemas/
+├── valibot.ts        → ./schemas/valibot
+└── zod/
+    ├── v3.ts         → ./schemas/zod/v3  AND  ./schemas/zod (alias)
+    └── v4.ts         → ./schemas/zod/v4
+```
 
-### Key Technical Patterns
+Valibot is the primary validation library (a runtime dependency in most packages, optional peer in `caip` and `jwt`). Zod is an optional peer dependency everywhere.
 
-- **ESM-only**: All packages use `"type": "module"`
-- **Multi-curve Cryptography**: Ed25519, secp256k1, secp256r1 support
-- **Dual Validation**: Both Valibot (primary) and Zod (peer dependency) support
-- **Standards Compliance**: W3C DIDs and Verifiable Credentials
-- **Modular Design**: Protocols can be used independently
+When adding new types, you must:
 
-### Development Workflow
+1. Add the schema to all three files (`valibot.ts`, `zod/v3.ts`, `zod/v4.ts`)
+2. Add entry points to `package.json` exports
+3. Add entry points to `tsdown.config.ts` entry array
 
-1. Changes to core packages require rebuilding: `pnpm run build`
-2. Use `pnpm --filter ./packages/[name]` to work on specific packages
-3. Run comprehensive checks before commits: `pnpm run check`
-4. Demos and examples depend on built packages
+Exception: `keys` package has no schema exports (exports curve-specific files and encoding instead).
 
-### Key Dependencies
+### Dependency Management
 
-- **@noble/curves**: Elliptic curve cryptography
-- **multiformats**: Multiformat encoding/decoding
-- **valibot**: Runtime validation (primary choice)
-- **zod**: Alternative validation (peer dependency)
+- Exact versions enforced by `.npmrc` (`save-exact=true`)
+- Shared versions via pnpm catalog in `pnpm-workspace.yaml`
+- Workspace dependencies use `workspace:*`
+- Catalog dependencies use `catalog:`
+- Peer dependencies use semver ranges
+
+## Testing
+
+Vitest with individual `vitest.config.ts` per package.
+
+- Test files co-located with source as `*.test.ts`
+- Assertive test names: `it("creates...")`, `it("throws...")`, `it("requires...")`, `it("returns...")`
+- Partial mocks: `vi.mock()` with `vi.importActual()` to preserve real implementations
+
+## Code Style
+
+### Formatting (Prettier)
+
+- No semicolons
+- Double quotes
+- Trailing commas
+- 2-space indentation
+
+### Imports
+
+- Sorting handled by `@ianvs/prettier-plugin-sort-imports` (via Prettier, not ESLint)
+- Enforced `import type { ... }` via ESLint `consistent-type-imports` rule
+
+### Linting
+
+- Unused vars: warning with `^_` prefix ignore pattern
+- CSpell spell checking integrated into ESLint (config: `cspell.config.yaml`)
+
+## Demos
+
+```bash
+pnpm demo:identity        # ACK-ID protocol demo
+pnpm demo:identity-a2a    # ACK-ID with Google A2A protocol
+pnpm demo:payments        # ACK-Pay protocol demo
+pnpm demo:e2e             # End-to-end (ACK-ID + ACK-Pay)
+pnpm demo:skyfire-kya     # Skyfire KYA token demo
+```
