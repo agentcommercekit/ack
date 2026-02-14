@@ -28,9 +28,9 @@
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
+    "@libsql/client": "0.15.15",
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "better-sqlite3": "11.10.0",
     "bit-buffers": "catalog:",
     "drizzle-orm": "0.43.1",
     "hono": "catalog:",
@@ -39,7 +39,6 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
-    "@types/better-sqlite3": "7.6.13",
     "drizzle-kit": "0.31.1",
     "vite-tsconfig-paths": "5.1.4"
   }
