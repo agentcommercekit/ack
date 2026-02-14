@@ -3,17 +3,25 @@
   "version": "0.10.1",
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agentcommercekit/ack.git",
-    "directory": "packages/did"
-  },
   "license": "MIT",
   "author": {
     "name": "Catena Labs",
     "url": "https://catenalabs.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "packages/did"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -37,21 +45,14 @@
       "default": "./dist/schemas/valibot.js"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "package.json",
-    "LICENSE",
-    "README.md"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "test": "vitest"
   },
   "dependencies": {
@@ -64,7 +65,6 @@
     "varint": "6.0.0"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/varint": "6.0.3",
     "standard-parse": "catalog:",
@@ -77,8 +77,5 @@
     "zod": {
       "optional": true
     }
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-
 import type { Server } from "node:http"
+
 import {
   A2AClient,
   type AgentCard,
   type Message,
-  type TextPart,
+  type TextPart
 } from "@a2a-js/sdk"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
@@ -13,23 +12,24 @@ import {
   getDidResolver,
   resolveDid,
   verifyParsedCredential,
-  type DidUri,
+  type DidUri
 } from "agentcommercekit"
 import {
   createA2AHandshakeMessage,
   createSignedA2AMessage,
-  verifyA2AHandshakeMessage,
+  verifyA2AHandshakeMessage
 } from "agentcommercekit/a2a"
 import { messageSchema } from "agentcommercekit/a2a/schemas/valibot"
 import { v4 } from "uuid"
 import * as v from "valibot"
+
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { fetchUrlFromAgentCardUrl } from "./utils/fetch-agent-card"
 import {
   isFailedTaskResponse,
   isMessageResponse,
-  isRpcErrorResponse,
+  isRpcErrorResponse
 } from "./utils/response-parsers"
 import { startAgentServer } from "./utils/server-utils"
 
@@ -42,13 +42,13 @@ export class BankClientAgent extends Agent {
   async requestBankingServices(): Promise<void> {
     console.log(
       colors.yellow(
-        "📚 STEP 1: Initial Setup - At this point, the agents cannot trust each other yet",
-      ),
+        "📚 STEP 1: Initial Setup - At this point, the agents cannot trust each other yet"
+      )
     )
     console.log(
       colors.yellow(
-        "   The bank client needs to discover and authenticate with the bank teller",
-      ),
+        "   The bank client needs to discover and authenticate with the bank teller"
+      )
     )
     console.log("")
     await waitForEnter("Press Enter to start the client agent...")
@@ -61,12 +61,12 @@ export class BankClientAgent extends Agent {
     try {
       this.server = startAgentServer(this, {
         logger,
-        port: 3000,
+        port: 3000
       })
 
       logger.log("✅ Bank Client server started successfully")
       logger.log(
-        `🌐 Client DID document available at: ${colors.dim("http://localhost:3000/.well-known/did.json")}`,
+        `🌐 Client DID document available at: ${colors.dim("http://localhost:3000/.well-known/did.json")}`
       )
     } catch (error) {
       logger.log("❌ Failed to start Bank Client server:", error as Error)
@@ -78,18 +78,18 @@ export class BankClientAgent extends Agent {
 
     console.log(
       colors.yellow(
-        "📚 STEP 2: Service Discovery - Client discovers the bank's public DID",
-      ),
+        "📚 STEP 2: Service Discovery - Client discovers the bank's public DID"
+      )
     )
     console.log(
       colors.yellow(
-        "   The client constructs the bank's did:web from its domain (localhost:3001)",
-      ),
+        "   The client constructs the bank's did:web from its domain (localhost:3001)"
+      )
     )
     console.log(
       colors.yellow(
-        "   Then resolves the DID document to find the bank's public keys and services",
-      ),
+        "   Then resolves the DID document to find the bank's public keys and services"
+      )
     )
     console.log("")
     await waitForEnter("Press Enter to begin service discovery...")
@@ -108,17 +108,17 @@ export class BankClientAgent extends Agent {
 
     console.log(
       colors.yellow(
-        "📚 STEP 2.5: Unauthenticated Request - Client tries to access services without identity proof",
-      ),
+        "📚 STEP 2.5: Unauthenticated Request - Client tries to access services without identity proof"
+      )
     )
     console.log(
       colors.yellow(
-        "   Let's see what happens when we try to access banking services without authentication...",
-      ),
+        "   Let's see what happens when we try to access banking services without authentication..."
+      )
     )
     console.log("")
     await waitForEnter(
-      "Press Enter to attempt unauthenticated banking request...",
+      "Press Enter to attempt unauthenticated banking request..."
     )
 
     // Try to access banking services without authentication first
@@ -130,14 +130,14 @@ export class BankClientAgent extends Agent {
         parts: [
           {
             kind: "text",
-            text: "I would like to check my account balance please.",
-          },
-        ],
+            text: "I would like to check my account balance please."
+          }
+        ]
       }
 
       const unauthenticatedParams = {
         id: v4(),
-        message: unauthenticatedMessage,
+        message: unauthenticatedMessage
       }
 
       logger.log("🚨 Sending unauthenticated request to bank...")
@@ -155,12 +155,12 @@ export class BankClientAgent extends Agent {
     } catch (_error: unknown) {
       console.log("")
       console.log(
-        colors.yellow("EXPECTED RESULT: Bank rejects unauthenticated request"),
+        colors.yellow("EXPECTED RESULT: Bank rejects unauthenticated request")
       )
       console.log(
         colors.yellow(
-          "   The bank doesn't know who this customer is or if they can be trusted",
-        ),
+          "   The bank doesn't know who this customer is or if they can be trusted"
+        )
       )
       console.log(colors.yellow("   Error received: Authentication required"))
       logger.log("✅ Bank REJECTED unauthenticated request")
@@ -170,18 +170,18 @@ export class BankClientAgent extends Agent {
 
     console.log(
       colors.yellow(
-        "📚 STEP 3: Identity Challenge - Client sends cryptographic proof to bank",
-      ),
+        "📚 STEP 3: Identity Challenge - Client sends cryptographic proof to bank"
+      )
     )
     console.log(
       colors.yellow(
-        "   Now the client creates a JWT signed with its private key, scoped to the bank's DID",
-      ),
+        "   Now the client creates a JWT signed with its private key, scoped to the bank's DID"
+      )
     )
     console.log(
       colors.yellow(
-        "   This cryptographically proves the client controls the private key for its DID",
-      ),
+        "   This cryptographically proves the client controls the private key for its DID"
+      )
     )
     console.log("")
     await waitForEnter("Press Enter to send identity verification challenge...")
@@ -189,7 +189,7 @@ export class BankClientAgent extends Agent {
     // Step 3: Send identity verification challenge
     const authSuccess = await this.performIdentityVerification(
       client,
-      serverDid,
+      serverDid
     )
     if (!authSuccess) {
       throw new Error("❌ Identity verification failed!")
@@ -198,18 +198,18 @@ export class BankClientAgent extends Agent {
     try {
       console.log(
         colors.yellow(
-          "📚 STEP 4: Authenticated Communication - Now both parties trust each other",
-        ),
+          "📚 STEP 4: Authenticated Communication - Now both parties trust each other"
+        )
       )
       console.log(
         colors.yellow(
-          "   Client can now send signed messages to access banking services",
-        ),
+          "   Client can now send signed messages to access banking services"
+        )
       )
       console.log(
         colors.yellow(
-          "   Bank verifies each message signature against the client's established identity",
-        ),
+          "   Bank verifies each message signature against the client's established identity"
+        )
       )
       console.log(colors.yellow("   This time the request should succeed!"))
       console.log("")
@@ -224,20 +224,20 @@ export class BankClientAgent extends Agent {
           parts: [
             {
               kind: "text",
-              text: "I would like to access my banking services. Please verify my identity.",
-            },
-          ],
+              text: "I would like to access my banking services. Please verify my identity."
+            }
+          ]
         },
         {
           did: this.did,
           jwtSigner: this.jwtSigner,
           alg: curveToJwtAlgorithm(this.keypair.curve),
-          expiresIn: 5 * 60,
-        },
+          expiresIn: 5 * 60
+        }
       )
 
       const response = await client.sendMessage({
-        message,
+        message
       })
 
       if (isRpcErrorResponse(response)) {
@@ -253,7 +253,7 @@ export class BankClientAgent extends Agent {
       if (!parseResult.success) {
         logger.log(
           "❌ Invalid bank response format:",
-          JSON.stringify(parseResult.issues),
+          JSON.stringify(parseResult.issues)
         )
         return
       }
@@ -268,24 +268,24 @@ export class BankClientAgent extends Agent {
 
       console.log("")
       console.log(
-        colors.yellow("📚 SUCCESS: Secure Banking Session Established!"),
+        colors.yellow("📚 SUCCESS: Secure Banking Session Established!")
       )
       console.log(
         colors.yellow(
-          "   ✓ Mutual authentication completed using cryptographic DIDs",
-        ),
+          "   ✓ Mutual authentication completed using cryptographic DIDs"
+        )
       )
       console.log(colors.yellow("   ✓ No shared secrets or passwords required"))
       console.log(
         colors.yellow(
-          "   ✓ Each message is cryptographically signed and verified",
-        ),
+          "   ✓ Each message is cryptographically signed and verified"
+        )
       )
       console.log("")
       await waitForEnter("Press Enter to complete the demo...")
 
       logger.log(
-        "🏦 Bank Client: Thank you! I appreciate the secure identity verification process.",
+        "🏦 Bank Client: Thank you! I appreciate the secure identity verification process."
       )
     } catch (error) {
       logger.log("❌ Error accessing banking services:", error as Error)
@@ -303,7 +303,7 @@ export class BankClientAgent extends Agent {
 
   private async performIdentityVerification(
     client: A2AClient,
-    serverDid: DidUri,
+    serverDid: DidUri
   ): Promise<boolean> {
     try {
       logger.log("🔐 Starting identity verification with bank teller...")
@@ -312,22 +312,22 @@ export class BankClientAgent extends Agent {
         "user",
         {
           recipient: serverDid,
-          vc: this.vc,
+          vc: this.vc
         },
         {
           did: this.did,
           jwtSigner: this.jwtSigner,
           alg: curveToJwtAlgorithm(this.keypair.curve),
-          expiresIn: 5 * 60,
-        },
+          expiresIn: 5 * 60
+        }
       )
 
       logger.log(
         "Sending identity verification challenge...\n",
-        colors.dim(JSON.stringify(message, null, 2)),
+        colors.dim(JSON.stringify(message, null, 2))
       )
       const authResponse = await client.sendMessage({
-        message,
+        message
       })
 
       if ("error" in authResponse) {
@@ -336,7 +336,7 @@ export class BankClientAgent extends Agent {
 
       if (authResponse.result.kind !== "message") {
         throw new Error(
-          "❌ Failed to send identity verification challenge: Did not receive message response",
+          "❌ Failed to send identity verification challenge: Did not receive message response"
         )
       }
 
@@ -347,13 +347,13 @@ export class BankClientAgent extends Agent {
           // Validate that this is intended for our DID
           did: this.did,
           // Validate that the bank teller is the counterparty
-          counterparty: serverDid,
-        },
+          counterparty: serverDid
+        }
       )
 
       await verifyParsedCredential(bankVc, {
         resolver: didResolverWithIssuer,
-        trustedIssuers: [issuerDid],
+        trustedIssuers: [issuerDid]
       })
 
       // Check that bank teller included our nonce
@@ -394,19 +394,19 @@ export class BankClientAgent extends Agent {
       logger.log("   DID Document ID:", colors.dim(didDocument.id))
       logger.log(
         "   Services:",
-        colors.dim(JSON.stringify(didDocument.service, null, 2)),
+        colors.dim(JSON.stringify(didDocument.service, null, 2))
       )
 
       // Look for AgentCard service in the DID document
       if (didDocument.service && didDocument.service.length > 0) {
         const agentCardService = didDocument.service.find(
-          (service) => service.type === "AgentCard",
+          (service) => service.type === "AgentCard"
         )
 
         if (!agentCardService) {
           logger.log("⚠️  No AgentCard service found in DID document")
           throw new Error(
-            "No AgentCard service found in bank teller DID document",
+            "No AgentCard service found in bank teller DID document"
           )
         }
 
@@ -414,7 +414,7 @@ export class BankClientAgent extends Agent {
         logger.log("   Service ID:", colors.dim(agentCardService.id))
         logger.log(
           "   Service Endpoint:",
-          colors.dim(JSON.stringify(agentCardService.serviceEndpoint, null, 2)),
+          colors.dim(JSON.stringify(agentCardService.serviceEndpoint, null, 2))
         )
 
         // Extract the A2A server URL from the service endpoint
@@ -424,17 +424,17 @@ export class BankClientAgent extends Agent {
 
         // We need to fetch the url from the agent card
         this.a2aServerUrl = await fetchUrlFromAgentCardUrl(
-          agentCardService.serviceEndpoint,
+          agentCardService.serviceEndpoint
         )
         logger.log(
           "✅ Discovered A2A server URL:",
-          colors.dim(this.a2aServerUrl),
+          colors.dim(this.a2aServerUrl)
         )
       }
     } catch (error) {
       logger.log(
         "❌ Failed to resolve bank teller DID document:",
-        error as Error,
+        error as Error
       )
       throw error // Don't continue if we can't resolve the DID document
     }
@@ -450,13 +450,13 @@ const agentCard: AgentCard = {
   defaultInputModes: ["text"],
   defaultOutputModes: ["text"],
   capabilities: { streaming: false },
-  skills: [],
+  skills: []
 }
 
 export async function getClientAgent() {
   return BankClientAgent.create({
     agentCard,
     curve: "Ed25519",
-    controller: "did:web:builder.ack.com",
+    controller: "did:web:builder.ack.com"
   })
 }

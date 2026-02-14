@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import type { JwtCredentialPayload, Verifiable } from "did-jwt-vc"
 
 type Extensible<T> = T & Record<string, any>

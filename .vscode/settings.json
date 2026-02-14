@@ -1,43 +1,15 @@
 {
-  "[css]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[javascript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[json]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[jsonc]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[markdown]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[mdx]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-  "[typescript]": {
-    "editor.defaultFormatter": "esbenp.prettier-vscode"
-  },
-
   "editor.codeActionsOnSave": {
-    "source.fixAll": "explicit"
+    "source.fixAll": "always"
   },
+  "editor.defaultFormatter": "oxc.oxc-vscode",
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
-
-  "eslint.useFlatConfig": true,
-
   "files.insertFinalNewline": true,
   "files.trimTrailingWhitespace": true,
-
+  "oxc.enable": true,
+  "oxc.fixKind": "safe_fix_or_suggestion",
+  "oxc.typeAware": true,
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "typescript.tsdk": "node_modules/typescript/lib",
-
-  "eslint.workingDirectories": [
-    {
-      "mode": "auto"
-    }
-  ]
+  "typescript.tsdk": "node_modules/typescript/lib"
 }
