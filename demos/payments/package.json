@@ -4,15 +4,15 @@
   "private": true,
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
-  "license": "MIT",
-  "author": {
-    "name": "Catena Labs",
-    "url": "https://catenalabs.com"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/agentcommercekit/ack.git",
     "directory": "demos/payments"
+  },
+  "license": "MIT",
+  "author": {
+    "name": "Catena Labs",
+    "url": "https://catenalabs.com"
   },
   "type": "module",
   "main": "./src/index.ts",
@@ -31,12 +31,8 @@
     "@repo/cli-tools": "workspace:*",
     "@solana-program/system": "^0.9.0",
     "@solana-program/token": "^0.6.0",
-    "@solana/addresses": "^4.0.0",
-    "@solana/keys": "^4.0.0",
     "@solana/kit": "^4.0.0",
     "agentcommercekit": "workspace:*",
-    "bs58": "^6.0.0",
-    "gill": "^0.12.0",
     "hono": "catalog:",
     "valibot": "catalog:",
     "viem": "catalog:"

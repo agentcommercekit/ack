@@ -27,16 +27,11 @@ export const publicClient = createPublicClient({
   transport: http(),
 })
 
-// Solana configuration for demo (devnet)
 export const solana = {
-  // CAIP-2 chain id for Solana devnet
   chainId: caip2ChainIds.solanaDevnet,
-  // Example RPC; users can override via environment if desired
   rpcUrl: process.env.SOLANA_RPC_URL ?? "https://api.devnet.solana.com",
-  // Example USDC devnet mint; replace if you prefer a different SPL mint
   usdcMint:
     process.env.SOLANA_USDC_MINT ??
     "4zMMC9srt5Ri5X14GAgXhaHii3GnPAEERYPJgZJDncDU",
-  // Commitment to use for verification
-  commitment: "confirmed" as const
+  commitment: "confirmed" as const,
 }

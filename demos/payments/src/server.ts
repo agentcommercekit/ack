@@ -1,63 +1,68 @@
-import { serve } from "@hono/node-server";
-import { logger } from "@repo/api-utils/middleware/logger";
-import { colors, errorMessage, log, successMessage } from "@repo/cli-tools";
+import { serve } from "@hono/node-server"
+import { logger } from "@repo/api-utils/middleware/logger"
+import { colors, errorMessage, log, successMessage } from "@repo/cli-tools"
 import {
   createSignedPaymentRequest,
   curveToJwtAlgorithm,
   getDidResolver,
   verifyPaymentReceipt,
   type PaymentRequestInit,
-} from "agentcommercekit";
-import { Hono, type Env, type TypedResponse } from "hono";
-import { env } from "hono/adapter";
-import { HTTPException } from "hono/http-exception";
-import { chainId, PAYMENT_SERVICE_URL, RECEIPT_SERVICE_URL } from "./constants";
-import { ensureSolanaKeys } from "./utils/ensure-private-keys";
-import { getKeypairInfo } from "./utils/keypair-info";
+} from "agentcommercekit"
+import { Hono, type Env, type TypedResponse } from "hono"
+import { env } from "hono/adapter"
+import { HTTPException } from "hono/http-exception"
+import {
+  chainId,
+  PAYMENT_SERVICE_URL,
+  RECEIPT_SERVICE_URL,
+  solana,
+} from "./constants"
+import { ensureSolanaKeys } from "./utils/ensure-private-keys"
+import { getKeypairInfo } from "./utils/keypair-info"
 
-const app = new Hono<Env>();
-app.use(logger());
+const app = new Hono<Env>()
+app.use(logger())
 
 /**
  * Simple hono error handler
  */
 app.onError((e, c) => {
   if (e instanceof HTTPException) {
-    return e.getResponse();
+    return e.getResponse()
   }
 
-  console.error(colors.red("Error in server:"), e);
-  return c.json({ error: e.message }, 500);
-});
+  console.error(colors.red("Error in server:"), e)
+  return c.json({ error: e.message }, 500)
+})
 
 /**
  * Simple endpoint which is protected by a 402 payment required response
  */
 app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
-  const serverIdentity = await getKeypairInfo(env(c).SERVER_PRIVATE_KEY_HEX);
-  const didResolver = getDidResolver();
+  const serverIdentity = await getKeypairInfo(env(c).SERVER_PRIVATE_KEY_HEX)
+  const didResolver = getDidResolver()
 
-  // Ensure Solana server keys are present
-  const solanaKeys = await ensureSolanaKeys(
+  const { publicKey: solanaServerPublicKey } = await ensureSolanaKeys(
     "SOLANA_SERVER_PUBLIC_KEY",
     "SOLANA_SERVER_SECRET_KEY_JSON",
-  );
-  const solanaServerPublicKey: string = solanaKeys.publicKey;
+  )
 
-  const { did: receiptIssuerDid } = await getKeypairInfo(env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX);
-  const trustedReceiptIssuers: string[] = [receiptIssuerDid];
+  const { did: receiptIssuerDid } = await getKeypairInfo(
+    env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX,
+  )
+  const trustedReceiptIssuers: string[] = [receiptIssuerDid]
 
-  const authorizationHeader = c.req.header("Authorization");
-  const receipt = authorizationHeader?.replace("Bearer ", "");
+  const authorizationHeader = c.req.header("Authorization")
+  const receipt = authorizationHeader?.replace("Bearer ", "")
 
-  log(colors.bold("\nServer: Processing request"));
-  log(colors.dim("Checking for receipt in Authorization header..."));
+  log(colors.bold("\nServer: Processing request"))
+  log(colors.dim("Checking for receipt in Authorization header..."))
 
   /**
    * Check for Receipt in the Authorization header
    */
   if (!receipt) {
-    log(colors.yellow("No receipt found, generating payment request..."));
+    log(colors.yellow("No receipt found, generating payment request..."))
 
     // Build a payment request with multiple options: USDC on Base Sepolia, Stripe, and Solana (devnet)
     const paymentRequestInit: PaymentRequestInit = {
@@ -91,54 +96,57 @@ app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
           decimals: 6,
           currency: "USDC",
           recipient: solanaServerPublicKey,
-          network: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1", // devnet
+          network: solana.chainId,
           receiptService: RECEIPT_SERVICE_URL,
         },
       ],
-    };
+    }
 
     // Generate the ACK-Pay Payment Request, which is a signed JWT detailing what needs to be paid.
-    const paymentRequestBody = await createSignedPaymentRequest(paymentRequestInit, {
-      issuer: serverIdentity.did,
-      signer: serverIdentity.jwtSigner,
-      algorithm: curveToJwtAlgorithm(serverIdentity.keypair.curve),
-    });
+    const paymentRequestBody = await createSignedPaymentRequest(
+      paymentRequestInit,
+      {
+        issuer: serverIdentity.did,
+        signer: serverIdentity.jwtSigner,
+        algorithm: curveToJwtAlgorithm(serverIdentity.keypair.curve),
+      },
+    )
 
     const res = new Response(JSON.stringify(paymentRequestBody), {
       status: 402,
       headers: {
         "Content-Type": "application/json",
       },
-    });
+    })
 
-    log(successMessage("Payment request generated"));
-    throw new HTTPException(402, { res });
+    log(successMessage("Payment request generated"))
+    throw new HTTPException(402, { res })
   }
 
   try {
-    log(colors.dim("Verifying receipt credential..."));
+    log(colors.dim("Verifying receipt credential..."))
     // Verify the presented ACK Receipt (VC) to ensure it's authentic, trusted, and matches the payment requirements.
     await verifyPaymentReceipt(receipt, {
       resolver: didResolver,
       trustedReceiptIssuers,
       paymentRequestIssuer: serverIdentity.did,
       verifyPaymentRequestTokenJwt: true,
-    });
+    })
   } catch (e) {
-    console.log(errorMessage("Error verifying receipt"), e);
+    console.log(errorMessage("Error verifying receipt"), e)
 
     throw new HTTPException(400, {
       message: "Invalid receipt",
-    });
+    })
   }
 
-  log(successMessage("Receipt verified successfully"));
+  log(successMessage("Receipt verified successfully"))
   return c.json({
     message: "Access granted",
-  });
-});
+  })
+})
 
 serve({
   port: 4567,
   fetch: app.fetch,
-});
+})

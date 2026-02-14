@@ -1,9 +1,8 @@
-// cspell:ignore lamports
-import { waitForEnter } from "@repo/cli-tools";
-import { createSolanaRpc, address as solAddress } from "@solana/kit";
-import { createPublicClient, erc20Abi, http, type Chain } from "viem";
-import { formatUnits } from "viem/utils";
-import { solana } from "@/constants";
+import { solana } from "@/constants"
+import { colors, log, waitForEnter } from "@repo/cli-tools"
+import { createSolanaRpc, address as solAddress } from "@solana/kit"
+import { createPublicClient, erc20Abi, http, type Chain } from "viem"
+import { formatUnits } from "viem/utils"
 
 /**
  * Ensure the client wallet has a non-zero balance of USDC and ETH
@@ -13,86 +12,77 @@ export async function ensureNonZeroBalances(
   address: `0x${string}`,
   usdcAddress: `0x${string}`,
 ) {
-  // 2. Make sure the client wallet has been funded
-  let balanceUsdc = await getErc20Balance(chain, address, usdcAddress);
-  let balanceEth = await getEthBalance(chain, address);
+  let balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
+  let balanceEth = await getEthBalance(chain, address)
 
   while (balanceUsdc.value === BigInt(0)) {
-    console.log("We need to fund this address with testnet USDC and testnet ETH:", address);
-
-    console.log(
+    log(
+      "We need to fund this address with testnet USDC and testnet ETH:",
+      address,
+    )
+    log(
       "You can get testnet tokens from the following faucets:",
       "ETH: https://docs.base.org/chain/network-faucets",
       "USDC: https://faucet.circle.com/",
-    );
-    console.log("Once funded, press enter to check balance again");
-    await waitForEnter();
-    console.log("Attempting to fetch USDC balance...");
-    balanceUsdc = await getErc20Balance(chain, address, usdcAddress);
-    console.log("USDC balance fetched:", balanceUsdc);
-    console.log("Attempting to fetch ETH balance...");
-    balanceEth = await getEthBalance(chain, address);
-    console.log("ETH balance fetched:", balanceEth);
+    )
+    log("Once funded, press enter to check balance again")
+    await waitForEnter()
+    log(colors.dim("Fetching balances..."))
+    balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
+    balanceEth = await getEthBalance(chain, address)
   }
 
-  console.log("Client wallet balances:");
-  console.log("  USDC: ", formatUnits(balanceUsdc.value, balanceUsdc.decimals));
-  console.log("   ETH: ", formatUnits(balanceEth.value, balanceUsdc.decimals));
+  log("Client wallet balances:")
+  log("  USDC: ", formatUnits(balanceUsdc.value, balanceUsdc.decimals))
+  log("   ETH: ", formatUnits(balanceEth.value, balanceEth.decimals))
 
-  return { balanceUsdc, balanceEth };
+  return { balanceUsdc, balanceEth }
 }
 
-export async function ensureSolanaSolBalance(address: string) {
-  const rpc = createSolanaRpc(solana.rpcUrl);
-  const pubkey = solAddress(address);
-  let lamports = 0n;
-  try {
-    ({ value: lamports } = await rpc.getBalance(pubkey, { commitment: solana.commitment }).send());
-  } catch (error) {
-    console.error("Failed to fetch balance:", error);
-    console.log("Will retry after next attempt...");
-    lamports = 0n;
-  }
-  while (lamports === BigInt(0)) {
-    console.log("We need to fund this Solana address with devnet SOL:", address);
-    console.log("Faucet: https://faucet.solana.com/");
-    const prefilled = `https://faucet.solana.com/?walletAddress=${encodeURIComponent(
-      address,
-    )}&amount=0.5`;
-    console.log("Prefilled faucet (0.5 SOL):", prefilled);
-    console.log("Once funded, press enter to check balance again");
-    await waitForEnter();
-    console.log("Attempting to fetch SOL balance...  " + pubkey);
+export async function ensureSolanaSolBalance(address: string): Promise<bigint> {
+  const rpc = createSolanaRpc(solana.rpcUrl)
+  const pubkey = solAddress(address)
+
+  async function fetchBalance(): Promise<bigint> {
     try {
-      ({ value: lamports } = await rpc
+      const balance = await rpc
         .getBalance(pubkey, { commitment: solana.commitment })
-        .send());
-    } catch (error) {
-      console.error("Failed to fetch balance:", error);
-      console.log("Will retry after next attempt...");
-      continue;
+        .send()
+      return balance.value
+    } catch {
+      return 0n
     }
-    console.log("SOL balance fetched (lamports):", lamports);
   }
 
-  console.log("Client Solana SOL balance (lamports):", lamports);
-  return lamports;
+  let lamports = await fetchBalance()
+
+  while (lamports === 0n) {
+    log("We need to fund this Solana address with devnet SOL:", address)
+    log("Faucet: https://faucet.solana.com/")
+    log("Once funded, press enter to check balance again")
+    await waitForEnter()
+    log(colors.dim("Fetching SOL balance..."))
+    lamports = await fetchBalance()
+  }
+
+  log(colors.dim(`SOL balance (lamports): ${lamports}`))
+  return lamports
 }
 
 async function getEthBalance(chain: Chain, address: `0x${string}`) {
   const publicClient = createPublicClient({
     chain,
     transport: http(),
-  });
+  })
 
   const balance = await publicClient.getBalance({
     address,
-  });
+  })
 
   return {
     value: balance,
     decimals: 18,
-  };
+  }
 }
 
 async function getErc20Balance(
@@ -103,9 +93,8 @@ async function getErc20Balance(
   const publicClient = createPublicClient({
     chain,
     transport: http(),
-  });
+  })
 
-  // eslint-disable-next-line @cspell/spellchecker
   const [balance, decimals] = await publicClient.multicall({
     contracts: [
       {
@@ -120,14 +109,14 @@ async function getErc20Balance(
         functionName: "decimals",
       },
     ],
-  });
+  })
 
   if (balance.status !== "success" || decimals.status !== "success") {
-    throw new Error("Failed to fetch token data");
+    throw new Error("Failed to fetch token data")
   }
 
   return {
     value: balance.result,
     decimals: decimals.result,
-  };
+  }
 }
