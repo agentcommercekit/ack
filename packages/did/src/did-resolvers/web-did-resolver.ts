@@ -105,7 +105,18 @@ function buildDidPath(did: string, docPath: string = DEFAULT_DOC_PATH): string {
   }
 
   const parts = did.replace("did:web:", "").split(":")
-  return parts.map(decodeURIComponent).join("/") + docPath
+  const decodedParts = parts.map(decodeURIComponent)
+  const [host, ...path] = decodedParts
+
+  if (!host) {
+    throw new Error("Invalid did:web DID")
+  }
+
+  if (path.length === 0) {
+    return `${host}${docPath}`
+  }
+
+  return `${host}/${path.join("/")}/did.json`
 }
 
 /**
