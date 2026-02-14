@@ -93,6 +93,58 @@ describe("web-did-resolver", () => {
       )
     })
 
+    it("resolves path-based did:web documents at /:path/did.json", async () => {
+      const pathDidDocument = {
+        ...mockDidDocument,
+        id: "did:web:example.com:issuers:v1",
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(pathDidDocument),
+      })
+
+      const did = "did:web:example.com:issuers:v1"
+      const resolver = getResolver()
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com:issuers:v1",
+      }
+      await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://example.com/issuers/v1/did.json",
+        { mode: "cors" },
+      )
+    })
+
+    it("allows http for specified hosts with path-based did:web documents", async () => {
+      const pathDidDocument = {
+        ...mockDidDocument,
+        id: "did:web:localhost%3A8787:issuers:v1",
+      }
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(pathDidDocument),
+      })
+
+      const did = "did:web:localhost%3A8787:issuers:v1"
+      const resolver = getResolver({ allowedHttpHosts: ["localhost"] })
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "localhost%3A8787:issuers:v1",
+      }
+      await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "http://localhost:8787/issuers/v1/did.json",
+        { mode: "cors" },
+      )
+    })
+
     it("handles fetch errors", async () => {
       mockFetch.mockRejectedValueOnce(new Error("Network error"))
 
