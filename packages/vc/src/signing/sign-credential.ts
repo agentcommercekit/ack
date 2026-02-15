@@ -1,5 +1,6 @@
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import { createVerifiableCredentialJwt } from "did-jwt-vc"
+
 import type { W3CCredential } from "../types"
 import type { Signer } from "./types"
 

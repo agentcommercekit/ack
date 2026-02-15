@@ -4,6 +4,7 @@ import { logger } from "@repo/api-utils/middleware/logger"
 import { colors } from "@repo/cli-tools"
 import { Hono } from "hono"
 import * as v from "valibot"
+
 import type { Agent } from "./agent"
 
 type ServeAgentConfig = {

@@ -1,10 +1,13 @@
 import type { JwtString } from "@agentcommercekit/jwt"
+
 import * as v from "valibot"
+
+import type { PaymentRequest, PaymentRequestInit } from "./payment-request"
+
 import {
   createPaymentRequestToken,
   type PaymentRequestTokenOptions,
 } from "./create-payment-request-token"
-import type { PaymentRequest, PaymentRequestInit } from "./payment-request"
 import { paymentRequestSchema } from "./schemas/valibot"
 
 /**

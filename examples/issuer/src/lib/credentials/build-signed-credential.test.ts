@@ -1,4 +1,3 @@
-import type { DatabaseCredential } from "@/db/schema"
 import {
   createCredential,
   createDidWebDocumentFromKeypair,
@@ -8,7 +7,11 @@ import {
   isJwtString,
 } from "agentcommercekit"
 import { describe, expect, it } from "vitest"
+
+import type { DatabaseCredential } from "@/db/schema"
+
 import type { Issuer } from "../types"
+
 import { buildSignedCredential } from "./build-signed-credential"
 
 describe("buildSignedCredential", async () => {

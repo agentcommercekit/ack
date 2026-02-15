@@ -1,4 +1,5 @@
 import { colors, waitForEnter } from "@repo/cli-tools"
+
 import { getClientAgent } from "./bank-client-agent"
 import { startTellerServer } from "./bank-teller-agent"
 

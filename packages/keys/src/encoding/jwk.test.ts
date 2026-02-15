@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+
 import { bytesToBase64url, isBase64url } from "./base64"
 import {
   isPrivateKeyJwk,

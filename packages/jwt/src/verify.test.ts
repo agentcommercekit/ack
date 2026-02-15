@@ -1,6 +1,7 @@
 import { generateKeypair } from "@agentcommercekit/keys"
 import { verifyJWT, type JWTVerified } from "did-jwt"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+
 import { createJwt } from "./create-jwt"
 import { createJwtSigner } from "./signer"
 import { verifyJwt } from "./verify"

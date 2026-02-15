@@ -1,10 +1,12 @@
 import type { Resolvable } from "@agentcommercekit/did"
+
 import {
   verifyJwt,
   type JwtString,
   type JwtVerified,
 } from "@agentcommercekit/jwt"
 import * as v from "valibot"
+
 import { unauthorized } from "./exceptions"
 
 export type ParsedPayload<T> = {

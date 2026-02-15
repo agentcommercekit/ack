@@ -1,3 +1,5 @@
+import type { KeyCurve } from "./key-curves"
+
 import * as ed25519 from "./curves/ed25519"
 import * as secp256k1 from "./curves/secp256k1"
 import * as secp256r1 from "./curves/secp256r1"
@@ -8,7 +10,6 @@ import {
   publicKeyJwkToBytes,
   type PrivateKeyJwk,
 } from "./encoding/jwk"
-import type { KeyCurve } from "./key-curves"
 
 export interface Keypair {
   publicKey: Uint8Array

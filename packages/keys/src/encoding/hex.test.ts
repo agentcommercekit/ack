@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+
 import { bytesToHexString, hexStringToBytes, isHexString } from "./hex"
 
 describe("hex encoding and decoding", () => {

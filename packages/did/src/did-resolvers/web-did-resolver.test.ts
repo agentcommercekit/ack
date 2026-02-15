@@ -1,5 +1,7 @@
 import type { ParsedDID } from "did-resolver"
+
 import { beforeEach, describe, expect, it, vi } from "vitest"
+
 import { getResolver } from "./web-did-resolver"
 
 describe("web-did-resolver", () => {

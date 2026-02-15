@@ -17,6 +17,7 @@ import {
   verifyA2ASignedMessage,
 } from "agentcommercekit/a2a"
 import { v4 } from "uuid"
+
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { startAgentServer } from "./utils/server-utils"

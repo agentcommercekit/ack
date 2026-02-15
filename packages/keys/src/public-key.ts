@@ -1,3 +1,6 @@
+import type { KeyCurve } from "./key-curves"
+import type { Keypair } from "./keypair"
+
 import * as ed25519 from "./curves/ed25519"
 import * as secp256k1 from "./curves/secp256k1"
 import * as secp256r1 from "./curves/secp256r1"
@@ -5,8 +8,6 @@ import { bytesToBase58 } from "./encoding/base58"
 import { bytesToHexString } from "./encoding/hex"
 import { publicKeyBytesToJwk, type PublicKeyJwk } from "./encoding/jwk"
 import { bytesToMultibase } from "./encoding/multibase"
-import type { KeyCurve } from "./key-curves"
-import type { Keypair } from "./keypair"
 
 /**
  * Public key format types

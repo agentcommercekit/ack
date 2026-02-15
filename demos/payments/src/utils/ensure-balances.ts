@@ -1,8 +1,9 @@
-import { solana } from "@/constants"
 import { colors, log, waitForEnter } from "@repo/cli-tools"
 import { createSolanaRpc, address as solAddress } from "@solana/kit"
 import { createPublicClient, erc20Abi, http, type Chain } from "viem"
 import { formatUnits } from "viem/utils"
+
+import { solana } from "@/constants"
 
 /**
  * Ensure the client wallet has a non-zero balance of USDC and ETH

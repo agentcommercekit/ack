@@ -6,6 +6,7 @@ import {
   type W3CCredential,
 } from "@agentcommercekit/vc"
 import * as v from "valibot"
+
 import { paymentReceiptClaimSchema } from "./schemas/valibot"
 
 export interface PaymentReceiptCredential extends W3CCredential {

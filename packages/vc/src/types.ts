@@ -1,6 +1,6 @@
 import type { JwtCredentialPayload, Verifiable } from "did-jwt-vc"
 
-type Extensible<T> = T & Record<string, any>
+type Extensible<T> = T & Record<string, unknown>
 
 export interface CredentialStatus {
   id: string
@@ -17,8 +17,8 @@ type W3CCredential<T = unknown> = {
   credentialSubject: Extensible<{ id?: string } & T>
   credentialStatus?: CredentialStatus
 
-  evidence?: any
-  termsOfUse?: any
+  evidence?: unknown
+  termsOfUse?: unknown
 }
 
 type W3CPresentation = {

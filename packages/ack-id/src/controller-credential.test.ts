@@ -1,5 +1,6 @@
 import { createDidWebUri } from "@agentcommercekit/did"
 import { beforeAll, describe, expect, it, vi } from "vitest"
+
 import { createControllerCredential } from "./controller-credential"
 
 describe("createControllerCredential", () => {

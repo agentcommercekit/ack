@@ -13,6 +13,7 @@ import {
 import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
+
 import { validatePayload } from "./validate-payload"
 
 const testBodySchema = v.object({

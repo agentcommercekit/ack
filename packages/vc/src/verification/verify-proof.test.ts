@@ -1,6 +1,8 @@
 import type { Resolvable } from "@agentcommercekit/did"
+
 import { verifyCredential, type VerifiedCredential } from "did-jwt-vc"
 import { describe, expect, it, vi } from "vitest"
+
 import { InvalidProofError, UnsupportedProofTypeError } from "./errors"
 import { verifyProof } from "./verify-proof"
 

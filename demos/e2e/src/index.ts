@@ -15,6 +15,7 @@ import {
   type Keypair,
   type PaymentRequest,
 } from "agentcommercekit"
+
 import { Agent } from "./agent"
 import { CredentialIssuer } from "./credential-issuer"
 import { CredentialVerifier } from "./credential-verifier"

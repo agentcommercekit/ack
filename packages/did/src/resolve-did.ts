@@ -1,4 +1,7 @@
 import type { Resolvable } from "did-resolver"
+
+import type { DidUriWithDocument } from "./types"
+
 import { isDidUri } from "./did-uri"
 import {
   DidDocumentNotFoundError,
@@ -6,7 +9,6 @@ import {
   InvalidDidUriError,
   UnsupportedDidMethodError,
 } from "./errors"
-import type { DidUriWithDocument } from "./types"
 
 interface DidUriWithControlledDidDocument extends DidUriWithDocument {
   controller: DidUriWithDocument

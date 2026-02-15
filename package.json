@@ -16,7 +16,7 @@
   "type": "module",
   "scripts": {
     "build": "turbo build",
-    "check": "turbo check",
+    "check": "turbo build && turbo check",
     "check:format": "oxfmt --check .",
     "check:packages": "pnpm dlx @manypkg/cli check",
     "check:types": "turbo check:types",
@@ -28,7 +28,7 @@
     "demo:skyfire-kya": "pnpm --filter ./demos/skyfire-kya demo",
     "dev:docs": "pnpm --filter ./docs docs",
     "dev:examples": "turbo dev",
-    "fix": "turbo fix",
+    "fix": "turbo build && turbo fix",
     "format": "oxfmt --write .",
     "lint": "oxlint --type-aware",
     "lint:fix": "pnpm run lint -- --fix --fix-suggestions",

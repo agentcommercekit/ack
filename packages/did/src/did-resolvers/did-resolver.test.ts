@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from "vitest"
+
 import { createDidDocument } from "../create-did-document"
 import { DidResolver } from "./did-resolver"
 

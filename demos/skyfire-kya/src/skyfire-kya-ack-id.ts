@@ -8,6 +8,7 @@ import {
   type W3CCredential,
 } from "agentcommercekit"
 import * as jose from "jose"
+
 import type { SkyfireKyaJwtPayload } from "./kya-token"
 
 export interface SkyfireKyaCredentialSubject {

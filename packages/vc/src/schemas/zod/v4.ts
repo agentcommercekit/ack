@@ -1,4 +1,5 @@
 import * as z from "zod/v4"
+
 import type { W3CCredential } from "../../types"
 
 export const credentialSchema = z

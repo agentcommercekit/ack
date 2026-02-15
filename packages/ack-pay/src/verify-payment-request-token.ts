@@ -1,8 +1,11 @@
 import type { Resolvable } from "@agentcommercekit/did"
+
 import { verifyJwt, type JwtVerified } from "@agentcommercekit/jwt"
 import * as v from "valibot"
-import { InvalidPaymentRequestTokenError } from "./errors"
+
 import type { PaymentRequest } from "./payment-request"
+
+import { InvalidPaymentRequestTokenError } from "./errors"
 import { paymentRequestSchema } from "./schemas/valibot"
 
 interface ValidatePaymentRequestTokenOptions {

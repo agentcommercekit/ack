@@ -72,7 +72,9 @@ export function multibaseToBytes(multibase: string): Uint8Array {
 export function getMultibaseEncoding(
   multibase: string,
 ): MultibaseEncoding | undefined {
-  if (multibase.length === 0) return undefined
+  if (multibase.length === 0) {
+    return undefined
+  }
 
   const prefix = multibase[0]
   for (const [encoding, encodingPrefix] of Object.entries(MULTIBASE_PREFIX)) {

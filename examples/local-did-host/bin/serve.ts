@@ -1,7 +1,8 @@
+import { serve } from "@hono/node-server"
+
 import app from "@/index"
 import { buildUrl } from "@/lib/build-url"
 import { getIdentityDid } from "@/lib/identity"
-import { serve } from "@hono/node-server"
 
 serve(
   {

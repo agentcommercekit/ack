@@ -9,6 +9,7 @@ import {
 import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import { tool } from "ai"
 import * as v from "valibot"
+
 import type { CredentialVerifier } from "./credential-verifier"
 
 const challengeResponseSchema = v.object({

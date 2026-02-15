@@ -34,7 +34,7 @@ export const caip2ChainIds = {
   arbitrumMainnet: "eip155:42161",
   arbitrumSepolia: "eip155:421614",
   solanaMainnet: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
-  solanaDevnet: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"
+  solanaDevnet: "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
 } as const
 
 export function caip2Parts(caip: Caip2ChainId): Caip2ChainIdParts {

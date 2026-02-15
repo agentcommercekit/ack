@@ -1,10 +1,12 @@
 import { BitBuffer } from "bit-buffers"
-import { isStatusListCredential } from "../revocation/is-status-list-credential"
+
 import type {
   BitstringStatusListCredential,
   Revocable,
 } from "../revocation/types"
 import type { W3CCredential } from "../types"
+
+import { isStatusListCredential } from "../revocation/is-status-list-credential"
 
 /**
  * Check if a credential is revocable

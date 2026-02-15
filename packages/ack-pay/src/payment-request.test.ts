@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+
 import { isPaymentRequest, type PaymentRequestInit } from "./payment-request"
 
 describe("isPaymentRequest", () => {

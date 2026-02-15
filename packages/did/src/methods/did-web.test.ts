@@ -5,6 +5,7 @@ import {
   publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
+
 import { createDidWebDocument, createDidWebUri } from "./did-web"
 
 describe("createDidWeb", () => {

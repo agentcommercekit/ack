@@ -4,6 +4,7 @@ import { generateKeypair } from "@agentcommercekit/keys"
 import { InvalidCredentialSubjectError } from "@agentcommercekit/vc"
 import * as v from "valibot"
 import { describe, expect, it } from "vitest"
+
 import { createPaymentRequestToken } from "./create-payment-request-token"
 import { getReceiptClaimVerifier } from "./receipt-claim-verifier"
 import {

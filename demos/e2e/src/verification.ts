@@ -10,6 +10,7 @@ import {
   type DidResolver,
   type JwtString,
 } from "agentcommercekit"
+
 import type { CredentialVerifier } from "./credential-verifier"
 
 /**

@@ -1,6 +1,8 @@
-import { issuer } from "@/middleware/issuer"
 import type { DidDocument } from "agentcommercekit"
+
 import { Hono, type Env, type TypedResponse } from "hono"
+
+import { issuer } from "@/middleware/issuer"
 
 const app = new Hono<Env>()
 

@@ -9,6 +9,7 @@ import {
   type JwtSigner,
   type Keypair,
 } from "agentcommercekit"
+
 import { publicKeyToAddress } from "./utils/evm-address"
 
 interface ConstructorParams {

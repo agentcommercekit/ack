@@ -1,6 +1,6 @@
+import { errorMessage, successMessage } from "@repo/cli-tools"
 import fs from "node:fs/promises"
 import path from "node:path"
-import { errorMessage, successMessage } from "@repo/cli-tools"
 
 // Helper function to update .env file
 export async function updateEnvFile(

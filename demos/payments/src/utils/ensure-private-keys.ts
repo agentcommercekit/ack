@@ -1,6 +1,8 @@
-import { envFilePath } from "@/constants"
 import { colors, log, updateEnvFile } from "@repo/cli-tools"
 import { bytesToBase58, generateKeypair } from "agentcommercekit"
+
+import { envFilePath } from "@/constants"
+
 import { generatePrivateKeyHex } from "./keypair-info"
 
 export async function ensurePrivateKey(name: string): Promise<string> {

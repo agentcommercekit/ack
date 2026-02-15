@@ -5,6 +5,7 @@ import {
   type JWTPayload,
 } from "did-jwt"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+
 import { createJwt } from "./create-jwt"
 import { createJwtSigner } from "./signer"
 

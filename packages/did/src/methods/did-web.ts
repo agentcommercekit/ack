@@ -1,11 +1,12 @@
+import type { DidUri } from "../did-uri"
+import type { DidUriWithDocument } from "../types"
+
 import {
   createDidDocument,
   createDidDocumentFromKeypair,
   type CreateDidDocumentFromKeypairOptions,
   type CreateDidDocumentOptions,
 } from "../create-did-document"
-import type { DidUri } from "../did-uri"
-import type { DidUriWithDocument } from "../types"
 
 /**
  * The type of a local Did

@@ -28,6 +28,7 @@ import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 import { erc20Abi, isAddressEqual } from "viem"
 import { parseEventLogs } from "viem/utils"
+
 import { chainId, publicClient, solana, usdcAddress } from "./constants"
 import { asAddress } from "./utils/as-address"
 import { getKeypairInfo } from "./utils/keypair-info"
@@ -274,7 +275,9 @@ function extractSignerPubkeys(tx: NonNullable<SolanaTransaction>): Set<string> {
     if (key.signer) {
       const pub =
         typeof key.pubkey === "string" ? key.pubkey : key.pubkey.toBase58()
-      if (pub) signers.add(pub)
+      if (pub) {
+        signers.add(pub)
+      }
     }
   }
   return signers
@@ -287,9 +290,15 @@ type TokenBalance = {
 }
 
 function toBigInt(value: unknown): bigint {
-  if (typeof value === "string") return BigInt(value)
-  if (typeof value === "number") return BigInt(value)
-  if (typeof value === "bigint") return value
+  if (typeof value === "string") {
+    return BigInt(value)
+  }
+  if (typeof value === "number") {
+    return BigInt(value)
+  }
+  if (typeof value === "bigint") {
+    return value
+  }
   return 0n
 }
 
@@ -312,7 +321,9 @@ async function verifySolanaPayment(
 
   for (let i = 0; i < maxAttempts; i++) {
     tx = await fetchTransaction(rpc, signature)
-    if (tx && !tx.meta?.err) break
+    if (tx && !tx.meta?.err) {
+      break
+    }
     await new Promise((r) => setTimeout(r, delayMs))
   }
   if (!tx || tx.meta?.err) {

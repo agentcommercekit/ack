@@ -2,6 +2,7 @@
  * A `did:pkh` resolver for use with `did-resolver`
  */
 import type { DIDResolutionResult, DIDResolver } from "did-resolver"
+
 import {
   createDidPkhDocumentFromDidPkhUri,
   isDidPkhUri,

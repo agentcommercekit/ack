@@ -1,4 +1,3 @@
-import { chain, usdcAddress } from "@/constants"
 import {
   createWalletClient,
   encodeFunctionData,
@@ -7,6 +6,8 @@ import {
   type Account,
   type Address,
 } from "viem"
+
+import { chain, usdcAddress } from "@/constants"
 
 /**
  * Transfer USDC to the recipient

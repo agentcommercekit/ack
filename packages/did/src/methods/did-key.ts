@@ -4,6 +4,7 @@ import {
 } from "@agentcommercekit/keys"
 import { bytesToMultibase } from "@agentcommercekit/keys/encoding"
 import * as varint from "varint"
+
 import type { DidUri } from "../did-uri"
 
 /**

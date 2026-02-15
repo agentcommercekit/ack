@@ -10,6 +10,7 @@ import {
   InvalidCredentialSubjectError,
 } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
+
 import { getControllerClaimVerifier } from "./controller-claim-verifier"
 
 async function setup() {

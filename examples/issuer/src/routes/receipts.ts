@@ -1,14 +1,4 @@
 import {
-  createCredential as createDatabaseCredential,
-  getCredential,
-  revokeCredential,
-} from "@/db/queries/credentials"
-import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
-import type { CredentialResponse } from "@/lib/types"
-import { database } from "@/middleware/database"
-import { didResolver } from "@/middleware/did-resolver"
-import { issuer } from "@/middleware/issuer"
-import {
   apiSuccessResponse,
   type ApiResponse,
 } from "@repo/api-utils/api-response"
@@ -29,6 +19,18 @@ import { didUriSchema } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
 import * as v from "valibot"
+
+import type { CredentialResponse } from "@/lib/types"
+
+import {
+  createCredential as createDatabaseCredential,
+  getCredential,
+  revokeCredential,
+} from "@/db/queries/credentials"
+import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
+import { database } from "@/middleware/database"
+import { didResolver } from "@/middleware/did-resolver"
+import { issuer } from "@/middleware/issuer"
 
 const app = new Hono<Env>()
 
@@ -82,7 +84,7 @@ async function verifyPayment(
  *   credential: <Verifiable<W3CCredential>>,
  *   jwt: JWTString
  * }
- * @auth Request must be signed by the wallet DID that made the payment
+ * Auth: Request must be signed by the wallet DID that made the payment
  */
 app.post(
   "/",
@@ -196,7 +198,7 @@ const deleteBodySchema = v.object({
  * ```
  *
  * @returns Success response with null data
- * @auth Request must be signed by the original Payment Request issuer
+ * Auth: Request must be signed by the original Payment Request issuer
  */
 app.delete(
   "/",
