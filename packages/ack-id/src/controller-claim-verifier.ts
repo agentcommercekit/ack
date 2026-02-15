@@ -11,6 +11,7 @@ import {
   type W3CCredential,
 } from "@agentcommercekit/vc"
 import * as v from "valibot"
+
 import { controllerClaimSchema } from "./schemas/valibot"
 
 export interface ControllerCredential extends W3CCredential {

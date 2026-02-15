@@ -1,5 +1,6 @@
-import { getDb, type DatabaseClient } from "@/db/get-db"
 import type { Env, MiddlewareHandler } from "hono"
+
+import { getDb, type DatabaseClient } from "@/db/get-db"
 
 declare module "hono" {
   interface ContextVariableMap {

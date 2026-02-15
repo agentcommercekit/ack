@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+
 import {
   base58btcToBytes,
   base58ToBytes,

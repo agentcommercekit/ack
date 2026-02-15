@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+
 import { isBase58 } from "./encoding/base58"
 import { base64urlToBytes, isBase64url } from "./encoding/base64"
 import { isHexString } from "./encoding/hex"

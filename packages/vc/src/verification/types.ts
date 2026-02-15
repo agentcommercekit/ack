@@ -1,4 +1,5 @@
 import type { Resolvable } from "@agentcommercekit/did"
+
 import type { CredentialSubject } from "../types"
 
 export type ClaimVerifier = {

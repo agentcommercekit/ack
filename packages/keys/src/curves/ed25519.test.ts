@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+
 import { base58ToBytes } from "../encoding/base58"
 import { generateKeypair, isValidPublicKey } from "./ed25519"
 

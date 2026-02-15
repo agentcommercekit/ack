@@ -1,3 +1,5 @@
+import { eq } from "drizzle-orm"
+
 import {
   credentialsTable,
   statusListsTable,
@@ -5,8 +7,9 @@ import {
   type NewDatabaseCredential,
 } from "@/db/schema"
 import { getStatusListPosition } from "@/db/utils/get-status-list-position"
-import { eq } from "drizzle-orm"
+
 import type { DatabaseClient } from "../get-db"
+
 import { maybeCreateStatusList } from "./status-lists"
 
 export async function createCredential(

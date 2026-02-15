@@ -47,9 +47,7 @@
       "indexes": {
         "credential_type_idx": {
           "name": "credential_type_idx",
-          "columns": [
-            "credential_type"
-          ],
+          "columns": ["credential_type"],
           "isUnique": false
         }
       },

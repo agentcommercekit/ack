@@ -4,15 +4,15 @@
   "private": true,
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agentcommercekit/ack.git",
-    "directory": "demos/payments"
-  },
   "license": "MIT",
   "author": {
     "name": "Catena Labs",
     "url": "https://catenalabs.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "demos/payments"
   },
   "type": "module",
   "main": "./src/index.ts",
@@ -20,8 +20,6 @@
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "demo": "dotenv -e .env -- tsx ./src/index.ts",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "setup": "./bin/setup",
     "test": "vitest"
   },
@@ -38,7 +36,6 @@
     "viem": "catalog:"
   },
   "devDependencies": {
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*"
   }
 }

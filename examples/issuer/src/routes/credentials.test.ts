@@ -1,10 +1,3 @@
-import type { DatabaseClient } from "@/db/get-db"
-import { getCredential } from "@/db/queries/credentials"
-import type { DatabaseCredential } from "@/db/schema"
-import {
-  createDidWebWithSigner,
-  type DidWithSigner,
-} from "@/test-helpers/did-web-with-signer"
 import {
   bytesToHexString,
   createControllerCredential,
@@ -15,6 +8,16 @@ import {
 import { credentialSchema } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
+
+import type { DatabaseClient } from "@/db/get-db"
+import type { DatabaseCredential } from "@/db/schema"
+
+import { getCredential } from "@/db/queries/credentials"
+import {
+  createDidWebWithSigner,
+  type DidWithSigner,
+} from "@/test-helpers/did-web-with-signer"
+
 import app from ".."
 
 // Mock the DID resolver

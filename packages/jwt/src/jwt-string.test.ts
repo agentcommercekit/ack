@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+
 import { isJwtString } from "./jwt-string"
 
 describe("isJwtString", () => {

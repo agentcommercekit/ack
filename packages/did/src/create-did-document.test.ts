@@ -11,6 +11,7 @@ import {
   publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
 import { beforeEach, describe, expect, test } from "vitest"
+
 import {
   createDidDocument,
   createDidDocumentFromKeypair,

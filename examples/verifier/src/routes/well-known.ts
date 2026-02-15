@@ -1,6 +1,8 @@
-import { verifier } from "@/middleware/verifier"
 import type { DidDocument } from "agentcommercekit"
+
 import { Hono, type Env, type TypedResponse } from "hono"
+
+import { verifier } from "@/middleware/verifier"
 
 const app = new Hono<Env>()
 

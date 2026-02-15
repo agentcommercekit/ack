@@ -1,8 +1,3 @@
-import { getStatusList } from "@/db/queries/status-lists"
-import { compressBitString } from "@/lib/utils/compress-bit-string"
-import { database } from "@/middleware/database"
-import { didResolver } from "@/middleware/did-resolver"
-import { issuer } from "@/middleware/issuer"
 import {
   apiSuccessResponse,
   type ApiResponse,
@@ -17,6 +12,12 @@ import {
 } from "agentcommercekit"
 import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
+
+import { getStatusList } from "@/db/queries/status-lists"
+import { compressBitString } from "@/lib/utils/compress-bit-string"
+import { database } from "@/middleware/database"
+import { didResolver } from "@/middleware/did-resolver"
+import { issuer } from "@/middleware/issuer"
 
 const app = new Hono<Env>()
 

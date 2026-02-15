@@ -4,20 +4,20 @@
   "private": true,
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agentcommercekit/ack.git"
-  },
   "license": "MIT",
   "author": {
     "name": "Catena Labs",
     "url": "https://catenalabs.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git"
+  },
   "type": "module",
   "scripts": {
     "build": "turbo build",
-    "check": "turbo check",
-    "check:format": "prettier --check .",
+    "check": "turbo build && turbo check",
+    "check:format": "oxfmt --check .",
     "check:packages": "pnpm dlx @manypkg/cli check",
     "check:types": "turbo check:types",
     "clean": "turbo clean && git clean -xdf .turbo node_modules/.cache",
@@ -28,10 +28,10 @@
     "demo:skyfire-kya": "pnpm --filter ./demos/skyfire-kya demo",
     "dev:docs": "pnpm --filter ./docs docs",
     "dev:examples": "turbo dev",
-    "fix": "turbo fix",
-    "format": "prettier --write .",
-    "lint": "turbo lint",
-    "lint:fix": "turbo lint:fix",
+    "fix": "turbo build && turbo fix",
+    "format": "oxfmt --write .",
+    "lint": "oxlint --type-aware",
+    "lint:fix": "pnpm run lint -- --fix --fix-suggestions",
     "nuke": "pnpm run clean && git clean -xdf demos/**/node_modules docs/**/node_modules examples/**/node_modules packages/**/node_modules tools/**/node_modules node_modules",
     "outdated": "pnpm dlx npm-check-updates --interactive --format group --workspaces",
     "publish:packages": "turbo build && changeset publish",
@@ -42,24 +42,21 @@
   "devDependencies": {
     "@changesets/changelog-github": "0.5.1",
     "@changesets/cli": "2.29.7",
-    "@ianvs/prettier-plugin-sort-imports": "4.7.0",
-    "@prettier/plugin-oxc": "0.0.4",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "24.9.2",
     "dotenv-cli": "11.0.0",
-    "eslint": "9.38.0",
-    "prettier": "3.6.2",
-    "prettier-plugin-jsdoc": "1.5.0",
-    "prettier-plugin-packagejson": "2.5.19",
+    "oxfmt": "0.32.0",
+    "oxlint": "1.47.0",
+    "oxlint-tsgolint": "0.12.2",
     "tsdown": "0.15.11",
     "tsx": "4.20.6",
     "turbo": "2.5.8",
     "typescript": "5.9.3",
     "vitest": "4.0.5"
   },
-  "packageManager": "pnpm@10.20.0",
   "engines": {
     "node": ">=22",
     "pnpm": ">=10"
-  }
+  },
+  "packageManager": "pnpm@10.20.0"
 }

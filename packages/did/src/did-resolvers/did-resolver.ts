@@ -5,6 +5,7 @@ import {
   type ResolverOptions,
   type ResolverRegistry,
 } from "did-resolver"
+
 import type { DidDocument } from "../did-document"
 
 export type { Resolvable } from "did-resolver"

@@ -1,5 +1,6 @@
 import { BitBuffer } from "bit-buffers"
 import { describe, expect, it } from "vitest"
+
 import { compressBitString } from "./compress-bit-string"
 
 describe("compressBitString", () => {

@@ -39,7 +39,6 @@ Changes to a leaf package require rebuilding everything above it. Turbo handles 
 - **`tools/`** - Internal workspace packages (not published):
   - `api-utils` - Hono API helpers, middleware, JWT validation
   - `cli-tools` - Demo CLI utilities
-  - `eslint-config` - Shared ESLint flat config
   - `typescript-config` - Shared tsconfig bases
 - **`docs/`** - Mintlify documentation site (`pnpm dev:docs`)
 
@@ -92,22 +91,18 @@ Vitest with individual `vitest.config.ts` per package.
 
 ## Code Style
 
-### Formatting (Prettier)
+### Formatting (oxfmt)
 
 - No semicolons
 - Double quotes
 - Trailing commas
 - 2-space indentation
+- Import sorting handled by oxfmt
 
-### Imports
-
-- Sorting handled by `@ianvs/prettier-plugin-sort-imports` (via Prettier, not ESLint)
-- Enforced `import type { ... }` via ESLint `consistent-type-imports` rule
-
-### Linting
+### Linting (oxlint)
 
 - Unused vars: warning with `^_` prefix ignore pattern
-- CSpell spell checking integrated into ESLint (config: `cspell.config.yaml`)
+- Config: `.oxlintrc.json` at repo root, run from root (not per-package)
 
 ## Demos
 

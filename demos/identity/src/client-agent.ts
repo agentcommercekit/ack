@@ -2,6 +2,7 @@ import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
 import { generateText, tool, type CoreMessage } from "ai"
 import * as v from "valibot"
+
 import { Agent } from "./agent"
 import { getModel } from "./get-model"
 

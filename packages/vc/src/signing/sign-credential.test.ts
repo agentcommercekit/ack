@@ -6,8 +6,10 @@ import {
 import { createJwtSigner, verifyJwt } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { expect, test } from "vitest"
-import { createCredential } from "../create-credential"
+
 import type { JwtCredentialPayload } from "../types"
+
+import { createCredential } from "../create-credential"
 import { signCredential } from "./sign-credential"
 
 test("signCredential creates a valid JWT and verifiable credential", async () => {

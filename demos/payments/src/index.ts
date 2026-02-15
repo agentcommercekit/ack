@@ -51,6 +51,7 @@ import {
 } from "agentcommercekit/schemas/valibot"
 import * as v from "valibot"
 import { isAddress } from "viem"
+
 import {
   chain,
   chainId,
@@ -174,8 +175,14 @@ The Client attempts to access a protected resource on the Server. Since no valid
   const paymentOptions = paymentRequest.paymentOptions
 
   function networkLabel(network: string | undefined): string {
-    if (network === "stripe") return "Stripe"
-    if (network?.startsWith("solana:")) return "Solana"
+    if (network === "stripe") {
+      return "Stripe"
+    }
+
+    if (network?.startsWith("solana:")) {
+      return "Solana"
+    }
+
     return "Base Sepolia"
   }
 

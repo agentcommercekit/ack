@@ -1,7 +1,9 @@
 import * as v from "valibot"
+
 import type { JwtHeader, JwtPayload } from "../create-jwt"
-import { jwtAlgorithms } from "../jwt-algorithm"
 import type { JwtString } from "../jwt-string"
+
+import { jwtAlgorithms } from "../jwt-algorithm"
 
 export const jwtPayloadSchema = v.pipe(
   v.looseObject({

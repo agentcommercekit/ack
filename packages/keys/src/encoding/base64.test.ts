@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+
 import { base64urlToBytes, bytesToBase64url, isBase64url } from "./base64"
 
 describe("base64 encoding and decoding", () => {

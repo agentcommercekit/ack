@@ -1,8 +1,11 @@
-import { generateKeypair, jwkToKeypair } from "@agentcommercekit/keys"
 import type { PrivateKeyJwk } from "@agentcommercekit/keys/encoding"
+
+import { generateKeypair, jwkToKeypair } from "@agentcommercekit/keys"
 import { describe, expect, it } from "vitest"
-import { getDidResolver } from "../did-resolvers/get-did-resolver"
+
 import type { DidUri } from "../did-uri"
+
+import { getDidResolver } from "../did-resolvers/get-did-resolver"
 import { createDidKeyUri, isDidKeyUri } from "./did-key"
 
 const KNOWN_DID_KEYS: { did: DidUri; jwk: PrivateKeyJwk }[] = [

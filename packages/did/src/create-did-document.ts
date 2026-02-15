@@ -1,3 +1,5 @@
+import type { VerificationMethod } from "did-resolver"
+
 import {
   encodePublicKeyFromKeypair,
   type KeyCurve,
@@ -11,7 +13,7 @@ import {
   bytesToMultibase,
   hexStringToBytes,
 } from "@agentcommercekit/keys/encoding"
-import type { VerificationMethod } from "did-resolver"
+
 import type { DidDocument } from "./did-document"
 import type { DidUri } from "./did-uri"
 

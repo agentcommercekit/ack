@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest"
-import { createPresentation } from "./create-presentation"
+
 import type { Verifiable, W3CCredential } from "./types"
+
+import { createPresentation } from "./create-presentation"
 
 describe("createPresentation", () => {
   const mockHolder = "did:example:holder"

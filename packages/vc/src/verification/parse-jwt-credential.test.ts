@@ -6,6 +6,7 @@ import {
 import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { expect, test } from "vitest"
+
 import { createCredential } from "../create-credential"
 import { signCredential } from "../signing/sign-credential"
 import { parseJwtCredential } from "./parse-jwt-credential"

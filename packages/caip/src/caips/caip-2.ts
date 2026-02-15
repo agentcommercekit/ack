@@ -1,4 +1,3 @@
-/* eslint-disable @cspell/spellchecker */
 /**
  * CAIP-2 Spec - Chain ID Components
  * @see {@link https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md}

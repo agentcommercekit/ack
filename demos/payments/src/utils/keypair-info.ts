@@ -1,4 +1,3 @@
-import { chainId } from "@/constants"
 import {
   bytesToHexString,
   createDidPkhUri,
@@ -13,6 +12,8 @@ import {
 } from "agentcommercekit"
 import { privateKeyToAccount, type Account } from "viem/accounts"
 import { publicKeyToAddress } from "viem/utils"
+
+import { chainId } from "@/constants"
 
 export type KeypairInfo = {
   publicKeyHex: `0x${string}`

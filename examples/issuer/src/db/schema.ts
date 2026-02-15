@@ -1,4 +1,5 @@
 import type { W3CCredential } from "agentcommercekit"
+
 import { sql } from "drizzle-orm"
 import {
   index,
@@ -20,11 +21,9 @@ export const statusListsTable = table("status_lists", {
     .$defaultFn(() => "0".repeat(STATUS_LIST_MAX_SIZE)),
   createdAt: integer("created_at", { mode: "timestamp_ms" })
     .notNull()
-    // eslint-disable-next-line @cspell/spellchecker
     .default(sql`(unixepoch() * 1000)`),
   updatedAt: integer("last_message_at", { mode: "timestamp_ms" })
     .notNull()
-    // eslint-disable-next-line @cspell/spellchecker
     .default(sql`(unixepoch() * 1000)`)
     .$onUpdateFn(() => new Date()),
 })
@@ -44,7 +43,6 @@ export const credentialsTable = table(
       .$type<W3CCredential>(),
     issuedAt: integer("issued_at", { mode: "timestamp_ms" })
       .notNull()
-      // eslint-disable-next-line @cspell/spellchecker
       .default(sql`(unixepoch() * 1000)`),
     revokedAt: integer("revoked_at", { mode: "timestamp_ms" }),
   },

@@ -6,6 +6,8 @@
     "//#check:format": {},
     "//#check:packages": {},
     "//#format": {},
+    "//#lint": {},
+    "//#lint:fix": {},
     "build": {
       "dependsOn": ["^build"],
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
@@ -14,7 +16,7 @@
     "check": {
       "dependsOn": [
         "//#check:format",
-        "lint",
+        "//#lint",
         "check:types",
         "test",
         "//#check:packages"
@@ -32,13 +34,7 @@
       "persistent": true
     },
     "fix": {
-      "dependsOn": ["lint:fix", "//#format"]
-    },
-    "lint": {
-      "dependsOn": ["^build"]
-    },
-    "lint:fix": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["//#lint:fix", "//#format"]
     },
     "setup": {
       "dependsOn": ["^setup"],

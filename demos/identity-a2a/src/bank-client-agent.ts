@@ -1,6 +1,5 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-
 import type { Server } from "node:http"
+
 import {
   A2AClient,
   type AgentCard,
@@ -23,6 +22,7 @@ import {
 import { messageSchema } from "agentcommercekit/a2a/schemas/valibot"
 import { v4 } from "uuid"
 import * as v from "valibot"
+
 import { Agent } from "./agent"
 import { didResolverWithIssuer, issuerDid } from "./issuer"
 import { fetchUrlFromAgentCardUrl } from "./utils/fetch-agent-card"

@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+
 import { STATUS_LIST_MAX_SIZE } from "../schema"
 import { getStatusListPosition } from "./get-status-list-position"
 

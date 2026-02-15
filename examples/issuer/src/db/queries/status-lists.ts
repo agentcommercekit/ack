@@ -1,5 +1,7 @@
 import { eq } from "drizzle-orm/sql"
+
 import type { DatabaseClient } from "../get-db"
+
 import { statusListsTable, type DatabaseStatusList } from "../schema"
 
 type CreateStatusListParams = Pick<DatabaseStatusList, "id" | "credentialType">

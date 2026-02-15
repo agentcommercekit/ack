@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+
 import { createCaip10AccountId } from "./index"
 
 describe("createCaip10AccountId", () => {

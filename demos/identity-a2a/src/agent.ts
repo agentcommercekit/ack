@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/require-await */
 /**
  * Agent base class with DID-first architecture
  *
@@ -16,6 +15,7 @@ import type {
   Message,
   RequestContext,
 } from "@a2a-js/sdk"
+
 import { colors } from "@repo/cli-tools"
 import {
   createDidDocumentFromKeypair,
@@ -32,6 +32,7 @@ import {
 } from "agentcommercekit"
 import { createAgentCardServiceEndpoint } from "agentcommercekit/a2a"
 import { v4 } from "uuid"
+
 import { issueCredential } from "./issuer"
 
 type AgentConfig = {

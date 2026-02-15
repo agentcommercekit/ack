@@ -14,6 +14,7 @@ import { Hono, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
+
 import { PAYMENT_SERVICE_URL } from "./constants"
 import { getKeypairInfo } from "./utils/keypair-info"
 

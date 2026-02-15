@@ -1,5 +1,6 @@
 import { generateKeypair } from "@agentcommercekit/keys"
 import { describe, expect, test } from "vitest"
+
 import { createJwtSigner } from "./signer"
 
 describe("createJwtSigner", () => {

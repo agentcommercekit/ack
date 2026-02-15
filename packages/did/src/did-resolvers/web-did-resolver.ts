@@ -15,6 +15,7 @@ import type {
   DIDResolver,
   ParsedDID,
 } from "did-resolver"
+
 import {
   isDidDocument,
   isDidDocumentForDid,

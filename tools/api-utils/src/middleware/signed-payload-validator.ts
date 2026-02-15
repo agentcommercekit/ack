@@ -1,9 +1,11 @@
+import type { ValidationTargets } from "hono"
+
 import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
-import type { ValidationTargets } from "hono"
 import { env } from "hono/adapter"
 import { validator } from "hono/validator"
 import * as v from "valibot"
+
 import { validatePayload } from "../validate-payload"
 
 interface ValidatedSignedPayload<T> {

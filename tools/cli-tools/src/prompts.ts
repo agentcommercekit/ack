@@ -1,5 +1,6 @@
 import { input } from "@inquirer/prompts"
 import { magenta, yellow } from "yoctocolors"
+
 import { wordWrap } from "./formatters"
 
 /**

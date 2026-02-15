@@ -3,6 +3,7 @@ import { sValidator } from "@hono/standard-validator"
 import { logger } from "@repo/api-utils/middleware/logger"
 import { Hono } from "hono"
 import * as v from "valibot"
+
 import { identities } from "./middleware/identities"
 
 const app = new Hono()

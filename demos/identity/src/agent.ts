@@ -1,3 +1,5 @@
+import type { CoreMessage } from "ai"
+
 import { colors } from "@repo/cli-tools"
 import {
   createDidDocumentFromKeypair,
@@ -14,7 +16,7 @@ import {
   type Verifiable,
   type W3CCredential,
 } from "agentcommercekit"
-import type { CoreMessage } from "ai"
+
 import type { CredentialVerifier } from "./credential-verifier"
 
 interface AgentConstructorParams {

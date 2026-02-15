@@ -11,6 +11,7 @@ import {
 import { Hono, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
+
 import {
   chainId,
   PAYMENT_SERVICE_URL,

@@ -3,17 +3,25 @@
   "version": "0.10.1",
   "homepage": "https://github.com/agentcommercekit/ack#readme",
   "bugs": "https://github.com/agentcommercekit/ack/issues",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/agentcommercekit/ack.git",
-    "directory": "packages/ack-id"
-  },
   "license": "MIT",
   "author": {
     "name": "Catena Labs",
     "url": "https://catenalabs.com"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "packages/ack-id"
+  },
+  "files": [
+    "dist",
+    "package.json",
+    "LICENSE",
+    "README.md"
+  ],
   "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
@@ -57,21 +65,14 @@
       "default": "./dist/a2a/schemas/zod/v4.js"
     }
   },
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "files": [
-    "dist",
-    "package.json",
-    "LICENSE",
-    "README.md"
-  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "tsdown",
     "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix",
     "test": "vitest"
   },
   "dependencies": {
@@ -85,7 +86,6 @@
   },
   "devDependencies": {
     "@a2a-js/sdk": "catalog:",
-    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "zod": "catalog:"
   },
@@ -100,8 +100,5 @@
     "zod": {
       "optional": true
     }
-  },
-  "publishConfig": {
-    "access": "public"
   }
 }

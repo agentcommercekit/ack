@@ -2,9 +2,11 @@ import { createDidKeyUri } from "@agentcommercekit/did"
 import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys/ed25519"
 import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest"
+
+import type { PaymentRequestInit } from "./payment-request"
+
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
-import type { PaymentRequestInit } from "./payment-request"
 
 describe("createPaymentReceipt", () => {
   const date = new Date("2024-12-31T23:59:59Z")

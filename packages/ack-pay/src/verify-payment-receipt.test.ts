@@ -19,10 +19,12 @@ import {
   type W3CCredential,
 } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it } from "vitest"
+
+import type { PaymentRequestInit } from "./payment-request"
+
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
 import { InvalidPaymentRequestTokenError } from "./errors"
-import type { PaymentRequestInit } from "./payment-request"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 
 describe("verifyPaymentReceipt()", () => {

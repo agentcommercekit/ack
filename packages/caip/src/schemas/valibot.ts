@@ -1,4 +1,5 @@
 import * as v from "valibot"
+
 import {
   caip2ChainIdRegex,
   caip10AccountIdRegex,

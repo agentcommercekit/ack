@@ -1,5 +1,6 @@
-import { createCredential } from "../create-credential"
 import type { BitstringStatusListCredential } from "./types"
+
+import { createCredential } from "../create-credential"
 
 type CreateStatusListCredentialParams = {
   /**
