@@ -34,8 +34,8 @@ catalogs:
       specifier: 11.1.0
       version: 11.1.0
     valibot:
-      specifier: 1.1.0
-      version: 1.1.0
+      specifier: 1.2.0
+      version: 1.2.0
     viem:
       specifier: 2.29.4
       version: 2.29.4
@@ -97,7 +97,7 @@ importers:
         version: link:../../packages/agentcommercekit
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
       viem:
         specifier: 'catalog:'
         version: 2.29.4(typescript@5.9.3)(zod@3.25.76)
@@ -116,7 +116,7 @@ importers:
         version: 1.3.22(zod@3.25.76)
       '@ai-sdk/valibot':
         specifier: 0.1.28
-        version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.1.0(typescript@5.9.3)))(react@19.2.0)(valibot@1.1.0(typescript@5.9.3))(zod@3.25.76)
+        version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.2.0(typescript@5.9.3)))(react@19.2.0)(valibot@1.2.0(typescript@5.9.3))(zod@3.25.76)
       '@hono/node-server':
         specifier: 'catalog:'
         version: 1.14.2(hono@4.7.10)
@@ -140,7 +140,7 @@ importers:
         version: 4.7.10
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -171,7 +171,7 @@ importers:
         version: 11.1.0
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -208,7 +208,7 @@ importers:
         version: 4.7.10
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
       viem:
         specifier: 'catalog:'
         version: 2.29.4(typescript@5.9.3)(zod@3.25.76)
@@ -267,7 +267,7 @@ importers:
         version: 4.7.10
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -304,7 +304,7 @@ importers:
         version: 4.7.10
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -329,7 +329,7 @@ importers:
         version: 4.7.10
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -357,7 +357,7 @@ importers:
         version: 11.1.0
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@a2a-js/sdk':
         specifier: 'catalog:'
@@ -385,7 +385,7 @@ importers:
         version: link:../vc
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -426,7 +426,7 @@ importers:
         version: link:../../tools/typescript-config
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
         version: 3.25.4
@@ -438,10 +438,10 @@ importers:
         version: link:../../tools/typescript-config
       standard-parse:
         specifier: 'catalog:'
-        version: 0.4.0(arktype@2.1.25)(valibot@1.1.0(typescript@5.9.3))(vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(zod@3.25.4)
+        version: 0.4.0(arktype@2.1.25)(valibot@1.2.0(typescript@5.9.3))(vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(zod@3.25.4)
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
         version: 3.25.4
@@ -465,7 +465,7 @@ importers:
         version: 4.0.0
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
       varint:
         specifier: 6.0.0
         version: 6.0.0
@@ -478,7 +478,7 @@ importers:
         version: 6.0.3
       standard-parse:
         specifier: 'catalog:'
-        version: 0.4.0(arktype@2.1.25)(valibot@1.1.0(typescript@5.9.3))(vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(zod@3.25.4)
+        version: 0.4.0(arktype@2.1.25)(valibot@1.2.0(typescript@5.9.3))(vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(zod@3.25.4)
       zod:
         specifier: 'catalog:'
         version: 3.25.4
@@ -497,7 +497,7 @@ importers:
         version: link:../../tools/typescript-config
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
         version: 3.25.4
@@ -540,7 +540,7 @@ importers:
         version: 4.0.13
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -571,7 +571,7 @@ importers:
         version: 4.7.10
       valibot:
         specifier: 'catalog:'
-        version: 1.1.0(typescript@5.9.3)
+        version: 1.2.0(typescript@5.9.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -6210,8 +6210,8 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
-  valibot@1.1.0:
-    resolution: {integrity: sha512-Nk8lX30Qhu+9txPYTwM0cFlWLdPFsFr6LblzqIySfbZph9+BFsAHsNvHOymEviUepeIW6KFHzpX8TKhbptBXXw==}
+  valibot@1.2.0:
+    resolution: {integrity: sha512-mm1rxUsmOxzrwnX5arGS+U4T25RdvpPjPN4yR0u9pUBov9+zGVtO84tif1eY4r6zWxVxu3KzIyknJy3rxfRZZg==}
     peerDependencies:
       typescript: '>=5'
     peerDependenciesMeta:
@@ -6550,11 +6550,11 @@ snapshots:
       zod: 3.25.76
       zod-to-json-schema: 3.24.6(zod@3.25.76)
 
-  '@ai-sdk/valibot@0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.1.0(typescript@5.9.3)))(react@19.2.0)(valibot@1.1.0(typescript@5.9.3))(zod@3.25.76)':
+  '@ai-sdk/valibot@0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.2.0(typescript@5.9.3)))(react@19.2.0)(valibot@1.2.0(typescript@5.9.3))(zod@3.25.76)':
     dependencies:
-      '@valibot/to-json-schema': 1.3.0(valibot@1.1.0(typescript@5.9.3))
+      '@valibot/to-json-schema': 1.3.0(valibot@1.2.0(typescript@5.9.3))
       ai: 4.3.16(react@19.2.0)(zod@3.25.76)
-      valibot: 1.1.0(typescript@5.9.3)
+      valibot: 1.2.0(typescript@5.9.3)
     transitivePeerDependencies:
       - react
       - zod
@@ -8904,9 +8904,9 @@ snapshots:
 
   '@ungap/structured-clone@1.3.0': {}
 
-  '@valibot/to-json-schema@1.3.0(valibot@1.1.0(typescript@5.9.3))':
+  '@valibot/to-json-schema@1.3.0(valibot@1.2.0(typescript@5.9.3))':
     dependencies:
-      valibot: 1.1.0(typescript@5.9.3)
+      valibot: 1.2.0(typescript@5.9.3)
 
   '@vitest/expect@4.0.5':
     dependencies:
@@ -9554,8 +9554,8 @@ snapshots:
 
   did-jwks@0.3.0(typescript@5.9.3)(zod@3.25.4):
     dependencies:
-      valibot: 1.1.0(typescript@5.9.3)
-      web-identity-schemas: 0.1.6(valibot@1.1.0(typescript@5.9.3))(zod@3.25.4)
+      valibot: 1.2.0(typescript@5.9.3)
+      web-identity-schemas: 0.1.6(valibot@1.2.0(typescript@5.9.3))(zod@3.25.4)
     transitivePeerDependencies:
       - typescript
       - zod
@@ -12601,12 +12601,12 @@ snapshots:
 
   stackback@0.0.2: {}
 
-  standard-parse@0.4.0(arktype@2.1.25)(valibot@1.1.0(typescript@5.9.3))(vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(zod@3.25.4):
+  standard-parse@0.4.0(arktype@2.1.25)(valibot@1.2.0(typescript@5.9.3))(vitest@4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1))(zod@3.25.4):
     dependencies:
       '@standard-schema/spec': 1.0.0
     optionalDependencies:
       arktype: 2.1.25
-      valibot: 1.1.0(typescript@5.9.3)
+      valibot: 1.2.0(typescript@5.9.3)
       vitest: 4.0.5(@types/debug@4.1.12)(@types/node@24.9.2)(jiti@2.6.1)(tsx@4.20.6)(yaml@2.8.1)
       zod: 3.25.4
 
@@ -13142,7 +13142,7 @@ snapshots:
 
   uuid@11.1.0: {}
 
-  valibot@1.1.0(typescript@5.9.3):
+  valibot@1.2.0(typescript@5.9.3):
     optionalDependencies:
       typescript: 5.9.3
 
@@ -13252,9 +13252,9 @@ snapshots:
       - tsx
       - yaml
 
-  web-identity-schemas@0.1.6(valibot@1.1.0(typescript@5.9.3))(zod@3.25.4):
+  web-identity-schemas@0.1.6(valibot@1.2.0(typescript@5.9.3))(zod@3.25.4):
     optionalDependencies:
-      valibot: 1.1.0(typescript@5.9.3)
+      valibot: 1.2.0(typescript@5.9.3)
       zod: 3.25.4
 
   web-namespaces@2.0.1: {}
