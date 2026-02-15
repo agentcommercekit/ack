@@ -15,7 +15,7 @@ catalog:
   safe-stable-stringify: 2.5.0
   standard-parse: 0.4.0
   uuid: 11.1.0
-  valibot: 1.1.0
+  valibot: 1.2.0
   viem: 2.29.4
   zod: 3.25.4
 
