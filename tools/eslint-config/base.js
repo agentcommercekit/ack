@@ -42,6 +42,9 @@ export function config({ root }) {
       extends: [markdown.configs.recommended],
       files: ["**/*.md"],
       language: "markdown/gfm",
+      rules: {
+        "markdown/fenced-code-language": "off",
+      },
     },
 
     /**
