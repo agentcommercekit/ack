@@ -16,7 +16,7 @@ When filing a bug report, please include the following:
 
 ## Suggesting Enhancements
 
-We are always looking for ways to improve Agent Commerce Kit. If you have an idea for an enhancement, please open an issue on our GitHub repository. You can also reach us in our [Discord](https://discord.gg/3V34SmdHPq).
+We are always looking for ways to improve Agent Commerce Kit. If you have an idea for an enhancement, please open an issue on our GitHub repository. You can also reach us in our [Discord](https://discord.gg/FfWBmaSRmt).
 
 When suggesting an enhancement, please include:
 
