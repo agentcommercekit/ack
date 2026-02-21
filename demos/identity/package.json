@@ -32,7 +32,7 @@
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "ai": "4.3.16",
+    "ai": "5.0.52",
     "hono": "catalog:",
     "valibot": "catalog:"
   },
