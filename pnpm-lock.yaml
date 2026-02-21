@@ -458,8 +458,8 @@ importers:
         specifier: 4.1.0
         version: 4.1.0
       jwks-did-resolver:
-        specifier: 0.3.0
-        version: 0.3.0(typescript@5.9.3)(zod@3.25.4)
+        specifier: 1.1.0
+        version: 1.1.0(typescript@5.9.3)(zod@3.25.4)
       key-did-resolver:
         specifier: 4.0.0
         version: 4.0.0
@@ -3468,8 +3468,8 @@ packages:
   devtools-protocol@0.0.1312386:
     resolution: {integrity: sha512-DPnhUXvmvKT2dFA/j7B+riVLUt9Q6RKJlcppojL5CoRywJJKLDYnRlw0gTFKfgDPHP5E04UoB71SxoJlVZy8FA==}
 
-  did-jwks@0.3.0:
-    resolution: {integrity: sha512-eMV9BVKGvyWk6q8fuAca3ioPMCjz172HwtfmYukZ5lS0xZuQV6PdrlQdj3CvuoG3G3QwGoStdrsOccPeuP9O0Q==}
+  did-jwks@1.1.0:
+    resolution: {integrity: sha512-zpnJ48m4FrpcfQ8zIe0e7WXr96ez6npKrSJVvd9IB8k+SOAhjPlQQvEvxAcZ5IdP0JoQuQIIhVbZqQH80cefFw==}
     hasBin: true
 
   did-jwt-vc@4.0.13:
@@ -4531,8 +4531,8 @@ packages:
     resolution: {integrity: sha512-p/nXbhSEcu3pZRdkW1OfJhpsVtW1gd4Wa1fnQc9YLiTfAjn0312eMKimbdIQzuZl9aa9xUGaRlP9T/CJE/ditQ==}
     engines: {node: '>=0.10.0'}
 
-  jwks-did-resolver@0.3.0:
-    resolution: {integrity: sha512-ptSjTICfy6T97C7WqHwAHeJnDPbokDmfosI4nHtuiAnmi15wOAteMQFNuAzvmscj0ml2HevVRfa5DIXB2TO6GA==}
+  jwks-did-resolver@1.1.0:
+    resolution: {integrity: sha512-uBtB1VP4ILUERdrQleWaEGZXQm8V2L6H1I6lfq0D+5cL+U02Bwj5eS30wU5zvcfdlZUm5HC3gbYgGeOjn7ErzA==}
 
   katex@0.16.25:
     resolution: {integrity: sha512-woHRUZ/iF23GBP1dkDQMh1QBad9dmr8/PAwNA54VrSOVYgI12MAcE14TqnDdQOdzyEonGzMepYnqBMYdsoAr8Q==}
@@ -5251,6 +5251,7 @@ packages:
   prebuild-install@7.1.3:
     resolution: {integrity: sha512-8Mf2cbV7x1cXPUILADGI3wuhfqWvtiLA1iclTDbFRZkgRQS0NqsPZphna9V+HyTEadheuPmjaJMsbzKQFOzLug==}
     engines: {node: '>=10'}
+    deprecated: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
     hasBin: true
 
   prettier@2.8.8:
@@ -9552,7 +9553,7 @@ snapshots:
 
   devtools-protocol@0.0.1312386: {}
 
-  did-jwks@0.3.0(typescript@5.9.3)(zod@3.25.4):
+  did-jwks@1.1.0(typescript@5.9.3)(zod@3.25.4):
     dependencies:
       valibot: 1.2.0(typescript@5.9.3)
       web-identity-schemas: 0.1.6(valibot@1.2.0(typescript@5.9.3))(zod@3.25.4)
@@ -10812,9 +10813,9 @@ snapshots:
 
   jsonpointer@5.0.1: {}
 
-  jwks-did-resolver@0.3.0(typescript@5.9.3)(zod@3.25.4):
+  jwks-did-resolver@1.1.0(typescript@5.9.3)(zod@3.25.4):
     dependencies:
-      did-jwks: 0.3.0(typescript@5.9.3)(zod@3.25.4)
+      did-jwks: 1.1.0(typescript@5.9.3)(zod@3.25.4)
     transitivePeerDependencies:
       - typescript
       - zod
