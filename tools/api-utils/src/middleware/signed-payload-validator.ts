@@ -1,4 +1,4 @@
-import type { Env, MiddlewareHandler, ValidationTargets } from "hono"
+import type { MiddlewareHandler, ValidationTargets } from "hono"
 
 import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
@@ -7,6 +7,12 @@ import { validator } from "hono/validator"
 import * as v from "valibot"
 
 import { validatePayload } from "../validate-payload"
+
+interface SignedPayloadEnv {
+  Variables: {
+    resolver: Resolvable
+  }
+}
 
 interface ValidatedSignedPayload<T> {
   issuer: DidUri
@@ -39,12 +45,12 @@ export const signedPayloadValidator = <T>(
   target: keyof ValidationTargets,
   schema: v.GenericSchema<unknown, T>,
 ): MiddlewareHandler<
-  Env,
+  SignedPayloadEnv,
   string,
   { out: { json: ValidatedSignedPayload<T> } }
 > =>
   validator(target, async (value, c): Promise<ValidatedSignedPayload<T>> => {
-    const didResolver = c.get("resolver") as Resolvable | undefined
+    const didResolver = c.get("resolver")
 
     try {
       const data = v.parse(signedPayloadSchema, value)
