@@ -16,14 +16,14 @@ import type {
   ParsedDID,
 } from "did-resolver"
 
+import type { FetchLike } from "../types"
+
 import {
   isDidDocument,
   isDidDocumentForDid,
   type DidDocument,
 } from "../did-document"
 import { isDidWebUri } from "../methods/did-web"
-
-type Fetch = typeof globalThis.fetch
 
 export interface DidWebResolverOptions {
   /**
@@ -37,7 +37,7 @@ export interface DidWebResolverOptions {
    *
    * @default globalThis.fetch
    */
-  fetch?: Fetch
+  fetch?: FetchLike
   /**
    * The hosts that are allowed to be used via `http`. All other hosts will
    * require `https`.
@@ -58,7 +58,7 @@ const DEFAULT_DOC_PATH = "/.well-known/did.json"
  */
 async function fetchDidDocumentAtUrl(
   url: string | URL,
-  { fetch = globalThis.fetch }: { fetch?: Fetch } = {},
+  { fetch = globalThis.fetch }: { fetch?: FetchLike } = {},
 ): Promise<DidDocument> {
   const res = await fetch(url, { mode: "cors" })
 
