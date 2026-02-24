@@ -1,5 +1,4 @@
 import type { W3CCredential } from "agentcommercekit"
-
 import { sql } from "drizzle-orm"
 import {
   index,

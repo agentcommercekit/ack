@@ -1,3 +1,6 @@
+import path, { dirname } from "path"
+import { fileURLToPath } from "url"
+
 import {
   colors,
   confirm,
@@ -18,8 +21,6 @@ import {
   parseJwtCredential,
   type DidUri,
 } from "agentcommercekit"
-import path, { dirname } from "path"
-import { fileURLToPath } from "url"
 
 import { ClientAgent } from "./client-agent"
 import { CredentialIssuer } from "./credential-issuer"

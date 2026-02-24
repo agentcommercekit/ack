@@ -18,14 +18,13 @@ import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
 import * as v from "valibot"
 
-import type { CredentialResponse } from "@/lib/types"
-
 import {
   createCredential as createDatabaseCredential,
   getCredential,
   revokeCredential,
 } from "@/db/queries/credentials"
 import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
+import type { CredentialResponse } from "@/lib/types"
 import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
 import { issuer } from "@/middleware/issuer"

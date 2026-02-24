@@ -1,8 +1,7 @@
-import type { Env, ErrorHandler } from "hono"
-
 import { InvalidPaymentRequestTokenError } from "@agentcommercekit/ack-pay"
 import { DidResolutionError } from "@agentcommercekit/did"
 import { CredentialVerificationError } from "@agentcommercekit/vc"
+import type { Env, ErrorHandler } from "hono"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 

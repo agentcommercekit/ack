@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest"
 
 import type { W3CCredential } from "../types"
-
 import { makeRevocable } from "./make-revocable"
 
 describe("makeRevocable", () => {

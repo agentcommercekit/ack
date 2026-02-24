@@ -1,5 +1,3 @@
-import type { VerificationMethod } from "did-resolver"
-
 import {
   caip10Parts,
   createCaip10AccountId,
@@ -15,11 +13,11 @@ import {
   isBase58,
   publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
-
-import type { DidUri } from "../did-uri"
-import type { DidUriWithDocument } from "../types"
+import type { VerificationMethod } from "did-resolver"
 
 import { createDidDocument } from "../create-did-document"
+import type { DidUri } from "../did-uri"
+import type { DidUriWithDocument } from "../types"
 
 /**
  * Methods for creating and verifying did:pkh documents

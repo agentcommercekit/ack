@@ -1,5 +1,4 @@
 import type { Env, MiddlewareHandler } from "hono"
-
 import { env } from "hono/adapter"
 
 import { buildUrl } from "@/lib/build-url"

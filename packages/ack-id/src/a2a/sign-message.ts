@@ -1,7 +1,5 @@
 import type { Message } from "@a2a-js/sdk"
 import type { DidUri } from "@agentcommercekit/did"
-import type { W3CCredential } from "@agentcommercekit/vc"
-
 import {
   createJwt,
   type JwtAlgorithm,
@@ -9,6 +7,7 @@ import {
   type JwtSigner,
   type JwtString,
 } from "@agentcommercekit/jwt"
+import type { W3CCredential } from "@agentcommercekit/vc"
 import { v4 } from "uuid"
 
 import { generateRandomJti, generateRandomNonce } from "./random"

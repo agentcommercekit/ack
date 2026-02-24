@@ -6,9 +6,8 @@ import {
 import { generateKeypair } from "@agentcommercekit/keys"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Verifiable, W3CCredential } from "../types"
-
 import { createCredential } from "../create-credential"
+import type { Verifiable, W3CCredential } from "../types"
 import {
   CredentialExpiredError,
   CredentialRevokedError,

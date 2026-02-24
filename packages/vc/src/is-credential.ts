@@ -1,5 +1,4 @@
 import type { W3CCredential } from "did-jwt-vc"
-
 import * as v from "valibot"
 
 import { credentialSchema } from "./schemas/valibot"

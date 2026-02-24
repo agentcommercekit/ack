@@ -1,5 +1,4 @@
 import type { Resolvable } from "@agentcommercekit/did"
-
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import {
   InvalidCredentialError,
@@ -12,7 +11,6 @@ import {
 } from "@agentcommercekit/vc"
 
 import type { PaymentRequest } from "./payment-request"
-
 import {
   getReceiptClaimVerifier,
   isPaymentReceiptCredential,

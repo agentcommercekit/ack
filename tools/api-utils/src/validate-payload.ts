@@ -1,5 +1,4 @@
 import type { Resolvable } from "@agentcommercekit/did"
-
 import {
   verifyJwt,
   type JwtString,

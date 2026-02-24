@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 
 import type { Verifiable, W3CCredential } from "../types"
-
 import { isExpired } from "./is-expired"
 
 describe("isExpired", () => {

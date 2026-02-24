@@ -1,5 +1,4 @@
 import type { Message } from "@a2a-js/sdk"
-
 import {
   getDidResolver,
   type DidResolver,

@@ -1,6 +1,7 @@
+import { join } from "node:path"
+
 import { serve } from "@hono/node-server"
 import { migrate } from "drizzle-orm/libsql/migrator"
-import { join } from "node:path"
 
 import { getDb } from "@/db/get-db"
 import app from "@/index"

@@ -6,7 +6,6 @@ import {
 } from "agentcommercekit"
 
 import type { DatabaseCredential } from "@/db/schema"
-
 import { getStatusListPosition } from "@/db/utils/get-status-list-position"
 
 import type { CredentialResponse, Issuer } from "../types"

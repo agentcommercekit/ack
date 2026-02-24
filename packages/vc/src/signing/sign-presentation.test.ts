@@ -7,11 +7,10 @@ import { createJwtSigner, verifyJwt } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { describe, expect, it } from "vitest"
 
-import type { Verifiable, W3CCredential } from "../types"
-import type { Signer } from "./types"
-
 import { createPresentation } from "../create-presentation"
+import type { Verifiable, W3CCredential } from "../types"
 import { signPresentation } from "./sign-presentation"
+import type { Signer } from "./types"
 
 const resolver = getDidResolver()
 const holderKeypair = await generateKeypair("secp256k1")
