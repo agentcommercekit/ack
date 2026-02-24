@@ -57,7 +57,7 @@
   },
   "dependencies": {
     "@agentcommercekit/keys": "workspace:*",
-    "did-jwt": "8.0.15"
+    "did-jwt": "8.0.18"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
