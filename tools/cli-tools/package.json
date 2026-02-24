@@ -29,7 +29,7 @@
   },
   "dependencies": {
     "@inquirer/prompts": "7.5.1",
-    "figlet": "1.8.1",
+    "figlet": "1.10.0",
     "strip-ansi": "7.1.2",
     "wrap-ansi": "9.0.0",
     "yoctocolors": "2.1.2"
