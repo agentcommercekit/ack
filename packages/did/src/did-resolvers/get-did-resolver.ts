@@ -31,7 +31,10 @@ export function getDidResolver({
 }: GetDidResolverOptions = {}): DidResolver {
   const keyResolver = getKeyDidResolver()
   const webResolver = getWebDidResolver(webOptions)
-  const jwksResolver = getJwksDidResolver(webOptions)
+  const jwksResolver = getJwksDidResolver({
+    ...webOptions,
+    fetch: webOptions.fetch as typeof globalThis.fetch,
+  })
   const pkhResolver = getPkhDidResolver()
 
   const didResolver = new DidResolver(
