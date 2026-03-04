@@ -19,8 +19,8 @@ catalogs:
       specifier: 1.0.2
       version: 1.0.2
     hono:
-      specifier: 4.12.2
-      version: 4.12.2
+      specifier: 4.12.4
+      version: 4.12.4
     jose:
       specifier: 6.1.3
       version: 6.1.3
@@ -119,10 +119,10 @@ importers:
         version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.2.0(typescript@5.9.3)))(react@19.2.3)(valibot@1.2.0(typescript@5.9.3))(zod@3.25.76)
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.2)
+        version: 1.19.9(hono@4.12.4)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.2)
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -137,7 +137,7 @@ importers:
         version: 4.3.16(react@19.2.3)(zod@3.25.76)
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.4
       valibot:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.9.3)
@@ -184,7 +184,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.2)
+        version: 1.19.9(hono@4.12.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -205,7 +205,7 @@ importers:
         version: link:../../packages/agentcommercekit
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.4
       valibot:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.9.3)
@@ -246,7 +246,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.2)
+        version: 1.19.9(hono@4.12.4)
       '@libsql/client':
         specifier: 0.15.15
         version: 0.15.15
@@ -264,7 +264,7 @@ importers:
         version: 0.43.1(@libsql/client@0.15.15)(@opentelemetry/api@1.9.0)(@types/better-sqlite3@7.6.13)(better-sqlite3@11.10.0)
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.4
       valibot:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.9.3)
@@ -292,16 +292,16 @@ importers:
         version: link:../../packages/keys
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.2)
+        version: 1.19.9(hono@4.12.4)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.2)
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.4
       valibot:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.9.3)
@@ -314,10 +314,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.2)
+        version: 1.19.9(hono@4.12.4)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.2)
+        version: 0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.4)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -326,7 +326,7 @@ importers:
         version: link:../../packages/agentcommercekit
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.4
       valibot:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.9.3)
@@ -568,7 +568,7 @@ importers:
         version: link:../../packages/vc
       hono:
         specifier: 'catalog:'
-        version: 4.12.2
+        version: 4.12.4
       valibot:
         specifier: 'catalog:'
         version: 1.2.0(typescript@5.9.3)
@@ -3339,6 +3339,7 @@ packages:
   basic-ftp@5.0.5:
     resolution: {integrity: sha512-4Bcg1P8xhUuqcii/S0Z9wiHIrQVPMermM1any+MX5GeGD7faD3/msQUDGLol9wOcz4/jbg/WJnGqoJF6LiBdtg==}
     engines: {node: '>=10.0.0'}
+    deprecated: Security vulnerability fixed in 5.2.0, please upgrade
 
   better-opn@3.0.2:
     resolution: {integrity: sha512-aVNobHnJqLiUelTaHat9DZ1qM2w0C0Eym4LPI/3JxOnSokGVdsl1T1kN7TFvsEAD8G47A6VKQ0TVHqbBnYMJlQ==}
@@ -4477,8 +4478,8 @@ packages:
     resolution: {integrity: sha512-NQO+lgVUCtHxZ792FodgW0zflK+ozS9X9dwGp9XvvmPlH7pyxd588cn24TD3rmPm/N0AIRXF10Otah8yKqGw4w==}
     engines: {node: '>=12'}
 
-  hono@4.12.2:
-    resolution: {integrity: sha512-gJnaDHXKDayjt8ue0n8Gs0A007yKXj4Xzb8+cNjZeYsSzzwKc0Lr+OZgYwVfB0pHfUs17EPoLvrOsEaJ9mj+Tg==}
+  hono@4.12.4:
+    resolution: {integrity: sha512-ooiZW1Xy8rQ4oELQ++otI2T9DsKpV0M6c6cO6JGx4RTfav9poFFLlet9UMXHZnoM1yG0HWGlQLswBGX3RZmHtg==}
     engines: {node: '>=16.9.0'}
 
   hookable@5.5.3:
@@ -5629,6 +5630,7 @@ packages:
   puppeteer@22.14.0:
     resolution: {integrity: sha512-MGTR6/pM8zmWbTdazb6FKnwIihzsSEXBPH49mFFU96DNZpQOevCAZMnjBZGlZRGRzRK6aADCavR6SQtrbv5dQw==}
     engines: {node: '>=18'}
+    deprecated: < 24.15.0 is no longer supported
     hasBin: true
 
   qs@6.11.0:
@@ -6253,6 +6255,7 @@ packages:
   tar@6.1.15:
     resolution: {integrity: sha512-/zKt9UyngnxIT/EAGYuxaMYgOIJiP81ab9ZfkILq4oNLPFX50qyYmu7jRj9qeXoxmJHjGlbH0+cm2uy1WCs10A==}
     engines: {node: '>=10'}
+    deprecated: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
 
   term-size@2.2.1:
     resolution: {integrity: sha512-wK0Ri4fOGjv/XPy8SBHZChl8CM7uMc5VML7SqiQ0zG7+J5Vr+RMQDoHa2CNT6KHUnTGIXH34UDMkPzAUyapBZg==}
@@ -7458,14 +7461,14 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@hono/node-server@1.19.9(hono@4.12.2)':
+  '@hono/node-server@1.19.9(hono@4.12.4)':
     dependencies:
-      hono: 4.12.2
+      hono: 4.12.4
 
-  '@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.2)':
+  '@hono/standard-validator@0.1.5(@standard-schema/spec@1.0.0)(hono@4.12.4)':
     dependencies:
       '@standard-schema/spec': 1.0.0
-      hono: 4.12.2
+      hono: 4.12.4
 
   '@img/sharp-darwin-arm64@0.33.5':
     optionalDependencies:
@@ -11258,7 +11261,7 @@ snapshots:
 
   hex-rgb@5.0.0: {}
 
-  hono@4.12.2: {}
+  hono@4.12.4: {}
 
   hookable@5.5.3: {}
 
