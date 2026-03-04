@@ -1,5 +1,4 @@
 import type { DidUri } from "@agentcommercekit/did"
-
 import { createCredential, type W3CCredential } from "@agentcommercekit/vc"
 
 const PAYMENT_RECEIPT_TYPE = "PaymentReceiptCredential"

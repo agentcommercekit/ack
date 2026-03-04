@@ -17,9 +17,8 @@ import {
 } from "agentcommercekit"
 
 import type { CredentialVerifier } from "./credential-verifier"
-import type { ReceiptVerifier } from "./receipt-verifier"
-
 import { PaymentRequiredError } from "./payment-required-error"
+import type { ReceiptVerifier } from "./receipt-verifier"
 import { publicKeyToAddress } from "./utils/evm-address"
 import { verifyAgentIdentityWithCredential } from "./verification"
 

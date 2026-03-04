@@ -16,14 +16,13 @@ import type {
   ParsedDID,
 } from "did-resolver"
 
-import type { FetchLike } from "../types"
-
 import {
   isDidDocument,
   isDidDocumentForDid,
   type DidDocument,
 } from "../did-document"
 import { isDidWebUri } from "../methods/did-web"
+import type { FetchLike } from "../types"
 
 export interface DidWebResolverOptions {
   /**

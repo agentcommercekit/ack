@@ -1,5 +1,6 @@
-import { caip2ChainIds } from "agentcommercekit"
 import path from "node:path"
+
+import { caip2ChainIds } from "agentcommercekit"
 import { createPublicClient, http } from "viem"
 import { baseSepolia } from "viem/chains"
 

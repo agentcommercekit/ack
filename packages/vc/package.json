@@ -60,7 +60,7 @@
     "@agentcommercekit/jwt": "workspace:*",
     "@agentcommercekit/keys": "workspace:*",
     "bit-buffers": "catalog:",
-    "did-jwt-vc": "4.0.13",
+    "did-jwt-vc": "4.0.16",
     "valibot": "catalog:"
   },
   "devDependencies": {

@@ -15,9 +15,8 @@ import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import * as v from "valibot"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import type { PaymentRequestInit } from "./payment-request"
-
 import { createPaymentRequestToken } from "./create-payment-request-token"
+import type { PaymentRequestInit } from "./payment-request"
 import { paymentRequestSchema } from "./schemas/valibot"
 
 describe("createPaymentRequestToken()", () => {

@@ -1,6 +1,3 @@
-import type { JwtString, Verifiable, W3CCredential } from "agentcommercekit"
-import type * as jose from "jose"
-
 import {
   colors,
   errorMessage,
@@ -9,6 +6,8 @@ import {
   successMessage,
   waitForEnter,
 } from "@repo/cli-tools"
+import type { JwtString, Verifiable, W3CCredential } from "agentcommercekit"
+import type * as jose from "jose"
 
 import { generateJwks } from "./jwk-keys"
 import { createMockSkyfireKyaToken } from "./kya-token"

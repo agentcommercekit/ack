@@ -1,7 +1,6 @@
 import * as z from "zod/v4"
 
 import type { JwtHeader, JwtPayload } from "../../create-jwt"
-
 import { jwtAlgorithms } from "../../jwt-algorithm"
 import { isJwtString } from "../../jwt-string"
 

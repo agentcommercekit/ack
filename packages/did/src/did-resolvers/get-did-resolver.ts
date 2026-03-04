@@ -1,5 +1,4 @@
 import type { ResolverOptions } from "did-resolver"
-
 import { getResolver as getJwksDidResolver } from "jwks-did-resolver"
 import { getResolver as getKeyDidResolver } from "key-did-resolver"
 

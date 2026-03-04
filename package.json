@@ -40,19 +40,19 @@
     "test": "turbo test --env-mode=loose"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "0.5.1",
-    "@changesets/cli": "2.29.7",
+    "@changesets/changelog-github": "0.5.2",
+    "@changesets/cli": "2.29.8",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "24.9.2",
     "dotenv-cli": "11.0.0",
-    "oxfmt": "0.32.0",
-    "oxlint": "1.47.0",
-    "oxlint-tsgolint": "0.12.2",
+    "oxfmt": "0.35.0",
+    "oxlint": "1.50.0",
+    "oxlint-tsgolint": "0.14.2",
     "tsdown": "0.15.11",
-    "tsx": "4.20.6",
-    "turbo": "2.5.8",
+    "tsx": "4.21.0",
+    "turbo": "2.8.10",
     "typescript": "5.9.3",
-    "vitest": "4.0.5"
+    "vitest": "4.0.18"
   },
   "engines": {
     "node": ">=22",

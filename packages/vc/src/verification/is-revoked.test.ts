@@ -1,9 +1,8 @@
 import { BitBuffer } from "bit-buffers"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import type { Verifiable, W3CCredential } from "../types"
-
 import { createStatusListCredential } from "../revocation/status-list-credential"
+import type { Verifiable, W3CCredential } from "../types"
 import { isRevocable, isRevoked } from "./is-revoked"
 
 describe("isRevocable", () => {

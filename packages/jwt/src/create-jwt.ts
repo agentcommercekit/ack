@@ -6,7 +6,6 @@ import {
 } from "did-jwt"
 
 import type { JwtAlgorithm } from "./jwt-algorithm"
-
 import { isJwtString, type JwtString } from "./jwt-string"
 
 export type JwtPayload = JWTPayload

@@ -14,9 +14,8 @@ import {
 import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 
-import type { PaymentRequestInit } from "./payment-request"
-
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
+import type { PaymentRequestInit } from "./payment-request"
 import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
 /**

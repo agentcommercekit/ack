@@ -15,7 +15,6 @@ import type {
   Message,
   RequestContext,
 } from "@a2a-js/sdk"
-
 import { colors } from "@repo/cli-tools"
 import {
   createDidDocumentFromKeypair,

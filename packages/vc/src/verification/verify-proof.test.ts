@@ -1,5 +1,4 @@
 import type { Resolvable } from "@agentcommercekit/did"
-
 import { verifyCredential, type VerifiedCredential } from "did-jwt-vc"
 import { describe, expect, it, vi } from "vitest"
 

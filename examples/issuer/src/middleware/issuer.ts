@@ -1,11 +1,10 @@
-import type { Env, MiddlewareHandler } from "hono"
-
 import {
   createDidWebDocumentFromKeypair,
   createJwtSigner,
   generateKeypair,
   hexStringToBytes,
 } from "agentcommercekit"
+import type { Env, MiddlewareHandler } from "hono"
 import { env } from "hono/adapter"
 
 import type { Issuer } from "@/lib/types"

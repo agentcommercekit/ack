@@ -1,7 +1,6 @@
-import type { TypedResponse } from "hono"
-
 import { DidResolutionError } from "@agentcommercekit/did"
 import { CredentialVerificationError } from "@agentcommercekit/vc"
+import type { TypedResponse } from "hono"
 import * as v from "valibot"
 
 export type ApiResponse<T> = TypedResponse<ApiSuccessResponse<T>>

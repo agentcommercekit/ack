@@ -1,5 +1,4 @@
 import type { DidUri } from "@agentcommercekit/did"
-
 import {
   createJwt,
   type JwtAlgorithm,
