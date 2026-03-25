@@ -73,9 +73,15 @@ describe("isStatusListCredential", () => {
     ).toBe(false)
   })
 
-  it("returns false when the outer shape is not a valid credential", () => {
+  it("rejects null", () => {
     expect(isStatusListCredential(null)).toBe(false)
+  })
+
+  it("rejects an empty object", () => {
     expect(isStatusListCredential({})).toBe(false)
+  })
+
+  it("rejects a plain string", () => {
     expect(isStatusListCredential("not a credential")).toBe(false)
   })
 })
