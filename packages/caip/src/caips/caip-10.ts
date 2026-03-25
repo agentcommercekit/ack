@@ -1,5 +1,6 @@
 import {
   caip2ChainIdPattern,
+  caip2ChainIdRegex,
   type Caip2ChainId,
   type Caip2ChainIdParts,
 } from "./caip-2"
@@ -37,6 +38,12 @@ export function createCaip10AccountId(
   chainId: Caip2ChainId,
   address: string,
 ): Caip10AccountId {
+  if (!caip2ChainIdRegex.test(chainId)) {
+    throw new Error(`Invalid CAIP-2 chain ID: ${chainId}`)
+  }
+  if (!caip10AccountAddressRegex.test(address)) {
+    throw new Error(`Invalid CAIP-10 account address: ${address}`)
+  }
   return `${chainId}:${address}`
 }
 
