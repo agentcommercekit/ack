@@ -35,6 +35,29 @@ describe("log", () => {
     // Without wrapping, the full string appears on one line
     expect(logged.some((l) => stripAnsi(l) === long)).toBe(true)
   })
+
+  it("accepts multiple messages", () => {
+    log("first", "second", "third")
+
+    const output = stripAnsi(logged.join(" "))
+    expect(output).toContain("first")
+    expect(output).toContain("second")
+    expect(output).toContain("third")
+  })
+
+  it("respects custom width", () => {
+    const long = "word ".repeat(30).trim()
+    log(long, { width: 20 })
+
+    // Each logged line should be within the custom width
+    for (const entry of logged) {
+      for (const line of stripAnsi(entry).split("\n")) {
+        if (line.length > 0) {
+          expect(line.length).toBeLessThanOrEqual(20)
+        }
+      }
+    }
+  })
 })
 
 describe("logJson", () => {
