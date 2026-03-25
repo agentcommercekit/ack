@@ -1,7 +1,6 @@
-import type { DidUri } from "@agentcommercekit/did"
-import { createJwt, createJwtSigner } from "@agentcommercekit/jwt"
+import type { JwtSigner } from "@agentcommercekit/jwt"
+import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
-import type { W3CCredential } from "@agentcommercekit/vc"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -10,16 +9,19 @@ import {
   createA2AHandshakePayload,
   createSignedA2AMessage,
 } from "./sign-message"
+import {
+  agentDid,
+  makeTextMessage,
+  testCredential,
+  userDid,
+} from "./test-fixtures"
 
-// Mock uuid to return deterministic values
 vi.mock("uuid", () => ({
   v4: vi.fn(() => "test-uuid-1234"),
 }))
 
-// Mock random to return deterministic values
 vi.mock("./random", async () => {
-  const actual =
-    await vi.importActual<typeof import("./random")>("./random")
+  const actual = await vi.importActual<typeof import("./random")>("./random")
   return {
     ...actual,
     generateRandomJti: vi.fn(() => "test-jti-1234"),
@@ -28,211 +30,123 @@ vi.mock("./random", async () => {
 })
 
 describe("createA2AHandshakePayload", () => {
-  const recipient = "did:web:recipient.example.com" as DidUri
-  const vc: W3CCredential = {
-    "@context": ["https://www.w3.org/2018/credentials/v1"],
-    type: ["VerifiableCredential", "ControllerCredential"],
-    issuer: { id: "did:web:issuer.example.com" },
-    issuanceDate: new Date().toISOString(),
-    credentialSubject: { id: "did:web:subject.example.com" },
-  }
+  it("creates a payload addressed to the recipient with a fresh nonce", () => {
+    const payload = createA2AHandshakePayload({
+      recipient: userDid,
+      vc: testCredential,
+    })
 
-  it("creates a payload with aud, nonce, and vc", () => {
-    const payload = createA2AHandshakePayload({ recipient, vc })
-
-    expect(payload.aud).toBe(recipient)
+    expect(payload.aud).toBe(userDid)
     expect(payload.nonce).toBe("test-nonce-1234")
-    expect(payload.vc).toBe(vc)
-  })
-
-  it("creates a payload without replyNonce when no requestNonce is provided", () => {
-    const payload = createA2AHandshakePayload({ recipient, vc })
-
-    expect(payload).toHaveProperty("nonce")
+    expect(payload.vc).toBe(testCredential)
     expect(payload).not.toHaveProperty("replyNonce")
   })
 
-  it("includes replyNonce when requestNonce is provided", () => {
+  it("echoes the request nonce and generates a new reply nonce for responses", () => {
     const payload = createA2AHandshakePayload({
-      recipient,
-      vc,
+      recipient: userDid,
+      vc: testCredential,
       requestNonce: "original-nonce",
     })
 
+    // The initiator's nonce becomes ours so they can correlate the reply
     expect(payload.nonce).toBe("original-nonce")
-    expect(payload).toHaveProperty("replyNonce", "test-nonce-1234")
+    // We generate a fresh nonce for the next leg of the handshake
+    expect(payload.replyNonce).toBe("test-nonce-1234")
   })
 })
 
 describe("createA2AHandshakeMessageFromJwt", () => {
-  it("creates a message with agent role", () => {
+  it("wraps a JWT in an A2A data-part message", () => {
     const jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.test.sig"
-    const message = createA2AHandshakeMessageFromJwt("agent", jwt)
 
-    expect(message).toEqual({
+    expect(createA2AHandshakeMessageFromJwt("agent", jwt)).toEqual({
       kind: "message",
       messageId: "test-uuid-1234",
       role: "agent",
-      parts: [
-        {
-          kind: "data",
-          data: { jwt },
-        },
-      ],
+      parts: [{ kind: "data", data: { jwt } }],
     })
   })
 
-  it("creates a message with user role", () => {
-    const jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.test.sig"
-    const message = createA2AHandshakeMessageFromJwt("user", jwt)
-
+  it("respects the role parameter", () => {
+    const message = createA2AHandshakeMessageFromJwt("user", "any.jwt")
     expect(message.role).toBe("user")
-    expect(message.kind).toBe("message")
-  })
-
-  it("places the JWT in a data part", () => {
-    const jwt = "some-jwt-token"
-    const message = createA2AHandshakeMessageFromJwt("agent", jwt)
-
-    expect(message.parts).toHaveLength(1)
-    expect(message.parts[0]).toEqual({
-      kind: "data",
-      data: { jwt },
-    })
   })
 })
 
 describe("createSignedA2AMessage", () => {
-  let signOptions: {
-    did: DidUri
-    jwtSigner: ReturnType<typeof createJwtSigner>
-  }
+  let jwtSigner: JwtSigner
 
   beforeEach(async () => {
     const keypair = await generateKeypair("secp256k1")
-    signOptions = {
-      did: "did:web:signer.example.com" as DidUri,
-      jwtSigner: createJwtSigner(keypair),
-    }
+    jwtSigner = createJwtSigner(keypair)
   })
 
-  it("signs a message and returns sig, jti, and signed message", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-    }
+  it("produces a JWT signature and attaches it to message metadata", async () => {
+    const result = await createSignedA2AMessage(makeTextMessage(), {
+      did: agentDid,
+      jwtSigner,
+    })
 
-    const result = await createSignedA2AMessage(message, signOptions)
-
-    expect(result.sig).toBeDefined()
-    expect(typeof result.sig).toBe("string")
+    expect(result.sig).toEqual(expect.any(String))
     expect(result.jti).toBe("test-jti-1234")
-    expect(result.message.metadata).toBeDefined()
     expect(result.message.metadata?.sig).toBe(result.sig)
   })
 
-  it("preserves original message parts in the signed message", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "agent" as const,
-      parts: [{ kind: "text" as const, text: "response" }],
-    }
-
-    const result = await createSignedA2AMessage(message, signOptions)
+  it("preserves original message content alongside the signature", async () => {
+    const original = makeTextMessage("agent")
+    const result = await createSignedA2AMessage(original, {
+      did: agentDid,
+      jwtSigner,
+    })
 
     expect(result.message.kind).toBe("message")
-    expect(result.message.messageId).toBe("msg-1")
     expect(result.message.role).toBe("agent")
-    expect(result.message.parts).toEqual([
-      { kind: "text", text: "response" },
-    ])
+    expect(result.message.parts).toEqual(original.parts)
   })
 
-  it("merges sig into existing metadata", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      metadata: { customField: "value" },
-    }
-
-    const result = await createSignedA2AMessage(message, signOptions)
+  it("merges the signature into existing metadata without clobbering", async () => {
+    const message = makeTextMessage("user", { traceId: "abc" })
+    const result = await createSignedA2AMessage(message, {
+      did: agentDid,
+      jwtSigner,
+    })
 
     expect(result.message.metadata?.sig).toBe(result.sig)
-    expect(result.message.metadata?.customField).toBe("value")
+    expect(result.message.metadata?.traceId).toBe("abc")
   })
 })
 
 describe("createA2AHandshakeMessage", () => {
-  let signOptions: {
-    did: DidUri
-    jwtSigner: ReturnType<typeof createJwtSigner>
-  }
-
-  const vc: W3CCredential = {
-    "@context": ["https://www.w3.org/2018/credentials/v1"],
-    type: ["VerifiableCredential", "ControllerCredential"],
-    issuer: { id: "did:web:issuer.example.com" },
-    issuanceDate: new Date().toISOString(),
-    credentialSubject: { id: "did:web:subject.example.com" },
-  }
+  let jwtSigner: JwtSigner
 
   beforeEach(async () => {
     const keypair = await generateKeypair("secp256k1")
-    signOptions = {
-      did: "did:web:signer.example.com" as DidUri,
-      jwtSigner: createJwtSigner(keypair),
-    }
+    jwtSigner = createJwtSigner(keypair)
   })
 
-  it("creates a signed handshake message with agent role", async () => {
+  it("signs a credential handshake and returns the nonce for correlation", async () => {
     const result = await createA2AHandshakeMessage(
       "agent",
-      {
-        recipient: "did:web:recipient.example.com" as DidUri,
-        vc,
-      },
-      signOptions,
+      { recipient: userDid, vc: testCredential },
+      { did: agentDid, jwtSigner },
     )
 
-    expect(result.sig).toBeDefined()
-    expect(typeof result.sig).toBe("string")
+    expect(result.sig).toEqual(expect.any(String))
     expect(result.jti).toBe("test-jti-1234")
     expect(result.nonce).toBe("test-nonce-1234")
     expect(result.message.role).toBe("agent")
-    expect(result.message.kind).toBe("message")
-    expect(result.message.parts).toHaveLength(1)
-    expect(result.message.parts[0].kind).toBe("data")
   })
 
-  it("creates a signed handshake message with user role", async () => {
-    const result = await createA2AHandshakeMessage(
-      "user",
-      {
-        recipient: "did:web:recipient.example.com" as DidUri,
-        vc,
-      },
-      signOptions,
-    )
-
-    expect(result.message.role).toBe("user")
-  })
-
-  it("includes the JWT in the message data part", async () => {
+  it("embeds the signed JWT in the message data part", async () => {
     const result = await createA2AHandshakeMessage(
       "agent",
-      {
-        recipient: "did:web:recipient.example.com" as DidUri,
-        vc,
-      },
-      signOptions,
+      { recipient: userDid, vc: testCredential },
+      { did: agentDid, jwtSigner },
     )
 
-    const dataPart = result.message.parts[0] as { kind: string; data: { jwt: string } }
-    expect(dataPart.data.jwt).toBe(result.sig)
+    expect(result.message.parts[0]).toEqual(
+      expect.objectContaining({ kind: "data", data: { jwt: result.sig } }),
+    )
   })
 })

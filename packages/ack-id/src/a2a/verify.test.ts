@@ -1,435 +1,251 @@
-import type { DidUri } from "@agentcommercekit/did"
-import type { JwtVerified } from "@agentcommercekit/jwt"
 import { describe, expect, it, vi } from "vitest"
 
+import {
+  agentDid,
+  expectedSignedPayload,
+  handshakeMessage,
+  mockVerifiedJwt,
+  signedMessage,
+  testCredential,
+  unsignedMessage,
+  userDid,
+} from "./test-fixtures"
 import { verifyA2AHandshakeMessage, verifyA2ASignedMessage } from "./verify"
 
-// Mock verifyJwt
 vi.mock("@agentcommercekit/jwt", async () => {
-  const actual =
-    await vi.importActual<typeof import("@agentcommercekit/jwt")>(
-      "@agentcommercekit/jwt",
-    )
+  const actual = await vi.importActual<typeof import("@agentcommercekit/jwt")>(
+    "@agentcommercekit/jwt",
+  )
   return {
     ...actual,
     verifyJwt: vi.fn(),
   }
 })
 
-// Mock getDidResolver
 vi.mock("@agentcommercekit/did", async () => {
-  const actual =
-    await vi.importActual<typeof import("@agentcommercekit/did")>(
-      "@agentcommercekit/did",
-    )
+  const actual = await vi.importActual<typeof import("@agentcommercekit/did")>(
+    "@agentcommercekit/did",
+  )
   return {
     ...actual,
     getDidResolver: vi.fn(() => ({})),
   }
 })
 
-// Import mocked modules
 const { verifyJwt } = await import("@agentcommercekit/jwt")
 
-function createMockJwtVerified(
-  payload: Record<string, unknown>,
-): JwtVerified {
-  return {
-    verified: true,
-    payload: {
-      iss: "did:web:issuer.example.com",
-      ...payload,
-    },
-    didResolutionResult: {
-      didResolutionMetadata: {},
-      didDocument: null,
-      didDocumentMetadata: {},
-    },
-    issuer: "did:web:issuer.example.com",
-    signer: {
-      id: "did:web:issuer.example.com#key-1",
-      type: "Multikey",
-      controller: "did:web:issuer.example.com",
-      publicKeyHex: "02...",
-    },
-    jwt: "mock.jwt.token",
-  }
-}
+// --- Handshake verification ---
 
 describe("verifyA2AHandshakeMessage", () => {
-  const did = "did:web:agent.example.com" as DidUri
-  const counterparty = "did:web:user.example.com" as DidUri
-
-  it("verifies a valid handshake message", async () => {
-    const vc = {
-      "@context": ["https://www.w3.org/2018/credentials/v1"],
-      type: ["VerifiableCredential", "ControllerCredential"],
-      issuer: { id: "did:web:issuer.example.com" },
-      issuanceDate: "2025-01-01T00:00:00.000Z",
-      credentialSubject: { id: "did:web:subject.example.com" },
-    }
-
+  it("extracts issuer, nonce, and credential from a valid handshake", async () => {
     vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
-        iss: counterparty,
-        nonce: "test-nonce",
-        vc,
+      mockVerifiedJwt({
+        iss: userDid,
+        nonce: "challenge-nonce",
+        vc: testCredential,
       }),
     )
 
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [
-        {
-          kind: "data" as const,
-          data: { jwt: "valid.jwt.token" },
-        },
-      ],
-    }
-
-    const result = await verifyA2AHandshakeMessage(message, {
-      did,
-      counterparty,
+    const result = await verifyA2AHandshakeMessage(handshakeMessage(), {
+      did: agentDid,
+      counterparty: userDid,
     })
 
-    expect(result.iss).toBe(counterparty)
-    expect(result.nonce).toBe("test-nonce")
-    expect(result.vc).toEqual(vc)
+    expect(result.iss).toBe(userDid)
+    expect(result.nonce).toBe("challenge-nonce")
+    expect(result.vc).toEqual(testCredential)
   })
 
-  it("throws when message is null", async () => {
+  it("verifies the JWT with audience=self and issuer=counterparty", async () => {
+    vi.mocked(verifyJwt).mockResolvedValueOnce(
+      mockVerifiedJwt({
+        iss: userDid,
+        nonce: "n",
+        vc: testCredential,
+      }),
+    )
+
+    await verifyA2AHandshakeMessage(handshakeMessage("the.jwt"), {
+      did: agentDid,
+      counterparty: userDid,
+    })
+
+    expect(verifyJwt).toHaveBeenCalledWith("the.jwt", {
+      audience: agentDid,
+      issuer: userDid,
+      resolver: expect.anything(),
+    })
+  })
+
+  // The message schema uses valibot's v.parse(), which rejects structurally
+  // invalid input before any JWT verification happens. This matters because
+  // a malformed message should fail fast, not trigger a network call to
+  // resolve a DID.
+  it.each([
+    { name: "null message", message: null },
+    {
+      name: "empty parts array",
+      message: { kind: "message", messageId: "m", role: "user", parts: [] },
+    },
+    {
+      name: "text part instead of data part",
+      message: {
+        kind: "message",
+        messageId: "m",
+        role: "user",
+        parts: [{ kind: "text", text: "x" }],
+      },
+    },
+    {
+      name: "data part without jwt field",
+      message: {
+        kind: "message",
+        messageId: "m",
+        role: "user",
+        parts: [{ kind: "data", data: { notJwt: "x" } }],
+      },
+    },
+  ])("rejects $name", async ({ message }) => {
     await expect(
-      verifyA2AHandshakeMessage(null, { did }),
+      verifyA2AHandshakeMessage(message as never, { did: agentDid }),
     ).rejects.toThrow()
   })
 
-  it("throws when message has no parts", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [],
-    }
-
-    await expect(
-      verifyA2AHandshakeMessage(message, { did }),
-    ).rejects.toThrow()
-  })
-
-  it("throws when message part is not a data part", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "not a data part" }],
-    }
-
-    await expect(
-      verifyA2AHandshakeMessage(message, { did }),
-    ).rejects.toThrow()
-  })
-
-  it("throws when data part has no jwt field", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [
-        {
-          kind: "data" as const,
-          data: { notJwt: "something" },
-        },
-      ],
-    }
-
-    await expect(
-      verifyA2AHandshakeMessage(message, { did }),
-    ).rejects.toThrow()
-  })
-
-  it("throws when JWT verification fails", async () => {
+  it("rejects when JWT verification fails", async () => {
     vi.mocked(verifyJwt).mockRejectedValueOnce(
       new Error("JWT verification failed"),
     )
 
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [
-        {
-          kind: "data" as const,
-          data: { jwt: "invalid.jwt.token" },
-        },
-      ],
-    }
-
     await expect(
-      verifyA2AHandshakeMessage(message, { did }),
+      verifyA2AHandshakeMessage(handshakeMessage(), { did: agentDid }),
     ).rejects.toThrow("JWT verification failed")
   })
 
-  it("throws when payload is missing required fields", async () => {
+  it("rejects when the verified payload is missing required handshake fields", async () => {
+    // JWT is valid but payload lacks nonce and vc — not a proper handshake
     vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
-        iss: counterparty,
-        // missing nonce and vc
-      }),
+      mockVerifiedJwt({ iss: userDid }),
     )
 
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [
-        {
-          kind: "data" as const,
-          data: { jwt: "valid.jwt.token" },
-        },
-      ],
-    }
-
     await expect(
-      verifyA2AHandshakeMessage(message, { did, counterparty }),
+      verifyA2AHandshakeMessage(handshakeMessage(), {
+        did: agentDid,
+        counterparty: userDid,
+      }),
     ).rejects.toThrow()
   })
 
-  it("throws when iss is not a valid DID URI", async () => {
+  it("rejects when issuer is not a valid DID URI", async () => {
+    // The handshake payload schema requires iss to be a did: URI.
+    // A compromised or misconfigured peer might send a plain string.
     vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
+      mockVerifiedJwt({
         iss: "not-a-did",
-        nonce: "test-nonce",
-        vc: {
-          "@context": ["https://www.w3.org/2018/credentials/v1"],
-          type: ["VerifiableCredential"],
-          issuer: { id: "did:web:issuer.example.com" },
-          issuanceDate: "2025-01-01T00:00:00.000Z",
-          credentialSubject: { id: "did:web:subject.example.com" },
-        },
+        nonce: "n",
+        vc: testCredential,
       }),
     )
-
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [
-        {
-          kind: "data" as const,
-          data: { jwt: "valid.jwt.token" },
-        },
-      ],
-    }
 
     await expect(
-      verifyA2AHandshakeMessage(message, { did }),
+      verifyA2AHandshakeMessage(handshakeMessage(), { did: agentDid }),
     ).rejects.toThrow()
-  })
-
-  it("passes counterparty as issuer to verifyJwt", async () => {
-    const vc = {
-      "@context": ["https://www.w3.org/2018/credentials/v1"],
-      type: ["VerifiableCredential", "ControllerCredential"],
-      issuer: { id: "did:web:issuer.example.com" },
-      issuanceDate: "2025-01-01T00:00:00.000Z",
-      credentialSubject: { id: "did:web:subject.example.com" },
-    }
-
-    vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
-        iss: counterparty,
-        nonce: "test-nonce",
-        vc,
-      }),
-    )
-
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [
-        {
-          kind: "data" as const,
-          data: { jwt: "valid.jwt.token" },
-        },
-      ],
-    }
-
-    await verifyA2AHandshakeMessage(message, { did, counterparty })
-
-    expect(verifyJwt).toHaveBeenCalledWith("valid.jwt.token", {
-      audience: did,
-      issuer: counterparty,
-      resolver: expect.anything(),
-    })
   })
 })
 
+// --- Signed message verification ---
+
 describe("verifyA2ASignedMessage", () => {
-  const did = "did:web:agent.example.com" as DidUri
-  const counterparty = "did:web:user.example.com" as DidUri
-
-  it("verifies a valid signed message", async () => {
-    const messageContent = {
-      kind: "message",
-      messageId: "msg-1",
-      role: "user",
-      parts: [{ kind: "text", text: "hello" }],
-    }
-
+  function mockValidSignature() {
     vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
-        message: messageContent,
-      }),
+      mockVerifiedJwt(expectedSignedPayload()),
     )
+  }
 
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      metadata: { sig: "valid.jwt.signature" },
-    }
+  it("verifies that a message's content matches its JWT signature", async () => {
+    mockValidSignature()
 
-    const result = await verifyA2ASignedMessage(message, {
-      did,
-      counterparty,
+    const result = await verifyA2ASignedMessage(signedMessage(), {
+      did: agentDid,
+      counterparty: userDid,
     })
 
     expect(result.verified).toBe(true)
   })
 
-  it("throws when message has no metadata", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-    }
+  it("verifies the signature JWT with audience=self and issuer=counterparty", async () => {
+    mockValidSignature()
 
+    await verifyA2ASignedMessage(signedMessage("hello", "the.sig"), {
+      did: agentDid,
+      counterparty: userDid,
+    })
+
+    expect(verifyJwt).toHaveBeenCalledWith("the.sig", {
+      audience: agentDid,
+      issuer: userDid,
+      resolver: expect.anything(),
+    })
+  })
+
+  it("rejects unsigned messages (no metadata at all)", async () => {
     await expect(
-      verifyA2ASignedMessage(message, { did }),
+      verifyA2ASignedMessage(unsignedMessage(), { did: agentDid }),
     ).rejects.toThrow()
   })
 
-  it("throws when metadata has no sig field", async () => {
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      metadata: { other: "data" },
-    }
+  it("rejects messages with metadata but no sig field", async () => {
+    const noSig = { ...unsignedMessage(), metadata: { traceId: "abc" } }
 
     await expect(
-      verifyA2ASignedMessage(message, { did }),
+      verifyA2ASignedMessage(noSig as never, { did: agentDid }),
     ).rejects.toThrow()
   })
 
-  it("throws when message parts do not match signature payload", async () => {
+  it("detects tampering: rejects when message content diverges from signed payload", async () => {
+    // Signature covers "original content" but the message body says "tampered"
     vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
+      mockVerifiedJwt({
         message: {
           kind: "message",
           messageId: "msg-1",
           role: "user",
-          parts: [{ kind: "text", text: "different content" }],
+          parts: [{ kind: "text", text: "original content" }],
         },
       }),
     )
 
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      metadata: { sig: "valid.jwt.signature" },
-    }
-
     await expect(
-      verifyA2ASignedMessage(message, { did, counterparty }),
+      verifyA2ASignedMessage(signedMessage("tampered"), {
+        did: agentDid,
+        counterparty: userDid,
+      }),
     ).rejects.toThrow("Message parts do not match")
   })
 
-  it("throws when JWT verification fails", async () => {
-    vi.mocked(verifyJwt).mockRejectedValueOnce(
-      new Error("Signature invalid"),
-    )
-
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      metadata: { sig: "bad.jwt.signature" },
-    }
+  it("rejects when the underlying JWT signature is invalid", async () => {
+    vi.mocked(verifyJwt).mockRejectedValueOnce(new Error("Signature invalid"))
 
     await expect(
-      verifyA2ASignedMessage(message, { did }),
+      verifyA2ASignedMessage(signedMessage(), { did: agentDid }),
     ).rejects.toThrow("Signature invalid")
   })
 
-  it("strips contextId before comparing message content", async () => {
-    const messageContent = {
-      kind: "message",
-      messageId: "msg-1",
-      role: "user",
-      parts: [{ kind: "text", text: "hello" }],
+  it("ignores server-injected contextId when comparing content", async () => {
+    // A2A servers may auto-assign a contextId after the client signs the
+    // message. The verification must strip it before comparing, otherwise
+    // every message routed through a server would fail validation.
+    mockValidSignature()
+
+    const messageWithContextId = {
+      ...signedMessage(),
+      contextId: "ctx-server-assigned",
     }
 
-    vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
-        message: messageContent,
-      }),
-    )
-
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      contextId: "ctx-auto-generated",
-      metadata: { sig: "valid.jwt.signature" },
-    }
-
-    const result = await verifyA2ASignedMessage(message, {
-      did,
-      counterparty,
+    const result = await verifyA2ASignedMessage(messageWithContextId, {
+      did: agentDid,
+      counterparty: userDid,
     })
 
     expect(result.verified).toBe(true)
-  })
-
-  it("passes counterparty as issuer to verifyJwt", async () => {
-    const messageContent = {
-      kind: "message",
-      messageId: "msg-1",
-      role: "user",
-      parts: [{ kind: "text", text: "hello" }],
-    }
-
-    vi.mocked(verifyJwt).mockResolvedValueOnce(
-      createMockJwtVerified({
-        message: messageContent,
-      }),
-    )
-
-    const message = {
-      kind: "message" as const,
-      messageId: "msg-1",
-      role: "user" as const,
-      parts: [{ kind: "text" as const, text: "hello" }],
-      metadata: { sig: "valid.jwt.signature" },
-    }
-
-    await verifyA2ASignedMessage(message, { did, counterparty })
-
-    expect(verifyJwt).toHaveBeenCalledWith("valid.jwt.signature", {
-      audience: did,
-      issuer: counterparty,
-      resolver: expect.anything(),
-    })
   })
 })
