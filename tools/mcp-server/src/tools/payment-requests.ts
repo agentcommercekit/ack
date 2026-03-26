@@ -31,6 +31,7 @@ const paymentOptionSchema = z.object({
   receiptService: z.string().optional(),
 })
 
+/** Register ACK-Pay payment request tools on the MCP server. */
 export function registerPaymentRequestTools(server: McpServer) {
   server.tool(
     "ack_create_payment_request",
