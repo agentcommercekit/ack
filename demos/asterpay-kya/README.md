@@ -1,6 +1,6 @@
 # ACK-ID: AsterPay KYA Trust Score Demo
 
-This demo shows how [AsterPay](https://asterpay.io) KYA (Know Your Agent) Trust Score tokens integrate with ACK-ID's identity infrastructure. AsterPay provides a 5-layer trust verification framework for AI agent payments: VERIFY → SCREEN → SCORE → SETTLE → COMPLY.
+This demo shows how [AsterPay](https://asterpay.io) KYA (Know Your Agent) Trust Score tokens integrate with ACK-ID's identity infrastructure. AsterPay provides a 5-layer trust verification framework for AI agent payments: VERIFY → SCREEN → SCORE → ATTEST → COMPLY.
 
 ## Getting started
 

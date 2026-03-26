@@ -40,7 +40,7 @@ async function runDemo() {
 
   log(`📝 Overview:
    AsterPay's Know Your Agent (KYA) framework provides a 5-layer trust
-   verification system for AI agents: VERIFY → SCREEN → SCORE → SETTLE → COMPLY.
+   verification system for AI agents: VERIFY → SCREEN → SCORE → ATTEST → COMPLY.
 
    The Trust Score (0-100) combines 7 on-chain and off-chain signals including
    cryptographically signed attestations from InsumerAPI (Coinbase KYC,
@@ -237,6 +237,23 @@ async function simulateIACPHook(
   log("   🔒 IACPHook.beforeAction(fund) triggered\n")
 
   log("   → Resolving agent identity via ACK-ID...")
+
+  const minScore = 50
+  const verification = await verifyAsterPayKyaAsAckId(
+    jwks,
+    kyaToken,
+    ["did:web:api.asterpay.io"],
+    minScore,
+  )
+
+  if (!verification.valid) {
+    log(
+      `\n   ${errorMessage(`IACPHook: BLOCKED — ${verification.reason}`)}`,
+    )
+    log(`   → Emitting ReputationNegative event`)
+    return
+  }
+
   const vc = await convertAsterPayKyaToVerifiableCredential(jwks, kyaToken)
 
   log(
@@ -253,26 +270,46 @@ async function simulateIACPHook(
   )
 
   log("\n   → Running 5-shield verification:")
+
+  const hasIdentity = !!vc.credentialSubject.agentId
   log(
-    `     ✅ VERIFY: ERC-8004 identity confirmed (${vc.credentialSubject.agentId})`,
+    `     ${hasIdentity ? "✅" : "❌"} VERIFY: ERC-8004 identity ${hasIdentity ? `confirmed (${vc.credentialSubject.agentId})` : "missing"}`,
   )
+
+  const notSanctioned = !vc.credentialSubject.sanctioned
   log(
-    `     ✅ SCREEN: Chainalysis sanctions clear (sanctioned=${vc.credentialSubject.sanctioned})`,
+    `     ${notSanctioned ? "✅" : "❌"} SCREEN: Chainalysis sanctions ${notSanctioned ? "clear" : "FLAGGED"} (sanctioned=${vc.credentialSubject.sanctioned})`,
   )
+
+  const scorePass = vc.credentialSubject.trustScore >= minScore
   log(
-    `     ✅ SCORE: Trust score ${vc.credentialSubject.trustScore} ≥ 50 minimum`,
+    `     ${scorePass ? "✅" : "❌"} SCORE: Trust score ${vc.credentialSubject.trustScore} ${scorePass ? "≥" : "<"} ${minScore} minimum`,
   )
 
   const att = vc.credentialSubject.insumerAttestation
+  const attestPass =
+    att.coinbaseKyc.met && att.gitcoinPassport.met && att.tokenBalance.met
   log(
-    `     ✅ ATTEST: InsumerAPI — KYC=${att.coinbaseKyc.met}, Country=${att.coinbaseCountry.country}, Passport=${att.gitcoinPassport.met}, USDC=${att.tokenBalance.met}`,
+    `     ${attestPass ? "✅" : "❌"} ATTEST: InsumerAPI — KYC=${att.coinbaseKyc.met}, Country=${att.coinbaseCountry.country}, Passport=${att.gitcoinPassport.met}, USDC=${att.tokenBalance.met}`,
   )
-  log(`     ✅ COMPLY: Tier "${vc.credentialSubject.tier}" authorized for job budget`)
 
+  const allPassed = hasIdentity && notSanctioned && scorePass && attestPass
+  const tierAuthorized = allPassed
   log(
-    `\n   ${successMessage("IACPHook: APPROVED — Agent may fund the job")}`,
+    `     ${tierAuthorized ? "✅" : "❌"} COMPLY: Tier "${vc.credentialSubject.tier}" ${tierAuthorized ? "authorized" : "denied"} for job budget`,
   )
-  log(`   → Emitting ReputationPositive event for ${vc.credentialSubject.agentAddress}`)
+
+  if (allPassed) {
+    log(
+      `\n   ${successMessage("IACPHook: APPROVED — Agent may fund the job")}`,
+    )
+    log(`   → Emitting ReputationPositive event for ${vc.credentialSubject.agentAddress}`)
+  } else {
+    log(
+      `\n   ${errorMessage("IACPHook: REJECTED — Agent failed verification gates")}`,
+    )
+    log(`   → Emitting ReputationNegative event for ${vc.credentialSubject.agentAddress}`)
+  }
 }
 
 runDemo().catch(console.error)

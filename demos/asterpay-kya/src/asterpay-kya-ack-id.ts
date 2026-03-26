@@ -42,7 +42,20 @@ export async function convertAsterPayKyaToVerifiableCredential(
   const jwtSignature = jwtParts[2]
 
   if (!payload.iat || !payload.exp || !payload.jti || !payload.sub) {
-    throw new Error("Invalid JWT payload")
+    throw new Error("Invalid JWT payload: missing required standard claims")
+  }
+
+  if (
+    typeof payload.trustScore !== "number" ||
+    typeof payload.sanctioned !== "boolean" ||
+    !payload.agentAddress ||
+    !payload.tier ||
+    !payload.components ||
+    !payload.insumerAttestation
+  ) {
+    throw new Error(
+      "Invalid JWT payload: missing trust-critical claims (trustScore, sanctioned, agentAddress, tier, components, insumerAttestation)",
+    )
   }
 
   const agentDid: DidWebUri =
