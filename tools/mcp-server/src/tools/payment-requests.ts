@@ -75,7 +75,7 @@ export function registerPaymentRequestTools(server: McpServer) {
           ],
         }
 
-        if (expiresInSeconds) {
+        if (expiresInSeconds !== undefined) {
           init.expiresAt = new Date(
             Date.now() + expiresInSeconds * 1000,
           ).toISOString()
