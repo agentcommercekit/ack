@@ -48,8 +48,9 @@ export function registerPaymentRequestTools(server: McpServer) {
         ),
       expiresInSeconds: z
         .number()
+        .int()
+        .nonnegative()
         .optional()
-        .default(3600)
         .describe("Seconds until the payment request expires"),
       jwk: z
         .string()
@@ -117,7 +118,8 @@ export function registerPaymentRequestTools(server: McpServer) {
           issuer: parsed.issuer,
         })
       } catch (e) {
-        return verification(false, { reason: (e as Error).message })
+        const reason = e instanceof Error ? e.message : String(e)
+        return verification(false, { reason })
       }
     },
   )
