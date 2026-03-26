@@ -42,7 +42,7 @@ describe("createA2AHandshakePayload", () => {
     expect(payload).not.toHaveProperty("replyNonce")
   })
 
-  it("echoes the request nonce and generates a new reply nonce for responses", () => {
+  it("returns the request nonce and generates a new reply nonce for responses", () => {
     const payload = createA2AHandshakePayload({
       recipient: userDid,
       vc: testCredential,
@@ -57,7 +57,7 @@ describe("createA2AHandshakePayload", () => {
 })
 
 describe("createA2AHandshakeMessageFromJwt", () => {
-  it("wraps a JWT in an A2A data-part message", () => {
+  it("creates an A2A data-part message from a JWT", () => {
     const jwt = "eyJ0eXAiOiJKV1QiLCJhbGciOiJFUzI1NksifQ.test.sig"
 
     expect(createA2AHandshakeMessageFromJwt("agent", jwt)).toEqual({
@@ -68,7 +68,7 @@ describe("createA2AHandshakeMessageFromJwt", () => {
     })
   })
 
-  it("respects the role parameter", () => {
+  it("returns the correct role in the message", () => {
     const message = createA2AHandshakeMessageFromJwt("user", "any.jwt")
     expect(message.role).toBe("user")
   })
@@ -82,7 +82,7 @@ describe("createSignedA2AMessage", () => {
     jwtSigner = createJwtSigner(keypair)
   })
 
-  it("produces a JWT signature and attaches it to message metadata", async () => {
+  it("creates a JWT signature and attaches it to message metadata", async () => {
     const result = await createSignedA2AMessage(makeTextMessage(), {
       did: agentDid,
       jwtSigner,
@@ -93,7 +93,7 @@ describe("createSignedA2AMessage", () => {
     expect(result.message.metadata?.sig).toBe(result.sig)
   })
 
-  it("preserves original message content alongside the signature", async () => {
+  it("returns original message content alongside the signature", async () => {
     const original = makeTextMessage("agent")
     const result = await createSignedA2AMessage(original, {
       did: agentDid,
@@ -105,7 +105,7 @@ describe("createSignedA2AMessage", () => {
     expect(result.message.parts).toEqual(original.parts)
   })
 
-  it("merges the signature into existing metadata without clobbering", async () => {
+  it("creates metadata with signature merged into existing fields", async () => {
     const message = makeTextMessage("user", { traceId: "abc" })
     const result = await createSignedA2AMessage(message, {
       did: agentDid,
@@ -125,7 +125,7 @@ describe("createA2AHandshakeMessage", () => {
     jwtSigner = createJwtSigner(keypair)
   })
 
-  it("signs a credential handshake and returns the nonce for correlation", async () => {
+  it("creates a signed credential handshake and returns the nonce for correlation", async () => {
     const result = await createA2AHandshakeMessage(
       "agent",
       { recipient: userDid, vc: testCredential },
@@ -138,7 +138,7 @@ describe("createA2AHandshakeMessage", () => {
     expect(result.message.role).toBe("agent")
   })
 
-  it("embeds the signed JWT in the message data part", async () => {
+  it("returns the signed JWT in the message data part", async () => {
     const result = await createA2AHandshakeMessage(
       "agent",
       { recipient: userDid, vc: testCredential },

@@ -16,7 +16,7 @@ describe("createAgentCardServiceEndpoint", () => {
     })
   })
 
-  it("handles DIDs with colon-separated path components", () => {
+  it("creates correct id for DIDs with colon-separated path components", () => {
     const endpoint = createAgentCardServiceEndpoint(
       "did:web:example.com:agents:my-agent",
       "https://example.com/agents/my-agent/agent.json",

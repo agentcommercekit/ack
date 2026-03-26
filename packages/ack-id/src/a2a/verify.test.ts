@@ -37,7 +37,7 @@ const { verifyJwt } = await import("@agentcommercekit/jwt")
 // --- Handshake verification ---
 
 describe("verifyA2AHandshakeMessage", () => {
-  it("extracts issuer, nonce, and credential from a valid handshake", async () => {
+  it("returns issuer, nonce, and credential from a valid handshake", async () => {
     vi.mocked(verifyJwt).mockResolvedValueOnce(
       mockVerifiedJwt({
         iss: userDid,
@@ -56,7 +56,7 @@ describe("verifyA2AHandshakeMessage", () => {
     expect(result.vc).toEqual(testCredential)
   })
 
-  it("verifies the JWT with audience=self and issuer=counterparty", async () => {
+  it("requires audience=self and issuer=counterparty for JWT verification", async () => {
     vi.mocked(verifyJwt).mockResolvedValueOnce(
       mockVerifiedJwt({
         iss: userDid,
@@ -111,7 +111,7 @@ describe("verifyA2AHandshakeMessage", () => {
     ).rejects.toThrow()
   })
 
-  it("rejects when JWT verification fails", async () => {
+  it("throws when JWT verification fails", async () => {
     vi.mocked(verifyJwt).mockRejectedValueOnce(
       new Error("JWT verification failed"),
     )
@@ -121,7 +121,7 @@ describe("verifyA2AHandshakeMessage", () => {
     ).rejects.toThrow("JWT verification failed")
   })
 
-  it("rejects when the verified payload is missing required handshake fields", async () => {
+  it("throws when the verified payload is missing required handshake fields", async () => {
     // JWT is valid but payload lacks nonce and vc — not a proper handshake
     vi.mocked(verifyJwt).mockResolvedValueOnce(
       mockVerifiedJwt({ iss: userDid }),
@@ -135,7 +135,7 @@ describe("verifyA2AHandshakeMessage", () => {
     ).rejects.toThrow()
   })
 
-  it("rejects when issuer is not a valid DID URI", async () => {
+  it("throws when issuer is not a valid DID URI", async () => {
     // The handshake payload schema requires iss to be a did: URI.
     // A compromised or misconfigured peer might send a plain string.
     vi.mocked(verifyJwt).mockResolvedValueOnce(
@@ -161,7 +161,7 @@ describe("verifyA2ASignedMessage", () => {
     )
   }
 
-  it("verifies that a message's content matches its JWT signature", async () => {
+  it("returns verified when message content matches its JWT signature", async () => {
     mockValidSignature()
 
     const result = await verifyA2ASignedMessage(signedMessage(), {
@@ -172,7 +172,7 @@ describe("verifyA2ASignedMessage", () => {
     expect(result.verified).toBe(true)
   })
 
-  it("verifies the signature JWT with audience=self and issuer=counterparty", async () => {
+  it("requires audience=self and issuer=counterparty for signature verification", async () => {
     mockValidSignature()
 
     await verifyA2ASignedMessage(signedMessage("hello", "the.sig"), {
@@ -187,13 +187,13 @@ describe("verifyA2ASignedMessage", () => {
     })
   })
 
-  it("rejects unsigned messages (no metadata at all)", async () => {
+  it("throws for unsigned messages (no metadata at all)", async () => {
     await expect(
       verifyA2ASignedMessage(unsignedMessage(), { did: agentDid }),
     ).rejects.toThrow()
   })
 
-  it("rejects messages with metadata but no sig field", async () => {
+  it("throws for messages with metadata but no sig field", async () => {
     const noSig = { ...unsignedMessage(), metadata: { traceId: "abc" } }
 
     await expect(
@@ -201,7 +201,7 @@ describe("verifyA2ASignedMessage", () => {
     ).rejects.toThrow()
   })
 
-  it("detects tampering: rejects when message content diverges from signed payload", async () => {
+  it("throws when message content diverges from signed payload", async () => {
     // Signature covers "original content" but the message body says "tampered"
     vi.mocked(verifyJwt).mockResolvedValueOnce(
       mockVerifiedJwt({
@@ -222,7 +222,7 @@ describe("verifyA2ASignedMessage", () => {
     ).rejects.toThrow("Message parts do not match")
   })
 
-  it("rejects when the underlying JWT signature is invalid", async () => {
+  it("throws when the underlying JWT signature is invalid", async () => {
     vi.mocked(verifyJwt).mockRejectedValueOnce(new Error("Signature invalid"))
 
     await expect(
@@ -230,7 +230,7 @@ describe("verifyA2ASignedMessage", () => {
     ).rejects.toThrow("Signature invalid")
   })
 
-  it("ignores server-injected contextId when comparing content", async () => {
+  it("returns verified when server-injected contextId is present", async () => {
     // A2A servers may auto-assign a contextId after the client signs the
     // message. The verification must strip it before comparing, otherwise
     // every message routed through a server would fail validation.
