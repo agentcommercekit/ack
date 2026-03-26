@@ -12,6 +12,7 @@ import { z } from "zod"
 
 import { err, ok } from "../util"
 
+/** Register utility tools (keypair generation) on the MCP server. */
 export function registerUtilityTools(server: McpServer) {
   server.tool(
     "ack_generate_keypair",

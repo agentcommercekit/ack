@@ -23,6 +23,7 @@ import {
   verification,
 } from "../util"
 
+/** Register ACK-ID identity tools on the MCP server. */
 export function registerIdentityTools(server: McpServer) {
   server.tool(
     "ack_create_controller_credential",

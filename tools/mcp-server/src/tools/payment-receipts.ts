@@ -11,6 +11,7 @@ import { z } from "zod"
 
 import { err, ok, resolver, verification } from "../util"
 
+/** Register ACK-Pay payment receipt tools on the MCP server. */
 export function registerPaymentReceiptTools(server: McpServer) {
   server.tool(
     "ack_create_payment_receipt",
