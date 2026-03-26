@@ -31,7 +31,7 @@ import { curveToAlg } from "../util"
 const resolver = getDidResolver()
 
 describe("full agent workflow", () => {
-  it("completes an identity + payment cycle end-to-end", async () => {
+  it("creates and verifies an identity + payment cycle end-to-end", async () => {
     // 1. Generate keypairs for owner and agent
     const ownerKeypair = await generateKeypair("secp256k1")
     const agentKeypair = await generateKeypair("secp256k1")
@@ -129,7 +129,7 @@ describe("full agent workflow", () => {
     expect(verifiedReceipt.issuer).toEqual({ id: agentDid })
   })
 
-  it("rejects a credential signed by the wrong key", async () => {
+  it("throws for a credential signed by the wrong key", async () => {
     const ownerKeypair = await generateKeypair("secp256k1")
     const attackerKeypair = await generateKeypair("secp256k1")
     const ownerDid = createDidKeyUri(ownerKeypair)
@@ -154,7 +154,7 @@ describe("full agent workflow", () => {
     ).rejects.toThrow()
   })
 
-  it("rejects a payment request from an untrusted issuer", async () => {
+  it("throws for a payment request from an untrusted issuer", async () => {
     const keypair = await generateKeypair("secp256k1")
     const did = createDidKeyUri(keypair)
 
