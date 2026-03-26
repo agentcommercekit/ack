@@ -52,8 +52,7 @@ export async function createMockSkyfireKyaToken(
       expiresIn: 3600,
     },
     {
-      // @ts-expect-error - TODO: fix this
-      typ: "kya+JWT",
+      typ: "kya+JWT" as "JWT",
       alg: "ES256",
     },
   )
