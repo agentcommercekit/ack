@@ -108,7 +108,8 @@ export function registerIdentityTools(server: McpServer) {
           subject: credential.credentialSubject,
         })
       } catch (e) {
-        return verification(false, { reason: (e as Error).message })
+        const reason = e instanceof Error ? e.message : String(e)
+        return verification(false, { reason })
       }
     },
   )
