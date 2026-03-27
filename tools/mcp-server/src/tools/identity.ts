@@ -71,7 +71,11 @@ export function registerIdentityTools(server: McpServer) {
     async ({ credential, jwk, did }) => {
       try {
         const keypair = keypairFromJwk(jwk)
-        const jwt = await signCredential(JSON.parse(credential), {
+        const parsed = JSON.parse(credential)
+        if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+          throw new Error("credential must be a JSON object")
+        }
+        const jwt = await signCredential(parsed, {
           did: did as DidUri,
           signer: createJwtSigner(keypair),
           alg: curveToAlg(keypair.curve),
