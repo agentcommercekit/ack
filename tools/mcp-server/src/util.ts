@@ -20,6 +20,9 @@ export const resolver = getDidResolver()
  */
 export function keypairFromJwk(jwkJson: string): Keypair {
   const jwk = JSON.parse(jwkJson)
+  if (typeof jwk !== "object" || jwk === null || Array.isArray(jwk)) {
+    throw new Error("JWK must be a JSON object")
+  }
   return jwkToKeypair(jwk)
 }
 

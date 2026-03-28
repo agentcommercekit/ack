@@ -49,7 +49,7 @@ export function registerPaymentRequestTools(server: McpServer) {
       expiresInSeconds: z
         .number()
         .int()
-        .nonnegative()
+        .positive()
         .optional()
         .describe("Seconds until the payment request expires"),
       jwk: z
