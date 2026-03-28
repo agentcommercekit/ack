@@ -15,6 +15,7 @@ import { generateKeypair, type Keypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it } from "vitest"
 
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
+import { InvalidPaymentRequestTokenError } from "./errors"
 import type { PaymentRequestInit } from "./payment-request"
 import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
@@ -78,18 +79,21 @@ describe("verifyPaymentRequestToken", () => {
     expect(result.parsed.issuer).toEqual(issuerDid)
   })
 
-  it("throws for invalid JWT format", async () => {
+  it("throws for invalid JWT format with original error as cause", async () => {
     const resolver = getDidResolver()
     resolver.addToCache(issuerDid, issuerDidDocument)
 
-    await expect(
-      verifyPaymentRequestToken("invalid.jwt.token", {
-        resolver,
-      }),
-    ).rejects.toThrow("Invalid payment request token")
+    const error = await verifyPaymentRequestToken("invalid.jwt.token", {
+      resolver,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.message).toBe("Invalid payment request token")
+    expect(error.cause).toBeDefined()
+    expect(error.cause).toBeInstanceOf(Error)
   })
 
-  it("throws for expired JWT", async () => {
+  it("throws for expired JWT with original error as cause", async () => {
     // Create a JWT with an expiration date in the past
     const expiredPayload = {
       ...paymentRequest,
@@ -111,11 +115,13 @@ describe("verifyPaymentRequestToken", () => {
     const resolver = getDidResolver()
     resolver.addToCache(issuerDid, issuerDidDocument)
 
-    await expect(
-      verifyPaymentRequestToken(expiredToken, {
-        resolver,
-      }),
-    ).rejects.toThrow("Invalid payment request token")
+    const error = await verifyPaymentRequestToken(expiredToken, {
+      resolver,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.cause).toBeDefined()
+    expect(error.cause).toBeInstanceOf(Error)
   })
 
   it("allows expired JWT when expiry verification is disabled", async () => {
@@ -150,7 +156,7 @@ describe("verifyPaymentRequestToken", () => {
     expect(result.parsed.issuer).toEqual(issuerDid)
   })
 
-  it("throws for JWT with invalid signature", async () => {
+  it("throws for JWT with invalid signature with original error as cause", async () => {
     const body = await createSignedPaymentRequest(paymentRequest, {
       issuer: issuerDid,
       signer,
@@ -168,14 +174,16 @@ describe("verifyPaymentRequestToken", () => {
       }),
     )
 
-    await expect(
-      verifyPaymentRequestToken(body.paymentRequestToken, {
-        resolver,
-      }),
-    ).rejects.toThrow("Invalid payment request token")
+    const error = await verifyPaymentRequestToken(body.paymentRequestToken, {
+      resolver,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.cause).toBeDefined()
+    expect(error.cause).toBeInstanceOf(Error)
   })
 
-  it("throws for a JWT that does not contain a payment config", async () => {
+  it("throws for a JWT that does not contain a payment config without cause", async () => {
     // Create a JWT with valid format but missing payment config
     const invalidToken = await createJwt(
       { sub: "test-payment-request-id" },
@@ -188,10 +196,14 @@ describe("verifyPaymentRequestToken", () => {
     const resolver = getDidResolver()
     resolver.addToCache(issuerDid, issuerDidDocument)
 
-    await expect(
-      verifyPaymentRequestToken(invalidToken, {
-        resolver,
-      }),
-    ).rejects.toThrow("Payment Request token is not a valid PaymentRequest")
+    const error = await verifyPaymentRequestToken(invalidToken, {
+      resolver,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.message).toBe(
+      "Payment Request token is not a valid PaymentRequest",
+    )
+    expect(error.cause).toBeUndefined()
   })
 })
