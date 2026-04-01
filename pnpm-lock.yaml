@@ -192,13 +192,13 @@ importers:
         specifier: workspace:*
         version: link:../../tools/cli-tools
       '@solana-program/system':
-        specifier: ^0.9.0
+        specifier: 0.9.1
         version: 0.9.1(@solana/kit@4.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3))
       '@solana-program/token':
-        specifier: ^0.6.0
+        specifier: 0.6.0
         version: 0.6.0(@solana/kit@4.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3))
       '@solana/kit':
-        specifier: ^4.0.0
+        specifier: 4.0.0
         version: 4.0.0(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(ws@8.18.3)
       agentcommercekit:
         specifier: workspace:*
