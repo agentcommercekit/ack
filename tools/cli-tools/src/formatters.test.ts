@@ -22,7 +22,7 @@ describe("sectionHeader", () => {
     expect(lines[0]!.length).toBe(lines[1]!.length)
   })
 
-  it("includes a step number when provided", () => {
+  it("returns header with step number when provided", () => {
     const header = sectionHeader("Do the thing", { step: 3 })
     const plain = stripAnsi(header)
 
@@ -30,7 +30,7 @@ describe("sectionHeader", () => {
     expect(plain).toContain("Do the thing")
   })
 
-  it("omits step prefix when no step is given", () => {
+  it("returns header without step prefix when no step is given", () => {
     const header = sectionHeader("No step here")
     const plain = stripAnsi(header)
 
@@ -39,21 +39,21 @@ describe("sectionHeader", () => {
 })
 
 describe("successMessage", () => {
-  it("prefixes with a check mark", () => {
+  it("returns message prefixed with a check mark", () => {
     const msg = stripAnsi(successMessage("it worked"))
     expect(msg).toBe("✓ it worked")
   })
 })
 
 describe("errorMessage", () => {
-  it("prefixes with an X", () => {
+  it("returns message prefixed with an X", () => {
     const msg = stripAnsi(errorMessage("it broke"))
     expect(msg).toBe("✗ it broke")
   })
 })
 
 describe("wordWrap", () => {
-  it("wraps long text to the specified width", () => {
+  it("returns wrapped text at the specified width", () => {
     const longText = "word ".repeat(30).trim()
     const wrapped = wordWrap(longText, 20)
 
@@ -62,7 +62,7 @@ describe("wordWrap", () => {
     }
   })
 
-  it("defaults to 80 characters", () => {
+  it("returns text wrapped at 80 characters by default", () => {
     const longText = "word ".repeat(50).trim()
     const wrapped = wordWrap(longText)
 

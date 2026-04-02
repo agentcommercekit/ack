@@ -1,25 +1,29 @@
 import stripAnsi from "strip-ansi"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import { log, logJson } from "./prompts"
 
 // Capture console.log output
 const logged: string[] = []
-vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
-  logged.push(args.map(String).join(" "))
-})
 
 describe("log", () => {
   beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
+      logged.push(args.map(String).join(" "))
+    })
     logged.length = 0
   })
 
-  it("prints a message to the console", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("returns output with the message printed to console", () => {
     log("hello")
     expect(logged.some((l) => stripAnsi(l).includes("hello"))).toBe(true)
   })
 
-  it("wraps text by default", () => {
+  it("returns wrapped text by default", () => {
     const long = "word ".repeat(30).trim()
     log(long)
 
@@ -28,7 +32,7 @@ describe("log", () => {
     expect(stripAnsi(output).split("\n").length).toBeGreaterThan(1)
   })
 
-  it("skips wrapping when wrap is false", () => {
+  it("returns unwrapped text when wrap is false", () => {
     const long = "word ".repeat(30).trim()
     log(long, { wrap: false })
 
@@ -36,7 +40,7 @@ describe("log", () => {
     expect(logged.some((l) => stripAnsi(l) === long)).toBe(true)
   })
 
-  it("accepts multiple messages", () => {
+  it("returns output containing all provided messages", () => {
     log("first", "second", "third")
 
     const output = stripAnsi(logged.join(" "))
@@ -45,7 +49,7 @@ describe("log", () => {
     expect(output).toContain("third")
   })
 
-  it("respects custom width", () => {
+  it("returns text wrapped at custom width", () => {
     const long = "word ".repeat(30).trim()
     log(long, { width: 20 })
 
@@ -62,10 +66,17 @@ describe("log", () => {
 
 describe("logJson", () => {
   beforeEach(() => {
+    vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
+      logged.push(args.map(String).join(" "))
+    })
     logged.length = 0
   })
 
-  it("prints formatted JSON", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("returns formatted JSON output", () => {
     logJson({ key: "value" })
 
     const output = stripAnsi(logged.join("\n"))
