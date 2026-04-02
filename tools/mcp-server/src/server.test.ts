@@ -121,8 +121,8 @@ describe("MCP server over stdio", () => {
     const credResult = await client.callTool({
       name: "ack_create_controller_credential",
       arguments: {
-        subject: agent.did,
-        controller: owner.did,
+        subjectDid: agent.did,
+        controllerDid: owner.did,
       },
     })
     expect(credResult.isError).toBeFalsy()
@@ -135,8 +135,8 @@ describe("MCP server over stdio", () => {
       name: "ack_sign_credential",
       arguments: {
         credential,
-        jwk: owner.jwk,
-        did: owner.did,
+        signerJwk: owner.jwk,
+        signerDid: owner.did,
       },
     })
     expect(signResult.isError).toBeFalsy()
