@@ -52,14 +52,14 @@ export function registerPaymentRequestTools(server: McpServer) {
         .positive()
         .optional()
         .describe("Seconds until the payment request expires"),
-      jwk: z
+      signerJwk: z
         .string()
         .describe(
-          "JWK JSON string containing the private key (from ack_generate_keypair)",
+          "JWK JSON string containing the signer's private key (from ack_generate_keypair)",
         ),
-      did: z.string().describe("DID of the payment requester"),
+      signerDid: z.string().describe("DID of the payment requester (must match the JWK)"),
     },
-    async ({ description, paymentOptions, expiresInSeconds, jwk, did }) => {
+    async ({ description, paymentOptions, expiresInSeconds, signerJwk: jwk, signerDid: did }) => {
       try {
         if (paymentOptions.length === 0) {
           throw new Error("At least one payment option is required")

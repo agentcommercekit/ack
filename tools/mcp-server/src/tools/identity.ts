@@ -27,20 +27,20 @@ import {
 export function registerIdentityTools(server: McpServer) {
   server.tool(
     "ack_create_controller_credential",
-    "Create a W3C Verifiable Credential proving that a subject DID is controlled by a controller DID.",
+    "Create a W3C Verifiable Credential proving that a subject DID (e.g. an agent) is controlled by a controller DID (e.g. the owner). Requires both subjectDid and controllerDid.",
     {
-      subject: z
+      subjectDid: z
         .string()
-        .describe("DID of the subject (the entity being controlled)"),
-      controller: z
+        .describe("DID of the agent or entity being controlled"),
+      controllerDid: z
         .string()
-        .describe("DID of the controller (the entity with authority)"),
-      issuer: z
+        .describe("DID of the owner or entity with authority"),
+      issuerDid: z
         .string()
         .optional()
         .describe("DID of the issuer. Defaults to the controller."),
     },
-    async ({ subject, controller, issuer }) => {
+    async ({ subjectDid: subject, controllerDid: controller, issuerDid: issuer }) => {
       try {
         const credential = createControllerCredential({
           subject: subject as DidUri,
@@ -56,19 +56,19 @@ export function registerIdentityTools(server: McpServer) {
 
   server.tool(
     "ack_sign_credential",
-    "Sign a W3C Verifiable Credential, returning a signed JWT string. The jwk parameter should be the JWK string returned by ack_generate_keypair.",
+    "Sign a W3C Verifiable Credential, returning a signed JWT string. Requires the credential JSON, the signer's JWK (from ack_generate_keypair), and the signer's DID.",
     {
       credential: z
         .string()
         .describe("JSON string of the W3C credential to sign"),
-      jwk: z
+      signerJwk: z
         .string()
         .describe(
-          "JWK JSON string containing the private key (from ack_generate_keypair)",
+          "JWK JSON string containing the signer's private key (from ack_generate_keypair)",
         ),
-      did: z.string().describe("DID of the signer"),
+      signerDid: z.string().describe("DID of the signer (must match the JWK)"),
     },
-    async ({ credential, jwk, did }) => {
+    async ({ credential, signerJwk: jwk, signerDid: did }) => {
       try {
         const keypair = keypairFromJwk(jwk)
         const parsed = JSON.parse(credential)
