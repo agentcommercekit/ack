@@ -1,0 +1,36 @@
+{
+  "name": "@repo/mcp-server",
+  "version": "0.0.1",
+  "private": true,
+  "homepage": "https://github.com/agentcommercekit/ack#readme",
+  "bugs": "https://github.com/agentcommercekit/ack/issues",
+  "license": "MIT",
+  "author": {
+    "name": "Catena Labs",
+    "url": "https://catenalabs.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/agentcommercekit/ack.git",
+    "directory": "tools/mcp-server"
+  },
+  "bin": {
+    "ack-mcp": "./src/index.ts"
+  },
+  "type": "module",
+  "main": "./src/index.ts",
+  "scripts": {
+    "check:types": "tsc --noEmit",
+    "clean": "git clean -fdX .turbo",
+    "start": "tsx ./src/index.ts",
+    "test": "vitest"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.21.2",
+    "agentcommercekit": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@repo/typescript-config": "workspace:*"
+  }
+}
