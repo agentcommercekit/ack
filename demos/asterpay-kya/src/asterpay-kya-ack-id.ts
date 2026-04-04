@@ -39,7 +39,6 @@ export async function convertAsterPayKyaToVerifiableCredential(
   if (jwtParts.length !== 3) {
     throw new Error("Invalid JWT format")
   }
-  const jwtSignature = jwtParts[2]
 
   if (!payload.iat || !payload.exp || !payload.jti || !payload.sub) {
     throw new Error("Invalid JWT payload: missing required standard claims")
@@ -128,17 +127,20 @@ export function isSanctionedFromVC(
   return vc.credentialSubject.sanctioned
 }
 
+export type AsterPayVerificationResult = {
+  valid: boolean
+  reason?: string
+  trustScore?: number
+  tier?: string
+  vc?: Verifiable<W3CCredential<AsterPayKyaCredentialSubject>>
+}
+
 export async function verifyAsterPayKyaAsAckId(
   jwks: jose.JSONWebKeySet,
   kyaToken: JwtString,
   trustedIssuers: string[],
   minTrustScore = 0,
-): Promise<{
-  valid: boolean
-  reason?: string
-  trustScore?: number
-  tier?: string
-}> {
+): Promise<AsterPayVerificationResult> {
   try {
     const vc = await convertAsterPayKyaToVerifiableCredential(jwks, kyaToken)
 
@@ -157,6 +159,7 @@ export async function verifyAsterPayKyaAsAckId(
         reason: "Agent is sanctioned (Chainalysis)",
         trustScore: vc.credentialSubject.trustScore,
         tier: vc.credentialSubject.tier,
+        vc,
       }
     }
 
@@ -166,6 +169,7 @@ export async function verifyAsterPayKyaAsAckId(
         reason: `Trust score ${vc.credentialSubject.trustScore} below minimum ${minTrustScore}`,
         trustScore: vc.credentialSubject.trustScore,
         tier: vc.credentialSubject.tier,
+        vc,
       }
     }
 
@@ -176,6 +180,7 @@ export async function verifyAsterPayKyaAsAckId(
         reason: "Coinbase KYC attestation not met",
         trustScore: vc.credentialSubject.trustScore,
         tier: vc.credentialSubject.tier,
+        vc,
       }
     }
 
@@ -185,6 +190,7 @@ export async function verifyAsterPayKyaAsAckId(
         reason: `Country verification not met (${att.coinbaseCountry.country})`,
         trustScore: vc.credentialSubject.trustScore,
         tier: vc.credentialSubject.tier,
+        vc,
       }
     }
 
@@ -192,6 +198,7 @@ export async function verifyAsterPayKyaAsAckId(
       valid: true,
       trustScore: vc.credentialSubject.trustScore,
       tier: vc.credentialSubject.tier,
+      vc,
     }
   } catch (error) {
     return {
