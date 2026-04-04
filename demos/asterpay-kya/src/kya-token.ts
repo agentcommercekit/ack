@@ -65,7 +65,7 @@ export async function createMockAsterPayKyaToken(
     agentAddress: "0x742d35Cc6634C0532925a3b844Bc9e7595f2bD18",
     agentId: "ERC-8004 #16850",
     trustScore: 82,
-    tier: "trusted",
+    tier: "enterprise",
     components: {
       walletAge: 12,
       transactionActivity: 11,
