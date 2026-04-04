@@ -87,12 +87,11 @@ export async function convertAsterPayKyaToVerifiableCredential(
       jti: payload.jti,
     },
     proof: {
-      type: "JsonWebSignature2020",
+      type: "JwtProof2020",
       created: new Date(payload.iat * 1000).toISOString(),
       verificationMethod: "did:web:api.asterpay.io#kya-key-1",
       proofPurpose: "assertionMethod",
-      jws: `${jwtParts[0]}..${jwtSignature}`,
-      originalPayload: jwtParts[1],
+      jwt: kyaToken,
     },
   }
 
@@ -143,8 +142,9 @@ export async function verifyAsterPayKyaAsAckId(
   try {
     const vc = await convertAsterPayKyaToVerifiableCredential(jwks, kyaToken)
 
-    if (!trustedIssuers.includes("did:web:api.asterpay.io")) {
-      return { valid: false, reason: "AsterPay not in trusted issuers" }
+    const issuerDid = typeof vc.issuer === "string" ? vc.issuer : vc.issuer.id
+    if (!trustedIssuers.includes(issuerDid)) {
+      return { valid: false, reason: `Issuer ${issuerDid} not in trusted issuers` }
     }
 
     if (vc.expirationDate && new Date() > new Date(vc.expirationDate)) {
@@ -179,6 +179,15 @@ export async function verifyAsterPayKyaAsAckId(
       }
     }
 
+    if (!att.coinbaseCountry.met) {
+      return {
+        valid: false,
+        reason: `Country verification not met (${att.coinbaseCountry.country})`,
+        trustScore: vc.credentialSubject.trustScore,
+        tier: vc.credentialSubject.tier,
+      }
+    }
+
     return {
       valid: true,
       trustScore: vc.credentialSubject.trustScore,
@@ -192,29 +201,26 @@ export async function verifyAsterPayKyaAsAckId(
   }
 }
 
+/**
+ * Reconstructs the original KYA JWT from a synthetic VC.
+ * Only works with VCs created by `convertAsterPayKyaToVerifiableCredential`
+ * as it relies on the `jwt` field in the JwtProof2020 proof.
+ */
 export function convertVerifiableCredentialToAsterPayKya(
   vc: Verifiable<W3CCredential<AsterPayKyaCredentialSubject>>,
 ): JwtString {
-  if (!vc.proof.jws) {
-    throw new Error("No JWS signature found in VC proof")
-  }
+  const jwt = (vc.proof as Record<string, unknown>).jwt as string | undefined
 
-  const jwsParts = (vc.proof.jws as string).split("..")
-  if (jwsParts.length !== 2) {
-    throw new Error("Invalid JWS format in VC proof")
-  }
-
-  const originalHeader = jwsParts[0]
-  const originalSignature = jwsParts[1]
-
-  const originalPayload = (vc.proof as Record<string, unknown>)
-    .originalPayload as string | undefined
-
-  if (!originalPayload) {
+  if (!jwt) {
     throw new Error(
-      "No originalPayload found in VC proof — cannot reconstruct JWT losslessly",
+      "No jwt field found in VC proof — expected JwtProof2020 format",
     )
   }
 
-  return `${originalHeader}.${originalPayload}.${originalSignature}` as JwtString
+  const parts = jwt.split(".")
+  if (parts.length !== 3) {
+    throw new Error("Invalid JWT format in VC proof")
+  }
+
+  return jwt as JwtString
 }
