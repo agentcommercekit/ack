@@ -36,6 +36,16 @@ pnpm demo:e2e
 
 [View the code](./e2e)
 
+### AsterPay KYA Trust Score demo
+
+A demo showing how AsterPay KYA Trust Score tokens integrate with ACK-ID for trust-gated agent commerce via ERC-8183.
+
+```sh
+pnpm demo:asterpay-kya
+```
+
+[View the code](./asterpay-kya)
+
 ## Note
 
 These demos are designed as interactive walkthroughs of various ACK flows. The source code is designed with this in mind, and may not be suitable for production environments.
