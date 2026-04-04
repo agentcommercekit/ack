@@ -110,8 +110,8 @@ Details:
 `)
   } catch (error: unknown) {
     log(errorMessage("Conversion failed"))
-    log(colors.dim((error as Error).toString()))
-    return
+    log(colors.dim(String(error)))
+    throw error
   }
 
   // Step 3: Bidirectional conversion
@@ -132,8 +132,8 @@ integrity by converting the VC back to the original JWT format.\n`,
     log(colors.dim(reconstructedJwt), { wrap: false })
   } catch (error: unknown) {
     log(errorMessage("Bidirectional conversion failed"))
-    log(colors.dim((error as Error).toString()))
-    return
+    log(colors.dim(String(error)))
+    throw error
   }
 
   // Step 4: ACK-ID verification with trust score gate
@@ -288,7 +288,10 @@ async function simulateIACPHook(
 
   const att = vc.credentialSubject.insumerAttestation
   const attestPass =
-    att.coinbaseKyc.met && att.gitcoinPassport.met && att.tokenBalance.met
+    att.coinbaseKyc.met &&
+    att.coinbaseCountry.met &&
+    att.gitcoinPassport.met &&
+    att.tokenBalance.met
   log(
     `     ${attestPass ? "✅" : "❌"} ATTEST: InsumerAPI — KYC=${att.coinbaseKyc.met}, Country=${att.coinbaseCountry.country}, Passport=${att.gitcoinPassport.met}, USDC=${att.tokenBalance.met}`,
   )
@@ -312,4 +315,7 @@ async function simulateIACPHook(
   }
 }
 
-runDemo().catch(console.error)
+runDemo().catch((error) => {
+  console.error(error)
+  process.exitCode = 1
+})
