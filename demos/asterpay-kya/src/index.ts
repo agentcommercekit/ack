@@ -21,6 +21,7 @@ import {
   isSanctionedFromVC,
   verifyAsterPayKyaAsAckId,
   type AsterPayKyaCredentialSubject,
+  type AsterPayVerificationResult,
 } from "./asterpay-kya-ack-id"
 
 async function runDemo() {
@@ -228,11 +229,19 @@ agent's trust score before allowing job funding or provider assignment.\n`,
 `)
 }
 
+const TIER_BUDGET_LIMITS: Record<string, number> = {
+  open: 1,
+  verified: 1_000,
+  trusted: 10_000,
+  enterprise: Infinity,
+}
+
 async function simulateIACPHook(
   jwks: jose.JSONWebKeySet,
   kyaToken: JwtString,
 ) {
-  log("   📋 ERC-8183 Job: 'Analyze Q4 market data' (budget: 50 USDC)")
+  const jobBudget = 50
+  log(`   📋 ERC-8183 Job: 'Analyze Q4 market data' (budget: ${jobBudget} USDC)`)
   log("   🤖 Agent requests to fund the job...")
   log("   🔒 IACPHook.beforeAction(fund) triggered\n")
 
@@ -246,7 +255,7 @@ async function simulateIACPHook(
     minScore,
   )
 
-  if (!verification.valid) {
+  if (!verification.valid || !verification.vc) {
     log(
       `\n   ${errorMessage(`IACPHook: BLOCKED — ${verification.reason}`)}`,
     )
@@ -254,7 +263,7 @@ async function simulateIACPHook(
     return
   }
 
-  const vc = await convertAsterPayKyaToVerifiableCredential(jwks, kyaToken)
+  const vc = verification.vc
 
   log(
     `   → Agent: ${colors.magenta(vc.credentialSubject.agentAddress)}`,
@@ -296,13 +305,13 @@ async function simulateIACPHook(
     `     ${attestPass ? "✅" : "❌"} ATTEST: InsumerAPI — KYC=${att.coinbaseKyc.met}, Country=${att.coinbaseCountry.country}, Passport=${att.gitcoinPassport.met}, USDC=${att.tokenBalance.met}`,
   )
 
-  const allPassed = hasIdentity && notSanctioned && scorePass && attestPass
-  const tierAuthorized = allPassed
+  const tierLimit = TIER_BUDGET_LIMITS[vc.credentialSubject.tier] ?? 0
+  const tierAuthorized = hasIdentity && notSanctioned && scorePass && attestPass && jobBudget <= tierLimit
   log(
-    `     ${tierAuthorized ? "✅" : "❌"} COMPLY: Tier "${vc.credentialSubject.tier}" ${tierAuthorized ? "authorized" : "denied"} for job budget`,
+    `     ${tierAuthorized ? "✅" : "❌"} COMPLY: Tier "${vc.credentialSubject.tier}" (limit: ${tierLimit === Infinity ? "unlimited" : `$${tierLimit}`}) ${tierAuthorized ? "authorized" : "denied"} for $${jobBudget} job budget`,
   )
 
-  if (allPassed) {
+  if (tierAuthorized) {
     log(
       `\n   ${successMessage("IACPHook: APPROVED — Agent may fund the job")}`,
     )
