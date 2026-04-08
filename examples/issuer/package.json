@@ -30,7 +30,7 @@
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
     "bit-buffers": "catalog:",
-    "drizzle-orm": "0.43.1",
+    "drizzle-orm": "0.45.2",
     "hono": "catalog:",
     "valibot": "catalog:"
   },
