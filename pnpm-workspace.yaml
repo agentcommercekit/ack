@@ -14,7 +14,7 @@ catalog:
   jose: 6.1.3
   safe-stable-stringify: 2.5.0
   standard-parse: 0.4.0
-  uuid: 11.1.0
+  uuid: 14.0.0
   valibot: 1.2.0
   viem: 2.46.3
   zod: 3.25.4
