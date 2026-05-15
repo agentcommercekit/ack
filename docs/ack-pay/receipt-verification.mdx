@@ -62,6 +62,37 @@ _Example ACK Receipt Verifiable Credential:_
   the general structure.
 </Tip>
 
+## Receipt Evidence Metadata
+
+`credentialSubject.metadata` is optional and should be treated as an extension
+point for verifier-specific payment evidence. Keep the core receipt fields
+stable, and put references or hashes to external policy, mandate, execution,
+and settlement records in metadata when a deployment needs a richer audit trail.
+
+Metadata fields are non-normative: ACK-Pay verifies the receipt signature and
+the bound payment request token, but applications decide which metadata fields
+are required for their own policy checks. Do not place secrets, private keys,
+raw payment credentials, or sensitive customer data in receipt metadata.
+
+For agent-commerce flows that compose ACK-Pay with MPP, x402, AP2, or a policy
+engine, a receipt can carry references like:
+
+```json
+{
+  "credentialSubject": {
+    "metadata": {
+      "policyRef": "policy://merchant-spend-v3",
+      "policySnapshotHash": "sha256:8a0f...",
+      "mandateRef": "ap2:mandate:checkout-123",
+      "executionRef": "urn:ack:execution:checkout-123",
+      "executionReceiptHash": "sha256:5b1d...",
+      "settlementNetwork": "eip155:8453",
+      "settlementReference": "0xabc123"
+    }
+  }
+}
+```
+
 ## Receipt Verification Process
 
 When an ACK Receipt is presented by a Client Agent to a Server Agent (e.g., when retrying a request after payment), the Server performs these verification steps:
