@@ -26,4 +26,45 @@ Human oversight may be integrated at three key points in the payment lifecycle:
 
 !["Example Human Intervention"](/images/human.png)
 
+## Approval Request and Decision Shape
+
+ACK-Pay keeps approval orchestration outside the core protocol. Payment Services,
+Client applications, and policy systems can use the exported
+`PaymentApprovalRequest` and `PaymentApprovalDecision` types as a minimal shared
+shape when a payment must pause for a human or owner-controlled policy decision.
+
+```ts
+import type {
+  PaymentApprovalDecision,
+  PaymentApprovalRequest,
+} from "@agentcommercekit/ack-pay"
+
+const approvalRequest: PaymentApprovalRequest = {
+  id: "approval_123",
+  paymentRequestId: "payment_request_123",
+  paymentOptionId: "usd-base-usdc",
+  requesterDid: "did:web:agent.example.com",
+  reason: "Payment exceeds the autonomous spend limit",
+  expiresAt: "2026-01-01T12:00:00.000Z",
+  metadata: {
+    policyRef: "policy://merchant-spend-v3",
+  },
+}
+
+const approvalDecision: PaymentApprovalDecision = {
+  requestId: approvalRequest.id,
+  decision: "approved",
+  approverDid: "did:web:owner.example.com",
+  decidedAt: new Date().toISOString(),
+  metadata: {
+    ticketId: "risk-review-456",
+  },
+}
+```
+
+Applications decide how these objects are transported, authenticated, stored, and
+bound to execution. A denied decision should stop before signing or settlement;
+an approved decision can be recorded in receipt metadata or an application audit
+log as supporting evidence.
+
 Integrating these Human-in-the-Loop mechanisms allows organizations to balance the efficiency of automation with the accountability and guardrails provided by human oversight.
