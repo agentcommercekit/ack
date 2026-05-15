@@ -67,6 +67,7 @@
               "ack-pay/payment-service",
               "ack-pay/payment-request-payload",
               "ack-pay/receipt-verification",
+              "ack-pay/mpp-x402-interop",
               "ack-pay/hitl",
               "ack-pay/operational-considerations",
               "ack-pay/summary"
