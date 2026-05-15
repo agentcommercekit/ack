@@ -77,23 +77,23 @@ import { getDidResolver } from "@agentcommercekit/did"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
-  trustedIssuers: ["did:web:merchant.example.com"],
+  trustedReceiptIssuers: ["did:web:receipt-service.example.com"],
 })
 ```
 
 ### Type Guards for Validation
 
 ```ts
-import { isPaymentRequest } from "@agentcommercekit/ack-pay"
+import {
+  isPaymentReceiptCredential,
+  isPaymentRequest,
+} from "@agentcommercekit/ack-pay"
 
 // Check if a value is a valid payment request
 isPaymentRequest(unknownObject)
 
 // Check if a credential is specifically a payment receipt credential
 isPaymentReceiptCredential(credential)
-
-// Check if a credential subject has the payment receipt claim structure
-isPaymentReceiptClaim(credential.credentialSubject)
 ```
 
 ## API Reference
