@@ -16,6 +16,7 @@ import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 
 import { PAYMENT_SERVICE_URL } from "./constants"
+import { evaluatePaymentPolicy } from "./payment-policy"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
@@ -39,8 +40,13 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
     await c.req.json(),
   )
 
-  // Verify the payment request token and payment option are valid
-  await validatePaymentOption(paymentOptionId, paymentRequestToken)
+  // Verify the payment request token and payment option are valid before
+  // returning an execution URL.
+  const { paymentOption, parsed } = await validatePaymentOption(
+    paymentOptionId,
+    paymentRequestToken,
+  )
+  enforcePaymentPolicy(paymentOption, parsed.issuer)
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
@@ -73,7 +79,7 @@ app.post(
     )
 
     // Verify the payment request token and payment option are valid
-    const { paymentOption } = await validatePaymentOption(
+    const { paymentOption, parsed } = await validatePaymentOption(
       paymentOptionId,
       paymentRequestToken,
     )
@@ -81,6 +87,7 @@ app.post(
     if (!receiptServiceUrl) {
       throw new Error(errorMessage("Receipt service URL is required"))
     }
+    enforcePaymentPolicy(paymentOption, parsed.issuer)
 
     const payload = {
       paymentRequestToken,
@@ -124,7 +131,7 @@ async function validatePaymentOption(
   const didResolver = getDidResolver()
 
   log(colors.dim(`${name} Verifying payment request token...`))
-  const { paymentRequest } = await verifyPaymentRequestToken(
+  const { paymentRequest, parsed } = await verifyPaymentRequestToken(
     paymentRequestToken,
     {
       resolver: didResolver,
@@ -146,6 +153,27 @@ async function validatePaymentOption(
   return {
     paymentRequest,
     paymentOption,
+    parsed,
+  }
+}
+
+function enforcePaymentPolicy(
+  paymentOption: Awaited<
+    ReturnType<typeof validatePaymentOption>
+  >["paymentOption"],
+  trustedRequestIssuer?: string,
+) {
+  const decision = evaluatePaymentPolicy(paymentOption, {
+    allowedRecipients: [],
+    maxAutonomousAmount: 1_000_000,
+    trustedRequestIssuer,
+  })
+
+  if (decision.status !== "approved") {
+    log(errorMessage(`${name} ${decision.reason}`))
+    throw new HTTPException(decision.status === "denied" ? 403 : 409, {
+      message: decision.reason,
+    })
   }
 }
 
