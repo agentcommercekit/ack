@@ -1,0 +1,143 @@
+---
+title: "MPP and x402 Interoperability"
+description: "How ACK-Pay concepts relate to MPP and x402 payment flows."
+---
+
+ACK-Pay is designed as a payment pattern for agent commerce rather than a
+single settlement rail. That makes it complementary to HTTP 402 payment
+protocols such as [MPP](https://mpp.dev/overview) and
+[x402](https://docs.x402.org/introduction), both of which define concrete
+ways for clients and agents to satisfy payment requirements.
+
+This page describes how ACK-Pay concepts can map to MPP and x402 without
+requiring ACK implementations to adopt either protocol as their only payment
+transport.
+
+## Concept Mapping
+
+| ACK-Pay concept         | MPP equivalent                                       | x402 equivalent                                           | Notes                                                                                                                                           |
+| ----------------------- | ---------------------------------------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Payment Request         | Challenge                                            | `402 Payment Required` response with payment requirements | ACK keeps the request transport-agnostic. MPP and x402 commonly deliver it through HTTP 402, and MPP also defines MCP and WebSocket transports. |
+| Payment Option          | Payment method inside a Challenge                    | Accepted scheme/network requirement                       | ACK can list multiple options for different rails, currencies, or Payment Services.                                                             |
+| Payment Service         | MPP server/payment method implementation, or gateway | Facilitator or server-side verifier/settler               | The Payment Service can execute directly on a rail, delegate to an x402 facilitator, or verify an MPP credential.                               |
+| Payment execution proof | Credential                                           | Payment payload                                           | This is the client-side proof submitted after selecting an acceptable payment option.                                                           |
+| ACK Receipt             | Receipt                                              | Payment response, signed receipt, or settlement proof     | ACK Receipts use Verifiable Credentials, so they can wrap or reference protocol-specific receipts.                                              |
+| Receipt Service         | Receipt issuer/verifier                              | Facilitator/server receipt issuer                         | ACK separates receipt issuance from the original seller or server when useful for trust and auditability.                                       |
+
+## HTTP 402 Flow
+
+An ACK-Pay server-initiated flow can be exposed over HTTP 402 while preserving
+ACK's higher-level receipt and identity semantics.
+
+<Steps>
+  <Step title="Advertise the payment requirement">
+    The Server Agent returns a `402 Payment Required` response. The response can
+    include an MPP Challenge, an x402 payment requirement, or an ACK Payment
+    Request payload that references one or more compatible payment options.
+  </Step>
+  <Step title="Select and authorize a payment option">
+    The Client Agent chooses a payment option and applies its local policy
+    checks before signing, authorizing, or submitting any payment credential.
+  </Step>
+  <Step title="Execute through the Payment Service">
+    The Payment Service verifies the request, executes settlement directly or
+    through an MPP/x402-compatible endpoint, and records the protocol-specific
+    settlement evidence.
+  </Step>
+  <Step title="Issue an ACK Receipt">
+    The Receipt Service issues an ACK Receipt that includes the ACK payment
+    fields and can reference the MPP Receipt, x402 payment response, facilitator
+    settlement result, or transaction identifier.
+  </Step>
+  <Step title="Retry or continue the original request">
+    The Client Agent presents the receipt or protocol credential back to the
+    Server Agent. The Server verifies the receipt, request binding, recipient,
+    amount, expiry, and issuer trust before delivering the service.
+  </Step>
+</Steps>
+
+## MCP Tool Payments
+
+MPP defines an MCP transport for paid tool calls. ACK-Pay can use the same
+pattern while preserving ACK-ID identity and ACK Receipt verification:
+
+1. The MCP server returns a payment-required result for a tool call.
+2. The response includes an ACK Payment Request or a reference to an MPP
+   Challenge/x402 payment requirement.
+3. The client checks user, agent, merchant, amount, and tool-call policy before
+   signing or authorizing payment.
+4. The client submits the selected credential through the relevant protocol.
+5. The MCP server returns the tool result with an ACK Receipt or a receipt
+   reference that can be verified later.
+
+This keeps the payment transport specific enough for interoperable clients
+while allowing ACK systems to retain stronger identity, receipt, and audit
+semantics.
+
+## Policy Before Signing
+
+For agent payments, the critical integration boundary is before the agent signs
+or submits a payment credential.
+
+ACK implementations that bridge to MPP or x402 should ensure that local policy
+checks can evaluate at least:
+
+- requested amount, currency, decimals, and recipient
+- selected rail, network, facilitator, or Payment Service
+- merchant or Server Agent identity
+- original request identifier and expiry
+- tool call, API endpoint, or service being purchased
+- replay and idempotency binding
+
+If a policy check fails, the client should decline before producing an MPP
+Credential, x402 payment payload, wallet signature, card authorization, or any
+other executable payment artifact.
+
+## Receipt Evidence
+
+ACK Receipts can carry protocol-specific evidence without replacing the
+underlying protocol receipt. A receipt subject can include stable references
+such as:
+
+```json
+{
+  "paymentOptionId": "x402-usdc-base",
+  "metadata": {
+    "settlementProtocol": "x402",
+    "settlementNetwork": "eip155:8453",
+    "settlementReference": "0x...",
+    "paymentService": "https://payments.example.com/x402",
+    "facilitator": "https://facilitator.example.com",
+    "policyRef": "did:web:client.example.com#spend-policy-v3",
+    "policySnapshotHash": "sha256:..."
+  }
+}
+```
+
+The exact fields can vary by rail. The important requirement is that the ACK
+Receipt remains bound to the original `paymentRequestToken`, selected
+`paymentOptionId`, recipient, amount, and trusted issuer.
+
+## Implementation Guidance
+
+- Treat MPP and x402 as transport/settlement integrations, not replacements for
+  ACK-ID or ACK Receipt verification.
+- Keep ACK Payment Request and Receipt fields stable even when the underlying
+  payment protocol evolves.
+- Prefer explicit request identifiers, expiry timestamps, body digests, and
+  idempotency keys for replay resistance.
+- Preserve protocol-specific receipts as evidence references instead of copying
+  opaque payloads into application logs.
+- Avoid exposing private wallet keys, card credentials, facilitator secrets, or
+  Payment Service credentials in agent-visible prompts or traces.
+
+## Future Work
+
+Potential follow-up work includes:
+
+- typed examples for an ACK Payment Service that verifies an x402 payment
+  response
+- an ACK Receipt profile for MPP Receipts and Credentials
+- a paid MCP tool demo that returns ACK Receipts
+- conformance tests for request binding, expiry, idempotency, and receipt
+  verification across ACK-Pay, MPP, and x402 flows
