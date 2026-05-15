@@ -22,7 +22,10 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
-import { InvalidPaymentRequestTokenError } from "./errors"
+import {
+  InvalidPaymentReceiptError,
+  InvalidPaymentRequestTokenError,
+} from "./errors"
 import type { PaymentRequestInit } from "./payment-request"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 
@@ -31,11 +34,12 @@ describe("verifyPaymentReceipt()", () => {
   let unsignedReceipt: W3CCredential
   let signedReceipt: Verifiable<W3CCredential>
   let signedReceiptJwt: JwtString
+  let receiptIssuerKeypair: Awaited<ReturnType<typeof generateKeypair>>
   let receiptIssuerDid: DidUri
   let paymentRequestIssuerDid: DidUri
 
   beforeEach(async () => {
-    const receiptIssuerKeypair = await generateKeypair("secp256k1")
+    receiptIssuerKeypair = await generateKeypair("secp256k1")
     receiptIssuerDid = createDidKeyUri(receiptIssuerKeypair)
     const paymentRequestIssuerKeypair = await generateKeypair("secp256k1")
     paymentRequestIssuerDid = createDidKeyUri(paymentRequestIssuerKeypair)
@@ -142,6 +146,25 @@ describe("verifyPaymentReceipt()", () => {
         paymentRequestIssuer: "did:example:wrong-issuer",
       }),
     ).rejects.toThrow(InvalidPaymentRequestTokenError)
+  })
+
+  it("throws when the receipt payment option is not in the payment request", async () => {
+    const mismatchedReceipt = {
+      ...unsignedReceipt,
+      credentialSubject: {
+        ...unsignedReceipt.credentialSubject,
+        paymentOptionId: "missing-payment-option-id",
+      },
+    }
+
+    const mismatchedReceiptJwt = await signCredential(mismatchedReceipt, {
+      did: receiptIssuerDid,
+      signer: createJwtSigner(receiptIssuerKeypair),
+    })
+
+    await expect(
+      verifyPaymentReceipt(mismatchedReceiptJwt, { resolver }),
+    ).rejects.toThrow(InvalidPaymentReceiptError)
   })
 
   it("validates trusted receipt issuers", async () => {
