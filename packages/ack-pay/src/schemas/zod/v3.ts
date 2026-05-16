@@ -31,3 +31,27 @@ export const paymentReceiptClaimSchema = z.object({
   paymentOptionId: z.string(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 })
+
+export const paymentApprovalRequestSchema = z.object({
+  id: z.string(),
+  paymentRequestId: z.string(),
+  paymentOptionId: z.string().optional(),
+  requesterDid: didUriSchema.optional(),
+  reason: z.string().optional(),
+  expiresAt: z.string().optional(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+})
+
+export const paymentApprovalDecisionValueSchema = z.union([
+  z.literal("approved"),
+  z.literal("denied"),
+])
+
+export const paymentApprovalDecisionSchema = z.object({
+  requestId: z.string(),
+  decision: paymentApprovalDecisionValueSchema,
+  approverDid: didUriSchema.optional(),
+  reason: z.string().optional(),
+  decidedAt: z.string(),
+  metadata: z.record(z.string(), z.unknown()).optional(),
+})

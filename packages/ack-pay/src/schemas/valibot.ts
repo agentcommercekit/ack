@@ -36,3 +36,27 @@ export const paymentReceiptClaimSchema = v.object({
   paymentOptionId: v.string(),
   metadata: v.optional(v.record(v.string(), v.unknown())),
 })
+
+export const paymentApprovalRequestSchema = v.object({
+  id: v.string(),
+  paymentRequestId: v.string(),
+  paymentOptionId: v.optional(v.string()),
+  requesterDid: v.optional(didUriSchema),
+  reason: v.optional(v.string()),
+  expiresAt: v.optional(v.string()),
+  metadata: v.optional(v.record(v.string(), v.unknown())),
+})
+
+export const paymentApprovalDecisionValueSchema = v.union([
+  v.literal("approved"),
+  v.literal("denied"),
+])
+
+export const paymentApprovalDecisionSchema = v.object({
+  requestId: v.string(),
+  decision: paymentApprovalDecisionValueSchema,
+  approverDid: v.optional(didUriSchema),
+  reason: v.optional(v.string()),
+  decidedAt: v.string(),
+  metadata: v.optional(v.record(v.string(), v.unknown())),
+})
