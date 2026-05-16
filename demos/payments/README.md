@@ -40,6 +40,10 @@ happens before execution or signing:
 - unknown recipient: return `approval_required`
 - amount above the autonomous spend limit: deny before payment execution
 
+The demo allowlist is based on the configured server identity, not the issuer
+claimed by each incoming Payment Request token. A real Payment Service should
+load this allowlist from operator-controlled configuration.
+
 ## Demo Video
 
 <p align="center">

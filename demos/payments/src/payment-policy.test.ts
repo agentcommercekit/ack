@@ -22,15 +22,15 @@ describe("evaluatePaymentPolicy", () => {
     })
   })
 
-  it("approves payments back to the trusted request issuer", () => {
+  it("does not approve self-asserted recipients without an allowlist", () => {
     const decision = evaluatePaymentPolicy(basePaymentOption, {
       allowedRecipients: [],
       maxAutonomousAmount: 1_000,
-      trustedRequestIssuer: basePaymentOption.recipient,
     })
 
     expect(decision).toEqual({
-      status: "approved",
+      status: "approval_required",
+      reason: "Recipient is not on the autonomous payment allowlist",
     })
   })
 

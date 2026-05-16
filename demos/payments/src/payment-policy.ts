@@ -12,7 +12,6 @@ export type PaymentPolicyDecision =
 export interface PaymentPolicy {
   allowedRecipients: readonly string[]
   maxAutonomousAmount: number
-  trustedRequestIssuer?: string
 }
 
 export const demoPaymentPolicy: PaymentPolicy = {
@@ -40,10 +39,7 @@ export function evaluatePaymentPolicy(
     }
   }
 
-  if (
-    !policy.allowedRecipients.includes(paymentOption.recipient) &&
-    paymentOption.recipient !== policy.trustedRequestIssuer
-  ) {
+  if (!policy.allowedRecipients.includes(paymentOption.recipient)) {
     return {
       status: "approval_required",
       reason: "Recipient is not on the autonomous payment allowlist",

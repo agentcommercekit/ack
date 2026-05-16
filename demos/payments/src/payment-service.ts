@@ -10,7 +10,7 @@ import {
   type Verifiable,
 } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
-import { Hono, type Env, type TypedResponse } from "hono"
+import { Hono, type Context, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
@@ -42,11 +42,11 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
 
   // Verify the payment request token and payment option are valid before
   // returning an execution URL.
-  const { paymentOption, parsed } = await validatePaymentOption(
+  const { paymentOption } = await validatePaymentOption(
     paymentOptionId,
     paymentRequestToken,
   )
-  enforcePaymentPolicy(paymentOption, parsed.issuer)
+  enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
@@ -79,7 +79,7 @@ app.post(
     )
 
     // Verify the payment request token and payment option are valid
-    const { paymentOption, parsed } = await validatePaymentOption(
+    const { paymentOption } = await validatePaymentOption(
       paymentOptionId,
       paymentRequestToken,
     )
@@ -87,7 +87,7 @@ app.post(
     if (!receiptServiceUrl) {
       throw new Error(errorMessage("Receipt service URL is required"))
     }
-    enforcePaymentPolicy(paymentOption, parsed.issuer)
+    enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
 
     const payload = {
       paymentRequestToken,
@@ -161,12 +161,11 @@ function enforcePaymentPolicy(
   paymentOption: Awaited<
     ReturnType<typeof validatePaymentOption>
   >["paymentOption"],
-  trustedRequestIssuer?: string,
+  allowedRecipients: readonly string[],
 ) {
   const decision = evaluatePaymentPolicy(paymentOption, {
-    allowedRecipients: [],
+    allowedRecipients,
     maxAutonomousAmount: 1_000_000,
-    trustedRequestIssuer,
   })
 
   if (decision.status !== "approved") {
@@ -175,6 +174,11 @@ function enforcePaymentPolicy(
       message: decision.reason,
     })
   }
+}
+
+async function getTrustedRecipients(c: Context<Env>) {
+  const serverIdentity = await getKeypairInfo(env(c).SERVER_PRIVATE_KEY_HEX)
+  return [serverIdentity.did]
 }
 
 serve({
