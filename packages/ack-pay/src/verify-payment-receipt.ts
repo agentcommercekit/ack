@@ -10,6 +10,7 @@ import {
   type W3CCredential,
 } from "@agentcommercekit/vc"
 
+import { InvalidPaymentReceiptError } from "./errors"
 import type { PaymentRequest } from "./payment-request"
 import {
   getReceiptClaimVerifier,
@@ -115,6 +116,18 @@ export async function verifyPaymentReceipt(
       issuer: paymentRequestIssuer,
     },
   )
+
+  const receiptPaymentOptionId =
+    parsedCredential.credentialSubject.paymentOptionId
+  const paymentOptionExists = paymentRequest.paymentOptions.some(
+    (paymentOption) => paymentOption.id === receiptPaymentOptionId,
+  )
+
+  if (!paymentOptionExists) {
+    throw new InvalidPaymentReceiptError(
+      "Receipt paymentOptionId does not match any payment option in the Payment Request token",
+    )
+  }
 
   return {
     receipt: parsedCredential,

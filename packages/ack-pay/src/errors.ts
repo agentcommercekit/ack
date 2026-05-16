@@ -4,3 +4,10 @@ export class InvalidPaymentRequestTokenError extends Error {
     this.name = "InvalidPaymentRequestTokenError"
   }
 }
+
+export class InvalidPaymentReceiptError extends Error {
+  constructor(message = "Invalid payment receipt") {
+    super(message)
+    this.name = "InvalidPaymentReceiptError"
+  }
+}
