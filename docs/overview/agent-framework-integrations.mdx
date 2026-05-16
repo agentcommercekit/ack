@@ -1,0 +1,67 @@
+---
+title: Agent Framework Integrations
+description: Guidance for indexing ACK docs and integrating ACK primitives with agent frameworks.
+---
+
+Agent Commerce Kit is designed to stay framework-agnostic. Agent runtimes should
+use ACK-ID and ACK-Pay as protocol primitives, while framework-specific adapters
+remain thin examples or optional packages.
+
+## Documentation indexing
+
+ACK documentation can be indexed by developer tools that retrieve library docs
+for coding agents. For Context7, the repository includes a `context7.json`
+configuration that points indexers at the docs, package READMEs, and runnable
+demos.
+
+Maintainers or contributors can submit the public GitHub repository to Context7
+and use the checked-in configuration as the default parsing guide. The intended
+library identity is:
+
+```text
+agentcommercekit/ack
+```
+
+## Adapter boundary
+
+Framework adapters should not reimplement ACK protocol logic. They should call
+the ACK SDKs and examples at the edges of an agent workflow:
+
+- use ACK-ID when an agent needs to prove its identity, owner, controller, or
+  service endpoint
+- use ACK-Pay when an agent needs to request payment, present a payment receipt,
+  or pause for human approval
+- keep payment execution, policy checks, and receipt verification explicit in
+  the application layer
+- avoid hiding identity or payment state inside an LLM prompt-only abstraction
+
+## Framework cookbook targets
+
+Useful cookbook examples can be added incrementally:
+
+| Framework surface | Useful first example                                                           |
+| ----------------- | ------------------------------------------------------------------------------ |
+| OpenAI Agents SDK | Require an ACK-ID credential before an agent calls a paid tool.                |
+| Claude Agent SDK  | Verify an ACK receipt before returning protected tool output.                  |
+| Vercel AI SDK     | Gate a route or tool call with ACK-Pay and return a receipt-aware response.    |
+| MCP servers       | Expose paid tools that advertise ACK payment requirements and verify receipts. |
+
+Each example should be small enough to audit. The core pattern is always:
+
+1. Resolve and verify identity when the counterparty matters.
+2. Evaluate payment or approval policy before execution.
+3. Execute the paid action only after the ACK requirement is satisfied.
+4. Persist or return the receipt evidence needed by the relying party.
+
+## Language SDKs
+
+Additional SDKs should be tracked as separate implementation efforts. A good
+first milestone for any new language is a read-only example that can:
+
+- parse an ACK payment request
+- verify a receipt shape
+- call a reference TypeScript service
+- document which protocol features are intentionally unsupported
+
+That keeps language work interoperable without coupling ACK core to any single
+agent framework or runtime.
