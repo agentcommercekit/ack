@@ -1,0 +1,13 @@
+{
+  "$schema": "https://context7.com/schema/context7.json",
+  "projectTitle": "Agent Commerce Kit",
+  "description": "Open protocols, SDKs, and demos for verifiable agent identity and agent payments.",
+  "folders": ["docs", "packages", "demos"],
+  "excludeFolders": ["node_modules", "dist", ".turbo"],
+  "excludeFiles": ["pnpm-lock.yaml"],
+  "rules": [
+    "Use ACK-ID for verifiable agent identity, ownership chains, and service discovery.",
+    "Use ACK-Pay for payment requests, receipts, payment service flows, and human oversight.",
+    "Keep agent-framework integrations thin; ACK protocol primitives should remain framework-agnostic."
+  ]
+}
