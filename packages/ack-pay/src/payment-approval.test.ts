@@ -43,6 +43,16 @@ describe.each(Object.entries(schemas))(
       ).toBe(true)
     })
 
+    it("accepts Date timestamps in approval requests", () => {
+      expect(
+        schema.approvalRequest({
+          id: "approval-1",
+          paymentRequestId: "payment-request-1",
+          expiresAt: new Date("2026-01-01T00:00:00.000Z"),
+        }),
+      ).toBe(true)
+    })
+
     it("rejects malformed approval requests", () => {
       expect(
         schema.approvalRequest({
@@ -61,6 +71,16 @@ describe.each(Object.entries(schemas))(
           reason: "Reviewed by operator.",
           decidedAt: "2026-01-01T00:01:00.000Z",
           metadata: { ticketId: "ticket-1" },
+        }),
+      ).toBe(true)
+    })
+
+    it("accepts Date timestamps in approval decisions", () => {
+      expect(
+        schema.approvalDecision({
+          requestId: "approval-1",
+          decision: "approved",
+          decidedAt: new Date("2026-01-01T00:01:00.000Z"),
         }),
       ).toBe(true)
     })

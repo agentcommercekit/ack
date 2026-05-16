@@ -4,6 +4,10 @@ import { z } from "zod/v3"
 
 const urlOrDidUri = z.union([z.string().url(), didUriSchema])
 
+const timestampSchema = z
+  .union([z.date(), z.string()])
+  .transform((val) => new Date(val).toISOString())
+
 export const paymentOptionSchema = z.object({
   id: z.string(),
   amount: z.union([z.number().int().positive(), z.string()]),
@@ -19,10 +23,7 @@ export const paymentRequestSchema = z.object({
   id: z.string(),
   description: z.string().optional(),
   serviceCallback: z.string().url().optional(),
-  expiresAt: z
-    .union([z.date(), z.string()])
-    .transform((val) => new Date(val).toISOString())
-    .optional(),
+  expiresAt: timestampSchema.optional(),
   paymentOptions: z.array(paymentOptionSchema).nonempty(),
 })
 
@@ -38,7 +39,7 @@ export const paymentApprovalRequestSchema = z.object({
   paymentOptionId: z.string().optional(),
   requesterDid: didUriSchema.optional(),
   reason: z.string().optional(),
-  expiresAt: z.string().optional(),
+  expiresAt: timestampSchema.optional(),
   metadata: z.record(z.string(), z.unknown()).optional(),
 })
 
@@ -52,6 +53,6 @@ export const paymentApprovalDecisionSchema = z.object({
   decision: paymentApprovalDecisionValueSchema,
   approverDid: didUriSchema.optional(),
   reason: z.string().optional(),
-  decidedAt: z.string(),
+  decidedAt: timestampSchema,
   metadata: z.record(z.string(), z.unknown()).optional(),
 })

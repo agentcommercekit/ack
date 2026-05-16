@@ -4,6 +4,11 @@ import * as v from "valibot"
 
 const urlOrDidUri = v.union([v.pipe(v.string(), v.url()), didUriSchema])
 
+const timestampSchema = v.pipe(
+  v.union([v.date(), v.string()]),
+  v.transform((input) => new Date(input).toISOString()),
+)
+
 export const paymentOptionSchema = v.object({
   id: v.string(),
   amount: v.union([v.pipe(v.number(), v.integer(), v.gtValue(0)), v.string()]),
@@ -19,12 +24,7 @@ export const paymentRequestSchema = v.object({
   id: v.string(),
   description: v.optional(v.string()),
   serviceCallback: v.optional(v.pipe(v.string(), v.url())),
-  expiresAt: v.optional(
-    v.pipe(
-      v.union([v.date(), v.string()]),
-      v.transform((input) => new Date(input).toISOString()),
-    ),
-  ),
+  expiresAt: v.optional(timestampSchema),
   paymentOptions: v.pipe(
     v.tupleWithRest([paymentOptionSchema], paymentOptionSchema),
     v.nonEmpty(),
@@ -43,7 +43,7 @@ export const paymentApprovalRequestSchema = v.object({
   paymentOptionId: v.optional(v.string()),
   requesterDid: v.optional(didUriSchema),
   reason: v.optional(v.string()),
-  expiresAt: v.optional(v.string()),
+  expiresAt: v.optional(timestampSchema),
   metadata: v.optional(v.record(v.string(), v.unknown())),
 })
 
@@ -57,6 +57,6 @@ export const paymentApprovalDecisionSchema = v.object({
   decision: paymentApprovalDecisionValueSchema,
   approverDid: v.optional(didUriSchema),
   reason: v.optional(v.string()),
-  decidedAt: v.string(),
+  decidedAt: timestampSchema,
   metadata: v.optional(v.record(v.string(), v.unknown())),
 })
