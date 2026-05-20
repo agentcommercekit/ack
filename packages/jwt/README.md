@@ -54,12 +54,11 @@ The package provides schemas for validating JWT strings with Zod and Valibot:
 
 ```ts
 // Zod v4
-
-// Valibot
-import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/valibot"
+import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v4"
 // Zod v3
 import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v3"
-import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod/v4"
+// Valibot
+import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/valibot"
 ```
 
 ## API

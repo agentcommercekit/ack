@@ -132,21 +132,20 @@ const nftToken: Caip19AssetId =
 
 ```ts
 // Zod v4 schemas
-
-// Valibot schemas
 import {
   caip2ChainIdSchema,
   caip10AccountIdSchema,
-} from "@agentcommercekit/caip/schemas/valibot"
+} from "@agentcommercekit/caip/schemas/zod/v4"
 // Zod v3 schemas
 import {
   caip2ChainIdSchema,
   caip10AccountIdSchema,
 } from "@agentcommercekit/caip/schemas/zod/v3"
+// Valibot schemas
 import {
   caip2ChainIdSchema,
   caip10AccountIdSchema,
-} from "@agentcommercekit/caip/schemas/zod/v4"
+} from "@agentcommercekit/caip/schemas/valibot"
 ```
 
 ## Resources
