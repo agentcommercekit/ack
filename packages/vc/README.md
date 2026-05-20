@@ -108,12 +108,11 @@ const revoked = await isRevoked(credential)
 
 ```ts
 // Zod v4 schemas
-
-// Valibot schemas
-import { credentialSchema } from "@agentcommercekit/vc/schemas/valibot"
+import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v4"
 // Zod v3 schemas
 import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v3"
-import { credentialSchema } from "@agentcommercekit/vc/schemas/zod/v4"
+// Valibot schemas
+import { credentialSchema } from "@agentcommercekit/vc/schemas/valibot"
 ```
 
 ## License (MIT)
