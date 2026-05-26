@@ -6,7 +6,18 @@ const urlOrDidUri = z.union([z.string().url(), didUriSchema])
 
 const timestampSchema = z
   .union([z.date(), z.string()])
-  .transform((val) => new Date(val).toISOString())
+  .transform((val, ctx) => {
+    const date = new Date(val)
+    if (Number.isNaN(date.getTime())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid date",
+      })
+      return z.NEVER
+    }
+
+    return date.toISOString()
+  })
 
 export const paymentOptionSchema = z.object({
   id: z.string(),

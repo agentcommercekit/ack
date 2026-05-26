@@ -6,6 +6,7 @@ const urlOrDidUri = v.union([v.pipe(v.string(), v.url()), didUriSchema])
 
 const timestampSchema = v.pipe(
   v.union([v.date(), v.string()]),
+  v.check((input) => !Number.isNaN(new Date(input).getTime()), "Invalid date"),
   v.transform((input) => new Date(input).toISOString()),
 )
 
