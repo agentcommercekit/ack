@@ -4,6 +4,21 @@ import { z } from "zod/v3"
 
 const urlOrDidUri = z.union([z.string().url(), didUriSchema])
 
+const timestampSchema = z
+  .union([z.date(), z.string()])
+  .transform((val, ctx) => {
+    const date = new Date(val)
+    if (Number.isNaN(date.getTime())) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Invalid date",
+      })
+      return z.NEVER
+    }
+
+    return date.toISOString()
+  })
+
 export const paymentOptionSchema = z.object({
   id: z.string(),
   amount: z.union([z.number().int().positive(), z.string()]),
@@ -19,10 +34,7 @@ export const paymentRequestSchema = z.object({
   id: z.string(),
   description: z.string().optional(),
   serviceCallback: z.string().url().optional(),
-  expiresAt: z
-    .union([z.date(), z.string()])
-    .transform((val) => new Date(val).toISOString())
-    .optional(),
+  expiresAt: timestampSchema.optional(),
   paymentOptions: z.array(paymentOptionSchema).nonempty(),
 })
 
