@@ -25,7 +25,11 @@ You can learn more about the full ACK-Pay protocol at [www.agentcommercekit.com]
 
 ## Demo Video
 
-https://github.com/user-attachments/assets/193b8f66-443f-457f-9370-32835f3b1c85
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=49VaG1-u1i0">
+    <img src="https://img.youtube.com/vi/49VaG1-u1i0/maxresdefault.jpg" width="560" alt="ACK-Pay Payments Demo Video">
+  </a>
+</p>
 
 ## Getting started
 
