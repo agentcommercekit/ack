@@ -43,8 +43,8 @@ export async function verifyPaymentRequestToken(
         exp: options.verifyExpiry ?? true,
       },
     })
-  } catch (_err) {
-    throw new InvalidPaymentRequestTokenError()
+  } catch (err) {
+    throw new InvalidPaymentRequestTokenError(undefined, { cause: err })
   }
 
   const { success, output } = v.safeParse(
