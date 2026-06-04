@@ -16,7 +16,7 @@ import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 
 import { PAYMENT_SERVICE_URL } from "./constants"
-import { evaluatePaymentPolicy } from "./payment-policy"
+import { demoPaymentPolicy, evaluatePaymentPolicy } from "./payment-policy"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
@@ -131,7 +131,7 @@ async function validatePaymentOption(
   const didResolver = getDidResolver()
 
   log(colors.dim(`${name} Verifying payment request token...`))
-  const { paymentRequest, parsed } = await verifyPaymentRequestToken(
+  const { paymentRequest } = await verifyPaymentRequestToken(
     paymentRequestToken,
     {
       resolver: didResolver,
@@ -153,7 +153,6 @@ async function validatePaymentOption(
   return {
     paymentRequest,
     paymentOption,
-    parsed,
   }
 }
 
@@ -164,8 +163,8 @@ function enforcePaymentPolicy(
   allowedRecipients: readonly string[],
 ) {
   const decision = evaluatePaymentPolicy(paymentOption, {
+    ...demoPaymentPolicy,
     allowedRecipients,
-    maxAutonomousAmount: 1_000_000,
   })
 
   if (decision.status !== "approved") {
