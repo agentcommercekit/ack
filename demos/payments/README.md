@@ -38,7 +38,20 @@ happens before execution or signing:
 
 - known low-value recipient: continue automatically
 - unknown recipient: return `approval_required`
-- amount above the autonomous spend limit: deny before payment execution
+- amount above the illustrative per-transaction cap: deny before payment
+  execution
+
+The per-currency cap is expressed in each currency's smallest subunit, so a
+single flat threshold is never compared across currencies with different
+decimals (e.g. USD at 2dp vs USDC at 6dp). Currencies without a configured
+limit are denied outright.
+
+> [!IMPORTANT]
+> The amount check is an **illustrative per-transaction cap, not a real spend
+> control.** A per-transaction limit is trivially defeated by splitting one
+> payment into many smaller ones (`cap × N`). A production policy needs a
+> cumulative and/or rate-limited budget (e.g. per-payer spend over a rolling
+> window), not just a single-transaction threshold.
 
 The demo allowlist is based on the configured server identity, not the issuer
 claimed by each incoming Payment Request token. A real Payment Service should
