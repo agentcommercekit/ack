@@ -58,8 +58,16 @@ export function evaluatePaymentPolicy(
     }
   }
 
-  const limit = policy.maxAutonomousAmount[paymentOption.currency]
-  if (limit === undefined) {
+  // `currency` is an unconstrained wire string, so guard against inherited
+  // prototype keys (e.g. "constructor", "toString") that would otherwise
+  // resolve to a non-bigint value and slip past the comparison below.
+  const limit = Object.prototype.hasOwnProperty.call(
+    policy.maxAutonomousAmount,
+    paymentOption.currency,
+  )
+    ? policy.maxAutonomousAmount[paymentOption.currency]
+    : undefined
+  if (typeof limit !== "bigint") {
     return {
       status: "denied",
       reason: `No autonomous spend limit configured for currency ${paymentOption.currency}`,

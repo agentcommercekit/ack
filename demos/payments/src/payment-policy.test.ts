@@ -130,6 +130,21 @@ describe("evaluatePaymentPolicy", () => {
     })
   })
 
+  it("denies currencies matching inherited prototype keys", () => {
+    const decision = evaluatePaymentPolicy(
+      { ...basePaymentOption, currency: "constructor" },
+      {
+        allowedRecipients: [basePaymentOption.recipient],
+        maxAutonomousAmount: { USDC: 1_000n },
+      },
+    )
+
+    expect(decision).toEqual({
+      status: "denied",
+      reason: "No autonomous spend limit configured for currency constructor",
+    })
+  })
+
   it("denies fractional or malformed amounts the schema permits as strings", () => {
     const decision = evaluatePaymentPolicy(
       { ...basePaymentOption, amount: "1.5" },
