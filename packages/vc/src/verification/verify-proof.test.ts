@@ -56,13 +56,22 @@ describe("verifyProof", () => {
     ).rejects.toThrow(InvalidProofError)
   })
 
-  it("successfully verifies a valid JwtProof2020", async () => {
+  it("successfully verifies a valid JwtProof2020 and returns the decoded credential", async () => {
     const validProof = {
       type: "JwtProof2020",
       jwt: "valid.jwt.token",
     }
 
-    vi.mocked(verifyCredential).mockResolvedValueOnce({} as VerifiedCredential)
-    await expect(verifyProof(validProof, mockResolver)).resolves.not.toThrow()
+    const decoded = {
+      issuer: { id: "did:example:signed-issuer" },
+    }
+
+    vi.mocked(verifyCredential).mockResolvedValueOnce({
+      verifiableCredential: decoded,
+    } as unknown as VerifiedCredential)
+
+    // The returned credential must come from the decoded proof payload, not the
+    // caller-supplied proof object.
+    await expect(verifyProof(validProof, mockResolver)).resolves.toBe(decoded)
   })
 })

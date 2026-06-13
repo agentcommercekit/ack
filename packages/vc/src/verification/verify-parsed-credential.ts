@@ -48,23 +48,35 @@ function isVerifiable(
  *
  * @param credential - The credential to verify.
  * @param options - The {@link VerifyCredentialOptions} to use
+ * @returns The verified credential decoded from the signed proof. Callers
+ *   should use this returned value rather than the object they passed in, whose
+ *   top-level fields are not bound to the signature.
  * @throws on error
  */
 export async function verifyParsedCredential(
   credential: W3CCredential,
   options: VerifyCredentialOptions,
-): Promise<void> {
+): Promise<Verifiable<W3CCredential>> {
   if (!isVerifiable(credential)) {
     throw new InvalidProofError("Credential does not contain a proof")
   }
 
-  await verifyProof(credential.proof, options.resolver)
+  // verifyProof returns the credential decoded from the signed proof. The
+  // top-level fields of a caller-supplied parsed credential are NOT bound to
+  // that signed payload, so every check below (expiry, revocation, trusted
+  // issuer, claim verifiers) runs against the verified credential rather than
+  // the caller-supplied object, which could otherwise be mutated to diverge
+  // from what was actually signed. (#105, #108)
+  const verifiedCredential = await verifyProof(
+    credential.proof,
+    options.resolver,
+  )
 
-  if (isExpired(credential)) {
+  if (isExpired(verifiedCredential)) {
     throw new CredentialExpiredError()
   }
 
-  if (await isRevoked(credential)) {
+  if (await isRevoked(verifiedCredential)) {
     throw new CredentialRevokedError()
   }
 
@@ -72,27 +84,32 @@ export async function verifyParsedCredential(
   // if the array is empty). If it is not defined, we skip the check.
   if (
     Array.isArray(options.trustedIssuers) &&
-    !options.trustedIssuers.includes(credential.issuer.id)
+    !options.trustedIssuers.includes(verifiedCredential.issuer.id)
   ) {
     throw new UntrustedIssuerError(
-      `Issuer is not trusted '${credential.issuer.id}'`,
+      `Issuer is not trusted '${verifiedCredential.issuer.id}'`,
     )
   }
 
   // If verifiers are provided, we verify the credential against them.
   if (options.verifiers?.length) {
     const verifiers = options.verifiers.filter((v) =>
-      v.accepts(credential.type),
+      v.accepts(verifiedCredential.type),
     )
 
     if (!verifiers.length) {
       throw new UnsupportedCredentialTypeError(
-        `Unsupported credential type: ${credential.type.join(", ")}`,
+        `Unsupported credential type: ${verifiedCredential.type.join(", ")}`,
       )
     }
 
     for (const verifier of verifiers) {
-      await verifier.verify(credential.credentialSubject, options.resolver)
+      await verifier.verify(
+        verifiedCredential.credentialSubject,
+        options.resolver,
+      )
     }
   }
+
+  return verifiedCredential
 }

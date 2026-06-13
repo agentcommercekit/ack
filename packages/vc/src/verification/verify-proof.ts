@@ -26,16 +26,24 @@ export function isJwtProof(proof: unknown): proof is JwtProof {
   )
 }
 
+/**
+ * Verify a JWT proof and return the credential decoded from the signed payload.
+ *
+ * The returned credential is reconstructed from `proof.jwt`, so its fields are
+ * exactly what was signed, rather than whatever a caller may have placed on the
+ * surrounding object.
+ */
 async function verifyJwtProof(
   proof: Verifiable<W3CCredential>["proof"],
   resolver: Resolvable,
-): Promise<void> {
+): Promise<Verifiable<W3CCredential>> {
   if (!isJwtProof(proof)) {
     throw new InvalidProofError()
   }
 
   try {
-    await verifyCredential(proof.jwt, resolver)
+    const { verifiableCredential } = await verifyCredential(proof.jwt, resolver)
+    return verifiableCredential as Verifiable<W3CCredential>
   } catch (_error) {
     throw new InvalidProofError()
   }
@@ -46,11 +54,14 @@ async function verifyJwtProof(
  *
  * @param proof - The credential proof to verify
  * @param resolver - The resolver to use for did resolution
+ * @returns The credential decoded from the signed proof. For JWT proofs this is
+ *   the payload recovered from `proof.jwt`, so callers can rely on it instead of
+ *   on caller-supplied top-level fields that are not bound to the signature.
  */
 export async function verifyProof(
   proof: Verifiable<W3CCredential>["proof"],
   resolver: Resolvable,
-): Promise<void> {
+): Promise<Verifiable<W3CCredential>> {
   switch (proof.type) {
     case "JwtProof2020":
       return verifyJwtProof(proof, resolver)
