@@ -19,6 +19,7 @@ import {
 
 const API = "https://api.insumermodel.com"
 
+/** Get an attestation JWT — mint live with INSUMER_API_KEY, else load the bundled sample. */
 async function getAttestationJwt(): Promise<string> {
   const key = process.env.INSUMER_API_KEY
   if (key) {
@@ -46,6 +47,7 @@ async function getAttestationJwt(): Promise<string> {
   return sample.jwt
 }
 
+/** Run the ACK-ID gate against an InsumerAPI wallet-state attestation. */
 async function main() {
   log("🔐 InsumerAPI wallet-state attestation → ACK-ID gate\n")
   log(`This gate checks the PAYER's live on-chain wallet state before access —

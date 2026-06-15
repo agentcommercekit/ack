@@ -63,12 +63,14 @@ interface InsumerAttestationPayload {
   exp: number
 }
 
+/** Decode a JWT payload segment to JSON (call only after verification succeeds). */
 function decodeJwtPayload(token: string): InsumerAttestationPayload {
   const part = token.split(".")[1]
   if (!part) throw new Error("Malformed JWT: missing payload segment")
   return JSON.parse(Buffer.from(part, "base64url").toString("utf8"))
 }
 
+/** Short reason string for the first failing insumer-verify check. */
 function firstFailedCheck(checks: Record<string, { passed: boolean; reason?: string }>): string {
   for (const [name, c] of Object.entries(checks)) {
     if (!c.passed) return `${name}: ${c.reason ?? "failed"}`
@@ -76,8 +78,7 @@ function firstFailedCheck(checks: Record<string, { passed: boolean; reason?: str
   return "unknown"
 }
 
-// did:pkh subject label for the verified wallet (EVM). Non-EVM subjects fall
-// back to a urn carrying the raw address.
+/** did:pkh subject label for the verified wallet (EVM); urn fallback for non-EVM. */
 function subjectDid(payload: InsumerAttestationPayload): string {
   const chainId = payload.results?.[0]?.chainId
   if (typeof chainId === "number") {
@@ -188,6 +189,10 @@ export async function convertInsumerAttestationToVerifiableCredential(
 //   2. emit VC-shaped output carrying a JwtProof2020 proof.
 // Then this ClaimVerifier slots into verifyParsedCredential({ verifiers }),
 // next to ACK's getControllerClaimVerifier() / getReceiptClaimVerifier().
+/**
+ * ACK ClaimVerifier for the native verifyParsedCredential() path (see note above).
+ * Requires a did:web issuer + JwtProof2020 output; not used by the runnable demo.
+ */
 export function getWalletStateClaimVerifier() {
   return {
     accepts: (type: string[]) => type.includes("WalletStateCredential"),
