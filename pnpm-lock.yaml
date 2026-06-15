@@ -180,6 +180,22 @@ importers:
         specifier: 5.0.6
         version: 5.0.6
 
+  demos/insumer-wallet-state:
+    dependencies:
+      '@repo/cli-tools':
+        specifier: workspace:*
+        version: link:../../tools/cli-tools
+      agentcommercekit:
+        specifier: workspace:*
+        version: link:../../packages/agentcommercekit
+      insumer-verify:
+        specifier: 1.5.1
+        version: 1.5.1
+    devDependencies:
+      '@repo/typescript-config':
+        specifier: workspace:*
+        version: link:../../tools/typescript-config
+
   demos/payments:
     dependencies:
       '@hono/node-server':
@@ -4581,6 +4597,10 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       '@types/node': '>=18'
+
+  insumer-verify@1.5.1:
+    resolution: {integrity: sha512-7WaVBPfHZhROelHwg8moU819V7lNvqC1GHx6Kw99pnpDSNurMIGNXly3uor9SUsh1/Cj3wSVgGA2wZA8xTbYUA==}
+    engines: {node: '>=18.0.0'}
 
   internal-slot@1.1.0:
     resolution: {integrity: sha512-4gd7VpWNQNB4UKKCFFVcp1AVv+FMOgs9NKzjHKusc8jTMhd5eL1NqQqOpE0KzMds804/yHlglp3uxgluOqAPLw==}
@@ -11379,6 +11399,8 @@ snapshots:
       mute-stream: 2.0.0
       run-async: 3.0.0
       rxjs: 7.8.2
+
+  insumer-verify@1.5.1: {}
 
   internal-slot@1.1.0:
     dependencies:
