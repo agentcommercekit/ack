@@ -48,12 +48,15 @@ function isVerifiable(
  *
  * @param credential - The credential to verify.
  * @param options - The {@link VerifyCredentialOptions} to use
+ * @returns The credential decoded from the verified proof. Callers MUST use
+ *   this returned value for any post-verification reads — the `credential`
+ *   argument is caller-supplied and is not bound to the proof.
  * @throws on error
  */
 export async function verifyParsedCredential(
   credential: W3CCredential,
   options: VerifyCredentialOptions,
-): Promise<void> {
+): Promise<Verifiable<W3CCredential>> {
   if (!isVerifiable(credential)) {
     throw new InvalidProofError("Credential does not contain a proof")
   }
@@ -105,4 +108,6 @@ export async function verifyParsedCredential(
       )
     }
   }
+
+  return verifiedCredential
 }

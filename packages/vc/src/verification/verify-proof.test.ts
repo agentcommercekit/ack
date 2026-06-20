@@ -56,13 +56,23 @@ describe("verifyProof", () => {
     ).rejects.toThrow(InvalidProofError)
   })
 
-  it("successfully verifies a valid JwtProof2020", async () => {
+  it("returns the credential decoded from the verified proof", async () => {
     const validProof = {
       type: "JwtProof2020",
       jwt: "valid.jwt.token",
     }
 
-    vi.mocked(verifyCredential).mockResolvedValueOnce({} as VerifiedCredential)
-    await expect(verifyProof(validProof, mockResolver)).resolves.not.toThrow()
+    const verifiableCredential = {
+      issuer: { id: "did:example:issuer" },
+      credentialSubject: { id: "did:example:subject" },
+    }
+
+    vi.mocked(verifyCredential).mockResolvedValueOnce({
+      verifiableCredential,
+    } as unknown as VerifiedCredential)
+
+    await expect(verifyProof(validProof, mockResolver)).resolves.toBe(
+      verifiableCredential,
+    )
   })
 })

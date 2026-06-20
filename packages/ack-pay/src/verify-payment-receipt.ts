@@ -79,19 +79,29 @@ export async function verifyPaymentReceipt(
     )
   }
 
-  await verifyParsedCredential(parsedCredential, {
+  // `verifyParsedCredential` returns the credential decoded from the verified
+  // proof. All reads below use that verified credential, never the
+  // caller-supplied `parsedCredential` object, whose fields are not bound to
+  // the proof and may have been tampered with on the object-input path.
+  const verifiedReceipt = await verifyParsedCredential(parsedCredential, {
     resolver,
     trustedIssuers: trustedReceiptIssuers,
     verifiers: [getReceiptClaimVerifier()],
   })
 
+  if (!isPaymentReceiptCredential(verifiedReceipt)) {
+    throw new InvalidCredentialError(
+      "Verified credential is not a PaymentReceiptCredential",
+    )
+  }
+
   // Verify the paymentRequestToken is a valid JWT
   const paymentRequestToken =
-    parsedCredential.credentialSubject.paymentRequestToken
+    verifiedReceipt.credentialSubject.paymentRequestToken
 
   if (!verifyPaymentRequestTokenJwt) {
     return {
-      receipt: parsedCredential,
+      receipt: verifiedReceipt,
       paymentRequestToken,
       paymentRequest: null,
     }
@@ -117,7 +127,7 @@ export async function verifyPaymentReceipt(
   )
 
   return {
-    receipt: parsedCredential,
+    receipt: verifiedReceipt,
     paymentRequestToken,
     paymentRequest,
   }
