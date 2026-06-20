@@ -243,23 +243,24 @@ describe("verifyParsedCredential", () => {
 
     const received: unknown[] = []
 
-    await expect(
-      verifyParsedCredential(tampered, {
-        // Only the real issuer is trusted; the tampered "attacker" issuer is not
-        trustedIssuers: [issuerDid],
-        resolver,
-        verifiers: [
-          {
-            accepts: () => true,
-            verify: (subject) => {
-              received.push(subject)
-              return Promise.resolve()
-            },
+    const result = await verifyParsedCredential(tampered, {
+      // Only the real issuer is trusted; the tampered "attacker" issuer is not
+      trustedIssuers: [issuerDid],
+      resolver,
+      verifiers: [
+        {
+          accepts: () => true,
+          verify: (subject) => {
+            received.push(subject)
+            return Promise.resolve()
           },
-        ],
-      }),
-    ).resolves.not.toThrow()
+        },
+      ],
+    })
 
+    // Returns the verified credential (the contract callers like
+    // verifyPaymentReceipt rely on), not the caller-supplied object
+    expect(result).toBe(verifiedCredential)
     // Trust decisions used the verified payload, not the tampered outer object
     expect(received).toEqual([verifiedSubject])
   })

@@ -73,6 +73,8 @@ export async function verifyPaymentReceipt(
     throw new InvalidCredentialError("Receipt is not a JWT or Credential")
   }
 
+  // Cheap structural fast-reject only — NOT a trust boundary. The authoritative
+  // receipt check runs on the proof-verified credential below.
   if (!isPaymentReceiptCredential(parsedCredential)) {
     throw new InvalidCredentialError(
       "Credential is not a PaymentReceiptCredential",
