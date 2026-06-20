@@ -25,7 +25,7 @@
     "@a2a-js/sdk": "catalog:",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "express": "5.2.1",
+    "express": "4.21.2",
     "uuid": "catalog:",
     "valibot": "catalog:"
   },
