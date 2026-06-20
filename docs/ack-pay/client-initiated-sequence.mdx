@@ -16,7 +16,7 @@ This sequence is employed when a Client agent needs to pay based on a known obli
    - Details of the payment method the Client will use for funding.
    - Necessary reference information (e.g., invoice number, order ID).
    - Authentication credentials for the client agent (potentially leveraging ACK-ID).
-4. **Approvals and HITL:** The Client and Payment Service may optionally exchange further details or Human-in-the-Loop approvals as needed (e.g., specific pay-in instructions, risk checks, or or other dynamic interactions).
+4. **Approvals and HITL:** The Client and Payment Service may optionally exchange further details or Human-in-the-Loop approvals as needed (e.g., specific pay-in instructions, risk checks, or other dynamic interactions).
 5. **Payment Execution:** The Client authorizes the Payment Service to execute the payment according to the selected option. The Payment Service handles the interaction with the underlying Settlement Network, including any necessary conversions or compliance checks.
 6. **Receipt Issuance:** Upon successful settlement, the Payment Service (or its designated Receipt Service) issues an ACK Receipt (a Verified Credential) back to the initiating Client Agent. Optionally, the original requesting source or the final recipient may also be notified via the optional `serviceCallback` parameter if provided during initiation.
 
