@@ -35,7 +35,7 @@ export async function generateKeypair(
 }
 
 /**
- * Check if a public key is a valid secp256k1 public key (either compressed or
+ * Check if a public key is a valid secp256r1 public key (either compressed or
  * uncompressed)
  * @param pubkey - The public key bytes to check
  * @returns true if the public key is valid, false otherwise
