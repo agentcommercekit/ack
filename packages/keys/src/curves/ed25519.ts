@@ -1,4 +1,4 @@
-import { ed25519 } from "@noble/curves/ed25519"
+import { ed25519 } from "@noble/curves/ed25519.js"
 
 import type { Keypair } from "../keypair"
 
@@ -6,7 +6,7 @@ import type { Keypair } from "../keypair"
  * Generate a random private key using the Ed25519 curve
  */
 export function generatePrivateKeyBytes(): Uint8Array {
-  return ed25519.utils.randomPrivateKey()
+  return ed25519.utils.randomSecretKey()
 }
 
 /**
@@ -42,7 +42,7 @@ export function isValidPublicKey(pubkey: Uint8Array): boolean {
   }
 
   try {
-    ed25519.ExtendedPoint.fromHex(pubkey)
+    ed25519.Point.fromBytes(pubkey)
     return true
   } catch {
     return false

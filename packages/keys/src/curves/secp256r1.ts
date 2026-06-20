@@ -1,4 +1,4 @@
-import { secp256r1 } from "@noble/curves/p256"
+import { p256 as secp256r1 } from "@noble/curves/nist.js"
 
 import type { Keypair } from "../keypair"
 
@@ -6,7 +6,7 @@ import type { Keypair } from "../keypair"
  * Generate a random private key using the secp256r1 curve
  */
 export function generatePrivateKeyBytes(): Uint8Array {
-  return secp256r1.utils.randomPrivateKey()
+  return secp256r1.utils.randomSecretKey()
 }
 
 /**
@@ -46,7 +46,7 @@ export function isValidPublicKey(pubkey: Uint8Array): boolean {
   }
 
   try {
-    secp256r1.ProjectivePoint.fromHex(pubkey)
+    secp256r1.Point.fromBytes(pubkey)
     return true
   } catch {
     return false
