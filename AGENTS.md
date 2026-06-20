@@ -2,6 +2,10 @@
 
 TypeScript monorepo providing verifiable AI identity (ACK-ID) and automated payment processing (ACK-Pay) protocols built on W3C DIDs and Verifiable Credentials.
 
+## Contributing
+
+All Pull Requests and Issues MUST follow the [AI Usage Policy](./AI_POLICY.md) and disclose any AI assistance in the body. Every PR and Issue body must state which AI tools were used (e.g. Claude Code, Cursor, Copilot) and the extent to which the work was AI-assisted. If no AI tools were used, say so explicitly. Contributions that do not disclose their AI usage will not be accepted.
+
 ## Commands
 
 ```bash
