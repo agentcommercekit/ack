@@ -10,8 +10,8 @@ catalogs:
       specifier: 0.2.2
       version: 0.2.2
     '@hono/node-server':
-      specifier: 1.19.9
-      version: 1.19.9
+      specifier: 2.0.5
+      version: 2.0.5
     '@hono/standard-validator':
       specifier: 0.2.2
       version: 0.2.2
@@ -31,8 +31,8 @@ catalogs:
       specifier: 0.5.0
       version: 0.5.0
     uuid:
-      specifier: 11.1.0
-      version: 11.1.0
+      specifier: 14.0.0
+      version: 14.0.0
     valibot:
       specifier: 1.4.1
       version: 1.4.1
@@ -119,7 +119,7 @@ importers:
         version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.4.1(typescript@5.9.3)))(react@19.2.3)(valibot@1.4.1(typescript@5.9.3))(zod@3.25.76)
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.26)
+        version: 2.0.5(hono@4.12.26)
       '@hono/standard-validator':
         specifier: 'catalog:'
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.26)
@@ -168,7 +168,7 @@ importers:
         version: 2.5.0
       uuid:
         specifier: 'catalog:'
-        version: 11.1.0
+        version: 14.0.0
       valibot:
         specifier: 'catalog:'
         version: 1.4.1(typescript@5.9.3)
@@ -184,7 +184,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.26)
+        version: 2.0.5(hono@4.12.26)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -246,7 +246,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.26)
+        version: 2.0.5(hono@4.12.26)
       '@libsql/client':
         specifier: 0.15.15
         version: 0.15.15
@@ -292,7 +292,7 @@ importers:
         version: link:../../packages/keys
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.26)
+        version: 2.0.5(hono@4.12.26)
       '@hono/standard-validator':
         specifier: 'catalog:'
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.26)
@@ -314,7 +314,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 1.19.9(hono@4.12.26)
+        version: 2.0.5(hono@4.12.26)
       '@hono/standard-validator':
         specifier: 'catalog:'
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.26)
@@ -354,7 +354,7 @@ importers:
         version: 2.5.0
       uuid:
         specifier: 'catalog:'
-        version: 11.1.0
+        version: 14.0.0
       valibot:
         specifier: 'catalog:'
         version: 1.4.1(typescript@5.9.3)
@@ -1262,9 +1262,9 @@ packages:
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
 
-  '@hono/node-server@1.19.9':
-    resolution: {integrity: sha512-vHL6w3ecZsky+8P5MD+eFfaGTyCeOHUIFYMGpQGbrBTSmNNoxv0if69rEZ5giu36weC5saFuznL411gRX7bJDw==}
-    engines: {node: '>=18.14.1'}
+  '@hono/node-server@2.0.5':
+    resolution: {integrity: sha512-yQFvDmyDo3y6rEOJZDUYPJ49DIKTPpIk4kGvm40xx4Ejne0Pu9a1+exxPN+C1UppWK/WGZX9F++/Xs231tE86g==}
+    engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
 
@@ -6620,6 +6620,10 @@ packages:
     resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
     hasBin: true
 
+  uuid@14.0.0:
+    resolution: {integrity: sha512-Qo+uWgilfSmAhXCMav1uYFynlQO7fMFiMVZsQqZRMIXp0O7rR7qjkj+cPvBHLgBqi960QCoo/PH2/6ZtVqKvrg==}
+    hasBin: true
+
   valibot@1.4.1:
     resolution: {integrity: sha512-klCmFTz2jeDluy9RwX+F884TCiogtdBJ/YaxSx1EOBYXa3NXNWj8kR1jjN8rzluwojJVWWaHJ4r1U5LfICnM3g==}
     peerDependencies:
@@ -7503,7 +7507,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@hono/node-server@1.19.9(hono@4.12.26)':
+  '@hono/node-server@2.0.5(hono@4.12.26)':
     dependencies:
       hono: 4.12.26
 
@@ -14173,6 +14177,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@11.1.0: {}
+
+  uuid@14.0.0: {}
 
   valibot@1.4.1(typescript@5.9.3):
     optionalDependencies:
