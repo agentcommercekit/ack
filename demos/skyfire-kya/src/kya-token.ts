@@ -9,7 +9,7 @@ import { jwtPayloadSchema } from "agentcommercekit/schemas/zod/v4"
 import { decodeJwt } from "jose"
 import * as z from "zod/v4"
 
-export const skyfireKyaJwtPayloadSchema = z.object({
+const skyfireKyaJwtPayloadSchema = z.object({
   ...jwtPayloadSchema.shape,
   ssi: z.string(),
   jti: z.string(),

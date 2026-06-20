@@ -34,7 +34,8 @@
     "agentcommercekit": "workspace:*",
     "ai": "4.3.16",
     "hono": "catalog:",
-    "valibot": "catalog:"
+    "valibot": "catalog:",
+    "zod": "catalog:"
   },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*"

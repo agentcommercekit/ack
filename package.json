@@ -30,6 +30,7 @@
     "dev:examples": "turbo dev",
     "fix": "turbo build && turbo fix",
     "format": "oxfmt --write .",
+    "knip": "knip",
     "lint": "oxlint --type-aware",
     "lint:fix": "pnpm run lint -- --fix --fix-suggestions",
     "nuke": "pnpm run clean && git clean -xdf demos/**/node_modules docs/**/node_modules examples/**/node_modules packages/**/node_modules tools/**/node_modules node_modules",
@@ -40,22 +41,23 @@
     "test": "turbo test --env-mode=loose"
   },
   "devDependencies": {
-    "@changesets/changelog-github": "0.5.2",
-    "@changesets/cli": "2.29.8",
+    "@changesets/changelog-github": "0.7.0",
+    "@changesets/cli": "2.31.0",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "24.9.2",
     "dotenv-cli": "11.0.0",
+    "knip": "6.17.1",
     "oxfmt": "0.35.0",
     "oxlint": "1.50.0",
     "oxlint-tsgolint": "0.14.2",
     "tsdown": "0.15.11",
-    "tsx": "4.21.0",
-    "turbo": "2.8.10",
+    "tsx": "4.22.4",
+    "turbo": "2.9.18",
     "typescript": "5.9.3",
-    "vitest": "4.0.18"
+    "vitest": "4.1.9"
   },
   "engines": {
-    "node": ">=22",
+    "node": ">=22.13.0",
     "pnpm": ">=10"
   },
   "packageManager": "pnpm@10.20.0"

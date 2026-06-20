@@ -1,4 +1,4 @@
-import { secp256k1 } from "@noble/curves/secp256k1"
+import { secp256k1 } from "@noble/curves/secp256k1.js"
 
 import type { Keypair } from "../keypair"
 
@@ -6,7 +6,7 @@ import type { Keypair } from "../keypair"
  * Generate a random private key using the secp256k1 curve
  */
 export function generatePrivateKeyBytes(): Uint8Array {
-  return secp256k1.utils.randomPrivateKey()
+  return secp256k1.utils.randomSecretKey()
 }
 
 /**
@@ -46,7 +46,7 @@ export function isValidPublicKey(pubkey: Uint8Array): boolean {
   }
 
   try {
-    secp256k1.ProjectivePoint.fromHex(pubkey)
+    secp256k1.Point.fromBytes(pubkey)
     return true
   } catch {
     return false

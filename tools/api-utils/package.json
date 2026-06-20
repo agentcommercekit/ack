@@ -15,7 +15,6 @@
     "directory": "tools/api-utils"
   },
   "type": "module",
-  "main": "./src/index.ts",
   "exports": {
     "./package.json": "./package.json",
     "./api-response": {
