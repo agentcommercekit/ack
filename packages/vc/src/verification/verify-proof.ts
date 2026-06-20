@@ -9,6 +9,39 @@ interface JwtProof {
   jwt: string
 }
 
+type UnknownRecord = Record<string, unknown>
+
+function isRecord(value: unknown): value is UnknownRecord {
+  return typeof value === "object" && value !== null
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((item) => typeof item === "string")
+}
+
+function isVerifiableCredential(
+  value: unknown,
+): value is Verifiable<W3CCredential> {
+  if (!isRecord(value)) {
+    return false
+  }
+
+  const issuer = value.issuer
+  const credentialSubject = value.credentialSubject
+  const proof = value.proof
+
+  return (
+    isStringArray(value["@context"]) &&
+    isStringArray(value.type) &&
+    typeof value.issuanceDate === "string" &&
+    isRecord(issuer) &&
+    typeof issuer.id === "string" &&
+    isRecord(credentialSubject) &&
+    isRecord(proof) &&
+    typeof proof.type === "string"
+  )
+}
+
 /**
  * Check if a proof is a JWT proof
  *
@@ -43,8 +76,16 @@ async function verifyJwtProof(
 
   try {
     const { verifiableCredential } = await verifyCredential(proof.jwt, resolver)
-    return verifiableCredential as Verifiable<W3CCredential>
+    if (!isVerifiableCredential(verifiableCredential)) {
+      throw new InvalidProofError("Verified credential has invalid shape")
+    }
+
+    return verifiableCredential
   } catch (_error) {
+    if (_error instanceof InvalidProofError) {
+      throw _error
+    }
+
     throw new InvalidProofError()
   }
 }

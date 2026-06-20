@@ -13,14 +13,39 @@ vi.mock("did-jwt-vc", async () => {
   }
 })
 
-vi.mock("./verify-credential-jwt", () => ({
-  verifyCredentialJwt: vi.fn(),
-}))
+function createVerifiedCredential(
+  verifiableCredential: VerifiedCredential["verifiableCredential"],
+  jwt: string,
+): VerifiedCredential {
+  const issuer = verifiableCredential.issuer.id
+
+  return {
+    verified: true,
+    payload: {},
+    didResolutionResult: {
+      didResolutionMetadata: {},
+      didDocument: null,
+      didDocumentMetadata: {},
+    },
+    issuer,
+    signer: {
+      id: `${issuer}#key-1`,
+      type: "JsonWebKey2020",
+      controller: issuer,
+    },
+    jwt,
+    verifiableCredential,
+  }
+}
 
 describe("verifyProof", () => {
-  const mockResolver = {
-    resolve: vi.fn(),
-  } as unknown as Resolvable
+  const mockResolver: Resolvable = {
+    resolve: vi.fn(async () => ({
+      didResolutionMetadata: {},
+      didDocument: null,
+      didDocumentMetadata: {},
+    })),
+  }
 
   it("throws for invalid proof payload", async () => {
     const invalidProof = {
@@ -44,7 +69,7 @@ describe("verifyProof", () => {
     )
   })
 
-  it("handles verification errors from verifyCredentialJwt", async () => {
+  it("handles verification errors from verifyCredential", async () => {
     const proofWithInvalidJwt = {
       type: "JwtProof2020",
       jwt: "invalid.jwt.token",
@@ -63,15 +88,48 @@ describe("verifyProof", () => {
     }
 
     const decoded = {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      type: ["VerifiableCredential", "TestCredential"],
       issuer: { id: "did:example:signed-issuer" },
+      issuanceDate: "2026-01-01T00:00:00.000Z",
+      credentialSubject: { id: "did:example:subject" },
+      proof: validProof,
     }
 
-    vi.mocked(verifyCredential).mockResolvedValueOnce({
-      verifiableCredential: decoded,
-    } as unknown as VerifiedCredential)
+    vi.mocked(verifyCredential).mockResolvedValueOnce(
+      createVerifiedCredential(decoded, validProof.jwt),
+    )
 
     // The returned credential must come from the decoded proof payload, not the
     // caller-supplied proof object.
     await expect(verifyProof(validProof, mockResolver)).resolves.toBe(decoded)
+  })
+
+  it("throws when verifyCredential returns a malformed decoded credential", async () => {
+    const validProof = {
+      type: "JwtProof2020",
+      jwt: "valid.jwt.token",
+    }
+    const validDecoded = {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      type: ["VerifiableCredential", "TestCredential"],
+      issuer: { id: "did:example:signed-issuer" },
+      issuanceDate: "2026-01-01T00:00:00.000Z",
+      credentialSubject: { id: "did:example:subject" },
+      proof: validProof,
+    }
+    // oxlint-disable-next-line typescript-eslint/no-unsafe-type-assertion -- exercises malformed data from the external verifier.
+    const malformedCredential = {
+      issuer: { id: "did:example:signed-issuer" },
+    } as unknown as VerifiedCredential["verifiableCredential"]
+
+    vi.mocked(verifyCredential).mockResolvedValueOnce({
+      ...createVerifiedCredential(validDecoded, validProof.jwt),
+      verifiableCredential: malformedCredential,
+    })
+
+    await expect(verifyProof(validProof, mockResolver)).rejects.toThrow(
+      InvalidProofError,
+    )
   })
 })

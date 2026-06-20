@@ -102,6 +102,49 @@ describe("verifyPaymentReceipt()", () => {
     expect(result.paymentRequest).toBeDefined()
   })
 
+  it("uses the signed paymentRequestToken for parsed credentials", async () => {
+    const spoofedReceipt = {
+      ...signedReceipt,
+      credentialSubject: {
+        ...signedReceipt.credentialSubject,
+        paymentRequestToken: signedReceiptJwt,
+      },
+    }
+
+    const result = await verifyPaymentReceipt(spoofedReceipt, {
+      resolver,
+    })
+
+    expect(result.receipt).not.toBe(spoofedReceipt)
+    expect(result.receipt.credentialSubject.paymentRequestToken).toBe(
+      paymentRequestToken,
+    )
+    expect(result.paymentRequestToken).toBe(paymentRequestToken)
+    expect(result.paymentRequest).toBeDefined()
+  })
+
+  it("returns the signed paymentRequestToken when token verification is disabled", async () => {
+    const spoofedReceipt = {
+      ...signedReceipt,
+      credentialSubject: {
+        ...signedReceipt.credentialSubject,
+        paymentRequestToken: signedReceiptJwt,
+      },
+    }
+
+    const result = await verifyPaymentReceipt(spoofedReceipt, {
+      resolver,
+      verifyPaymentRequestTokenJwt: false,
+    })
+
+    expect(result.receipt).not.toBe(spoofedReceipt)
+    expect(result.receipt.credentialSubject.paymentRequestToken).toBe(
+      paymentRequestToken,
+    )
+    expect(result.paymentRequestToken).toBe(paymentRequestToken)
+    expect(result.paymentRequest).toBeNull()
+  })
+
   it("preserves receipt metadata through JWT verification", async () => {
     const evidenceMetadata = {
       policyRef: "policy://merchant-spend-v3",

@@ -41,7 +41,7 @@ app.post(
       credential = await parseJwtCredential(credential, resolver)
     }
 
-    await verifyParsedCredential(credential, {
+    credential = await verifyParsedCredential(credential, {
       trustedIssuers,
       resolver,
       verifiers: [getControllerClaimVerifier(), getReceiptClaimVerifier()],

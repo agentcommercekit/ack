@@ -80,12 +80,16 @@ export class CredentialVerifier {
       throw new InvalidCredentialSubjectError()
     }
 
-    await verifyParsedCredential(parsedCredential, {
+    const verifiedCredential = await verifyParsedCredential(parsedCredential, {
       resolver: this.resolver,
       trustedIssuers: this.trustedIssuers,
       verifiers: [getControllerClaimVerifier()],
     })
 
-    return parsedCredential
+    if (!isControllerCredential(verifiedCredential)) {
+      throw new InvalidCredentialSubjectError()
+    }
+
+    return verifiedCredential as Verifiable<ControllerCredential>
   }
 }

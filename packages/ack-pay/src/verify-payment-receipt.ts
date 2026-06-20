@@ -9,12 +9,15 @@ import {
   type Verifiable,
   type W3CCredential,
 } from "@agentcommercekit/vc"
+import * as v from "valibot"
 
 import type { PaymentRequest } from "./payment-request"
 import {
   getReceiptClaimVerifier,
   isPaymentReceiptCredential,
+  type PaymentReceiptCredential,
 } from "./receipt-claim-verifier"
+import { paymentReceiptClaimSchema } from "./schemas/valibot"
 import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
 interface VerifyPaymentReceiptOptions {
@@ -34,6 +37,12 @@ interface VerifyPaymentReceiptOptions {
    * The issuer of the paymentRequestToken
    */
   paymentRequestIssuer?: string
+}
+
+function isVerifiedPaymentReceiptCredential(
+  credential: Verifiable<W3CCredential>,
+): credential is Verifiable<PaymentReceiptCredential> {
+  return v.is(paymentReceiptClaimSchema, credential.credentialSubject)
 }
 
 /**
@@ -79,19 +88,25 @@ export async function verifyPaymentReceipt(
     )
   }
 
-  await verifyParsedCredential(parsedCredential, {
+  const verifiedReceipt = await verifyParsedCredential(parsedCredential, {
     resolver,
     trustedIssuers: trustedReceiptIssuers,
     verifiers: [getReceiptClaimVerifier()],
   })
 
+  if (!isVerifiedPaymentReceiptCredential(verifiedReceipt)) {
+    throw new InvalidCredentialError(
+      "Credential is not a PaymentReceiptCredential",
+    )
+  }
+
   // Verify the paymentRequestToken is a valid JWT
   const paymentRequestToken =
-    parsedCredential.credentialSubject.paymentRequestToken
+    verifiedReceipt.credentialSubject.paymentRequestToken
 
   if (!verifyPaymentRequestTokenJwt) {
     return {
-      receipt: parsedCredential,
+      receipt: verifiedReceipt,
       paymentRequestToken,
       paymentRequest: null,
     }
@@ -117,7 +132,7 @@ export async function verifyPaymentReceipt(
   )
 
   return {
-    receipt: parsedCredential,
+    receipt: verifiedReceipt,
     paymentRequestToken,
     paymentRequest,
   }
