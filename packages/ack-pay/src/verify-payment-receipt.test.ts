@@ -102,6 +102,31 @@ describe("verifyPaymentReceipt()", () => {
     expect(result.paymentRequest).toBeDefined()
   })
 
+  it("returns verified values when outer object fields are tampered", async () => {
+    // Reuse the valid proof from a legitimately signed receipt, but tamper the
+    // outer object's credentialSubject. The forgery must be ignored: all
+    // returned values must come from the credential decoded from the proof.
+    const tampered = {
+      ...signedReceipt,
+      credentialSubject: {
+        ...signedReceipt.credentialSubject,
+        paymentRequestToken: "forged.jwt.token",
+      },
+    } as Verifiable<W3CCredential>
+
+    const result = await verifyPaymentReceipt(tampered, {
+      resolver,
+      trustedReceiptIssuers: [receiptIssuerDid],
+      verifyPaymentRequestTokenJwt: false,
+    })
+
+    expect(result.paymentRequestToken).toBe(paymentRequestToken)
+    expect(
+      (result.receipt.credentialSubject as { paymentRequestToken: string })
+        .paymentRequestToken,
+    ).toBe(paymentRequestToken)
+  })
+
   it("preserves receipt metadata through JWT verification", async () => {
     const evidenceMetadata = {
       policyRef: "policy://merchant-spend-v3",
