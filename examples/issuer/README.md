@@ -33,7 +33,7 @@ To simplify the development experience, this API uses a SQLite database. In a pr
 
 All API endpoints require a **signed payload** to prove ownership of the DIDs involved. This payload is a JWT of the request parameters, signed using your DID.
 
-In local development, each endpoint accepts a `X-Payload-Issuer` header with a DID-URI as a value. This bypasses the signed payload requirement, and simulates that you signed by the payload. NOTE: This `did` MUST be resolvable, which makes using the [`local-did-host`](../local-did-host/) server helpful.
+In local development, you can bypass the signed payload requirement by setting `ALLOW_UNSIGNED_PAYLOADS="true"` in your `.env` and sending an `X-Payload-Issuer` header with a DID-URI as its value. This simulates that you signed the payload, and is **off by default** — never enable it outside local development, as it disables authentication. NOTE: This `did` MUST be resolvable, which makes using the [`local-did-host`](../local-did-host/) server helpful.
 
 ### Response format
 

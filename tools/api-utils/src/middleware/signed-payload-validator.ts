@@ -70,13 +70,23 @@ export const signedPayloadValidator = <T>(
       }
     } catch (error) {
       /**
-       * If we are in development mode, allow passing a raw unsigned payload along
-       * with an X-Payload-Issuer header to bypass the JWT signature check.
+       * Local-development escape hatch: allow a raw unsigned payload plus an
+       * `X-Payload-Issuer` header to bypass the JWT signature check. This is an
+       * authentication bypass, so it is gated behind an explicit, default-off
+       * `ALLOW_UNSIGNED_PAYLOADS` flag (NOT `NODE_ENV`, which is commonly set to
+       * "development" by accident in deployed environments). Never enable it
+       * outside local development.
        */
-      if (env<{ NODE_ENV: string }>(c).NODE_ENV === "development") {
+      if (
+        env<{ ALLOW_UNSIGNED_PAYLOADS?: string }>(c).ALLOW_UNSIGNED_PAYLOADS ===
+        "true"
+      ) {
         const issuer = c.req.header("X-Payload-Issuer")
         const parsedPayload = v.safeParse(schema, value)
         if (isDidUri(issuer) && parsedPayload.success) {
+          console.warn(
+            `[signed-payload-validator] SECURITY: accepting an UNSIGNED payload (issuer "${issuer}" from the X-Payload-Issuer header) because ALLOW_UNSIGNED_PAYLOADS is enabled. Never enable this outside local development.`,
+          )
           return {
             issuer,
             body: parsedPayload.output,
