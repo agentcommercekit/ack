@@ -1,7 +1,11 @@
 import type { Resolvable } from "@agentcommercekit/did"
 
 import type { Verifiable, W3CCredential } from "../types"
-import { InvalidProofError, UnsupportedProofTypeError } from "./errors"
+import {
+  InvalidCredentialError,
+  InvalidProofError,
+  UnsupportedProofTypeError,
+} from "./errors"
 import { parseJwtCredential } from "./parse-jwt-credential"
 
 interface JwtProof {
@@ -36,7 +40,12 @@ async function verifyJwtProof(
 
   try {
     return await parseJwtCredential(proof.jwt, resolver)
-  } catch (_error) {
+  } catch (error) {
+    // Preserve a malformed-credential error (the decoded credential is the
+    // problem, not the signature); wrap anything else as an invalid proof.
+    if (error instanceof InvalidCredentialError) {
+      throw error
+    }
     throw new InvalidProofError()
   }
 }

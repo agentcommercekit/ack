@@ -81,3 +81,47 @@ test("throws when the verified JWT does not decode to a valid credential", async
     InvalidCredentialError,
   )
 })
+
+test("throws when the decoded credential has a non-normalized string issuer", async () => {
+  const resolver = getDidResolver()
+
+  // Downstream reads `issuer.id`, so a top-level string issuer must be rejected
+  vi.mocked(verifyCredential).mockResolvedValueOnce({
+    verifiableCredential: {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      type: ["VerifiableCredential"],
+      issuer: "did:example:issuer",
+      issuanceDate: "2024-01-01T00:00:00.000Z",
+      credentialSubject: { id: "did:example:subject" },
+      proof: { type: "JwtProof2020", jwt: "a.b.c" },
+    },
+  } as unknown as Awaited<ReturnType<typeof verifyCredential>>)
+
+  await expect(parseJwtCredential("a.b.c", resolver)).rejects.toThrow(
+    InvalidCredentialError,
+  )
+})
+
+test("accepts a credential with a JSON-LD object context entry", async () => {
+  const resolver = getDidResolver()
+
+  // A valid VC with an object `@context` entry must NOT be false-rejected
+  const verifiableCredential = {
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      { ex: "https://example.com/vocab#" },
+    ],
+    type: ["VerifiableCredential"],
+    issuer: { id: "did:example:issuer" },
+    issuanceDate: "2024-01-01T00:00:00.000Z",
+    credentialSubject: { id: "did:example:subject" },
+    proof: { type: "JwtProof2020", jwt: "a.b.c" },
+  }
+  vi.mocked(verifyCredential).mockResolvedValueOnce({
+    verifiableCredential,
+  } as unknown as Awaited<ReturnType<typeof verifyCredential>>)
+
+  await expect(parseJwtCredential("a.b.c", resolver)).resolves.toBe(
+    verifiableCredential,
+  )
+})
