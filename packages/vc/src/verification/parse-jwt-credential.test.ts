@@ -6,7 +6,7 @@ import {
 import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { verifyCredential } from "did-jwt-vc"
-import { expect, test, vi } from "vitest"
+import { expect, it, vi } from "vitest"
 
 import { createCredential } from "../create-credential"
 import { signCredential } from "../signing/sign-credential"
@@ -20,7 +20,7 @@ vi.mock("did-jwt-vc", async (importOriginal) => {
   return { ...actual, verifyCredential: vi.fn(actual.verifyCredential) }
 })
 
-test("parseJwtCredential should parse a valid credential", async () => {
+it("parseJwtCredential should parse a valid credential", async () => {
   const resolver = getDidResolver()
 
   // Generate keypair for the issuer
@@ -60,7 +60,7 @@ test("parseJwtCredential should parse a valid credential", async () => {
   expect(vc.type).toContain("TestCredential")
 })
 
-test("verifyCredentialJwt should throw for invalid credential", async () => {
+it("verifyCredentialJwt should throw for invalid credential", async () => {
   const resolver = getDidResolver()
   const invalidCredential = "invalid.jwt.token"
 
@@ -69,7 +69,7 @@ test("verifyCredentialJwt should throw for invalid credential", async () => {
   ).rejects.toThrow()
 })
 
-test("throws when the verified JWT does not decode to a valid credential", async () => {
+it("throws when the verified JWT does not decode to a valid credential", async () => {
   const resolver = getDidResolver()
 
   // Simulate did-jwt-vc returning a shape that diverges from W3CCredential
@@ -82,7 +82,7 @@ test("throws when the verified JWT does not decode to a valid credential", async
   )
 })
 
-test("throws when the decoded credential has a non-normalized string issuer", async () => {
+it("throws when the decoded credential has a non-normalized string issuer", async () => {
   const resolver = getDidResolver()
 
   // Downstream reads `issuer.id`, so a top-level string issuer must be rejected
@@ -102,7 +102,7 @@ test("throws when the decoded credential has a non-normalized string issuer", as
   )
 })
 
-test("accepts a credential with a JSON-LD object context entry", async () => {
+it("returns the decoded credential for a JSON-LD object context entry", async () => {
   const resolver = getDidResolver()
 
   // A valid VC with an object `@context` entry must NOT be false-rejected
