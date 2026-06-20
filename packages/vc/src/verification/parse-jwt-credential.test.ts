@@ -5,11 +5,20 @@ import {
 } from "@agentcommercekit/did"
 import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
-import { expect, test } from "vitest"
+import { verifyCredential } from "did-jwt-vc"
+import { expect, test, vi } from "vitest"
 
 import { createCredential } from "../create-credential"
 import { signCredential } from "../signing/sign-credential"
+import { InvalidCredentialError } from "./errors"
 import { parseJwtCredential } from "./parse-jwt-credential"
+
+vi.mock("did-jwt-vc", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("did-jwt-vc")>()
+  // Delegate to the real implementation by default; individual tests can
+  // override `verifyCredential` to exercise malformed decoder output.
+  return { ...actual, verifyCredential: vi.fn(actual.verifyCredential) }
+})
 
 test("parseJwtCredential should parse a valid credential", async () => {
   const resolver = getDidResolver()
@@ -58,4 +67,17 @@ test("verifyCredentialJwt should throw for invalid credential", async () => {
   await expect(
     parseJwtCredential(invalidCredential, resolver),
   ).rejects.toThrow()
+})
+
+test("throws when the verified JWT does not decode to a valid credential", async () => {
+  const resolver = getDidResolver()
+
+  // Simulate did-jwt-vc returning a shape that diverges from W3CCredential
+  vi.mocked(verifyCredential).mockResolvedValueOnce({
+    verifiableCredential: { not: "a credential" },
+  } as unknown as Awaited<ReturnType<typeof verifyCredential>>)
+
+  await expect(parseJwtCredential("a.b.c", resolver)).rejects.toThrow(
+    InvalidCredentialError,
+  )
 })

@@ -63,8 +63,12 @@ describe("verifyProof", () => {
     }
 
     const verifiableCredential = {
+      "@context": ["https://www.w3.org/2018/credentials/v1"],
+      type: ["VerifiableCredential"],
       issuer: { id: "did:example:issuer" },
+      issuanceDate: "2024-01-01T00:00:00.000Z",
       credentialSubject: { id: "did:example:subject" },
+      proof: { type: "JwtProof2020", jwt: "valid.jwt.token" },
     }
 
     vi.mocked(verifyCredential).mockResolvedValueOnce({
