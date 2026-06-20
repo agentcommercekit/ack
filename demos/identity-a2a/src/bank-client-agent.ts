@@ -35,7 +35,7 @@ import { startAgentServer } from "./utils/server-utils"
 
 const logger = createLogger("Bank Customer", colors.green)
 
-export class BankClientAgent extends Agent {
+class BankClientAgent extends Agent {
   private a2aServerUrl: string | undefined = undefined // Will be discovered from DID document
   private server: Server | undefined = undefined // Server instance for cleanup
 

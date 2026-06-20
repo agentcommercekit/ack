@@ -1,0 +1,17 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "rules": {
+    "duplicates": "warn"
+  },
+  "workspaces": {
+    "examples/issuer": {
+      "entry": ["bin/*.ts"]
+    },
+    "examples/local-did-host": {
+      "entry": ["bin/*.ts"]
+    },
+    "examples/verifier": {
+      "entry": ["bin/*.ts"]
+    }
+  }
+}

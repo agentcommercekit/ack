@@ -2,7 +2,6 @@ import {
   bytesToBase64url,
   type DidUri,
   type DidWebUri,
-  type JwtPayload,
   type JwtString,
   type Verifiable,
   type W3CCredential,
@@ -118,12 +117,6 @@ export function getOwnerDidFromVC(
   return vc.credentialSubject.bid.ownerId
     ? (`did:web:api.skyfire.xyz:owner:${vc.credentialSubject.bid.ownerId}` as DidWebUri)
     : undefined
-}
-
-export interface SkyFireKYAPayload extends JwtPayload {
-  bid: Record<string, unknown> // buyer identity data
-  ssi: string // seller service id
-  jti: string
 }
 
 // create ack-id compatible verification for services

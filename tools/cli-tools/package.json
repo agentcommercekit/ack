@@ -35,7 +35,6 @@
     "yoctocolors": "2.1.2"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "@types/figlet": "1.7.0"
+    "@repo/typescript-config": "workspace:*"
   }
 }

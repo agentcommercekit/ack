@@ -13,7 +13,7 @@ import {
 const issuerKeypair = await generateKeypair("Ed25519")
 
 export const issuerDid = createDidKeyUri(issuerKeypair)
-export const issuerDidDocument = createDidDocumentFromKeypair({
+const issuerDidDocument = createDidDocumentFromKeypair({
   did: issuerDid,
   keypair: issuerKeypair,
 })

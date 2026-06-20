@@ -26,8 +26,6 @@
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
     "express": "5.2.1",
-    "jose": "catalog:",
-    "safe-stable-stringify": "catalog:",
     "uuid": "catalog:",
     "valibot": "catalog:"
   },

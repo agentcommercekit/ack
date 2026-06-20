@@ -13,6 +13,5 @@
     "type": "git",
     "url": "git+https://github.com/agentcommercekit/ack.git",
     "directory": "tools/typescript-config"
-  },
-  "main": "./base.js"
+  }
 }
