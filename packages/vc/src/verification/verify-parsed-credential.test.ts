@@ -70,6 +70,11 @@ async function setup() {
     },
   } as unknown as Verifiable<W3CCredential>
 
+  // `verifyProof` returns the credential decoded from the verified proof. In
+  // the happy path that matches the object under test, so default the mock to
+  // return `vc` itself.
+  vi.mocked(verifyProof).mockResolvedValue(vc)
+
   return { vc, issuerDid, resolver }
 }
 
@@ -77,7 +82,6 @@ describe("verifyParsedCredential", () => {
   beforeEach(() => {
     vi.mocked(isExpired).mockReturnValue(false)
     vi.mocked(isRevoked).mockResolvedValue(false)
-    vi.mocked(verifyProof).mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -215,6 +219,49 @@ describe("verifyParsedCredential", () => {
         resolver,
       }),
     ).resolves.not.toThrow()
+  })
+
+  it("uses the credential from the verified proof, not the caller-supplied object", async () => {
+    const { vc, issuerDid, resolver } = await setup()
+
+    // The authoritative credential decoded from the verified proof
+    const verifiedSubject = { id: "did:example:subject", role: "user" }
+    const verifiedCredential = {
+      ...vc,
+      issuer: { id: issuerDid },
+      credentialSubject: verifiedSubject,
+    } as unknown as Verifiable<W3CCredential>
+    vi.mocked(verifyProof).mockResolvedValue(verifiedCredential)
+
+    // The caller-supplied object carries tampered fields (untrusted issuer,
+    // escalated subject) while reusing the same valid proof.
+    const tampered = {
+      ...vc,
+      issuer: { id: "did:example:attacker" },
+      credentialSubject: { id: "did:example:subject", role: "admin" },
+    } as unknown as Verifiable<W3CCredential>
+
+    const received: unknown[] = []
+
+    await expect(
+      verifyParsedCredential(tampered, {
+        // Only the real issuer is trusted; the tampered "attacker" issuer is not
+        trustedIssuers: [issuerDid],
+        resolver,
+        verifiers: [
+          {
+            accepts: () => true,
+            verify: (subject) => {
+              received.push(subject)
+              return Promise.resolve()
+            },
+          },
+        ],
+      }),
+    ).resolves.not.toThrow()
+
+    // Trust decisions used the verified payload, not the tampered outer object
+    expect(received).toEqual([verifiedSubject])
   })
 
   it("verifies a valid credential without a list of trusted issuers", async () => {

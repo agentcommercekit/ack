@@ -58,13 +58,20 @@ export async function verifyParsedCredential(
     throw new InvalidProofError("Credential does not contain a proof")
   }
 
-  await verifyProof(credential.proof, options.resolver)
+  // The proof (a JWT) is the only authoritative source. `verifyProof` returns
+  // the credential decoded from the verified proof; all trust decisions below
+  // run against that, never against the caller-supplied `credential` object,
+  // whose fields are not bound to the proof and may have been tampered with.
+  const verifiedCredential = await verifyProof(
+    credential.proof,
+    options.resolver,
+  )
 
-  if (isExpired(credential)) {
+  if (isExpired(verifiedCredential)) {
     throw new CredentialExpiredError()
   }
 
-  if (await isRevoked(credential)) {
+  if (await isRevoked(verifiedCredential)) {
     throw new CredentialRevokedError()
   }
 
@@ -72,27 +79,30 @@ export async function verifyParsedCredential(
   // if the array is empty). If it is not defined, we skip the check.
   if (
     Array.isArray(options.trustedIssuers) &&
-    !options.trustedIssuers.includes(credential.issuer.id)
+    !options.trustedIssuers.includes(verifiedCredential.issuer.id)
   ) {
     throw new UntrustedIssuerError(
-      `Issuer is not trusted '${credential.issuer.id}'`,
+      `Issuer is not trusted '${verifiedCredential.issuer.id}'`,
     )
   }
 
   // If verifiers are provided, we verify the credential against them.
   if (options.verifiers?.length) {
     const verifiers = options.verifiers.filter((v) =>
-      v.accepts(credential.type),
+      v.accepts(verifiedCredential.type),
     )
 
     if (!verifiers.length) {
       throw new UnsupportedCredentialTypeError(
-        `Unsupported credential type: ${credential.type.join(", ")}`,
+        `Unsupported credential type: ${verifiedCredential.type.join(", ")}`,
       )
     }
 
     for (const verifier of verifiers) {
-      await verifier.verify(credential.credentialSubject, options.resolver)
+      await verifier.verify(
+        verifiedCredential.credentialSubject,
+        options.resolver,
+      )
     }
   }
 }
