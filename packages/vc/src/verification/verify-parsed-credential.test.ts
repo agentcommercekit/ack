@@ -221,7 +221,7 @@ describe("verifyParsedCredential", () => {
     ).resolves.not.toThrow()
   })
 
-  it("uses the credential from the verified proof, not the caller-supplied object", async () => {
+  it("returns the proof-decoded credential and ignores tampered outer fields", async () => {
     const { vc, issuerDid, resolver } = await setup()
 
     // The authoritative credential decoded from the verified proof

@@ -102,7 +102,7 @@ describe("verifyPaymentReceipt()", () => {
     expect(result.paymentRequest).toBeDefined()
   })
 
-  it("ignores tampered outer fields on the object path and returns verified values", async () => {
+  it("returns verified values when outer object fields are tampered", async () => {
     // Reuse the valid proof from a legitimately signed receipt, but tamper the
     // outer object's credentialSubject. The forgery must be ignored: all
     // returned values must come from the credential decoded from the proof.
