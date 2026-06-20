@@ -1,5 +1,5 @@
 ---
-"@agentcommercekit/keys": patch
+"@agentcommercekit/keys": minor
 ---
 
 Upgrade cryptographic dependencies to their latest majors (@noble/curves 2,
