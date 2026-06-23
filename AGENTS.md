@@ -41,17 +41,15 @@ agentcommercekit  (umbrella re-export)
 
 ### Dual Validation Schemas
 
-Valibot is primary (runtime dependency); Zod is an optional peer everywhere. Most packages expose schemas through three files / four export paths:
+Valibot is primary (runtime dependency); Zod (v4) is an optional peer everywhere. Standards-tracked DID/JWT/VC schemas come from the [`web-identity-schemas`](https://github.com/catena-labs/web-identity-schemas) package; ACK only hand-rolls the schemas w-i-s doesn't cover (CAIP, payment, A2A, controller-claim, JwtProof2020). Each package exposes schemas through two files / two export paths:
 
 ```
 src/schemas/
 ├── valibot.ts   → ./schemas/valibot
-└── zod/
-    ├── v3.ts    → ./schemas/zod/v3  AND  ./schemas/zod (alias)
-    └── v4.ts    → ./schemas/zod/v4
+└── zod.ts       → ./schemas/zod   (zod v4 only; zod v3 is not supported)
 ```
 
-Adding a new type requires updating all three schema files **and** the `exports` map in `package.json` **and** the entry array in `tsdown.config.ts`. (`keys` is the exception — it exports curve-specific files and encoding, no schemas.)
+Adding a new type requires updating both schema files **and** the `exports` map in `package.json` **and** the entry array in `tsdown.config.ts`. (`keys` is the exception — it exports curve-specific files and encoding, no schemas.)
 
 ### Dependencies
 

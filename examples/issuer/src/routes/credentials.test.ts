@@ -317,12 +317,7 @@ describe("POST /credentials/controller", () => {
       error: "Invalid request",
       issues: [
         {
-          kind: "schema",
-          type: "custom",
-          expected: "unknown",
-          received: '"not-a-valid-did"',
           input: "not-a-valid-did",
-          message: "Invalid DID format",
           path: [{ key: "controller", value: "not-a-valid-did" }],
         },
       ],
