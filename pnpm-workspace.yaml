@@ -11,12 +11,6 @@ blockExoticSubdeps: true
 # Pin exact versions on install — no caret ranges.
 saveExact: true
 
-# https://pnpm.io/cli/deploy
-injectWorkspacePackages: true
-
-# https://pnpm.io/settings#enableglobalvirtualstore
-enableGlobalVirtualStore: true
-
 # https://pnpm.io/settings#minimumreleaseage
 minimumReleaseAge: 144
 
