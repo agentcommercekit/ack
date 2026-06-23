@@ -12,7 +12,10 @@
     "vitest"
   ],
   "globals": {},
-  "settings": {},
+  "settings": {
+    "typeAware": true,
+    "typeCheck": true
+  },
   "categories": {
     "correctness": "error",
     "perf": "warn",

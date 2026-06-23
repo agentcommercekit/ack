@@ -67,7 +67,7 @@
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "@types/varint": "6.0.3",
-    "standard-parse": "catalog:",
+    "standard-matchers": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {

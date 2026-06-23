@@ -10,4 +10,4 @@
  * })
  * ```
  */
-import "standard-parse/test-matchers/vitest"
+import "standard-matchers/vitest"

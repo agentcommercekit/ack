@@ -5,25 +5,38 @@ packages:
   - packages/*
   - tools/*
 
+# https://pnpm.io/settings#blockexoticsubdeps
+blockExoticSubdeps: true
+
+# Pin exact versions on install — no caret ranges.
+saveExact: true
+
+# https://pnpm.io/cli/deploy
+injectWorkspacePackages: true
+
+# https://pnpm.io/settings#enableglobalvirtualstore
+enableGlobalVirtualStore: true
+
+# https://pnpm.io/settings#minimumreleaseage
+minimumReleaseAge: 144
+
+# https://pnpm.io/catalogs
 catalog:
-  '@a2a-js/sdk': 0.2.2
-  '@hono/node-server': 2.0.5
-  '@hono/standard-validator': 0.2.2
+  "@a2a-js/sdk": 0.2.2
+  "@hono/node-server": 2.0.5
+  "@hono/standard-validator": 0.2.2
   bit-buffers: 1.0.2
   hono: 4.12.26
   jose: 6.2.3
   safe-stable-stringify: 2.5.0
-  standard-parse: 0.5.0
+  standard-matchers: 0.1.0
   uuid: 14.0.0
   valibot: 1.4.1
   viem: 2.52.2
   zod: 3.25.4
 
-ignoredBuiltDependencies:
-  - puppeteer
-
-onlyBuiltDependencies:
-  - better-sqlite3
-  - esbuild
-  - sharp
-  - unrs-resolver
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+  puppeteer: false
+  sharp: false
