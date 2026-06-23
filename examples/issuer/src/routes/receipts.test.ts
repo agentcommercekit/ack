@@ -253,12 +253,7 @@ describe("POST /credentials/receipts", () => {
       error: "Invalid request",
       issues: [
         {
-          kind: "schema",
-          type: "custom",
-          expected: "unknown",
-          received: '"invalid-did"',
           input: "invalid-did",
-          message: "Invalid DID format",
           path: [{ key: "payerDid", value: "invalid-did" }],
         },
       ],

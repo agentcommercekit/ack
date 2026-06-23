@@ -6,9 +6,9 @@ packages:
   - tools/*
 
 catalog:
-  '@a2a-js/sdk': 0.2.2
-  '@hono/node-server': 2.0.5
-  '@hono/standard-validator': 0.2.2
+  "@a2a-js/sdk": 0.2.2
+  "@hono/node-server": 2.0.5
+  "@hono/standard-validator": 0.2.2
   bit-buffers: 1.0.2
   hono: 4.12.26
   jose: 6.2.3
@@ -17,7 +17,8 @@ catalog:
   uuid: 14.0.0
   valibot: 1.4.1
   viem: 2.52.2
-  zod: 3.25.4
+  web-identity-schemas: 0.3.0
+  zod: 4.4.3
 
 ignoredBuiltDependencies:
   - puppeteer

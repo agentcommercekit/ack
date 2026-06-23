@@ -1,4 +1,4 @@
-import * as z from "zod/v4"
+import * as z from "zod"
 
 import {
   caip2ChainIdRegex,
@@ -11,7 +11,7 @@ import {
   type Caip19AssetId,
   type Caip19AssetName,
   type Caip19AssetType,
-} from "../../caips"
+} from "../caips"
 
 export const caip2ChainIdSchema = z
   .string()

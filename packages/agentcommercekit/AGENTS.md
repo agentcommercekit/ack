@@ -21,5 +21,5 @@ This package only contains re-exports. If you need to add new functionality, add
 
 - `src/index.ts` - Main re-exports
 - `src/schemas/valibot.ts` - Aggregated valibot schemas
-- `src/schemas/zod/v3.ts` / `v4.ts` - Aggregated zod schemas
+- `src/schemas/zod.ts` - Aggregated zod schemas
 - `src/a2a/` - A2A re-exports

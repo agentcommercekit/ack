@@ -39,9 +39,12 @@ catalogs:
     viem:
       specifier: 2.52.2
       version: 2.52.2
+    web-identity-schemas:
+      specifier: 0.3.0
+      version: 0.3.0
     zod:
-      specifier: 3.25.4
-      version: 3.25.4
+      specifier: 4.4.3
+      version: 4.4.3
 
 importers:
 
@@ -113,13 +116,13 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: 1.2.11
-        version: 1.2.11(zod@3.25.4)
+        version: 1.2.11(zod@4.4.3)
       '@ai-sdk/openai':
         specifier: 1.3.22
-        version: 1.3.22(zod@3.25.4)
+        version: 1.3.22(zod@4.4.3)
       '@ai-sdk/valibot':
         specifier: 0.1.28
-        version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.4.1(typescript@5.9.3)))(react@19.2.3)(valibot@1.4.1(typescript@5.9.3))(zod@3.25.4)
+        version: 0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.4.1(typescript@5.9.3)))(react@19.2.3)(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3)
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.0.5(hono@4.12.26)
@@ -137,7 +140,7 @@ importers:
         version: link:../../packages/agentcommercekit
       ai:
         specifier: 4.3.16
-        version: 4.3.16(react@19.2.3)(zod@3.25.4)
+        version: 4.3.16(react@19.2.3)(zod@4.4.3)
       hono:
         specifier: 'catalog:'
         version: 4.12.26
@@ -146,7 +149,7 @@ importers:
         version: 1.4.1(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -227,7 +230,7 @@ importers:
         version: 6.2.3
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -364,7 +367,7 @@ importers:
         version: link:../../tools/typescript-config
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   packages/ack-pay:
     dependencies:
@@ -389,7 +392,7 @@ importers:
         version: link:../../tools/typescript-config
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   packages/agentcommercekit:
     dependencies:
@@ -426,7 +429,7 @@ importers:
         version: 1.4.1(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   packages/caip:
     devDependencies:
@@ -435,13 +438,13 @@ importers:
         version: link:../../tools/typescript-config
       standard-parse:
         specifier: 'catalog:'
-        version: 0.5.0(arktype@2.1.29)(valibot@1.4.1(typescript@5.9.3))(vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(zod@3.25.4)
+        version: 0.5.0(arktype@2.1.29)(valibot@1.4.1(typescript@5.9.3))(vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(zod@4.4.3)
       valibot:
         specifier: 'catalog:'
         version: 1.4.1(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   packages/did:
     dependencies:
@@ -456,7 +459,7 @@ importers:
         version: 4.1.0
       jwks-did-resolver:
         specifier: 1.1.0
-        version: 1.1.0(typescript@5.9.3)(zod@3.25.4)
+        version: 1.1.0(typescript@5.9.3)(zod@4.4.3)
       key-did-resolver:
         specifier: 4.0.0
         version: 4.0.0
@@ -466,6 +469,9 @@ importers:
       varint:
         specifier: 6.0.0
         version: 6.0.0
+      web-identity-schemas:
+        specifier: 'catalog:'
+        version: 0.3.0(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -475,10 +481,10 @@ importers:
         version: 6.0.3
       standard-parse:
         specifier: 'catalog:'
-        version: 0.5.0(arktype@2.1.29)(valibot@1.4.1(typescript@5.9.3))(vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(zod@3.25.4)
+        version: 0.5.0(arktype@2.1.29)(valibot@1.4.1(typescript@5.9.3))(vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(zod@4.4.3)
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   packages/jwt:
     dependencies:
@@ -488,6 +494,9 @@ importers:
       did-jwt:
         specifier: 8.0.18
         version: 8.0.18
+      web-identity-schemas:
+        specifier: 'catalog:'
+        version: 0.3.0(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
@@ -497,7 +506,7 @@ importers:
         version: 1.4.1(typescript@5.9.3)
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   packages/keys:
     dependencies:
@@ -538,13 +547,16 @@ importers:
       valibot:
         specifier: 'catalog:'
         version: 1.4.1(typescript@5.9.3)
+      web-identity-schemas:
+        specifier: 'catalog:'
+        version: 0.3.0(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3)
     devDependencies:
       '@repo/typescript-config':
         specifier: workspace:*
         version: link:../../tools/typescript-config
       zod:
         specifier: 'catalog:'
-        version: 3.25.4
+        version: 4.4.3
 
   tools/api-utils:
     dependencies:
@@ -7173,6 +7185,18 @@ packages:
       zod:
         optional: true
 
+  web-identity-schemas@0.3.0:
+    resolution: {integrity: sha512-zO3eGqDpHkU5xmfVW3rc2eYbTNEr4xq5GeXRvbhpLu33Qzlx+9Pj/7t+v7/tvpIy0sJxLiLbsynDMiYtFoETdg==}
+    engines: {node: '>=22', pnpm: '>=10'}
+    peerDependencies:
+      valibot: ^1.0.0
+      zod: ^4.0.0
+    peerDependenciesMeta:
+      valibot:
+        optional: true
+      zod:
+        optional: true
+
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
@@ -7341,9 +7365,6 @@ packages:
   zod@3.24.0:
     resolution: {integrity: sha512-Hz+wiY8yD0VLA2k/+nsg2Abez674dDGTai33SwNvMPuf9uIrBC9eFgIMQxBBbHFxVXi8W+5nX9DcAh9YNSQm/w==}
 
-  zod@3.25.4:
-    resolution: {integrity: sha512-7zz8qNtVv37yCd8OeUW37PMXrR0K/zg+6vw+Z2FJ2+oozVdRbFKldkCoqxd9nJflDrx2ZkjUJrPF2DMj+L4pBQ==}
-
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
@@ -7365,50 +7386,50 @@ snapshots:
 
   '@adraffy/ens-normalize@1.11.1': {}
 
-  '@ai-sdk/anthropic@1.2.11(zod@3.25.4)':
+  '@ai-sdk/anthropic@1.2.11(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.4)
-      zod: 3.25.4
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.4.3)
+      zod: 4.4.3
 
-  '@ai-sdk/openai@1.3.22(zod@3.25.4)':
+  '@ai-sdk/openai@1.3.22(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.4)
-      zod: 3.25.4
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.4.3)
+      zod: 4.4.3
 
-  '@ai-sdk/provider-utils@2.2.8(zod@3.25.4)':
+  '@ai-sdk/provider-utils@2.2.8(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
       nanoid: 3.3.11
       secure-json-parse: 2.7.0
-      zod: 3.25.4
+      zod: 4.4.3
 
   '@ai-sdk/provider@1.1.3':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@1.2.12(react@19.2.3)(zod@3.25.4)':
+  '@ai-sdk/react@1.2.12(react@19.2.3)(zod@4.4.3)':
     dependencies:
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.4)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.4)
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.4.3)
+      '@ai-sdk/ui-utils': 1.2.11(zod@4.4.3)
       react: 19.2.3
       swr: 2.3.6(react@19.2.3)
       throttleit: 2.1.0
     optionalDependencies:
-      zod: 3.25.4
+      zod: 4.4.3
 
-  '@ai-sdk/ui-utils@1.2.11(zod@3.25.4)':
+  '@ai-sdk/ui-utils@1.2.11(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.4)
-      zod: 3.25.4
-      zod-to-json-schema: 3.24.6(zod@3.25.4)
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.4.3)
+      zod: 4.4.3
+      zod-to-json-schema: 3.24.6(zod@4.4.3)
 
-  '@ai-sdk/valibot@0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.4.1(typescript@5.9.3)))(react@19.2.3)(valibot@1.4.1(typescript@5.9.3))(zod@3.25.4)':
+  '@ai-sdk/valibot@0.1.28(@valibot/to-json-schema@1.3.0(valibot@1.4.1(typescript@5.9.3)))(react@19.2.3)(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3)':
     dependencies:
       '@valibot/to-json-schema': 1.3.0(valibot@1.4.1(typescript@5.9.3))
-      ai: 4.3.16(react@19.2.3)(zod@3.25.4)
+      ai: 4.3.16(react@19.2.3)(zod@4.4.3)
       valibot: 1.4.1(typescript@5.9.3)
     transitivePeerDependencies:
       - react
@@ -10402,15 +10423,15 @@ snapshots:
       clean-stack: 4.2.0
       indent-string: 5.0.0
 
-  ai@4.3.16(react@19.2.3)(zod@3.25.4):
+  ai@4.3.16(react@19.2.3)(zod@4.4.3):
     dependencies:
       '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.4)
-      '@ai-sdk/react': 1.2.12(react@19.2.3)(zod@3.25.4)
-      '@ai-sdk/ui-utils': 1.2.11(zod@3.25.4)
+      '@ai-sdk/provider-utils': 2.2.8(zod@4.4.3)
+      '@ai-sdk/react': 1.2.12(react@19.2.3)(zod@4.4.3)
+      '@ai-sdk/ui-utils': 1.2.11(zod@4.4.3)
       '@opentelemetry/api': 1.9.0
       jsondiffpatch: 0.6.0
-      zod: 3.25.4
+      zod: 4.4.3
     optionalDependencies:
       react: 19.2.3
 
@@ -11035,10 +11056,10 @@ snapshots:
 
   devtools-protocol@0.0.1312386: {}
 
-  did-jwks@1.1.0(typescript@5.9.3)(zod@3.25.4):
+  did-jwks@1.1.0(typescript@5.9.3)(zod@4.4.3):
     dependencies:
       valibot: 1.4.1(typescript@5.9.3)
-      web-identity-schemas: 0.1.6(valibot@1.4.1(typescript@5.9.3))(zod@3.25.4)
+      web-identity-schemas: 0.1.6(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3)
     transitivePeerDependencies:
       - typescript
       - zod
@@ -12423,9 +12444,9 @@ snapshots:
 
   jsonpointer@5.0.1: {}
 
-  jwks-did-resolver@1.1.0(typescript@5.9.3)(zod@3.25.4):
+  jwks-did-resolver@1.1.0(typescript@5.9.3)(zod@4.4.3):
     dependencies:
-      did-jwks: 1.1.0(typescript@5.9.3)(zod@3.25.4)
+      did-jwks: 1.1.0(typescript@5.9.3)(zod@4.4.3)
     transitivePeerDependencies:
       - typescript
       - zod
@@ -14418,14 +14439,14 @@ snapshots:
 
   stackback@0.0.2: {}
 
-  standard-parse@0.5.0(arktype@2.1.29)(valibot@1.4.1(typescript@5.9.3))(vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(zod@3.25.4):
+  standard-parse@0.5.0(arktype@2.1.29)(valibot@1.4.1(typescript@5.9.3))(vitest@4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0)))(zod@4.4.3):
     dependencies:
       '@standard-schema/spec': 1.1.0
     optionalDependencies:
       arktype: 2.1.29
       valibot: 1.4.1(typescript@5.9.3)
       vitest: 4.1.9(@opentelemetry/api@1.9.0)(@types/node@24.9.2)(vite@7.1.12(@types/node@24.9.2)(jiti@2.7.0)(tsx@4.22.4)(yaml@2.9.0))
-      zod: 3.25.4
+      zod: 4.4.3
 
   statuses@2.0.1: {}
 
@@ -15072,10 +15093,15 @@ snapshots:
 
   walk-up-path@4.0.0: {}
 
-  web-identity-schemas@0.1.6(valibot@1.4.1(typescript@5.9.3))(zod@3.25.4):
+  web-identity-schemas@0.1.6(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3):
     optionalDependencies:
       valibot: 1.4.1(typescript@5.9.3)
-      zod: 3.25.4
+      zod: 4.4.3
+
+  web-identity-schemas@0.3.0(valibot@1.4.1(typescript@5.9.3))(zod@4.4.3):
+    optionalDependencies:
+      valibot: 1.4.1(typescript@5.9.3)
+      zod: 4.4.3
 
   web-namespaces@2.0.1: {}
 
@@ -15234,17 +15260,15 @@ snapshots:
     dependencies:
       zod: 3.24.0
 
-  zod-to-json-schema@3.24.6(zod@3.25.4):
+  zod-to-json-schema@3.24.6(zod@4.4.3):
     dependencies:
-      zod: 3.25.4
+      zod: 4.4.3
 
   zod@3.21.4: {}
 
   zod@3.23.8: {}
 
   zod@3.24.0: {}
-
-  zod@3.25.4: {}
 
   zod@4.4.3: {}
 

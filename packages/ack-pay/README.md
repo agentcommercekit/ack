@@ -121,9 +121,8 @@ isPaymentReceiptCredential(credential)
 
 // Valibot schema
 import { paymentRequestSchema } from "@agentcommercekit/ack-pay/schemas/valibot"
-// Zod v3 schema
-import { paymentRequestSchema } from "@agentcommercekit/ack-pay/schemas/zod/v3"
-import { paymentRequestSchema } from "@agentcommercekit/ack-pay/schemas/zod/v4"
+// Zod schema
+import { paymentRequestSchema } from "@agentcommercekit/ack-pay/schemas/zod"
 ```
 
 ## Agent Commerce Kit Version

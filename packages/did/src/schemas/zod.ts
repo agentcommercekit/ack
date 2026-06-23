@@ -1,5 +1,5 @@
-import { caip2ChainIdSchema } from "@agentcommercekit/caip/schemas/valibot"
-import { DidSchema } from "web-identity-schemas/valibot"
+import { caip2ChainIdSchema } from "@agentcommercekit/caip/schemas/zod"
+import { DidSchema } from "web-identity-schemas/zod"
 
 /**
  * Validates a DID URI, backed by `web-identity-schemas`' DID-core schema.

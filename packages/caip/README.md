@@ -138,15 +138,11 @@ import {
   caip2ChainIdSchema,
   caip10AccountIdSchema,
 } from "@agentcommercekit/caip/schemas/valibot"
-// Zod v3 schemas
+// Zod schemas
 import {
   caip2ChainIdSchema,
   caip10AccountIdSchema,
-} from "@agentcommercekit/caip/schemas/zod/v3"
-import {
-  caip2ChainIdSchema,
-  caip10AccountIdSchema,
-} from "@agentcommercekit/caip/schemas/zod/v4"
+} from "@agentcommercekit/caip/schemas/zod"
 ```
 
 ## Resources

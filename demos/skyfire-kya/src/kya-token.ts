@@ -5,21 +5,22 @@ import {
   type JwtString,
   type Keypair,
 } from "agentcommercekit"
-import { jwtPayloadSchema } from "agentcommercekit/schemas/zod/v4"
+import { jwtPayloadSchema } from "agentcommercekit/schemas/zod"
 import { decodeJwt } from "jose"
-import * as z from "zod/v4"
+import * as z from "zod"
 
-const skyfireKyaJwtPayloadSchema = z.object({
-  ...jwtPayloadSchema.shape,
-  ssi: z.string(),
-  jti: z.string(),
-  bid: z.object({
-    agentName: z.string(),
-    ownerId: z.string(),
-    nameFirst: z.string(),
-    nameLast: z.string(),
-  }),
-})
+const skyfireKyaJwtPayloadSchema = z
+  .object({
+    ssi: z.string(),
+    jti: z.string(),
+    bid: z.object({
+      agentName: z.string(),
+      ownerId: z.string(),
+      nameFirst: z.string(),
+      nameLast: z.string(),
+    }),
+  })
+  .and(jwtPayloadSchema)
 
 export type SkyfireKyaJwtPayload = z.output<typeof skyfireKyaJwtPayloadSchema>
 
