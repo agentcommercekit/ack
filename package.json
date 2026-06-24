@@ -31,7 +31,7 @@
     "fix": "turbo build && turbo fix",
     "format": "oxfmt --write .",
     "knip": "knip",
-    "lint": "oxlint --type-aware",
+    "lint": "oxlint",
     "lint:fix": "pnpm run lint -- --fix --fix-suggestions",
     "nuke": "pnpm run clean && git clean -xdf demos/**/node_modules docs/**/node_modules examples/**/node_modules packages/**/node_modules tools/**/node_modules node_modules",
     "outdated": "pnpm dlx npm-check-updates --interactive --format group --workspaces",
