@@ -16,7 +16,6 @@
   },
   "type": "module",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "demo": "tsx ./src/index.ts",
     "test": "vitest"

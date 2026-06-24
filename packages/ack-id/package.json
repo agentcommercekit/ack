@@ -70,7 +70,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
     "test": "vitest"

@@ -17,7 +17,6 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "demo": "dotenv -e .env -- tsx ./src/index.ts",
     "setup": "./bin/setup",

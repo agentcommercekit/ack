@@ -35,7 +35,6 @@
     }
   },
   "scripts": {
-    "check:types": "tsc --noEmit --pretty",
     "clean": "git clean -fdX .turbo",
     "test": "vitest"
   },
