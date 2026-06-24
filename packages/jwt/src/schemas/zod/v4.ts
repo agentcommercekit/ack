@@ -13,14 +13,14 @@ export const jwtPayloadSchema = z
     nbf: z.optional(z.number()),
     exp: z.optional(z.number()),
   })
-  .refine((val): val is JwtPayload => true)
+  .refine((_val): _val is JwtPayload => true)
 
 export const jwtHeaderSchema = z
   .looseObject({
     typ: z.literal("JWT"),
     alg: z.enum(jwtAlgorithms),
   })
-  .refine((val): val is JwtHeader => true)
+  .refine((_val): _val is JwtHeader => true)
 
 export const jwtStringSchema = z
   .string()

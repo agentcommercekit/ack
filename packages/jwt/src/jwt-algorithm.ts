@@ -36,7 +36,7 @@ export function isJwtAlgorithm(algorithm: unknown): algorithm is JwtAlgorithm {
  */
 export function curveToJwtAlgorithm(curve: KeyCurve): JwtAlgorithm {
   if (!isKeyCurve(curve)) {
-    throw new Error(`Unsupported curve: '${curve}'`)
+    throw new Error(`Unsupported curve: '${String(curve)}'`)
   }
 
   return CURVE_TO_ALGORITHM[curve]

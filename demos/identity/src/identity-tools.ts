@@ -1,6 +1,7 @@
 import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
 import {
+  isDidUri,
   resolveDid,
   verifyJwt,
   type DidResolver,
@@ -90,13 +91,13 @@ export function getIdentityTools({ resolver, verifier }: IdentityToolsParams) {
       description: "Validate counterparty identity",
       parameters: valibotSchema(
         v.object({
-          did: v.string(),
+          did: v.custom<DidUri>(isDidUri),
         }),
       ),
       execute: async ({ did }) => {
         console.log(colors.dim(`> Validating identity for ${did}`))
         try {
-          await verifyIdentity(did as DidUri, resolver, verifier)
+          await verifyIdentity(did, resolver, verifier)
         } catch (_error: unknown) {
           return {
             success: false,

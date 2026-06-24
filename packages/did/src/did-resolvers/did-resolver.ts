@@ -15,14 +15,14 @@ export type { Resolvable } from "did-resolver"
  * and this class extends it to allow for pre-resolution caching.
  */
 export class DidResolver extends Resolver {
-  private _cache = new Map<string, DIDResolutionResult>()
-  private _useCache = true
+  #cache = new Map<string, DIDResolutionResult>()
+  #useCache = true
 
   constructor(registry: ResolverRegistry = {}, options: ResolverOptions = {}) {
     super(registry, options)
 
     if (options.cache === false) {
-      this._useCache = false
+      this.#useCache = false
     }
   }
 
@@ -30,8 +30,8 @@ export class DidResolver extends Resolver {
     didUrl: string,
     options: DIDResolutionOptions = {},
   ): Promise<DIDResolutionResult> {
-    const cached = this._cache.get(didUrl)
-    if (this._useCache && cached) {
+    const cached = this.#cache.get(didUrl)
+    if (this.#useCache && cached) {
       return Promise.resolve(cached)
     }
 
@@ -42,7 +42,7 @@ export class DidResolver extends Resolver {
     did: string,
     resolutionResult: DIDResolutionResult,
   ) {
-    this._cache.set(did, resolutionResult)
+    this.#cache.set(did, resolutionResult)
     return this
   }
 
@@ -60,11 +60,11 @@ export class DidResolver extends Resolver {
   }
 
   removeFromCache(did: string) {
-    this._cache.delete(did)
+    this.#cache.delete(did)
     return this
   }
 
   clearCache() {
-    this._cache.clear()
+    this.#cache.clear()
   }
 }

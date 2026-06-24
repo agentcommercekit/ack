@@ -26,7 +26,7 @@ import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
-import { erc20Abi, isAddressEqual } from "viem"
+import { erc20Abi, isAddressEqual, isHash } from "viem"
 import { parseEventLogs } from "viem/utils"
 
 import { chainId, publicClient, solana, usdcAddress } from "./constants"
@@ -175,7 +175,13 @@ async function verifyOnChainPayment(
   }
 
   const senderAddress = asAddress(issuer)
-  const txHash = paymentDetails.metadata.txHash as `0x${string}`
+  const txHash = paymentDetails.metadata.txHash
+  if (!isHash(txHash)) {
+    log(errorMessage(`Invalid transaction hash: ${txHash}`))
+    throw new HTTPException(400, {
+      message: `Invalid transaction hash: ${txHash}`,
+    })
+  }
 
   log(colors.dim("Loading transaction details..."))
   // load the contract transaction details for the hash
@@ -200,8 +206,8 @@ async function verifyOnChainPayment(
   })
 
   // Find the Transfer event in the logs
-  const transferEvent = logs.find((log) =>
-    isAddressEqual(log.address, usdcAddress),
+  const transferEvent = logs.find((eventLog) =>
+    isAddressEqual(eventLog.address, usdcAddress),
   )
 
   if (!transferEvent) {
@@ -259,35 +265,36 @@ async function fetchTransaction(
 
 type SolanaTransaction = Awaited<ReturnType<typeof fetchTransaction>>
 
-type ParsedAccountKey = Readonly<{
-  pubkey: string | { toBase58(): string }
-  signer?: boolean
-}>
+const parsedAccountKeySchema = v.object({
+  pubkey: v.string(),
+  signer: v.optional(v.boolean()),
+})
 
-type MessageWithAccountKeys = Readonly<{
-  accountKeys?: readonly ParsedAccountKey[]
-}>
+const messageWithAccountKeysSchema = v.object({
+  accountKeys: v.optional(v.array(parsedAccountKeySchema)),
+})
 
 function extractSignerPubkeys(tx: NonNullable<SolanaTransaction>): Set<string> {
-  const msg = tx.transaction.message as unknown as MessageWithAccountKeys
+  const msg = v.parse(messageWithAccountKeysSchema, tx.transaction.message)
   const signers = new Set<string>()
   for (const key of msg.accountKeys ?? []) {
-    if (key.signer) {
-      const pub =
-        typeof key.pubkey === "string" ? key.pubkey : key.pubkey.toBase58()
-      if (pub) {
-        signers.add(pub)
-      }
+    if (key.signer && key.pubkey) {
+      signers.add(key.pubkey)
     }
   }
   return signers
 }
 
-type TokenBalance = {
-  mint: string
-  owner: string
-  uiTokenAmount: { amount: string; decimals: number }
-}
+const tokenBalanceSchema = v.object({
+  mint: v.string(),
+  owner: v.string(),
+  uiTokenAmount: v.object({
+    amount: v.string(),
+    decimals: v.number(),
+  }),
+})
+
+const tokenBalancesSchema = v.array(tokenBalanceSchema)
 
 function toBigInt(value: unknown): bigint {
   if (typeof value === "string") {
@@ -320,10 +327,12 @@ async function verifySolanaPayment(
   const delayMs = 1500
 
   for (let i = 0; i < maxAttempts; i++) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential polling until the transaction is confirmed
     tx = await fetchTransaction(rpc, signature)
     if (tx && !tx.meta?.err) {
       break
     }
+    // oxlint-disable-next-line eslint/no-await-in-loop -- backoff delay between confirmation polls
     await new Promise((r) => setTimeout(r, delayMs))
   }
   if (!tx || tx.meta?.err) {
@@ -349,8 +358,8 @@ async function verifySolanaPayment(
   const expectedDecimals = paymentOption.decimals
   const expectedAmount = BigInt(paymentOption.amount)
 
-  const post = (tx.meta?.postTokenBalances ?? []) as unknown as TokenBalance[]
-  const pre = (tx.meta?.preTokenBalances ?? []) as unknown as TokenBalance[]
+  const post = v.parse(tokenBalancesSchema, tx.meta?.postTokenBalances ?? [])
+  const pre = v.parse(tokenBalancesSchema, tx.meta?.preTokenBalances ?? [])
 
   const preBal = pre.find((b) => b.mint === mint && b.owner === recipient)
   const postBal = post.find((b) => b.mint === mint && b.owner === recipient)

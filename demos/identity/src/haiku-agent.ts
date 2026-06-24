@@ -5,7 +5,7 @@ import { getModel } from "./get-model"
 import { getIdentityTools } from "./identity-tools"
 
 export class HaikuAgent extends Agent {
-  protected async _run(messages: CoreMessage[]) {
+  protected async runInternal(messages: CoreMessage[]) {
     const result = await generateText({
       maxSteps: 10,
       model: getModel(),

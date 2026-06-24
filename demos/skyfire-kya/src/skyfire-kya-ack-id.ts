@@ -1,5 +1,6 @@
 import {
   bytesToBase64url,
+  isDidWebUri,
   type DidUri,
   type DidWebUri,
   type JwtString,
@@ -50,11 +51,13 @@ export async function convertSkyfireKyaToVerifiableCredential(
     throw new Error("Invalid JWT payload")
   }
 
+  const aud = Array.isArray(payload.aud) ? payload.aud[0] : payload.aud
+  if (typeof aud !== "string") {
+    throw new Error("Invalid JWT payload: missing audience")
+  }
+
   // synthetic did for the buyer agent
   const buyerDid: DidWebUri = `did:web:api.skyfire.xyz:buyer:${payload.sub}`
-
-  // synthetic did for the seller service
-  const _sellerDid: DidWebUri = `did:web:api.skyfire.xyz:seller:${payload.ssi}`
 
   // Create a VC that preserves the original JWT payload and signature
   // This maintains cryptographic integrity while providing VC compatibility
@@ -71,7 +74,7 @@ export async function convertSkyfireKyaToVerifiableCredential(
     // Include core KYA data in credentialSubject (excluding VC-level fields)
     credentialSubject: {
       id: buyerDid, // this represents the subject (sub field)
-      aud: payload.aud as string,
+      aud,
       bid: payload.bid,
       ssi: payload.ssi,
       jti: payload.jti,
@@ -96,7 +99,11 @@ export async function convertSkyfireKyaToVerifiableCredential(
 export function getBuyerDidFromVC(
   vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): DidWebUri {
-  return vc.credentialSubject.id as DidWebUri
+  const id = vc.credentialSubject.id
+  if (!isDidWebUri(id)) {
+    throw new Error("Buyer DID is not a did:web URI")
+  }
+  return id
 }
 
 /**
@@ -189,11 +196,11 @@ export function convertVerifiableCredentialToSkyfireKya(
   )
 
   // Extract signature from the VC proof (format: "header..signature")
-  if (!vc.proof.jws) {
+  if (typeof vc.proof.jws !== "string") {
     throw new Error("No JWS signature found in VC proof")
   }
 
-  const jwsParts = (vc.proof.jws as string).split("..")
+  const jwsParts = vc.proof.jws.split("..")
   if (jwsParts.length !== 2) {
     throw new Error("Invalid JWS format in VC proof")
   }

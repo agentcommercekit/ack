@@ -10,19 +10,21 @@ import {
   type BitstringStatusListCredential,
   type Verifiable,
 } from "agentcommercekit"
+import { bitstringStatusListClaimSchema } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env } from "hono"
 import { env } from "hono/adapter"
+import * as v from "valibot"
 
 import { getStatusList } from "@/db/queries/status-lists"
 import { compressBitString } from "@/lib/utils/compress-bit-string"
 import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
-import { issuer } from "@/middleware/issuer"
+import { issuer as issuerMiddleware } from "@/middleware/issuer"
 
 const app = new Hono<Env>()
 
 app.use("*", database())
-app.use("*", issuer())
+app.use("*", issuerMiddleware())
 app.use("*", didResolver())
 
 /**
@@ -62,8 +64,16 @@ app.get(
 
     const jwt = await signCredential(credential, issuer)
 
-    const verifiableCredential =
-      await parseJwtCredential<BitstringStatusListCredential>(jwt, resolver)
+    const parsed = await parseJwtCredential(jwt, resolver)
+    const credentialSubject = v.parse(
+      bitstringStatusListClaimSchema,
+      parsed.credentialSubject,
+    )
+
+    const verifiableCredential: Verifiable<BitstringStatusListCredential> = {
+      ...parsed,
+      credentialSubject,
+    }
 
     return c.json(apiSuccessResponse(verifiableCredential))
   },

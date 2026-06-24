@@ -13,7 +13,7 @@ const agentResponseSchema = v.object({
 export class ClientAgent extends Agent {
   haikuComplete = false
 
-  protected async _run(messages: CoreMessage[]) {
+  protected async runInternal(messages: CoreMessage[]) {
     const result = await generateText({
       model: getModel(),
       messages,

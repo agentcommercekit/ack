@@ -5,11 +5,15 @@ import {
 } from "@agentcommercekit/did"
 import { createJwtSigner, verifyJwt } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
+import * as v from "valibot"
 import { expect, test } from "vitest"
 
 import { createCredential } from "../create-credential"
-import type { JwtCredentialPayload } from "../types"
 import { signCredential } from "./sign-credential"
+
+const jwtCredentialPayloadSchema = v.object({
+  vc: v.looseObject({}),
+})
 
 test("signCredential creates a valid JWT and verifiable credential", async () => {
   const resolver = getDidResolver()
@@ -55,7 +59,7 @@ test("signCredential creates a valid JWT and verifiable credential", async () =>
   expect(result.payload.iss).toBe(issuerDid)
   expect(result.payload.sub).toBe(subjectDid)
 
-  const payload = result.payload as JwtCredentialPayload
+  const payload = v.parse(jwtCredentialPayloadSchema, result.payload)
 
   // Verify VC-specific payload elements
   expect(credential).toMatchObject(payload.vc)

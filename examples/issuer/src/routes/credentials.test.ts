@@ -11,7 +11,7 @@ import { afterEach, beforeAll, describe, expect, it, vi } from "vitest"
 
 import type { DatabaseClient } from "@/db/get-db"
 import { getCredential } from "@/db/queries/credentials"
-import type { DatabaseCredential } from "@/db/schema"
+import type { DatabaseCredential, NewDatabaseCredential } from "@/db/schema"
 import {
   createDidWebWithSigner,
   type DidWithSigner,
@@ -24,7 +24,7 @@ vi.mock("agentcommercekit", async () => {
   const actual = await vi.importActual("agentcommercekit")
   return {
     ...actual,
-    getDidResolver: vi.fn(),
+    getDidResolver: vi.fn<() => DidResolver>(),
   }
 })
 
@@ -32,14 +32,14 @@ vi.mock("@/db/queries/credentials", async () => {
   const actual = await vi.importActual("@/db/queries/credentials")
   return {
     ...actual,
-    createCredential: vi.fn().mockImplementation(
-      async (
-        _db: DatabaseClient,
-        credential: Omit<
-          DatabaseCredential,
-          "id" | "statusListIndex" | "issuedAt" | "revokedAt"
-        >,
-      ): Promise<DatabaseCredential> =>
+    createCredential: vi
+      .fn<
+        (
+          db: DatabaseClient,
+          credential: NewDatabaseCredential,
+        ) => Promise<DatabaseCredential>
+      >()
+      .mockImplementation((_db, credential) =>
         Promise.resolve({
           id: 1,
           credentialType: credential.credentialType,
@@ -47,19 +47,29 @@ vi.mock("@/db/queries/credentials", async () => {
           issuedAt: new Date(),
           revokedAt: null,
         }),
-    ),
-    getCredential: vi.fn().mockImplementation(async (_db, id: number) => {
-      return Promise.resolve({
-        id,
-        credentialType: "ControllerCredential",
-        baseCredential: createControllerCredential({
-          controller: "did:web:controller.example.com",
-          subject: "did:web:subject.example.com",
-          issuer: "did:web:issuer.example.com",
+      ),
+    getCredential: vi
+      .fn<
+        (
+          db: DatabaseClient,
+          id: number,
+        ) => Promise<DatabaseCredential | undefined>
+      >()
+      .mockImplementation((_db, id) =>
+        Promise.resolve({
+          id,
+          credentialType: "ControllerCredential",
+          issuedAt: new Date(),
+          revokedAt: null,
+          baseCredential: createControllerCredential({
+            controller: "did:web:controller.example.com",
+            subject: "did:web:subject.example.com",
+            issuer: "did:web:issuer.example.com",
+          }),
         }),
-      })
-    }),
-    revokeCredential: vi.fn(),
+      ),
+    revokeCredential:
+      vi.fn<(db: DatabaseClient, credential: DatabaseCredential) => void>(),
   }
 })
 
@@ -407,7 +417,7 @@ describe("DELETE /credentials/controller", () => {
     )
     vi.mocked(getDidResolver).mockReturnValue(resolver)
 
-    const signedPayload = await createJwt(
+    const differentControllerPayload = await createJwt(
       { id: 1 },
       {
         issuer: differentController.did,
@@ -418,7 +428,7 @@ describe("DELETE /credentials/controller", () => {
     const res = await app.request("/credentials/controller", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload,
+        payload: differentControllerPayload,
       }),
       headers: new Headers({ "Content-Type": "application/json" }),
     })
@@ -447,8 +457,10 @@ describe("DELETE /credentials/controller", () => {
     vi.mocked(getCredential).mockResolvedValueOnce({
       id: 1,
       credentialType: "ControllerCredential",
+      issuedAt: new Date(),
+      revokedAt: null,
       baseCredential: invalidCredential,
-    } as DatabaseCredential)
+    })
 
     const res = await app.request("/credentials/controller", {
       method: "DELETE",

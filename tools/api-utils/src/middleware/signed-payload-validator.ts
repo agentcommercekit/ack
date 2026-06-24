@@ -20,7 +20,7 @@ interface ValidatedSignedPayload<T> {
 
 const signedPayloadSchema = v.object({
   payload: v.custom<JwtString>(
-    (v: unknown) => typeof v === "string" && isJwtString(v),
+    (input: unknown) => typeof input === "string" && isJwtString(input),
     "Invalid JWT format",
   ),
 })

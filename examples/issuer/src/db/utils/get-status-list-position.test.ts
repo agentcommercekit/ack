@@ -45,11 +45,17 @@ describe("getStatusListPosition", () => {
   })
 
   it("throws an error for non-integer indices", () => {
-    expect(() => getStatusListPosition(1.5)).toThrow()
-    expect(() => getStatusListPosition(NaN)).toThrow()
+    expect(() => getStatusListPosition(1.5)).toThrow(
+      "Status list index must be a positive integer starting from 1",
+    )
+    expect(() => getStatusListPosition(NaN)).toThrow(
+      "Status list index must be a positive integer starting from 1",
+    )
   })
 
   it("throws an error for negative indices", () => {
-    expect(() => getStatusListPosition(-1)).toThrow()
+    expect(() => getStatusListPosition(-1)).toThrow(
+      "Status list index must be a positive integer starting from 1",
+    )
   })
 })

@@ -69,7 +69,7 @@ class BankClientAgent extends Agent {
         `🌐 Client DID document available at: ${colors.dim("http://localhost:3000/.well-known/did.json")}`,
       )
     } catch (error) {
-      logger.log("❌ Failed to start Bank Client server:", error as Error)
+      logger.log("❌ Failed to start Bank Client server:", error)
       throw error
     }
 
@@ -288,7 +288,7 @@ class BankClientAgent extends Agent {
         "🏦 Bank Client: Thank you! I appreciate the secure identity verification process.",
       )
     } catch (error) {
-      logger.log("❌ Error accessing banking services:", error as Error)
+      logger.log("❌ Error accessing banking services:", error)
       if (error instanceof Error) {
         logger.log("Error message:", error.message)
         logger.log("Error stack:", error.stack ?? "No stack trace")
@@ -364,7 +364,7 @@ class BankClientAgent extends Agent {
       logger.log("✅ Identity verification successful!")
       return true
     } catch (error) {
-      logger.log("❌ Identity verification error:", error as Error)
+      logger.log("❌ Identity verification error:", error)
       return false
     }
   }
@@ -432,10 +432,7 @@ class BankClientAgent extends Agent {
         )
       }
     } catch (error) {
-      logger.log(
-        "❌ Failed to resolve bank teller DID document:",
-        error as Error,
-      )
+      logger.log("❌ Failed to resolve bank teller DID document:", error)
       throw error // Don't continue if we can't resolve the DID document
     }
   }

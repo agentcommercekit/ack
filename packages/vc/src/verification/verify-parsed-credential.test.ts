@@ -21,15 +21,15 @@ import { verifyParsedCredential } from "./verify-parsed-credential"
 import { verifyProof } from "./verify-proof"
 
 vi.mock("./is-expired", () => ({
-  isExpired: vi.fn(),
+  isExpired: vi.fn<typeof isExpired>(),
 }))
 
 vi.mock("./is-revoked", () => ({
-  isRevoked: vi.fn(),
+  isRevoked: vi.fn<typeof isRevoked>(),
 }))
 
 vi.mock("./verify-proof", () => ({
-  verifyProof: vi.fn(),
+  verifyProof: vi.fn<typeof verifyProof>(),
 }))
 
 async function setup() {
@@ -57,18 +57,15 @@ async function setup() {
     },
   })
 
-  credential.issuer = {
-    id: issuerDid,
-  }
-
-  const vc = {
+  const vc: Verifiable<W3CCredential> = {
     ...credential,
+    issuer: { id: issuerDid },
     // just dummy fields, we mock the actual proof verification
     proof: {
       type: "JwtProof2020",
       jwt: "test.jwt.token",
     },
-  } as unknown as Verifiable<W3CCredential>
+  }
 
   // `verifyProof` returns the credential decoded from the verified proof. In
   // the happy path that matches the object under test, so default the mock to
@@ -226,20 +223,20 @@ describe("verifyParsedCredential", () => {
 
     // The authoritative credential decoded from the verified proof
     const verifiedSubject = { id: "did:example:subject", role: "user" }
-    const verifiedCredential = {
+    const verifiedCredential: Verifiable<W3CCredential> = {
       ...vc,
       issuer: { id: issuerDid },
       credentialSubject: verifiedSubject,
-    } as unknown as Verifiable<W3CCredential>
+    }
     vi.mocked(verifyProof).mockResolvedValue(verifiedCredential)
 
     // The caller-supplied object carries tampered fields (untrusted issuer,
     // escalated subject) while reusing the same valid proof.
-    const tampered = {
+    const tampered: Verifiable<W3CCredential> = {
       ...vc,
       issuer: { id: "did:example:attacker" },
       credentialSubject: { id: "did:example:subject", role: "admin" },
-    } as unknown as Verifiable<W3CCredential>
+    }
 
     const received: unknown[] = []
 

@@ -2,7 +2,7 @@ import * as v from "valibot"
 
 import type { JwtHeader, JwtPayload } from "../create-jwt"
 import { jwtAlgorithms } from "../jwt-algorithm"
-import type { JwtString } from "../jwt-string"
+import { isJwtString, type JwtString } from "../jwt-string"
 
 export const jwtPayloadSchema = v.pipe(
   v.looseObject({
@@ -24,8 +24,7 @@ export const jwtHeaderSchema = v.pipe(
   v.custom<JwtHeader>(() => true),
 )
 
-export const jwtStringSchema = v.pipe(
-  v.string(),
-  v.regex(/^[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+\.[a-zA-Z0-9-_]+$/),
-  v.transform((input) => input as JwtString),
+export const jwtStringSchema = v.custom<JwtString>(
+  isJwtString,
+  "Invalid JWT string",
 )

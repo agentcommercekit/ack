@@ -1,26 +1,41 @@
 import type { Resolvable } from "@agentcommercekit/did"
-import { verifyCredential, type VerifiedCredential } from "did-jwt-vc"
+import { verifyCredential } from "did-jwt-vc"
 import { describe, expect, it, vi } from "vitest"
 
 import { InvalidProofError, UnsupportedProofTypeError } from "./errors"
 import { verifyProof } from "./verify-proof"
 
 vi.mock("did-jwt-vc", async () => {
-  const actual = await vi.importActual("did-jwt-vc")
+  const actual =
+    await vi.importActual<typeof import("did-jwt-vc")>("did-jwt-vc")
   return {
     ...actual,
-    verifyCredential: vi.fn(),
+    verifyCredential: vi.fn<typeof verifyCredential>(),
   }
 })
 
 vi.mock("./verify-credential-jwt", () => ({
-  verifyCredentialJwt: vi.fn(),
+  verifyCredentialJwt: vi.fn<() => void>(),
 }))
 
+/**
+ * Replace the next `verifyCredential` call with one that returns the given
+ * decoded credential shape. The real return type promises a valid
+ * `Verifiable<W3CCredential>`; the override is typed to accept any decoded value
+ * so tests can supply minimal fixtures.
+ */
+function mockDecodedCredential(verifiableCredential: unknown): void {
+  vi.mocked(verifyCredential).mockImplementationOnce(() =>
+    Promise.resolve(
+      Object.assign(Object.create(null), { verifiableCredential }),
+    ),
+  )
+}
+
 describe("verifyProof", () => {
-  const mockResolver = {
-    resolve: vi.fn(),
-  } as unknown as Resolvable
+  const mockResolver: Resolvable = {
+    resolve: vi.fn<Resolvable["resolve"]>(),
+  }
 
   it("throws for invalid proof payload", async () => {
     const invalidProof = {
@@ -71,9 +86,7 @@ describe("verifyProof", () => {
       proof: { type: "JwtProof2020", jwt: "valid.jwt.token" },
     }
 
-    vi.mocked(verifyCredential).mockResolvedValueOnce({
-      verifiableCredential,
-    } as unknown as VerifiedCredential)
+    mockDecodedCredential(verifiableCredential)
 
     await expect(verifyProof(validProof, mockResolver)).resolves.toBe(
       verifiableCredential,

@@ -59,7 +59,7 @@ describe("validatePayload", () => {
   })
 
   it("should throw unauthorized error for invalid JWT", async () => {
-    const invalidJwt = "invalid-jwt" as JwtString
+    const invalidJwt: JwtString = "invalid.jwt.value"
     const resolver = new DidResolver()
 
     await expect(
@@ -85,7 +85,7 @@ describe("validatePayload", () => {
     resolver.addToCache(did.did, did.didDocument)
 
     // Create a JWT
-    const payload = {
+    const signedPayload = {
       sub: "did:example:123",
       aud: "did:example:456",
     }
@@ -93,7 +93,7 @@ describe("validatePayload", () => {
     const differentKeypair = await generateKeypair("secp256k1")
     const differentSigner = createJwtSigner(differentKeypair)
 
-    const jwt = await createJwt(payload, {
+    const jwt = await createJwt(signedPayload, {
       issuer: did.did,
       signer: differentSigner,
     })
@@ -107,11 +107,11 @@ describe("validatePayload", () => {
     const resolver = new DidResolver()
     resolver.addToCache(did.did, did.didDocument)
 
-    const payload = {
+    const invalidPayload = {
       invalid: "invalid",
     }
 
-    const jwt = await createJwt(payload, {
+    const jwt = await createJwt(invalidPayload, {
       issuer: did.did,
       signer,
     })

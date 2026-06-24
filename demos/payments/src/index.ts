@@ -41,9 +41,7 @@ import {
   isJwtString,
   parseJwtCredential,
   type JwtString,
-  type PaymentReceiptCredential,
   type PaymentRequest,
-  type Verifiable,
 } from "agentcommercekit"
 import {
   jwtStringSchema,
@@ -67,9 +65,29 @@ import {
 import { ensurePrivateKey, ensureSolanaKeys } from "./utils/ensure-private-keys"
 import { getKeypairInfo, type KeypairInfo } from "./utils/keypair-info"
 import { transferUsdc } from "./utils/usdc-contract"
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect import starts the server
 import "./server"
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect import starts the receipt service
 import "./receipt-service"
+// oxlint-disable-next-line import/no-unassigned-import -- side-effect import starts the payment service
 import "./payment-service"
+
+const receiptResponseSchema = v.object({
+  receipt: v.string(),
+  details: v.union([jwtStringSchema, v.record(v.string(), v.unknown())]),
+})
+
+function networkLabel(network: string | undefined): string {
+  if (network === "stripe") {
+    return "Stripe"
+  }
+
+  if (network?.startsWith("solana:")) {
+    return "Solana"
+  }
+
+  return "Base Sepolia"
+}
 
 /**
  * Example showcasing payments using the ACK-Pay protocol.
@@ -163,7 +181,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
     ),
   )
   log(colors.bold("\n📜 Payment Request Details (from Server Agent):"))
-  logJson(paymentRequest as Record<string, unknown>, colors.dim)
+  logJson({ ...paymentRequest }, colors.dim)
   log(
     colors.magenta(
       wordWrap(
@@ -173,18 +191,6 @@ The Client attempts to access a protected resource on the Server. Since no valid
   )
 
   const paymentOptions = paymentRequest.paymentOptions
-
-  function networkLabel(network: string | undefined): string {
-    if (network === "stripe") {
-      return "Stripe"
-    }
-
-    if (network?.startsWith("solana:")) {
-      return "Solana"
-    }
-
-    return "Base Sepolia"
-  }
 
   const selectedPaymentOptionId = await select({
     message: "Select which payment option to use",
@@ -205,10 +211,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
 
   function executePayment(
     option: PaymentRequest["paymentOptions"][number],
-  ): Promise<{
-    receipt: string
-    details: Verifiable<PaymentReceiptCredential>
-  }> {
+  ): Promise<v.InferOutput<typeof receiptResponseSchema>> {
     if (option.network === "stripe") {
       return performStripePayment(
         clientKeypairInfo,
@@ -293,7 +296,10 @@ If the receipt is valid, the Server grants access to the protected resource.`,
     throw new Error(errorMessage("Server did not respond with 200"))
   }
 
-  const result = (await response3.json()) as Record<string, unknown>
+  const result = v.parse(
+    v.record(v.string(), v.unknown()),
+    await response3.json(),
+  )
   log(colors.bold("🚪 Server Response (Protected Resource):"))
   logJson(result, colors.dim)
   log(
@@ -385,7 +391,7 @@ The Client Agent now uses the details from the Payment Request to make the payme
       "⏳ Waiting for transaction confirmation (this might take a moment)...",
     ),
   )
-  await publicClient.waitForTransactionReceipt({ hash: hash as `0x${string}` })
+  await publicClient.waitForTransactionReceipt({ hash })
   log(successMessage("Transaction confirmed on the blockchain! ✅\n\n"))
 
   log(
@@ -437,12 +443,7 @@ If all checks pass, the Receipt Service issues a Verifiable Credential (VC) serv
     }),
   })
 
-  const { receipt, details } = (await response2.json()) as {
-    receipt: string
-    details: Verifiable<PaymentReceiptCredential>
-  }
-
-  return { receipt, details }
+  return v.parse(receiptResponseSchema, await response2.json())
 }
 
 async function performSolanaPayment(
@@ -463,7 +464,7 @@ async function performSolanaPayment(
     "SOLANA_CLIENT_SECRET_KEY_JSON",
   )
   const keyBytes = new Uint8Array(
-    JSON.parse(clientSolKeys.secretKeyJson) as number[],
+    v.parse(v.array(v.number()), JSON.parse(clientSolKeys.secretKeyJson)),
   )
   const payerSigner = await createKeyPairSignerFromBytes(keyBytes)
 
@@ -502,8 +503,10 @@ async function performSolanaPayment(
     )
     log(colors.dim(`Send USDC to your wallet: ${clientSolKeys.publicKey}`))
     log(colors.cyan("https://faucet.circle.com/"))
+    // oxlint-disable-next-line eslint/no-await-in-loop -- interactive retry: wait for the user to fund before re-checking
     await waitForEnter("Press Enter after funding USDC...")
     try {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- sequential re-poll of balance after each funding attempt
       ;({ value: tokenBal } = await rpc
         .getTokenAccountBalance(senderAta, { commitment: solana.commitment })
         .send())
@@ -592,12 +595,8 @@ async function performSolanaPayment(
     method: "POST",
     body: JSON.stringify({ payload: signedPayload }),
   })
-  const { receipt, details } = (await response.json()) as {
-    receipt: string
-    details: Verifiable<PaymentReceiptCredential>
-  }
 
-  return { receipt, details }
+  return v.parse(receiptResponseSchema, await response.json())
 }
 
 async function performStripePayment(
@@ -643,7 +642,10 @@ This flow is simulated in this example.
     throw new Error(errorMessage("Failed to get Stripe payment URL"))
   }
 
-  const { paymentUrl } = (await response1.json()) as { paymentUrl: string }
+  const { paymentUrl } = v.parse(
+    v.object({ paymentUrl: v.string() }),
+    await response1.json(),
+  )
 
   log(
     successMessage("Stripe payment URL generated successfully! 🚀"),
@@ -685,12 +687,7 @@ This flow is simulated in this example.
     throw new Error(errorMessage("Failed to process payment callback"))
   }
 
-  const { receipt, details } = (await response2.json()) as {
-    receipt: string
-    details: Verifiable<PaymentReceiptCredential>
-  }
-
-  return { receipt, details }
+  return v.parse(receiptResponseSchema, await response2.json())
 }
 
 main()

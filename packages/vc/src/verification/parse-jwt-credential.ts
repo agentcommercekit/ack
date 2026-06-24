@@ -16,6 +16,10 @@ import { InvalidCredentialError } from "./errors"
  * here; conversely a top-level string `issuer` is rejected because downstream
  * reads `issuer.id`.
  */
+function hasStringId(value: object): value is { id: string } {
+  return "id" in value && typeof value.id === "string"
+}
+
 function isDecodedCredential(
   value: unknown,
 ): value is Verifiable<W3CCredential> {
@@ -23,17 +27,22 @@ function isDecodedCredential(
     return false
   }
 
-  const credential = value as Record<string, unknown>
-  const issuer = credential.issuer
+  if (!("issuer" in value)) {
+    return false
+  }
+  const issuer = value.issuer
 
   return (
-    typeof credential.credentialSubject === "object" &&
-    credential.credentialSubject !== null &&
+    "credentialSubject" in value &&
+    typeof value.credentialSubject === "object" &&
+    value.credentialSubject !== null &&
     typeof issuer === "object" &&
     issuer !== null &&
-    typeof (issuer as Record<string, unknown>).id === "string" &&
-    Array.isArray(credential.type) &&
-    credential.proof != null
+    hasStringId(issuer) &&
+    "type" in value &&
+    Array.isArray(value.type) &&
+    "proof" in value &&
+    value.proof != null
   )
 }
 
@@ -44,10 +53,10 @@ function isDecodedCredential(
  * @param resolver - The resolver to use for did resolution
  * @returns A {@link Verifiable<W3CCredential>}
  */
-export async function parseJwtCredential<T extends W3CCredential>(
+export async function parseJwtCredential(
   jwt: string,
   resolver: Resolvable,
-): Promise<Verifiable<T>> {
+): Promise<Verifiable<W3CCredential>> {
   const result = await verifyCredential(jwt, resolver)
 
   if (!isDecodedCredential(result.verifiableCredential)) {
@@ -56,5 +65,5 @@ export async function parseJwtCredential<T extends W3CCredential>(
     )
   }
 
-  return result.verifiableCredential as Verifiable<T>
+  return result.verifiableCredential
 }

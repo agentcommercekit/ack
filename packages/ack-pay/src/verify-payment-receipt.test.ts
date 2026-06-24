@@ -15,6 +15,7 @@ import {
   InvalidCredentialError,
   parseJwtCredential,
   signCredential,
+  UntrustedIssuerError,
   type Verifiable,
   type W3CCredential,
 } from "@agentcommercekit/vc"
@@ -24,6 +25,7 @@ import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
 import { InvalidPaymentRequestTokenError } from "./errors"
 import type { PaymentRequestInit } from "./payment-request"
+import { isPaymentReceiptCredential } from "./receipt-claim-verifier"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 
 describe("verifyPaymentReceipt()", () => {
@@ -121,10 +123,15 @@ describe("verifyPaymentReceipt()", () => {
     })
 
     expect(result.paymentRequestToken).toBe(paymentRequestToken)
-    expect(
-      (result.receipt.credentialSubject as { paymentRequestToken: string })
-        .paymentRequestToken,
-    ).toBe(paymentRequestToken)
+
+    const { receipt } = result
+    if (!isPaymentReceiptCredential(receipt)) {
+      throw new Error("Expected a payment receipt credential")
+    }
+
+    expect(receipt.credentialSubject.paymentRequestToken).toBe(
+      paymentRequestToken,
+    )
   })
 
   it("preserves receipt metadata through JWT verification", async () => {
@@ -231,6 +238,6 @@ describe("verifyPaymentReceipt()", () => {
         resolver,
         trustedReceiptIssuers: ["did:example:wrong-issuer"],
       }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(UntrustedIssuerError)
   })
 })

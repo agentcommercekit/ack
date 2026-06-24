@@ -44,14 +44,11 @@
       }
     },
     {
-      // TEMP: downgraded to warn after oxlint 1.71 bump surfaced these as
-      // errors. Remove this block once the test files are cleaned up.
-      "files": ["**/*.test.ts"],
+      // Ambient module augmentation (*.d.ts) and test-matcher setup files rely
+      // on side-effect imports that cannot be assigned to a variable.
+      "files": ["**/*.d.ts", "**/vitest.setup.ts"],
       "rules": {
-        "vitest/require-mock-type-parameters": "warn",
-        "vitest/no-conditional-expect": "warn",
-        "vitest/require-to-throw-message": "warn",
-        "vitest/valid-title": "warn"
+        "import/no-unassigned-import": "off"
       }
     }
   ]

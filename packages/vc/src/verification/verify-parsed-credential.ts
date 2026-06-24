@@ -101,12 +101,11 @@ export async function verifyParsedCredential(
       )
     }
 
-    for (const verifier of verifiers) {
-      await verifier.verify(
-        verifiedCredential.credentialSubject,
-        options.resolver,
-      )
-    }
+    await Promise.all(
+      verifiers.map((verifier) =>
+        verifier.verify(verifiedCredential.credentialSubject, options.resolver),
+      ),
+    )
   }
 
   return verifiedCredential

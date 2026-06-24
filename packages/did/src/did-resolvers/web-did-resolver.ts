@@ -88,7 +88,9 @@ function isHttpAllowed(path: string, allowedHttpHosts: string[] = []): boolean {
 
   if (host) {
     const [hostWithoutPort] = host.split(":")
-    return allowedHttpHosts.some((host) => host === hostWithoutPort)
+    return allowedHttpHosts.some(
+      (allowedHost) => allowedHost === hostWithoutPort,
+    )
   }
 
   return false
@@ -159,12 +161,13 @@ export function getResolver({
         throw new Error("DID document id does not match requested did")
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       return {
         didDocument,
         didDocumentMetadata,
         didResolutionMetadata: {
           error: "notFound",
-          message: `resolver_error: ` + (error as Error).message,
+          message: `resolver_error: ${message}`,
         },
       }
     }

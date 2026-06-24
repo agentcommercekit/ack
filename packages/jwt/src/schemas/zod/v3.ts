@@ -14,7 +14,7 @@ export const jwtPayloadSchema = z
     exp: z.optional(z.number()),
   })
   .passthrough()
-  .refine((val): val is JwtPayload => true)
+  .refine((_val): _val is JwtPayload => true)
 
 export const jwtHeaderSchema = z
   .object({
@@ -22,7 +22,7 @@ export const jwtHeaderSchema = z
     alg: z.enum(jwtAlgorithms),
   })
   .passthrough()
-  .refine((val): val is JwtHeader => true)
+  .refine((_val): _val is JwtHeader => true)
 
 export const jwtStringSchema = z
   .string()

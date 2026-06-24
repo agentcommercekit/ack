@@ -54,15 +54,9 @@ describe("didPkhParts", () => {
   })
 
   it("throws error for non-string inputs", () => {
-    expect(() => didPkhParts(null as unknown as string)).toThrow(
-      "Invalid did:pkh URI",
-    )
-    expect(() => didPkhParts(undefined as unknown as string)).toThrow(
-      "Invalid did:pkh URI",
-    )
-    expect(() => didPkhParts(123 as unknown as string)).toThrow(
-      "Invalid did:pkh URI",
-    )
+    expect(() => didPkhParts(null)).toThrow("Invalid did:pkh URI")
+    expect(() => didPkhParts(undefined)).toThrow("Invalid did:pkh URI")
+    expect(() => didPkhParts(123)).toThrow("Invalid did:pkh URI")
   })
 })
 

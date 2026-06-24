@@ -128,12 +128,12 @@ export abstract class Agent {
       content: prompt,
     })
 
-    const result = await this._run(this.messages)
+    const result = await this.runInternal(this.messages)
 
     this.messages.push(...result.responseMessages)
 
     return result.text
   }
 
-  protected abstract _run(messages: CoreMessage[]): Promise<RunResult>
+  protected abstract runInternal(messages: CoreMessage[]): Promise<RunResult>
 }

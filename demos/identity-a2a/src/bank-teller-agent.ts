@@ -181,7 +181,7 @@ class BankTellerAgent extends Agent {
 
       return message
     } catch (error) {
-      logger.log("❌ Identity verification error:", error as Error)
+      logger.log("❌ Identity verification error:", error)
       throw new A2AError(
         -32603,
         "Identity verification failed",
