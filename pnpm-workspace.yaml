@@ -39,7 +39,10 @@ overrides:
   "qs@6": "^6.15.2"
   "picomatch@2": "^2.3.2"
   "picomatch@4": "^4.0.4"
-  "js-yaml@3": "^3.14.2"
+  "js-yaml@4": "^4.2.0"
+  # read-yaml-file@1.x pins js-yaml 3.x (vulnerable, uses removed safeLoad);
+  # 2.1.0 is the latest CommonJS line and uses js-yaml 4.x.
+  "read-yaml-file@1": "^2.1.0"
   "ws@8": "^8.20.1"
   "uuid@11": "^11.1.1"
   "tar@7": "^7.5.16"
