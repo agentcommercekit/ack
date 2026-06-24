@@ -12,7 +12,7 @@ blockExoticSubdeps: true
 saveExact: true
 
 # https://pnpm.io/settings#minimumreleaseage
-minimumReleaseAge: 144
+minimumReleaseAge: 1440
 
 # https://pnpm.io/catalogs
 catalog:
