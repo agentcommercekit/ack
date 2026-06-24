@@ -89,9 +89,9 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
-    "@a2a-js/sdk": "^0.2.2",
+    "@a2a-js/sdk": "^0.3.0",
     "valibot": "^1.0.0",
-    "zod": "^3.25.0"
+    "zod": "^3.25.0 || ^4.0.0"
   },
   "peerDependenciesMeta": {
     "@a2a-js/sdk": {

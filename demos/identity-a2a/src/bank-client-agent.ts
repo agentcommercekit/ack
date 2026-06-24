@@ -1,11 +1,7 @@
 import type { Server } from "node:http"
 
-import {
-  A2AClient,
-  type AgentCard,
-  type Message,
-  type TextPart,
-} from "@a2a-js/sdk"
+import type { AgentCard, Message, TextPart } from "@a2a-js/sdk"
+import { A2AClient } from "@a2a-js/sdk/client"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
   curveToJwtAlgorithm,
@@ -440,6 +436,7 @@ class BankClientAgent extends Agent {
 
 // Create a simple AgentCard for the client
 const agentCard: AgentCard = {
+  protocolVersion: "0.3.0",
   name: "Bank Client",
   description: "Banking services client",
   version: "1.0.0",

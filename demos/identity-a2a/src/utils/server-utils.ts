@@ -1,8 +1,5 @@
-import {
-  A2AExpressApp,
-  DefaultRequestHandler,
-  InMemoryTaskStore,
-} from "@a2a-js/sdk"
+import { DefaultRequestHandler, InMemoryTaskStore } from "@a2a-js/sdk/server"
+import { A2AExpressApp } from "@a2a-js/sdk/server/express"
 import { colors, createLogger, type Logger } from "@repo/cli-tools"
 import express from "express"
 
