@@ -1,5 +1,5 @@
 {
-  "extends": "@repo/typescript-config/typescript-library.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
     "paths": {
       "@/*": ["./src/*"]

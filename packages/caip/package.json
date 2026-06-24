@@ -53,7 +53,6 @@
   },
   "dependencies": {},
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "standard-matchers": "catalog:",
     "valibot": "catalog:",
     "zod": "catalog:"

@@ -47,8 +47,5 @@
     "@agentcommercekit/vc": "workspace:*",
     "hono": "catalog:",
     "valibot": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

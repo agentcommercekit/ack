@@ -60,7 +60,6 @@
     "did-jwt": "8.0.18"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "valibot": "catalog:",
     "zod": "catalog:"
   },

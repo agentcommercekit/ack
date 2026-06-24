@@ -43,7 +43,6 @@
   "devDependencies": {
     "@changesets/changelog-github": "0.7.0",
     "@changesets/cli": "2.31.0",
-    "@repo/typescript-config": "workspace:*",
     "@types/node": "24.9.2",
     "dotenv-cli": "11.0.0",
     "knip": "6.18.0",

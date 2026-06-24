@@ -86,7 +86,6 @@
   },
   "devDependencies": {
     "@a2a-js/sdk": "catalog:",
-    "@repo/typescript-config": "workspace:*",
     "valibot": "catalog:",
     "zod": "catalog:"
   },

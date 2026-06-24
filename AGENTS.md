@@ -37,7 +37,8 @@ agentcommercekit  (umbrella re-export)
 ```
 
 - Each package builds with **tsdown** (not tsc), configured per-package in `tsdown.config.ts` with multiple entry points; outputs ESM `.js` + `.d.ts` to `dist/`.
-- `tools/` holds internal, unpublished workspace packages (`api-utils`, `cli-tools`, `typescript-config`).
+- `tools/` holds internal, unpublished workspace packages (`api-utils`, `cli-tools`).
+- Shared TypeScript config lives in the root `tsconfig.json`; each sub-project extends it via a relative path. The `examples/*` add `allowJs`/`jsx` on top.
 
 ### Dual Validation Schemas
 

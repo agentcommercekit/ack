@@ -63,7 +63,6 @@
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "zod": "catalog:"
   },
   "peerDependencies": {

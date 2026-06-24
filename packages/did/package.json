@@ -65,7 +65,6 @@
     "varint": "6.0.0"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@types/varint": "6.0.3",
     "standard-matchers": "catalog:",
     "zod": "catalog:"

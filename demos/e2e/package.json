@@ -27,8 +27,5 @@
     "agentcommercekit": "workspace:*",
     "valibot": "catalog:",
     "viem": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

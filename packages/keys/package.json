@@ -60,8 +60,5 @@
     "@solana/codecs-strings": "6.10.0",
     "multiformats": "14.0.0",
     "uint8arrays": "6.1.1"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

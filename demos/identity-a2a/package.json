@@ -30,7 +30,6 @@
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@types/express": "5.0.6"
   }
 }

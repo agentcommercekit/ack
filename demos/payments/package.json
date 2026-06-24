@@ -33,8 +33,5 @@
     "hono": "catalog:",
     "valibot": "catalog:",
     "viem": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

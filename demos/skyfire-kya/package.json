@@ -26,8 +26,5 @@
     "agentcommercekit": "workspace:*",
     "jose": "catalog:",
     "zod": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

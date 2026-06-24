@@ -35,7 +35,6 @@
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "drizzle-kit": "0.31.10",
     "vite-tsconfig-paths": "6.1.1"
   }
