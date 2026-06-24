@@ -56,13 +56,6 @@ export function getPublicKeyFromPrivateKey(
 }
 
 /**
- * @deprecated Use `getPublicKeyFromPrivateKey` instead
- */
-export function getCompressedPublicKey(keypair: Keypair): Uint8Array {
-  return getPublicKeyFromPrivateKey(keypair.privateKey, keypair.curve, true)
-}
-
-/**
  * Check if a public key is valid for a given curve
  */
 export function isValidPublicKey(

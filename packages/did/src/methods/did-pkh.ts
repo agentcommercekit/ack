@@ -4,10 +4,7 @@ import {
   type Caip2ChainId,
   type Caip10AccountId,
 } from "@agentcommercekit/caip"
-import {
-  isCaip2ChainId,
-  isCaip10AccountId,
-} from "@agentcommercekit/caip/schemas/valibot"
+import { isCaip10AccountId } from "@agentcommercekit/caip/schemas/valibot"
 import {
   base58ToBytes,
   isBase58,
@@ -26,19 +23,9 @@ import type { DidUriWithDocument } from "../types"
  */
 
 /**
- * @deprecated Use `Caip2ChainId` instead
- */
-export type DidPkhChainId = Caip2ChainId
-
-/**
  * The `did:pkh` Uri type
  */
 export type DidPkhUri = DidUri<"pkh", Caip10AccountId>
-
-/**
- * @deprecated Use `isCaip2ChainId` instead
- */
-export const isDidPkhChainId = isCaip2ChainId
 
 /**
  * Parse a did:pkh URI into its components.
@@ -111,16 +98,6 @@ export function caip10AccountIdFromDidPkhUri(
     throw new Error("Invalid did:pkh URI")
   }
   return caip10AccountId
-}
-
-/**
- * @deprecated Use `createCaip10AccountId` instead
- */
-export function createBlockchainAccountId(
-  address: string,
-  chainId: Caip2ChainId,
-) {
-  return createCaip10AccountId(chainId, address)
 }
 
 /**

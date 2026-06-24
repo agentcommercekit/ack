@@ -288,13 +288,3 @@ export function publicKeyJwkToBytes(jwk: PublicKeyJwk): Uint8Array {
   // For Ed25519, the x field is the complete public key
   return xBytes
 }
-
-/**
- * @deprecated Use `publicKeyBytesToJwk` instead
- */
-export const bytesToJwk = publicKeyBytesToJwk
-
-/**
- * @deprecated Use `publicKeyJwkToBytes` instead
- */
-export const jwkToBytes = publicKeyJwkToBytes
