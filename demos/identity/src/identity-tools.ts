@@ -89,7 +89,7 @@ export function getIdentityTools({ resolver, verifier }: IdentityToolsParams) {
   return {
     validateIdentity: tool({
       description: "Validate counterparty identity",
-      parameters: valibotSchema(
+      inputSchema: valibotSchema(
         v.object({
           did: v.custom<DidUri>(isDidUri),
         }),

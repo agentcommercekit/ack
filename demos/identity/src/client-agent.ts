@@ -1,6 +1,6 @@
 import { valibotSchema } from "@ai-sdk/valibot"
 import { colors } from "@repo/cli-tools"
-import { generateText, tool, type CoreMessage } from "ai"
+import { generateText, tool, type ModelMessage } from "ai"
 import * as v from "valibot"
 
 import { Agent } from "./agent"
@@ -13,7 +13,7 @@ const agentResponseSchema = v.object({
 export class ClientAgent extends Agent {
   haikuComplete = false
 
-  protected async runInternal(messages: CoreMessage[]) {
+  protected async runInternal(messages: ModelMessage[]) {
     const result = await generateText({
       model: getModel(),
       messages,
@@ -24,7 +24,7 @@ export class ClientAgent extends Agent {
       tools: {
         callHaikuAgent: tool({
           description: "Call or respond to the haiku agent",
-          parameters: valibotSchema(
+          inputSchema: valibotSchema(
             v.object({
               message: v.pipe(
                 v.string(),
@@ -55,7 +55,7 @@ export class ClientAgent extends Agent {
         isComplete: tool({
           description:
             "Call this when you have received a haiku to indicate that the haiku is complete",
-          parameters: valibotSchema(v.object({})),
+          inputSchema: valibotSchema(v.object({})),
           execute: async () => {
             console.log(colors.gray("> Haiku complete"))
             this.haikuComplete = true
