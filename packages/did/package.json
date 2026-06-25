@@ -20,21 +20,21 @@
     "README.md"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     },
     "./schemas/zod": {
-      "types": "./dist/schemas/zod.d.ts",
-      "default": "./dist/schemas/zod.js"
+      "types": "./dist/schemas/zod.d.mts",
+      "default": "./dist/schemas/zod.mjs"
     },
     "./schemas/valibot": {
-      "types": "./dist/schemas/valibot.d.ts",
-      "default": "./dist/schemas/valibot.js"
+      "types": "./dist/schemas/valibot.d.mts",
+      "default": "./dist/schemas/valibot.mjs"
     }
   },
   "publishConfig": {
@@ -42,7 +42,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
     "test": "vitest"
@@ -58,9 +57,8 @@
     "web-identity-schemas": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@types/varint": "6.0.3",
-    "standard-parse": "catalog:",
+    "standard-matchers": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {

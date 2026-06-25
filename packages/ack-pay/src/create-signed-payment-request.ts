@@ -34,19 +34,3 @@ export async function createSignedPaymentRequest(
     paymentRequestToken,
   }
 }
-
-/**
- * @deprecated Use {@link createSignedPaymentRequest} instead
- */
-export async function createPaymentRequestBody(
-  ...args: Parameters<typeof createSignedPaymentRequest>
-): Promise<{
-  paymentRequest: PaymentRequest
-  paymentToken: string
-}> {
-  const result = await createSignedPaymentRequest(...args)
-  return {
-    paymentRequest: result.paymentRequest,
-    paymentToken: result.paymentRequestToken,
-  }
-}

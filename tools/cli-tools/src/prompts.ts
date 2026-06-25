@@ -34,17 +34,16 @@ type LogOptions = {
  * ```
  */
 export function log(...args: (string | LogOptions)[]) {
-  let options: Required<LogOptions> = {
+  const defaults: Required<LogOptions> = {
     wrap: true,
     spacing: 1,
     width: 80,
   }
 
-  if (typeof args[args.length - 1] === "object") {
-    options = Object.assign(options, args.pop())
-  }
-
-  const messages = args as string[]
+  const lastArg = args[args.length - 1]
+  const options =
+    typeof lastArg === "object" ? { ...defaults, ...lastArg } : defaults
+  const messages = args.filter((arg): arg is string => typeof arg === "string")
 
   messages.forEach((message, index) => {
     console.log(options.wrap ? wordWrap(message, options.width) : message)

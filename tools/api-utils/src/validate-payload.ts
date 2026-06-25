@@ -19,11 +19,11 @@ export type ParsedPayload<T> = {
  * NOTE: This does not perform logic beyond validating that the JWT is valid and
  * is properly signed.
  */
-export async function validatePayload<T>(
+export async function validatePayload<S extends v.GenericSchema>(
   payload: JwtString,
-  bodySchema: v.GenericSchema<unknown, T>,
+  bodySchema: S,
   resolver?: Resolvable,
-): Promise<ParsedPayload<T>> {
+): Promise<ParsedPayload<v.InferOutput<S>>> {
   let parsed: JwtVerified
 
   try {

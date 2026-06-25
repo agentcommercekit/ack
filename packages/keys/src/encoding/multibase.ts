@@ -13,6 +13,12 @@ const MULTIBASE_PREFIX = {
 
 export type MultibaseEncoding = keyof typeof MULTIBASE_PREFIX
 
+const multibaseEncodings = [
+  "base58btc",
+  "base64url",
+  "base16",
+] as const satisfies MultibaseEncoding[]
+
 export type MultibaseString<T extends MultibaseEncoding> = T extends "base58btc"
   ? `z${string}`
   : T extends "base64url"
@@ -33,13 +39,30 @@ const multibaseEncoders = {
  * @param encoding The multibase encoding to use (defaults to base58btc)
  * @returns A multibase string with the appropriate prefix
  */
-export function bytesToMultibase<T extends MultibaseEncoding = "base58btc">(
+export function bytesToMultibase(
   bytes: Uint8Array,
-  encoding?: T,
-): MultibaseString<T> {
-  const actualEncoding = (encoding ?? "base58btc") as T
-  const encoder = multibaseEncoders[actualEncoding]
-  return encoder.encode(bytes) as MultibaseString<T>
+): MultibaseString<"base58btc">
+export function bytesToMultibase<T extends MultibaseEncoding>(
+  bytes: Uint8Array,
+  encoding: T,
+): MultibaseString<T>
+export function bytesToMultibase(
+  bytes: Uint8Array,
+  encoding: MultibaseEncoding = "base58btc",
+): MultibaseString<MultibaseEncoding> {
+  const prefix = MULTIBASE_PREFIX[encoding]
+  const encoded = multibaseEncoders[encoding].encode(bytes)
+  return ensurePrefix(prefix, encoded)
+}
+
+function ensurePrefix<P extends string>(
+  prefix: P,
+  value: string,
+): `${P}${string}` {
+  if (value.startsWith(prefix)) {
+    return `${prefix}${value.slice(prefix.length)}`
+  }
+  return `${prefix}${value}`
 }
 
 /**
@@ -77,9 +100,9 @@ export function getMultibaseEncoding(
   }
 
   const prefix = multibase[0]
-  for (const [encoding, encodingPrefix] of Object.entries(MULTIBASE_PREFIX)) {
-    if (prefix === encodingPrefix) {
-      return encoding as MultibaseEncoding
+  for (const encoding of multibaseEncodings) {
+    if (prefix === MULTIBASE_PREFIX[encoding]) {
+      return encoding
     }
   }
   return undefined

@@ -16,7 +16,6 @@
   },
   "type": "module",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "demo": "tsx ./src/run-demo.ts",
     "test": "vitest"
@@ -25,12 +24,11 @@
     "@a2a-js/sdk": "catalog:",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "express": "4.21.2",
+    "express": "5.2.1",
     "uuid": "catalog:",
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "@types/express": "5.0.6"
   }
 }

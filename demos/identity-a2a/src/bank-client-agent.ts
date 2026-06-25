@@ -1,11 +1,7 @@
 import type { Server } from "node:http"
 
-import {
-  A2AClient,
-  type AgentCard,
-  type Message,
-  type TextPart,
-} from "@a2a-js/sdk"
+import type { AgentCard, Message, TextPart } from "@a2a-js/sdk"
+import { A2AClient } from "@a2a-js/sdk/client"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
   curveToJwtAlgorithm,
@@ -69,7 +65,7 @@ class BankClientAgent extends Agent {
         `🌐 Client DID document available at: ${colors.dim("http://localhost:3000/.well-known/did.json")}`,
       )
     } catch (error) {
-      logger.log("❌ Failed to start Bank Client server:", error as Error)
+      logger.log("❌ Failed to start Bank Client server:", error)
       throw error
     }
 
@@ -288,7 +284,7 @@ class BankClientAgent extends Agent {
         "🏦 Bank Client: Thank you! I appreciate the secure identity verification process.",
       )
     } catch (error) {
-      logger.log("❌ Error accessing banking services:", error as Error)
+      logger.log("❌ Error accessing banking services:", error)
       if (error instanceof Error) {
         logger.log("Error message:", error.message)
         logger.log("Error stack:", error.stack ?? "No stack trace")
@@ -364,7 +360,7 @@ class BankClientAgent extends Agent {
       logger.log("✅ Identity verification successful!")
       return true
     } catch (error) {
-      logger.log("❌ Identity verification error:", error as Error)
+      logger.log("❌ Identity verification error:", error)
       return false
     }
   }
@@ -432,10 +428,7 @@ class BankClientAgent extends Agent {
         )
       }
     } catch (error) {
-      logger.log(
-        "❌ Failed to resolve bank teller DID document:",
-        error as Error,
-      )
+      logger.log("❌ Failed to resolve bank teller DID document:", error)
       throw error // Don't continue if we can't resolve the DID document
     }
   }
@@ -443,6 +436,7 @@ class BankClientAgent extends Agent {
 
 // Create a simple AgentCard for the client
 const agentCard: AgentCard = {
+  protocolVersion: "0.3.0",
   name: "Bank Client",
   description: "Banking services client",
   version: "1.0.0",

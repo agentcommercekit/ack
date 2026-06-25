@@ -27,9 +27,12 @@ export async function ensureNonZeroBalances(
       "USDC: https://faucet.circle.com/",
     )
     log("Once funded, press enter to check balance again")
+    // oxlint-disable-next-line eslint/no-await-in-loop -- interactive retry: wait for the user to fund before re-checking
     await waitForEnter()
     log(colors.dim("Fetching balances..."))
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential re-poll of balance after each funding attempt
     balanceUsdc = await getErc20Balance(chain, address, usdcAddress)
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential re-poll of balance after each funding attempt
     balanceEth = await getEthBalance(chain, address)
   }
 
@@ -61,8 +64,10 @@ export async function ensureSolanaSolBalance(address: string): Promise<bigint> {
     log("We need to fund this Solana address with devnet SOL:", address)
     log("Faucet: https://faucet.solana.com/")
     log("Once funded, press enter to check balance again")
+    // oxlint-disable-next-line eslint/no-await-in-loop -- interactive retry: wait for the user to fund before re-checking
     await waitForEnter()
     log(colors.dim("Fetching SOL balance..."))
+    // oxlint-disable-next-line eslint/no-await-in-loop -- sequential re-poll of balance after each funding attempt
     lamports = await fetchBalance()
   }
 

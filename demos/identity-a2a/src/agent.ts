@@ -8,13 +8,12 @@
  * - Authentication uses DID-based JWT signing and verification
  */
 
+import type { AgentCard, Message } from "@a2a-js/sdk"
 import type {
-  AgentCard,
   AgentExecutor,
   ExecutionEventBus,
-  Message,
   RequestContext,
-} from "@a2a-js/sdk"
+} from "@a2a-js/sdk/server"
 import { colors } from "@repo/cli-tools"
 import {
   createDidDocumentFromKeypair,

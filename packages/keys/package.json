@@ -20,29 +20,29 @@
     "README.md"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     },
     "./encoding": {
-      "types": "./dist/encoding/index.d.ts",
-      "default": "./dist/encoding/index.js"
+      "types": "./dist/encoding/index.d.mts",
+      "default": "./dist/encoding/index.mjs"
     },
     "./ed25519": {
-      "types": "./dist/curves/ed25519.d.ts",
-      "default": "./dist/curves/ed25519.js"
+      "types": "./dist/curves/ed25519.d.mts",
+      "default": "./dist/curves/ed25519.mjs"
     },
     "./secp256k1": {
-      "types": "./dist/curves/secp256k1.d.ts",
-      "default": "./dist/curves/secp256k1.js"
+      "types": "./dist/curves/secp256k1.d.mts",
+      "default": "./dist/curves/secp256k1.mjs"
     },
     "./secp256r1": {
-      "types": "./dist/curves/secp256r1.d.ts",
-      "default": "./dist/curves/secp256r1.js"
+      "types": "./dist/curves/secp256r1.d.mts",
+      "default": "./dist/curves/secp256r1.mjs"
     }
   },
   "publishConfig": {
@@ -50,7 +50,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
     "test": "vitest"
@@ -60,8 +59,5 @@
     "@solana/codecs-strings": "6.10.0",
     "multiformats": "14.0.0",
     "uint8arrays": "6.1.1"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

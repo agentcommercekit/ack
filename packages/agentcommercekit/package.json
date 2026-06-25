@@ -20,33 +20,33 @@
     "README.md"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     },
     "./schemas/valibot": {
-      "types": "./dist/schemas/valibot.d.ts",
-      "default": "./dist/schemas/valibot.js"
+      "types": "./dist/schemas/valibot.d.mts",
+      "default": "./dist/schemas/valibot.mjs"
     },
     "./schemas/zod": {
-      "types": "./dist/schemas/zod.d.ts",
-      "default": "./dist/schemas/zod.js"
+      "types": "./dist/schemas/zod.d.mts",
+      "default": "./dist/schemas/zod.mjs"
     },
     "./a2a": {
-      "types": "./dist/a2a/index.d.ts",
-      "default": "./dist/a2a/index.js"
+      "types": "./dist/a2a/index.d.mts",
+      "default": "./dist/a2a/index.mjs"
     },
     "./a2a/schemas/valibot": {
-      "types": "./dist/a2a/schemas/valibot.d.ts",
-      "default": "./dist/a2a/schemas/valibot.js"
+      "types": "./dist/a2a/schemas/valibot.d.mts",
+      "default": "./dist/a2a/schemas/valibot.mjs"
     },
     "./a2a/schemas/zod": {
-      "types": "./dist/a2a/schemas/zod.d.ts",
-      "default": "./dist/a2a/schemas/zod.js"
+      "types": "./dist/a2a/schemas/zod.d.mts",
+      "default": "./dist/a2a/schemas/zod.mjs"
     }
   },
   "publishConfig": {
@@ -54,7 +54,6 @@
   },
   "scripts": {
     "build": "tsdown",
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo dist",
     "dev": "pnpm build --watch --no-clean",
     "test": "vitest"
@@ -70,12 +69,11 @@
   },
   "devDependencies": {
     "@a2a-js/sdk": "catalog:",
-    "@repo/typescript-config": "workspace:*",
     "valibot": "catalog:",
     "zod": "catalog:"
   },
   "peerDependencies": {
-    "@a2a-js/sdk": "^0.2.2",
+    "@a2a-js/sdk": "^0.3.0",
     "valibot": "^1.0.0",
     "zod": "^4.0.0"
   },

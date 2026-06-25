@@ -17,7 +17,6 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -xdf .turbo",
     "db:generate": "drizzle-kit generate",
     "dev": "dotenv -e .env -- tsx watch ./bin/start-server.ts",
@@ -35,7 +34,6 @@
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
     "drizzle-kit": "0.31.10",
     "vite-tsconfig-paths": "6.1.1"
   }

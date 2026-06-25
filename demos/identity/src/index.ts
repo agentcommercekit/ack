@@ -362,6 +362,7 @@ In this final step, we demonstrate how agents can verify each other's credential
 
   let result = ""
   while (!clientAgent.haikuComplete) {
+    // oxlint-disable-next-line eslint/no-await-in-loop -- each turn depends on the agent's accumulated conversation state
     result = await clientAgent.run(
       "Begin or continue generating a haiku about the ocean",
     )

@@ -20,7 +20,7 @@ interface ValidatedSignedPayload<T> {
 
 const signedPayloadSchema = v.object({
   payload: v.custom<JwtString>(
-    (v: unknown) => typeof v === "string" && isJwtString(v),
+    (input: unknown) => typeof input === "string" && isJwtString(input),
     "Invalid JWT format",
   ),
 })
@@ -40,61 +40,64 @@ const signedPayloadSchema = v.object({
  * })
  * ```
  */
-export const signedPayloadValidator = <T>(
+export const signedPayloadValidator = <S extends v.GenericSchema>(
   target: keyof ValidationTargets,
-  schema: v.GenericSchema<unknown, T>,
+  schema: S,
 ): MiddlewareHandler<
   SignedPayloadEnv,
   string,
-  { out: { json: ValidatedSignedPayload<T> } }
+  { out: { json: ValidatedSignedPayload<v.InferOutput<S>> } }
 > =>
-  validator(target, async (value, c): Promise<ValidatedSignedPayload<T>> => {
-    const didResolver = c.get("resolver")
+  validator(
+    target,
+    async (value, c): Promise<ValidatedSignedPayload<v.InferOutput<S>>> => {
+      const didResolver = c.get("resolver")
 
-    try {
-      const data = v.parse(signedPayloadSchema, value)
-      const { parsed, body } = await validatePayload(
-        data.payload,
-        schema,
-        didResolver,
-      )
+      try {
+        const data = v.parse(signedPayloadSchema, value)
+        const { parsed, body } = await validatePayload(
+          data.payload,
+          schema,
+          didResolver,
+        )
 
-      // Enforces a DID for the issuer
-      if (!isDidUri(parsed.issuer)) {
-        throw new Error("Invalid issuer")
-      }
+        // Enforces a DID for the issuer
+        if (!isDidUri(parsed.issuer)) {
+          throw new Error("Invalid issuer")
+        }
 
-      return {
-        issuer: parsed.issuer,
-        body,
-      }
-    } catch (error) {
-      /**
-       * Local-development escape hatch: allow a raw unsigned payload plus an
-       * `X-Payload-Issuer` header to bypass the JWT signature check. This is an
-       * authentication bypass, so it is gated behind an explicit, default-off
-       * `ALLOW_UNSIGNED_PAYLOADS` flag (NOT `NODE_ENV`, which is commonly set to
-       * "development" by accident in deployed environments). Never enable it
-       * outside local development.
-       */
-      if (
-        env<{ ALLOW_UNSIGNED_PAYLOADS?: string }>(c).ALLOW_UNSIGNED_PAYLOADS ===
-        "true"
-      ) {
-        const issuer = c.req.header("X-Payload-Issuer")
-        const parsedPayload = v.safeParse(schema, value)
-        if (isDidUri(issuer) && parsedPayload.success) {
-          console.warn(
-            `[signed-payload-validator] SECURITY: accepting an UNSIGNED payload (issuer "${issuer}" from the X-Payload-Issuer header) because ALLOW_UNSIGNED_PAYLOADS is enabled. Never enable this outside local development.`,
-          )
-          return {
-            issuer,
-            body: parsedPayload.output,
+        return {
+          issuer: parsed.issuer,
+          body,
+        }
+      } catch (error) {
+        /**
+         * Local-development escape hatch: allow a raw unsigned payload plus an
+         * `X-Payload-Issuer` header to bypass the JWT signature check. This is an
+         * authentication bypass, so it is gated behind an explicit, default-off
+         * `ALLOW_UNSIGNED_PAYLOADS` flag (NOT `NODE_ENV`, which is commonly set to
+         * "development" by accident in deployed environments). Never enable it
+         * outside local development.
+         */
+        if (
+          env<{ ALLOW_UNSIGNED_PAYLOADS?: string }>(c)
+            .ALLOW_UNSIGNED_PAYLOADS === "true"
+        ) {
+          const issuer = c.req.header("X-Payload-Issuer")
+          const parsedPayload = v.safeParse(schema, value)
+          if (isDidUri(issuer) && parsedPayload.success) {
+            console.warn(
+              `[signed-payload-validator] SECURITY: accepting an UNSIGNED payload (issuer "${issuer}" from the X-Payload-Issuer header) because ALLOW_UNSIGNED_PAYLOADS is enabled. Never enable this outside local development.`,
+            )
+            return {
+              issuer,
+              body: parsedPayload.output,
+            }
           }
         }
-      }
 
-      // Otherwise, rethrow the error
-      throw error
-    }
-  })
+        // Otherwise, rethrow the error
+        throw error
+      }
+    },
+  )

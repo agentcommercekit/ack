@@ -7,6 +7,8 @@ import {
   DidResolver,
   getDidResolver,
   verifyPaymentRequestToken,
+  type JwtVerified,
+  type PaymentRequest,
   type PaymentRequestInit,
 } from "agentcommercekit"
 import {
@@ -18,7 +20,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import type { DatabaseClient } from "@/db/get-db"
 import { getCredential } from "@/db/queries/credentials"
-import type { DatabaseCredential } from "@/db/schema"
+import type { DatabaseCredential, NewDatabaseCredential } from "@/db/schema"
 import {
   createDidWebWithSigner,
   type DidWithSigner,
@@ -30,8 +32,13 @@ vi.mock("agentcommercekit", async () => {
   const actual = await vi.importActual("agentcommercekit")
   return {
     ...actual,
-    verifyPaymentRequestToken: vi.fn(),
-    getDidResolver: vi.fn(),
+    verifyPaymentRequestToken:
+      vi.fn<
+        (
+          token: string,
+        ) => Promise<{ paymentRequest: PaymentRequest; parsed: JwtVerified }>
+      >(),
+    getDidResolver: vi.fn<() => DidResolver>(),
   }
 })
 
@@ -39,14 +46,14 @@ vi.mock("@/db/queries/credentials", async () => {
   const actual = await vi.importActual("@/db/queries/credentials")
   return {
     ...actual,
-    createCredential: vi.fn().mockImplementation(
-      async (
-        _db: DatabaseClient,
-        credential: Omit<
-          DatabaseCredential,
-          "id" | "statusListIndex" | "issuedAt" | "revokedAt"
-        >,
-      ): Promise<DatabaseCredential> =>
+    createCredential: vi
+      .fn<
+        (
+          db: DatabaseClient,
+          credential: NewDatabaseCredential,
+        ) => Promise<DatabaseCredential>
+      >()
+      .mockImplementation((_db, credential) =>
         Promise.resolve({
           id: 1,
           credentialType: credential.credentialType,
@@ -54,20 +61,30 @@ vi.mock("@/db/queries/credentials", async () => {
           issuedAt: new Date(),
           revokedAt: null,
         }),
-    ),
-    getCredential: vi.fn().mockImplementation(async (_db, id: string) => {
-      return Promise.resolve({
-        id,
-        credentialType: "PaymentReceiptCredential",
-        baseCredential: createPaymentReceipt({
-          paymentRequestToken: "test.payment.token",
-          paymentOptionId: "test-payment-option-id",
-          issuer: "did:web:issuer.example.com",
-          payerDid: "did:web:payer.example.com",
+      ),
+    getCredential: vi
+      .fn<
+        (
+          db: DatabaseClient,
+          id: number,
+        ) => Promise<DatabaseCredential | undefined>
+      >()
+      .mockImplementation((_db, id) =>
+        Promise.resolve({
+          id,
+          credentialType: "PaymentReceiptCredential",
+          issuedAt: new Date(),
+          revokedAt: null,
+          baseCredential: createPaymentReceipt({
+            paymentRequestToken: "test.payment.token",
+            paymentOptionId: "test-payment-option-id",
+            issuer: "did:web:issuer.example.com",
+            payerDid: "did:web:payer.example.com",
+          }),
         }),
-      })
-    }),
-    revokeCredential: vi.fn(),
+      ),
+    revokeCredential:
+      vi.fn<(db: DatabaseClient, credential: DatabaseCredential) => void>(),
   }
 })
 
@@ -99,7 +116,7 @@ async function generatePayload(
   resourceServer: DidWithSigner,
   paymentService: DidWithSigner,
 ) {
-  const { paymentRequestToken, paymentRequest } =
+  const { paymentRequestToken, paymentRequest: signedPaymentRequest } =
     await createSignedPaymentRequest(paymentRequestInit, {
       issuer: resourceServer.did,
       signer: resourceServer.signer,
@@ -108,7 +125,7 @@ async function generatePayload(
 
   const payload = {
     paymentRequestToken,
-    paymentOptionId: paymentRequest.paymentOptions[0].id,
+    paymentOptionId: signedPaymentRequest.paymentOptions[0].id,
     metadata: {
       txHash: "test-tx-hash",
     },
@@ -350,7 +367,7 @@ describe("DELETE /credentials/receipts", () => {
       },
     )
 
-    const signedPayload = await createJwt(
+    const unknownSignerPayload = await createJwt(
       { id: 1 },
       {
         issuer: unknownSigner.did,
@@ -361,7 +378,7 @@ describe("DELETE /credentials/receipts", () => {
     const res = await app.request("/credentials/receipts", {
       method: "DELETE",
       body: JSON.stringify({
-        payload: signedPayload,
+        payload: unknownSignerPayload,
       }),
       headers: new Headers({ "Content-Type": "application/json" }),
     })
@@ -387,8 +404,10 @@ describe("DELETE /credentials/receipts", () => {
     vi.mocked(getCredential).mockResolvedValueOnce({
       id: 1,
       credentialType: "PaymentReceiptCredential",
+      issuedAt: new Date(),
+      revokedAt: null,
       baseCredential: invalidCredential,
-    } as DatabaseCredential)
+    })
 
     const res = await app.request("/credentials/receipts", {
       method: "DELETE",

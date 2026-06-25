@@ -83,7 +83,7 @@ export async function resolveDidWithController(
   // Check if the agent has a controller that can be resolved
   if (!isDidUri(didDocument.controller)) {
     throw new InvalidDidControllerError(
-      `Controller of DID ${didUri} is not a valid DID: ${didDocument.controller}`,
+      `Controller of DID ${didUri} is not a valid DID: ${String(didDocument.controller)}`,
     )
   }
 

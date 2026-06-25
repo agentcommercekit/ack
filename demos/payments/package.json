@@ -17,7 +17,6 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "demo": "dotenv -e .env -- tsx ./src/index.ts",
     "setup": "./bin/setup",
@@ -27,14 +26,11 @@
     "@hono/node-server": "catalog:",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
-    "@solana-program/token": "^0.6.0",
-    "@solana/kit": "^4.0.0",
+    "@solana-program/token": "0.14.0",
+    "@solana/kit": "6.10.0",
     "agentcommercekit": "workspace:*",
     "hono": "catalog:",
     "valibot": "catalog:",
     "viem": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

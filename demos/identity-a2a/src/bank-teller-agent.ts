@@ -1,10 +1,9 @@
+import type { AgentCard, Message } from "@a2a-js/sdk"
 import {
   A2AError,
-  type AgentCard,
   type ExecutionEventBus,
-  type Message,
   type RequestContext,
-} from "@a2a-js/sdk"
+} from "@a2a-js/sdk/server"
 import { colors, createLogger, waitForEnter } from "@repo/cli-tools"
 import {
   curveToJwtAlgorithm,
@@ -181,7 +180,7 @@ class BankTellerAgent extends Agent {
 
       return message
     } catch (error) {
-      logger.log("❌ Identity verification error:", error as Error)
+      logger.log("❌ Identity verification error:", error)
       throw new A2AError(
         -32603,
         "Identity verification failed",
@@ -193,6 +192,7 @@ class BankTellerAgent extends Agent {
 }
 
 const agentCard: AgentCard = {
+  protocolVersion: "0.3.0",
   name: "Bank Teller Agent",
   description:
     "A digital bank teller agent that verifies customer identity and provides banking services",

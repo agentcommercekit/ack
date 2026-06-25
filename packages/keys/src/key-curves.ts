@@ -6,5 +6,6 @@ export function isKeyCurve(curve: unknown): curve is KeyCurve {
     return false
   }
 
-  return keyCurves.includes(curve as KeyCurve)
+  const curves: readonly string[] = keyCurves
+  return curves.includes(curve)
 }

@@ -9,5 +9,5 @@ export default defineConfig({
     "src/curves/secp256r1.ts",
   ],
   dts: true,
-  silent: true,
+  logLevel: "silent",
 })

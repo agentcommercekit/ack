@@ -6,8 +6,6 @@ import {
   getDidResolver,
   verifyPaymentRequestToken,
   type JwtString,
-  type PaymentReceiptCredential,
-  type Verifiable,
 } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
 import { Hono, type Env, type TypedResponse } from "hono"
@@ -24,6 +22,11 @@ app.use(logger())
 const bodySchema = v.object({
   paymentOptionId: v.string(),
   paymentRequestToken: jwtStringSchema,
+})
+
+const receiptResponseSchema = v.object({
+  receipt: jwtStringSchema,
+  details: v.union([jwtStringSchema, v.record(v.string(), v.unknown())]),
 })
 
 const name = colors.green(colors.bold("[Payment Service]"))
@@ -105,10 +108,10 @@ app.post(
       }),
     })
 
-    const { receipt, details } = (await response.json()) as {
-      receipt: string
-      details: Verifiable<PaymentReceiptCredential>
-    }
+    const { receipt, details } = v.parse(
+      receiptResponseSchema,
+      await response.json(),
+    )
 
     return c.json({
       receipt,

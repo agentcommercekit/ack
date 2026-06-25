@@ -101,7 +101,12 @@ export async function verifyParsedCredential(
       )
     }
 
+    // Verify sequentially: failures are deterministic (the first verifier in
+    // order wins) and an earlier failure short-circuits before later verifiers
+    // run. The set is small (already filtered by `accepts`), so running them in
+    // series rather than in parallel is not a meaningful cost.
     for (const verifier of verifiers) {
+      // oxlint-disable-next-line eslint/no-await-in-loop -- ordered, short-circuiting verification
       await verifier.verify(
         verifiedCredential.credentialSubject,
         options.resolver,

@@ -20,6 +20,7 @@ export const credentialSchema = CredentialV1Schema.transform((input) => {
     ? input["@context"]
     : [input["@context"]]
 
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- transform normalizes validated input into W3CCredential shape
   return {
     ...input,
     "@context": context,

@@ -6,7 +6,9 @@
     "//#check:format": {},
     "//#check:packages": {},
     "//#format": {},
-    "//#lint": {},
+    "//#lint": {
+      "cache": false
+    },
     "//#lint:fix": {},
     "build": {
       "dependsOn": ["^build"],
@@ -14,16 +16,7 @@
       "outputs": ["dist/**"]
     },
     "check": {
-      "dependsOn": [
-        "//#check:format",
-        "//#lint",
-        "check:types",
-        "test",
-        "//#check:packages"
-      ]
-    },
-    "check:types": {
-      "dependsOn": ["^build"]
+      "dependsOn": ["//#check:format", "//#lint", "test", "//#check:packages"]
     },
     "clean": {
       "dependsOn": ["^clean"]
