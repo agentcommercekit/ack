@@ -30,7 +30,7 @@ function statusEntry(
 
 function getStatusListCredential(revokedIndex?: number) {
   let bitBuffer = new BitBuffer()
-  if (revokedIndex) {
+  if (revokedIndex !== undefined) {
     bitBuffer = bitBuffer.set(revokedIndex)
   }
   return createStatusListCredential({
