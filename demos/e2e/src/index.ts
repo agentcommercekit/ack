@@ -128,7 +128,7 @@ Agent 1 (Client Agent):
   )
   logJson(await parseJwtCredential(ownershipVc1, resolver))
   log(`
-colors.dim("This VC, issued by User 1, proves they control Agent 1.")}
+${colors.dim("This VC, issued by User 1, proves they control Agent 1.")}
 
 ${successMessage("User 1 and Agent 1 (Client) setup complete")}
 
