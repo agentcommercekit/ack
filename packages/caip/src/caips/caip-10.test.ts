@@ -20,4 +20,19 @@ describe("createCaip10AccountId", () => {
       "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P",
     )
   })
+
+  it("throws for invalid chain ID", () => {
+    expect(() =>
+      createCaip10AccountId(
+        "bad" as any,
+        "0x1234567890123456789012345678901234567890",
+      ),
+    ).toThrow("Invalid CAIP-2 chain ID")
+  })
+
+  it("throws for invalid account address", () => {
+    expect(() => createCaip10AccountId("eip155:1", "")).toThrow(
+      "Invalid CAIP-10 account address",
+    )
+  })
 })
