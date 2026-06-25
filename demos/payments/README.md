@@ -20,8 +20,42 @@ This interactive command-line demo showcases a common use case: the **Server-Ini
   - Handling currency conversions.
   - Integrating compliance checks (KYC/AML).
   - Facilitating complex payment routing.
+  - Enforcing local payment policy before returning an execution URL or signing a receipt-service payload.
 
 You can learn more about the full ACK-Pay protocol at [www.agentcommercekit.com](https://www.agentcommercekit.com).
+
+## Policy-before-signing example
+
+The Stripe Payment Service path includes a tiny local policy guard in
+`src/payment-policy.ts`. The guard runs after the Payment Request token and
+payment option are verified, but before the demo returns a payment URL or signs
+the payload that asks the Receipt Service to issue a receipt.
+
+This is an example pattern, not a normative ACK-Pay policy engine. Production
+Payment Services should replace it with their own owner, risk, compliance, or
+human-approval system. The important safety boundary is that policy enforcement
+happens before execution or signing:
+
+- known low-value recipient: continue automatically
+- unknown recipient: return `approval_required`
+- amount above the illustrative per-transaction cap: deny before payment
+  execution
+
+The per-currency cap is expressed in each currency's smallest subunit, so a
+single flat threshold is never compared across currencies with different
+decimals (e.g. USD at 2dp vs USDC at 6dp). Currencies without a configured
+limit are denied outright.
+
+> [!IMPORTANT]
+> The amount check is an **illustrative per-transaction cap, not a real spend
+> control.** A per-transaction limit is trivially defeated by splitting one
+> payment into many smaller ones (`cap × N`). A production policy needs a
+> cumulative and/or rate-limited budget (e.g. per-payer spend over a rolling
+> window), not just a single-transaction threshold.
+
+The demo allowlist is based on the configured server identity, not the issuer
+claimed by each incoming Payment Request token. A real Payment Service should
+load this allowlist from operator-controlled configuration.
 
 ## Demo Video
 
