@@ -1,3 +1,4 @@
+import * as v from "valibot"
 import { describe, expect, it, vi } from "vitest"
 
 import {
@@ -18,7 +19,7 @@ vi.mock("@agentcommercekit/jwt", async () => {
   )
   return {
     ...actual,
-    verifyJwt: vi.fn(),
+    verifyJwt: vi.fn<typeof actual.verifyJwt>(),
   }
 })
 
@@ -28,7 +29,7 @@ vi.mock("@agentcommercekit/did", async () => {
   )
   return {
     ...actual,
-    getDidResolver: vi.fn(() => ({})),
+    getDidResolver: vi.fn<() => object>(() => ({})),
   }
 })
 
@@ -107,8 +108,9 @@ describe("verifyA2AHandshakeMessage", () => {
     },
   ])("rejects $name", async ({ message }) => {
     await expect(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
       verifyA2AHandshakeMessage(message as never, { did: agentDid }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(v.ValiError)
   })
 
   it("throws when JWT verification fails", async () => {
@@ -132,7 +134,7 @@ describe("verifyA2AHandshakeMessage", () => {
         did: agentDid,
         counterparty: userDid,
       }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(v.ValiError)
   })
 
   it("throws when issuer is not a valid DID URI", async () => {
@@ -148,7 +150,7 @@ describe("verifyA2AHandshakeMessage", () => {
 
     await expect(
       verifyA2AHandshakeMessage(handshakeMessage(), { did: agentDid }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(v.ValiError)
   })
 })
 
@@ -190,15 +192,16 @@ describe("verifyA2ASignedMessage", () => {
   it("throws for unsigned messages (no metadata at all)", async () => {
     await expect(
       verifyA2ASignedMessage(unsignedMessage(), { did: agentDid }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(v.ValiError)
   })
 
   it("throws for messages with metadata but no sig field", async () => {
     const noSig = { ...unsignedMessage(), metadata: { traceId: "abc" } }
 
     await expect(
+      // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
       verifyA2ASignedMessage(noSig as never, { did: agentDid }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(v.ValiError)
   })
 
   it("throws when message content diverges from signed payload", async () => {

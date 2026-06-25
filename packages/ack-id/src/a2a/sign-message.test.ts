@@ -17,15 +17,15 @@ import {
 } from "./test-fixtures"
 
 vi.mock("uuid", () => ({
-  v4: vi.fn(() => "test-uuid-1234"),
+  v4: vi.fn<() => string>(() => "test-uuid-1234"),
 }))
 
 vi.mock("./random", async () => {
   const actual = await vi.importActual<typeof import("./random")>("./random")
   return {
     ...actual,
-    generateRandomJti: vi.fn(() => "test-jti-1234"),
-    generateRandomNonce: vi.fn(() => "test-nonce-1234"),
+    generateRandomJti: vi.fn<() => string>(() => "test-jti-1234"),
+    generateRandomNonce: vi.fn<() => string>(() => "test-nonce-1234"),
   }
 })
 

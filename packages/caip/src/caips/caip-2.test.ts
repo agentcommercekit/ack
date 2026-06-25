@@ -23,12 +23,14 @@ describe("caip2Parts", () => {
   })
 
   it("throws for an empty string", () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
     expect(() => caip2Parts("" as `${string}:${string}`)).toThrow(
       "Invalid CAIP-2 chain ID",
     )
   })
 
   it("throws for a string without a colon", () => {
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
     expect(() => caip2Parts("eip155" as `${string}:${string}`)).toThrow(
       "Invalid CAIP-2 chain ID",
     )

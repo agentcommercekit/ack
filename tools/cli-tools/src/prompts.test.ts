@@ -56,9 +56,7 @@ describe("log", () => {
     // Each logged line should be within the custom width
     for (const entry of logged) {
       for (const line of stripAnsi(entry).split("\n")) {
-        if (line.length > 0) {
-          expect(line.length).toBeLessThanOrEqual(20)
-        }
+        expect(line.length).toBeLessThanOrEqual(20)
       }
     }
   })

@@ -24,7 +24,8 @@ describe("createCaip10AccountId", () => {
   it("throws for invalid chain ID", () => {
     expect(() =>
       createCaip10AccountId(
-        "bad" as any,
+        // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
+        "bad" as never,
         "0x1234567890123456789012345678901234567890",
       ),
     ).toThrow("Invalid CAIP-2 chain ID")
