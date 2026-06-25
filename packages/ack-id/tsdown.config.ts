@@ -12,6 +12,5 @@ export default defineConfig({
     "src/a2a/schemas/valibot.ts",
   ],
   dts: true,
-  fixedExtension: false,
   logLevel: "silent",
 })

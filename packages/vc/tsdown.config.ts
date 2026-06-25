@@ -8,6 +8,5 @@ export default defineConfig({
     "src/schemas/valibot.ts",
   ],
   dts: true,
-  fixedExtension: false,
   logLevel: "silent",
 })

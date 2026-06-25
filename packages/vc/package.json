@@ -20,29 +20,29 @@
     "README.md"
   ],
   "type": "module",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
   "exports": {
     "./package.json": "./package.json",
     ".": {
-      "types": "./dist/index.d.ts",
-      "default": "./dist/index.js"
+      "types": "./dist/index.d.mts",
+      "default": "./dist/index.mjs"
     },
     "./schemas/zod": {
-      "types": "./dist/schemas/zod/v3.d.ts",
-      "default": "./dist/schemas/zod/v3.js"
+      "types": "./dist/schemas/zod/v3.d.mts",
+      "default": "./dist/schemas/zod/v3.mjs"
     },
     "./schemas/zod/v3": {
-      "types": "./dist/schemas/zod/v3.d.ts",
-      "default": "./dist/schemas/zod/v3.js"
+      "types": "./dist/schemas/zod/v3.d.mts",
+      "default": "./dist/schemas/zod/v3.mjs"
     },
     "./schemas/zod/v4": {
-      "types": "./dist/schemas/zod/v4.d.ts",
-      "default": "./dist/schemas/zod/v4.js"
+      "types": "./dist/schemas/zod/v4.d.mts",
+      "default": "./dist/schemas/zod/v4.mjs"
     },
     "./schemas/valibot": {
-      "types": "./dist/schemas/valibot.d.ts",
-      "default": "./dist/schemas/valibot.js"
+      "types": "./dist/schemas/valibot.d.mts",
+      "default": "./dist/schemas/valibot.mjs"
     }
   },
   "publishConfig": {
