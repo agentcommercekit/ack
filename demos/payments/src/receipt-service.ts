@@ -287,7 +287,9 @@ function extractSignerPubkeys(tx: NonNullable<SolanaTransaction>): Set<string> {
 
 const tokenBalanceSchema = v.object({
   mint: v.string(),
-  owner: v.string(),
+  // `owner` is optional in Solana pre/postTokenBalances; the recipient filter
+  // at the use site already narrows to the right balance.
+  owner: v.optional(v.string()),
   uiTokenAmount: v.object({
     amount: v.string(),
     decimals: v.number(),
