@@ -27,6 +27,7 @@ catalog:
   uuid: 14.0.1
   valibot: 1.4.1
   viem: 2.53.1
+  web-identity-schemas: 0.3.0
   zod: 4.4.3
 
 # Force patched versions of vulnerable transitive dependencies (pnpm audit).

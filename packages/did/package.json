@@ -29,16 +29,8 @@
       "default": "./dist/index.mjs"
     },
     "./schemas/zod": {
-      "types": "./dist/schemas/zod/v3.d.mts",
-      "default": "./dist/schemas/zod/v3.mjs"
-    },
-    "./schemas/zod/v3": {
-      "types": "./dist/schemas/zod/v3.d.mts",
-      "default": "./dist/schemas/zod/v3.mjs"
-    },
-    "./schemas/zod/v4": {
-      "types": "./dist/schemas/zod/v4.d.mts",
-      "default": "./dist/schemas/zod/v4.mjs"
+      "types": "./dist/schemas/zod.d.mts",
+      "default": "./dist/schemas/zod.mjs"
     },
     "./schemas/valibot": {
       "types": "./dist/schemas/valibot.d.mts",
@@ -61,7 +53,8 @@
     "jwks-did-resolver": "1.1.0",
     "key-did-resolver": "4.0.0",
     "valibot": "catalog:",
-    "varint": "6.0.0"
+    "varint": "6.0.0",
+    "web-identity-schemas": "catalog:"
   },
   "devDependencies": {
     "@types/varint": "6.0.3",
@@ -69,7 +62,7 @@
     "zod": "catalog:"
   },
   "peerDependencies": {
-    "zod": "^3.25.0 || ^4.0.0"
+    "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "zod": {

@@ -1,4 +1,4 @@
-import { z } from "zod/v3"
+import * as z from "zod"
 
 const roleSchema = z.enum(["agent", "user"])
 
@@ -43,10 +43,8 @@ export const partSchema = z.discriminatedUnion("type", [
 ])
 
 // Message schema
-export const messageSchema = z
-  .object({
-    role: roleSchema,
-    parts: z.array(partSchema),
-    metadata: metadataSchema.optional(),
-  })
-  .passthrough()
+export const messageSchema = z.looseObject({
+  role: roleSchema,
+  parts: z.array(partSchema),
+  metadata: metadataSchema.optional(),
+})

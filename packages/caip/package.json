@@ -28,13 +28,9 @@
       "types": "./dist/index.d.mts",
       "default": "./dist/index.mjs"
     },
-    "./schemas/zod/v3": {
-      "types": "./dist/schemas/zod/v3.d.mts",
-      "default": "./dist/schemas/zod/v3.mjs"
-    },
-    "./schemas/zod/v4": {
-      "types": "./dist/schemas/zod/v4.d.mts",
-      "default": "./dist/schemas/zod/v4.mjs"
+    "./schemas/zod": {
+      "types": "./dist/schemas/zod.d.mts",
+      "default": "./dist/schemas/zod.mjs"
     },
     "./schemas/valibot": {
       "types": "./dist/schemas/valibot.d.mts",
@@ -58,7 +54,7 @@
   },
   "peerDependencies": {
     "valibot": "^1.1.0",
-    "zod": "^3.25.0 || ^4.0.0"
+    "zod": "^4.0.0"
   },
   "peerDependenciesMeta": {
     "valibot": {

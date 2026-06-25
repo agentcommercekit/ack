@@ -130,9 +130,8 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 
 // Valibot schemas
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
-// Zod v3 schemas
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v4"
+// Zod schema
+import { didUriSchema } from "@agentcommercekit/did/schemas/zod"
 ```
 
 ## License (MIT)

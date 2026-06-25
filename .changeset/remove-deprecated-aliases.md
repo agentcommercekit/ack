@@ -16,6 +16,6 @@ replacements; migrate callers as noted.
   - `DidPkhChainId` (type) → `Caip2ChainId`
   - `isDidPkhChainId` → `isCaip2ChainId`
   - `createBlockchainAccountId(address, chainId)` → `createCaip10AccountId(chainId, address)` (note the argument order)
-  - `didPkhChainIdSchema` (valibot + zod v3/v4) → `caip2ChainIdSchema`
+  - `didPkhChainIdSchema` (valibot + zod) → `caip2ChainIdSchema`
 - `@agentcommercekit/ack-pay`
   - `createPaymentRequestBody` → `createSignedPaymentRequest` (returns `paymentRequestToken` instead of `paymentToken`)

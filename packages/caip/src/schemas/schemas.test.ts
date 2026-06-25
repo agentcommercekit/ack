@@ -8,13 +8,11 @@ import type {
   Caip19AssetType,
 } from "../caips"
 import * as valibot from "./valibot"
-import * as zodv3 from "./zod/v3"
-import * as zodv4 from "./zod/v4"
+import * as zod from "./zod"
 
 const schemasBySource = {
   valibot,
-  zodv3,
-  zodv4,
+  zod,
 }
 
 describe.each(Object.entries(schemasBySource))(

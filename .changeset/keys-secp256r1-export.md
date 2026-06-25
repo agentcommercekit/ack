@@ -2,7 +2,7 @@
 "@agentcommercekit/keys": patch
 ---
 
-Fix the `@agentcommercekit/keys/secp256r1` subpath export. The `./secp256r1`
-entry was declared in `package.json` exports but the curve module was missing
-from the tsdown build, so importing it failed at runtime. The module is now
-built alongside the other curves.
+Build the `./secp256r1` subpath export. The export was declared in `package.json`
+but its entry was missing from `tsdown.config.ts`, so `dist/curves/secp256r1.{js,d.ts}`
+were never emitted and importing `@agentcommercekit/keys/secp256r1` failed (and
+`publint` flagged the missing files). Added the build entry so the export resolves.
