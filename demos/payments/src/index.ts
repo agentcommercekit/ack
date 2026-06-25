@@ -73,7 +73,7 @@ import "./receipt-service"
 import "./payment-service"
 
 const receiptResponseSchema = v.object({
-  receipt: v.string(),
+  receipt: jwtStringSchema,
   details: v.union([jwtStringSchema, v.record(v.string(), v.unknown())]),
 })
 
@@ -464,7 +464,10 @@ async function performSolanaPayment(
     "SOLANA_CLIENT_SECRET_KEY_JSON",
   )
   const keyBytes = new Uint8Array(
-    v.parse(v.array(v.number()), JSON.parse(clientSolKeys.secretKeyJson)),
+    v.parse(
+      v.array(v.pipe(v.number(), v.integer(), v.minValue(0), v.maxValue(255))),
+      JSON.parse(clientSolKeys.secretKeyJson),
+    ),
   )
   const payerSigner = await createKeyPairSignerFromBytes(keyBytes)
 

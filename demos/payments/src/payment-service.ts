@@ -25,7 +25,7 @@ const bodySchema = v.object({
 })
 
 const receiptResponseSchema = v.object({
-  receipt: v.string(),
+  receipt: jwtStringSchema,
   details: v.union([jwtStringSchema, v.record(v.string(), v.unknown())]),
 })
 
