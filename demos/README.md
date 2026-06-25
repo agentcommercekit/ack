@@ -36,6 +36,26 @@ pnpm demo:e2e
 
 [View the code](./e2e)
 
+### Identity A2A demo
+
+An example of two A2A-compatible agents using ACK-ID to verify each other's identity, built on Google's A2A (Agent2Agent) protocol.
+
+```sh
+pnpm demo:identity-a2a
+```
+
+[View the code](./identity-a2a)
+
+### Skyfire KYA demo
+
+A demo showing how Skyfire KYA (Know Your Agent) tokens can work on top of ACK-ID's identity infrastructure.
+
+```sh
+pnpm demo:skyfire-kya
+```
+
+[View the code](./skyfire-kya)
+
 ## Note
 
 These demos are designed as interactive walkthroughs of various ACK flows. The source code is designed with this in mind, and may not be suitable for production environments.
