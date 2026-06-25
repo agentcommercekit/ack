@@ -7,7 +7,8 @@
     "//#check:packages": {},
     "//#format": {},
     "//#lint": {
-      "cache": false
+      "cache": false,
+      "dependsOn": ["agentcommercekit#build"]
     },
     "//#lint:fix": {},
     "build": {
