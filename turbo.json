@@ -6,7 +6,9 @@
     "//#check:format": {},
     "//#check:packages": {},
     "//#format": {},
-    "//#lint": {},
+    "//#lint": {
+      "cache": false
+    },
     "//#lint:fix": {},
     "build": {
       "dependsOn": ["^build"],

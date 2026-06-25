@@ -19,7 +19,7 @@ pnpm add @agentcommercekit/ack-pay
 ### Creating a Payment Request
 
 ```ts
-import { createPaymentRequestBody } from "@agentcommercekit/ack-pay"
+import { createSignedPaymentRequest } from "@agentcommercekit/ack-pay"
 import { createDidWebUri } from "@agentcommercekit/did"
 import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
@@ -35,24 +35,27 @@ const paymentRequest = {
       decimals: 6,
       currency: "USDC",
       recipient: "did:web:payment.example.com",
-      paymentService: "https://pay.example.com"
-    }
-  ]
+      paymentService: "https://pay.example.com",
+    },
+  ],
 }
 
 const keypair = await generateKeypair("secp256k1")
 
-// Create a payment request body with a signed token
-const paymentRequestBody = await createPaymentRequestBody(paymentRequest, {
-  issuer: createDidWebUri("https://server.example.com"),
-  signer: createJwtSigner(keypair),
-  algorithm: curveToJwtAlgorithm(keypair.curve)
-})
+// Create a signed payment request with a signed token
+const { paymentRequestToken } = await createSignedPaymentRequest(
+  paymentRequest,
+  {
+    issuer: createDidWebUri("https://server.example.com"),
+    signer: createJwtSigner(keypair),
+    algorithm: curveToJwtAlgorithm(keypair.curve),
+  },
+)
 
 // Create a 402 Payment Required response
-const response = new Response(JSON.stringify(paymentRequestBody, {
+const response = new Response(JSON.stringify({ paymentRequestToken }), {
   status: 402,
-  contentType: "application/json"
+  headers: { "Content-Type": "application/json" },
 })
 ```
 
@@ -100,7 +103,7 @@ isPaymentReceiptCredential(credential)
 
 ### Payment Requests
 
-- `createPaymentRequestBody(params, options)` - Creates a payment request with a signed JWT token
+- `createSignedPaymentRequest(params, options)` - Creates a payment request with a signed JWT token (returns `{ paymentRequest, paymentRequestToken }`)
 - `isPaymentRequest(value)` - Type guard for payment requests
 
 ### Payment Request Tokens
