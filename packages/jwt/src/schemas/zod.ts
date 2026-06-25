@@ -25,7 +25,7 @@ export const jwtHeaderSchema = z
     typ: z.literal("JWT"),
     alg: z.enum(jwtAlgorithms),
   })
-  .refine((val): val is JwtHeader => true)
+  .refine((_val): _val is JwtHeader => true)
 
 /**
  * JWT string schema requiring a non-empty signature segment.

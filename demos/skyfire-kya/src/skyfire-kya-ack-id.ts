@@ -208,8 +208,7 @@ export function convertVerifiableCredentialToSkyfireKya(
   const signature = jwsParts[1]
 
   // Reconstruct the complete JWT
-  const reconstructedJwt =
-    `${encodedHeader}.${encodedPayload}.${signature}` as JwtString
+  const reconstructedJwt = `${encodedHeader}.${encodedPayload}.${signature}`
 
   return reconstructedJwt
 }
