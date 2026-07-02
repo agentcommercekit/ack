@@ -32,12 +32,22 @@ jobs:
   audit-fix:
     if: github.repository == 'agentcommercekit/ack'
     runs-on: ubuntu-latest
+    # Bound the run so a hung pnpm audit/install can't hold the audit-fix
+    # concurrency group (cancel-in-progress: false) for GitHub's 360-min default
+    # and stall the next daily sweep.
+    timeout-minutes: 15
     # GITHUB_TOKEN only needs read for checkout; the App token (minted just
     # before the PR step) carries the contents + pull-requests write scopes used
     # to open the PR. Inherits the workflow-level contents: read.
     steps:
       - uses: actions/checkout@v4
         with:
+          # Always audit main's dependency tree. Without an explicit ref, a
+          # manual workflow_dispatch from a feature branch would check out that
+          # branch and leak its changes into the chore/audit-fix PR (which
+          # targets main). Scheduled runs already run on main; this pins dispatch
+          # to the same safe scope.
+          ref: main
           persist-credentials: false
       - uses: ./.github/actions/setup
       # pnpm audit exits non-zero when it finds advisories; --fix=override still
@@ -85,6 +95,8 @@ jobs:
           commit-message: "chore(deps): apply pnpm audit fixes"
           labels: dependencies
           body: |
+            ${{ steps.audit.outputs.clean != 'true' && '**Partial fix:** some advisories could not be auto-resolved. The scheduled audit-fix run for this change is red -- review its log and resolve the remainder by hand before merging.' || '' }}
+
             Automated `pnpm audit --fix` from the scheduled audit sweep
             (`.github/workflows/audit-fix.yaml`).
 
