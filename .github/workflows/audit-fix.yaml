@@ -1,0 +1,119 @@
+name: Audit fix
+
+# Sweeps the standing dependency tree for newly disclosed advisories on a
+# schedule, independent of any PR. This catches advisories published against
+# deps we already ship -- a per-PR audit only runs when a PR changes the
+# dependency graph. On a finding, pnpm audit --fix writes security-floor
+# overrides into pnpm-workspace.yaml and this opens (or refreshes) a single PR
+# for a human to review. --fix output is often sloppy (overly broad ranges,
+# caret targets instead of pins, minimumReleaseAgeExclude entries), so the PR
+# is never auto-merged.
+#
+# The PR is opened with a GitHub App token (ACTIONS_APP_ID /
+# ACTIONS_APP_PRIVATE_KEY) rather than the default GITHUB_TOKEN so that (a) the
+# PR triggers the normal check workflows -- GITHUB_TOKEN-authored PRs do not --
+# and (b) it sidesteps the "Allow GitHub Actions to create and approve pull
+# requests" org toggle, which only governs GITHUB_TOKEN. The app must be
+# installed with contents + pull-requests write.
+
+on:
+  schedule:
+    - cron: "17 7 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: audit-fix
+  cancel-in-progress: false
+
+jobs:
+  audit-fix:
+    if: github.repository == 'agentcommercekit/ack'
+    runs-on: ubuntu-latest
+    # Bound the run so a hung pnpm audit/install can't hold the audit-fix
+    # concurrency group (cancel-in-progress: false) for GitHub's 360-min default
+    # and stall the next daily sweep.
+    timeout-minutes: 15
+    # GITHUB_TOKEN only needs read for checkout; the App token (minted just
+    # before the PR step) carries the contents + pull-requests write scopes used
+    # to open the PR. Inherits the workflow-level contents: read.
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Always audit main's dependency tree. Without an explicit ref, a
+          # manual workflow_dispatch from a feature branch would check out that
+          # branch and leak its changes into the chore/audit-fix PR (which
+          # targets main). Scheduled runs already run on main; this pins dispatch
+          # to the same safe scope.
+          ref: main
+          persist-credentials: false
+      - uses: ./.github/actions/setup
+      # pnpm audit exits non-zero when it finds advisories; --fix=override still
+      # applies the overrides, so swallow the status here and let the diff drive
+      # the PR. The mode must be named explicitly: despite `pnpm audit --help`
+      # claiming --fix defaults to "override", bare `pnpm audit --fix` fails with
+      # ERR_PNPM_INVALID_FIX_OPTION ("Invalid value for --fix: true. Should be
+      # one of override or update") -- which `|| true` would otherwise mask,
+      # leaving the fixer a silent no-op.
+      - name: Apply pnpm audit fixes
+        run: pnpm audit --fix=override || true
+      - name: Refresh lockfile
+        run: pnpm install --lockfile-only
+      # Decide pass/fail against the post-fix tree HERE, before
+      # create-pull-request touches the working directory -- so the verdict can't
+      # depend on whatever state that action leaves behind. clean=false means
+      # --fix could not resolve everything (or audit errored); the final step
+      # turns that into a red, notifying run. auditConfig.ignoreGhsas still
+      # applies, so accepted advisories don't trip it.
+      - name: Re-audit the post-fix tree
+        id: audit
+        run: |
+          pnpm audit && echo "clean=true" >> "$GITHUB_OUTPUT" \
+            || echo "clean=false" >> "$GITHUB_OUTPUT"
+      # Mint the App token here, AFTER dependency install has run, so the
+      # contents/pull-requests-write token is never present in the runner
+      # environment while third-party build scripts (allowBuilds) execute.
+      - uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3.2.0
+        id: app-token
+        with:
+          app-id: ${{ vars.ACTIONS_APP_ID }}
+          private-key: ${{ secrets.ACTIONS_APP_PRIVATE_KEY }}
+          # Scope the minted token to exactly what opening the PR needs, rather
+          # than the app installation's full permission set.
+          permission-contents: write
+          permission-pull-requests: write
+      - name: Open or update fix PR
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          token: ${{ steps.app-token.outputs.token }}
+          branch: chore/audit-fix
+          base: main
+          delete-branch: true
+          title: "chore(deps): apply pnpm audit fixes"
+          commit-message: "chore(deps): apply pnpm audit fixes"
+          labels: dependencies
+          body: |
+            ${{ steps.audit.outputs.clean != 'true' && '**Partial fix:** some advisories could not be auto-resolved. The scheduled audit-fix run for this change is red -- review its log and resolve the remainder by hand before merging.' || '' }}
+
+            Automated `pnpm audit --fix` from the scheduled audit sweep
+            (`.github/workflows/audit-fix.yaml`).
+
+            **AI usage:** none. This PR is generated mechanically by `pnpm audit
+            --fix=override`; no AI tools authored these changes (per
+            [AI_POLICY.md](AI_POLICY.md)).
+
+            Before merging, tidy the generated overrides by hand — `--fix` tends
+            to write overly broad ranges, caret targets instead of pinned
+            versions, and `minimumReleaseAgeExclude` entries that should be
+            pruned once the patch ages past `minimumReleaseAge`. Confirm each
+            override is scoped to the affected major and carries a comment
+            naming the advisory, matching the existing block in
+            `pnpm-workspace.yaml`.
+      # A standing advisory that --fix can't auto-resolve must not pass as a
+      # silent green sweep. The post-fix re-audit above already decided this; a
+      # PR (if any) was opened with whatever --fix could resolve first.
+      - name: Fail if advisories remain unresolved
+        if: steps.audit.outputs.clean != 'true'
+        run: exit 1
