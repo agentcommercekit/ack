@@ -52,6 +52,7 @@ overrides:
   postcss: "^8.5.10"
   esbuild: "^0.25.0"
   jsondiffpatch: "^0.7.2"
+  js-yaml@<3.15.0: ^3.15.0
 
 allowBuilds:
   better-sqlite3: true
@@ -59,3 +60,6 @@ allowBuilds:
   keytar: false
   puppeteer: false
   sharp: false
+
+minimumReleaseAgeExclude:
+  - js-yaml@3.15.0
