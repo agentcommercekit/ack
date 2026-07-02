@@ -95,22 +95,13 @@ jobs:
           commit-message: "chore(deps): apply pnpm audit fixes"
           labels: dependencies
           body: |
-            ${{ steps.audit.outputs.clean != 'true' && '**Partial fix:** some advisories could not be auto-resolved. The scheduled audit-fix run for this change is red -- review its log and resolve the remainder by hand before merging.' || '' }}
+            ${{ steps.audit.outputs.clean != 'true' && '**Partial fix:** some advisories could not be auto-resolved. This run is red -- resolve the remainder by hand before merging.' || '' }}
 
-            Automated `pnpm audit --fix` from the scheduled audit sweep
-            (`.github/workflows/audit-fix.yaml`).
+            Automated `pnpm audit --fix=override` from the scheduled audit sweep (`.github/workflows/audit-fix.yaml`).
 
-            **AI usage:** none. This PR is generated mechanically by `pnpm audit
-            --fix=override`; no AI tools authored these changes (per
-            [AI_POLICY.md](AI_POLICY.md)).
+            **AI usage:** none. Generated mechanically; no AI tools authored these changes (per [AI_POLICY.md](AI_POLICY.md)).
 
-            Before merging, tidy the generated overrides by hand — `--fix` tends
-            to write overly broad ranges, caret targets instead of pinned
-            versions, and `minimumReleaseAgeExclude` entries that should be
-            pruned once the patch ages past `minimumReleaseAge`. Confirm each
-            override is scoped to the affected major and carries a comment
-            naming the advisory, matching the existing block in
-            `pnpm-workspace.yaml`.
+            Before merging, tidy the generated overrides by hand: scope each to the affected major, pin the version, and add a comment naming the advisory to match the existing block in `pnpm-workspace.yaml`.
       # A standing advisory that --fix can't auto-resolve must not pass as a
       # silent green sweep. The post-fix re-audit above already decided this; a
       # PR (if any) was opened with whatever --fix could resolve first.
