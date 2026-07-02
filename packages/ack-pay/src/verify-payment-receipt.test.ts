@@ -23,7 +23,10 @@ import { beforeEach, describe, expect, it } from "vitest"
 
 import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
-import { InvalidPaymentRequestTokenError } from "./errors"
+import {
+  InvalidPaymentReceiptError,
+  InvalidPaymentRequestTokenError,
+} from "./errors"
 import type { PaymentRequestInit } from "./payment-request"
 import { isPaymentReceiptCredential } from "./receipt-claim-verifier"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
@@ -173,6 +176,27 @@ describe("verifyPaymentReceipt()", () => {
         metadata: evidenceMetadata,
       },
     })
+  })
+
+  it("throws when the receipt payment option is not in the payment request", async () => {
+    const mismatchedReceipt = createPaymentReceipt({
+      paymentRequestToken,
+      paymentOptionId: "missing-payment-option-id",
+      issuer: receiptIssuerDid,
+      payerDid: createDidPkhUri(
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
+      ),
+    })
+
+    const mismatchedReceiptJwt = await signCredential(mismatchedReceipt, {
+      did: receiptIssuerDid,
+      signer: createJwtSigner(receiptIssuerKeypair),
+    })
+
+    await expect(
+      verifyPaymentReceipt(mismatchedReceiptJwt, { resolver }),
+    ).rejects.toThrow(InvalidPaymentReceiptError)
   })
 
   it("throws for an invalid JWT receipt", async () => {
