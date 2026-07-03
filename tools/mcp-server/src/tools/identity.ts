@@ -40,7 +40,11 @@ export function registerIdentityTools(server: McpServer) {
         .optional()
         .describe("DID of the issuer. Defaults to the controller."),
     },
-    async ({ subjectDid: subject, controllerDid: controller, issuerDid: issuer }) => {
+    async ({
+      subjectDid: subject,
+      controllerDid: controller,
+      issuerDid: issuer,
+    }) => {
       try {
         const credential = createControllerCredential({
           subject: subject as DidUri,
@@ -72,7 +76,11 @@ export function registerIdentityTools(server: McpServer) {
       try {
         const keypair = keypairFromJwk(jwk)
         const parsed = JSON.parse(credential)
-        if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+        if (
+          typeof parsed !== "object" ||
+          parsed === null ||
+          Array.isArray(parsed)
+        ) {
           throw new Error("credential must be a JSON object")
         }
         const jwt = await signCredential(parsed, {

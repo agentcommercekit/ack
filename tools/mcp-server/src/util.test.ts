@@ -38,11 +38,15 @@ describe("keypairFromJwk", () => {
   })
 
   it("throws on JSON array input", () => {
-    expect(() => keypairFromJwk("[1, 2, 3]")).toThrow("JWK must be a JSON object")
+    expect(() => keypairFromJwk("[1, 2, 3]")).toThrow(
+      "JWK must be a JSON object",
+    )
   })
 
   it("throws on JSON primitive input", () => {
-    expect(() => keypairFromJwk('"just a string"')).toThrow("JWK must be a JSON object")
+    expect(() => keypairFromJwk('"just a string"')).toThrow(
+      "JWK must be a JSON object",
+    )
   })
 
   it("throws on JSON null input", () => {

@@ -43,6 +43,7 @@ export function registerPaymentRequestTools(server: McpServer) {
         .describe("Human-readable description of what the payment is for"),
       paymentOptions: z
         .array(paymentOptionSchema)
+        .min(1)
         .describe(
           "Array of payment options (amount, currency, recipient, network)",
         ),
@@ -57,14 +58,18 @@ export function registerPaymentRequestTools(server: McpServer) {
         .describe(
           "JWK JSON string containing the signer's private key (from ack_generate_keypair)",
         ),
-      signerDid: z.string().describe("DID of the payment requester (must match the JWK)"),
+      signerDid: z
+        .string()
+        .describe("DID of the payment requester (must match the JWK)"),
     },
-    async ({ description, paymentOptions, expiresInSeconds, signerJwk: jwk, signerDid: did }) => {
+    async ({
+      description,
+      paymentOptions,
+      expiresInSeconds,
+      signerJwk: jwk,
+      signerDid: did,
+    }) => {
       try {
-        if (paymentOptions.length === 0) {
-          throw new Error("At least one payment option is required")
-        }
-
         const keypair = keypairFromJwk(jwk)
 
         const init: PaymentRequestInit = {

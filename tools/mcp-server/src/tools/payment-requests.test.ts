@@ -125,7 +125,15 @@ describe("payment tool operations", () => {
       createSignedPaymentRequest(
         {
           id: crypto.randomUUID(),
-          paymentOptions: [] as unknown as [{ id: string; amount: number; decimals: number; currency: string; recipient: string }],
+          paymentOptions: [] as unknown as [
+            {
+              id: string
+              amount: number
+              decimals: number
+              currency: string
+              recipient: string
+            },
+          ],
         },
         { issuer: did, signer, algorithm: curveToAlg(keypair.curve) },
       ),
