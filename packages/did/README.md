@@ -102,7 +102,7 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 
 - `createDidWebUri(input: string | URL): DidWebUri` - Create a did:web URI from a domain or URL
 - `createDidKeyUri(keypair: Keypair): DidKeyUri` - Create a did:key URI from a keypair
-- `createDidPkhUri(chainId: DidPkhChainId, address: string): DidPkhUri` - Create a did:pkh URI from an address and chain ID
+- `createDidPkhUri(chainId: Caip2ChainId, address: string): DidPkhUri` - Create a did:pkh URI from an address and chain ID
 
 ### Resolution
 
@@ -130,9 +130,8 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 
 // Valibot schemas
 import { didUriSchema } from "@agentcommercekit/did/schemas/valibot"
-// Zod v3 schemas
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v3"
-import { didUriSchema } from "@agentcommercekit/did/schemas/zod/v4"
+// Zod schema
+import { didUriSchema } from "@agentcommercekit/did/schemas/zod"
 ```
 
 ## License (MIT)

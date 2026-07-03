@@ -15,6 +15,7 @@ import {
   InvalidCredentialError,
   parseJwtCredential,
   signCredential,
+  UntrustedIssuerError,
   type Verifiable,
   type W3CCredential,
 } from "@agentcommercekit/vc"
@@ -24,6 +25,7 @@ import { createPaymentReceipt } from "./create-payment-receipt"
 import { createSignedPaymentRequest } from "./create-signed-payment-request"
 import { InvalidPaymentRequestTokenError } from "./errors"
 import type { PaymentRequestInit } from "./payment-request"
+import { isPaymentReceiptCredential } from "./receipt-claim-verifier"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 
 describe("verifyPaymentReceipt()", () => {
@@ -32,10 +34,12 @@ describe("verifyPaymentReceipt()", () => {
   let signedReceipt: Verifiable<W3CCredential>
   let signedReceiptJwt: JwtString
   let receiptIssuerDid: DidUri
+  let receiptIssuerKeypair: Awaited<ReturnType<typeof generateKeypair>>
   let paymentRequestIssuerDid: DidUri
+  let paymentRequestToken: JwtString
 
   beforeEach(async () => {
-    const receiptIssuerKeypair = await generateKeypair("secp256k1")
+    receiptIssuerKeypair = await generateKeypair("secp256k1")
     receiptIssuerDid = createDidKeyUri(receiptIssuerKeypair)
     const paymentRequestIssuerKeypair = await generateKeypair("secp256k1")
     paymentRequestIssuerDid = createDidKeyUri(paymentRequestIssuerKeypair)
@@ -56,16 +60,19 @@ describe("verifyPaymentReceipt()", () => {
       ],
     }
 
-    const { paymentRequestToken, paymentRequest } =
-      await createSignedPaymentRequest(paymentRequestInit, {
+    const paymentRequiredBody = await createSignedPaymentRequest(
+      paymentRequestInit,
+      {
         issuer: paymentRequestIssuerDid,
         signer: createJwtSigner(paymentRequestIssuerKeypair),
         algorithm: curveToJwtAlgorithm(paymentRequestIssuerKeypair.curve),
-      })
+      },
+    )
+    paymentRequestToken = paymentRequiredBody.paymentRequestToken
 
     unsignedReceipt = createPaymentReceipt({
       paymentRequestToken,
-      paymentOptionId: paymentRequest.paymentOptions[0].id,
+      paymentOptionId: paymentRequiredBody.paymentRequest.paymentOptions[0].id,
       issuer: receiptIssuerDid,
       payerDid: createDidPkhUri(
         "eip155:84532",
@@ -95,6 +102,77 @@ describe("verifyPaymentReceipt()", () => {
     expect(result.receipt).toBeDefined()
     expect(result.paymentRequestToken).toBeDefined()
     expect(result.paymentRequest).toBeDefined()
+  })
+
+  it("returns verified values when outer object fields are tampered", async () => {
+    // Reuse the valid proof from a legitimately signed receipt, but tamper the
+    // outer object's credentialSubject. The forgery must be ignored: all
+    // returned values must come from the credential decoded from the proof.
+    const tampered = {
+      ...signedReceipt,
+      credentialSubject: {
+        ...signedReceipt.credentialSubject,
+        paymentRequestToken: "forged.jwt.token",
+      },
+    } as Verifiable<W3CCredential>
+
+    const result = await verifyPaymentReceipt(tampered, {
+      resolver,
+      trustedReceiptIssuers: [receiptIssuerDid],
+      verifyPaymentRequestTokenJwt: false,
+    })
+
+    expect(result.paymentRequestToken).toBe(paymentRequestToken)
+
+    const { receipt } = result
+    if (!isPaymentReceiptCredential(receipt)) {
+      throw new Error("Expected a payment receipt credential")
+    }
+
+    expect(receipt.credentialSubject.paymentRequestToken).toBe(
+      paymentRequestToken,
+    )
+  })
+
+  it("preserves receipt metadata through JWT verification", async () => {
+    const evidenceMetadata = {
+      policyRef: "policy://merchant-spend-v3",
+      policySnapshotHash:
+        "sha256:8a0f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f4f",
+      mandateRef: "ap2:mandate:checkout-123",
+      executionRef: "urn:ack:execution:checkout-123",
+      executionReceiptHash:
+        "sha256:5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d5b1d",
+      settlementNetwork: "eip155:8453",
+      settlementReference: "0xabc123",
+    }
+    const receiptWithMetadata = createPaymentReceipt({
+      paymentRequestToken,
+      paymentOptionId: "test-payment-option-id",
+      issuer: receiptIssuerDid,
+      payerDid: createDidPkhUri(
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
+      ),
+      metadata: evidenceMetadata,
+    })
+    const signedReceiptWithMetadata = await signCredential(
+      receiptWithMetadata,
+      {
+        did: receiptIssuerDid,
+        signer: createJwtSigner(receiptIssuerKeypair),
+      },
+    )
+
+    const result = await verifyPaymentReceipt(signedReceiptWithMetadata, {
+      resolver,
+    })
+
+    expect(result.receipt).toMatchObject({
+      credentialSubject: {
+        metadata: evidenceMetadata,
+      },
+    })
   })
 
   it("throws for an invalid JWT receipt", async () => {
@@ -160,6 +238,6 @@ describe("verifyPaymentReceipt()", () => {
         resolver,
         trustedReceiptIssuers: ["did:example:wrong-issuer"],
       }),
-    ).rejects.toThrow()
+    ).rejects.toThrow(UntrustedIssuerError)
   })
 })

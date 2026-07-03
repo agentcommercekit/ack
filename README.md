@@ -121,6 +121,18 @@ pnpm demo:e2e
 
 You can see the code for this demo in [`./demos/e2e`](./demos/e2e).
 
+### Skyfire KYA Demo
+
+This demo shows how [Skyfire](https://skyfire.xyz) KYA (Know Your Agent) tokens can work on top of ACK-ID's identity infrastructure, demonstrating how third-party agent identity systems can integrate with ACK.
+
+To use this demo, run the following command:
+
+```sh
+pnpm demo:skyfire-kya
+```
+
+You can see the code for this demo in [`./demos/skyfire-kya`](./demos/skyfire-kya).
+
 ## Example Services
 
 This repository contains several standalone services as example implementations of the ACK-ID and ACK-Pay protocols, using the `agentcommercekit` TypeScript SDK. These examples are located in the [`./examples`](./examples) directory.

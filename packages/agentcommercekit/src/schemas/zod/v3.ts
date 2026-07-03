@@ -1,6 +1,0 @@
-export * from "@agentcommercekit/ack-pay/schemas/zod/v3"
-export * from "@agentcommercekit/ack-id/schemas/zod/v3"
-export * from "@agentcommercekit/caip/schemas/zod/v3"
-export * from "@agentcommercekit/did/schemas/zod/v3"
-export * from "@agentcommercekit/jwt/schemas/zod/v3"
-export * from "@agentcommercekit/vc/schemas/zod/v3"

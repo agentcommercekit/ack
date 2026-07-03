@@ -1,8 +1,5 @@
-import {
-  A2AExpressApp,
-  DefaultRequestHandler,
-  InMemoryTaskStore,
-} from "@a2a-js/sdk"
+import { DefaultRequestHandler, InMemoryTaskStore } from "@a2a-js/sdk/server"
+import { A2AExpressApp } from "@a2a-js/sdk/server/express"
 import { colors, createLogger, type Logger } from "@repo/cli-tools"
 import express from "express"
 
@@ -48,9 +45,8 @@ export function startAgentServer(
   // Add DID document endpoint for did:web resolution
   app.get("/.well-known/did.json", (req, res) => {
     logger.log("🔍 Request for DID document:", colors.dim(req.url))
-    const didDocument = agent.didDocument
     logger.log("🌐 Serving DID document for did:web resolution")
-    res.json(didDocument)
+    res.json(agent.didDocument)
   })
 
   logger.log(

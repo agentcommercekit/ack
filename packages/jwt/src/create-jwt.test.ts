@@ -13,7 +13,7 @@ vi.mock("did-jwt", async () => {
   const actual = await vi.importActual("did-jwt")
   return {
     ...actual,
-    createJWT: vi.fn(),
+    createJWT: vi.fn<typeof baseCreateJWT>(),
   }
 })
 

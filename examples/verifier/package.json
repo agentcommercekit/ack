@@ -17,7 +17,6 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -xdf .turbo",
     "dev": "dotenv -e .env -- tsx watch ./bin/serve.ts",
     "setup": "./bin/setup",
@@ -30,8 +29,5 @@
     "agentcommercekit": "workspace:*",
     "hono": "catalog:",
     "valibot": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

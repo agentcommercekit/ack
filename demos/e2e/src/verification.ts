@@ -73,7 +73,11 @@ export async function verifyAgentIdentityWithCredential(
     )
     return true
   } catch (error) {
-    log(errorMessage(`[verification] Credential verification error: ${error}`))
+    log(
+      errorMessage(
+        `[verification] Credential verification error: ${String(error)}`,
+      ),
+    )
     return false
   }
 }

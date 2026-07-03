@@ -4,12 +4,6 @@ import type {
   SendMessageSuccessResponse,
 } from "@a2a-js/sdk"
 
-export function isRpcSuccessResponse(
-  resp: SendMessageResponse,
-): resp is SendMessageSuccessResponse {
-  return "result" in resp
-}
-
 export function isRpcErrorResponse(
   resp: SendMessageResponse,
 ): resp is JSONRPCErrorResponse {

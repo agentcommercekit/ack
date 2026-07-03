@@ -39,7 +39,7 @@ describe("Ed25519", () => {
 
     test("throws error for invalid private key format", async () => {
       const invalidPrivateKey = new Uint8Array([1, 2, 3]) // Too short for Ed25519
-      await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow()
+      await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow(Error)
     })
   })
 

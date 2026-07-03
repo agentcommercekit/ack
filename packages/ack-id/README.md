@@ -91,9 +91,8 @@ isControllerClaim(credential.credentialSubject)
 
 // Valibot schema
 import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/valibot"
-// Zod v3 schema
-import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v3"
-import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod/v4"
+// Zod schema
+import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod"
 ```
 
 ## A2A Support

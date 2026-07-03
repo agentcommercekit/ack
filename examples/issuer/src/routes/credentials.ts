@@ -27,10 +27,10 @@ import { buildSignedCredential } from "@/lib/credentials/build-signed-credential
 import type { CredentialResponse } from "@/lib/types"
 import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
-import { issuer } from "@/middleware/issuer"
+import { issuer as issuerMiddleware } from "@/middleware/issuer"
 
 const app = new Hono<Env>()
-app.use("*", issuer())
+app.use("*", issuerMiddleware())
 app.use("*", didResolver())
 app.use("*", database())
 

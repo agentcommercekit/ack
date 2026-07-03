@@ -8,9 +8,8 @@ None (leaf package).
 
 ## Subpath Exports
 
-Standard schema exports (`./schemas/valibot`, `./schemas/zod/v3`, `./schemas/zod/v4`).
-
-Note: unlike most packages, `caip` does **not** have the `./schemas/zod` alias.
+Standard schema exports (`./schemas/valibot`, `./schemas/zod`). CAIP schemas are
+hand-rolled (not covered by `web-identity-schemas`).
 
 ## Key Types
 
@@ -25,4 +24,4 @@ Predefined chain IDs available via `caip2ChainIds` (ethereumMainnet, solanaMainn
 ## Source Layout
 
 - `src/caips/` - One file per CAIP standard (caip-2.ts, caip-10.ts, caip-19.ts)
-- `src/schemas/` - Dual validation schemas (valibot + zod v3/v4)
+- `src/schemas/` - Dual validation schemas (valibot + zod v4)

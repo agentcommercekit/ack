@@ -1,11 +1,6 @@
-import { caip2ChainIdSchema } from "@agentcommercekit/caip/schemas/valibot"
-import * as v from "valibot"
-
-import { isDidUri, type DidUri } from "../did-uri"
-
-export const didUriSchema = v.custom<DidUri>(isDidUri, "Invalid DID format")
+import { DidSchema } from "web-identity-schemas/valibot"
 
 /**
- * @deprecated Use `caip2ChainIdSchema` instead
+ * Validates a DID URI, backed by `web-identity-schemas`' DID-core schema.
  */
-export const didPkhChainIdSchema = caip2ChainIdSchema
+export const didUriSchema = DidSchema

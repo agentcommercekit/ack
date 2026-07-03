@@ -1,6 +1,9 @@
 import { createCredential } from "../create-credential"
 import type { BitstringStatusListCredential } from "./types"
 
+type BitstringStatusListSubject =
+  BitstringStatusListCredential["credentialSubject"]
+
 type CreateStatusListCredentialParams = {
   /**
    * The URL of the status list.
@@ -27,7 +30,14 @@ export function createStatusListCredential({
   encodedList,
   issuer,
 }: CreateStatusListCredentialParams): BitstringStatusListCredential {
-  return createCredential({
+  const credentialSubject: BitstringStatusListSubject = {
+    id: `${url}#list`,
+    type: "BitstringStatusList",
+    statusPurpose: "revocation",
+    encodedList,
+  }
+
+  const credential = createCredential({
     id: url,
     type: "BitstringStatusListCredential",
     issuer,
@@ -38,4 +48,6 @@ export function createStatusListCredential({
       encodedList,
     },
   })
+
+  return { ...credential, credentialSubject }
 }

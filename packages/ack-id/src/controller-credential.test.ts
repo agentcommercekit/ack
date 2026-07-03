@@ -10,7 +10,7 @@ describe("createControllerCredential", () => {
     vi.setSystemTime(date)
   })
 
-  it("it creates a valid credential", () => {
+  it("creates a valid credential", () => {
     const controllerDid = createDidWebUri("https://controller.example.com")
     const subjectDid = createDidWebUri("https://subject.example.com")
     const issuerDid = createDidWebUri("https://issuer.example.com")

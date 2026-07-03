@@ -2,6 +2,7 @@ import {
   createDidDocumentFromKeypair,
   createDidWebUri,
   getDidResolver,
+  UnsupportedDidMethodError,
   type Resolvable,
 } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
@@ -86,7 +87,9 @@ describe("getControllerClaimVerifier", () => {
       controller: "did:example:controller",
     }
 
-    await expect(verifier.verify(credential, resolver)).rejects.toThrow()
+    await expect(verifier.verify(credential, resolver)).rejects.toThrow(
+      UnsupportedDidMethodError,
+    )
   })
 
   it("throws when controller does not match", async () => {

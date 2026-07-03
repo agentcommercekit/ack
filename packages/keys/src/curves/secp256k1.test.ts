@@ -43,7 +43,7 @@ describe("secp256k1", () => {
 
     test("throws an error for invalid private key format", async () => {
       const invalidPrivateKey = new Uint8Array([1, 2, 3]) // Too short for secp256k1
-      await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow()
+      await expect(generateKeypair(invalidPrivateKey)).rejects.toThrow(Error)
     })
   })
 

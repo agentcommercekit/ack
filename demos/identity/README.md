@@ -11,7 +11,11 @@ This interactive command-line demo showcases the core functionality of ACK-ID by
 
 ## Demo Video
 
-https://github.com/user-attachments/assets/ccb8b934-5092-4de3-8960-93ee160073aa
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=CDJ8pm_KlOw">
+    <img src="https://img.youtube.com/vi/CDJ8pm_KlOw/maxresdefault.jpg" width="560" alt="ACK-ID Demo Video">
+  </a>
+</p>
 
 ## Getting started
 

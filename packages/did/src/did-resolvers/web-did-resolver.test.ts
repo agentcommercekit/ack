@@ -1,10 +1,16 @@
-import type { ParsedDID } from "did-resolver"
+import type { DIDResolutionResult, ParsedDID } from "did-resolver"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import type { FetchLike } from "../types"
 import { getResolver } from "./web-did-resolver"
 
+type MockFetch = (
+  input: string | URL | Request,
+  init?: RequestInit,
+) => Promise<unknown>
+
 describe("web-did-resolver", () => {
-  const mockFetch = vi.fn()
+  const mockFetch = vi.fn<MockFetch>()
   const mockDidDocument = {
     "@context": "https://www.w3.org/ns/did/v1",
     id: "did:web:example.com",
@@ -38,7 +44,12 @@ describe("web-did-resolver", () => {
       const result = await resolver.web(
         did,
         parsedDid,
-        { resolve: vi.fn() },
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
         {},
       )
 
@@ -67,7 +78,17 @@ describe("web-did-resolver", () => {
         method: "web",
         id: "example.com",
       }
-      await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/custom/path/did.json",
@@ -90,7 +111,17 @@ describe("web-did-resolver", () => {
         method: "web",
         id: "localhost",
       }
-      await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/.well-known/did.json",
@@ -116,7 +147,17 @@ describe("web-did-resolver", () => {
         method: "web",
         id: "example.com:issuers:v1",
       }
-      await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/issuers/v1/did.json",
@@ -142,7 +183,17 @@ describe("web-did-resolver", () => {
         method: "web",
         id: "localhost%3A8787:issuers:v1",
       }
-      await resolver.web(did, parsedDid, { resolve: vi.fn() }, {})
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/issuers/v1/did.json",
@@ -163,7 +214,12 @@ describe("web-did-resolver", () => {
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
-        { resolve: vi.fn() },
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
         {},
       )
 
@@ -193,7 +249,12 @@ describe("web-did-resolver", () => {
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
-        { resolve: vi.fn() },
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
         {},
       )
 
@@ -224,7 +285,12 @@ describe("web-did-resolver", () => {
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
-        { resolve: vi.fn() },
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
         {},
       )
 
@@ -259,7 +325,12 @@ describe("web-did-resolver", () => {
       const result = await resolver.web(
         "did:web:example.com",
         parsedDid,
-        { resolve: vi.fn() },
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
         {},
       )
 
@@ -275,10 +346,12 @@ describe("web-did-resolver", () => {
     })
 
     it("uses custom fetch function when provided", async () => {
-      const customFetch = vi.fn().mockResolvedValueOnce({
-        ok: true,
-        json: () => Promise.resolve(mockDidDocument),
-      })
+      const customFetch = vi.fn<FetchLike>().mockResolvedValueOnce(
+        new Response(JSON.stringify(mockDidDocument), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      )
 
       const resolver = getResolver({ fetch: customFetch })
       const parsedDid: ParsedDID = {
@@ -290,7 +363,12 @@ describe("web-did-resolver", () => {
       await resolver.web(
         "did:web:example.com",
         parsedDid,
-        { resolve: vi.fn() },
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
         {},
       )
 

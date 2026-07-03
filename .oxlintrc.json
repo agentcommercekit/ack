@@ -12,7 +12,10 @@
     "vitest"
   ],
   "globals": {},
-  "settings": {},
+  "options": {
+    "typeAware": true,
+    "typeCheck": true
+  },
   "categories": {
     "correctness": "error",
     "perf": "warn",
@@ -38,6 +41,14 @@
       "files": ["**/*.test.ts"],
       "rules": {
         "typescript/no-explicit-any": "off"
+      }
+    },
+    {
+      // Ambient module augmentation (*.d.ts) and test-matcher setup files rely
+      // on side-effect imports that cannot be assigned to a variable.
+      "files": ["**/*.d.ts", "**/vitest.setup.ts"],
+      "rules": {
+        "import/no-unassigned-import": "off"
       }
     }
   ]

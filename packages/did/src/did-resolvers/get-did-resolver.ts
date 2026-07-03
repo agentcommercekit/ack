@@ -28,11 +28,12 @@ export function getDidResolver({
   },
   ...options
 }: GetDidResolverOptions = {}): DidResolver {
+  const webFetch = webOptions.fetch
   const keyResolver = getKeyDidResolver()
   const webResolver = getWebDidResolver(webOptions)
   const jwksResolver = getJwksDidResolver({
     ...webOptions,
-    fetch: webOptions.fetch as typeof globalThis.fetch,
+    fetch: webFetch ? (input, init) => webFetch(input, init) : globalThis.fetch,
   })
   const pkhResolver = getPkhDidResolver()
 

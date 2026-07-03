@@ -14,7 +14,7 @@ import {
   type Verifiable,
   type W3CCredential,
 } from "agentcommercekit"
-import type { CoreMessage } from "ai"
+import type { ModelMessage } from "ai"
 
 import type { CredentialVerifier } from "./credential-verifier"
 
@@ -28,7 +28,7 @@ interface AgentConstructorParams {
 
 type RunResult = {
   text: string
-  responseMessages: CoreMessage[]
+  responseMessages: ModelMessage[]
 }
 
 export abstract class Agent {
@@ -42,7 +42,7 @@ export abstract class Agent {
 
   ownershipVc?: Verifiable<W3CCredential>
 
-  private messages: CoreMessage[] = []
+  private messages: ModelMessage[] = []
 
   constructor({
     resolver,
@@ -128,12 +128,12 @@ export abstract class Agent {
       content: prompt,
     })
 
-    const result = await this._run(this.messages)
+    const result = await this.runInternal(this.messages)
 
     this.messages.push(...result.responseMessages)
 
     return result.text
   }
 
-  protected abstract _run(messages: CoreMessage[]): Promise<RunResult>
+  protected abstract runInternal(messages: ModelMessage[]): Promise<RunResult>
 }

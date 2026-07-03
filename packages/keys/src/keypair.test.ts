@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
 
 import { hexStringToBytes } from "./encoding/hex"
+import { isPrivateKeyJwkSecp256k1 } from "./encoding/jwk"
 import { generateKeypair, jwkToKeypair, keypairToJwk } from "./keypair"
 
 describe("generateKeypair()", () => {
@@ -56,10 +57,10 @@ describe("generateKeypair()", () => {
 
     await expect(
       generateKeypair("secp256k1", invalidPrivateKey),
-    ).rejects.toThrow()
-    await expect(
-      generateKeypair("Ed25519", invalidPrivateKey),
-    ).rejects.toThrow()
+    ).rejects.toThrow(Error)
+    await expect(generateKeypair("Ed25519", invalidPrivateKey)).rejects.toThrow(
+      Error,
+    )
   })
 })
 
@@ -68,12 +69,14 @@ describe("keypairToJwk and jwkToKeypair", () => {
     const keypair = await generateKeypair("secp256k1")
     const jwk = keypairToJwk(keypair)
 
+    expect(isPrivateKeyJwkSecp256k1(jwk)).toBe(true)
+    if (!isPrivateKeyJwkSecp256k1(jwk)) {
+      throw new Error("Expected a secp256k1 private key JWK")
+    }
     expect(jwk.kty).toBe("EC")
     expect(jwk.crv).toBe("secp256k1")
     expect(jwk.x).toBeDefined()
-    if (jwk.crv === "secp256k1") {
-      expect(jwk.y).toBeDefined()
-    }
+    expect(jwk.y).toBeDefined()
     expect(jwk.d).toBeDefined()
 
     const reconstructedKeypair = jwkToKeypair(jwk)

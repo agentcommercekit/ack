@@ -4,12 +4,12 @@ import { logger } from "@repo/api-utils/middleware/logger"
 import { Hono } from "hono"
 import * as v from "valibot"
 
-import { identities } from "./middleware/identities"
+import { identities as identitiesMiddleware } from "./middleware/identities"
 
 const app = new Hono()
 
 app.use("*", logger())
-app.use("*", identities())
+app.use("*", identitiesMiddleware())
 
 /**
  * Get the DID document

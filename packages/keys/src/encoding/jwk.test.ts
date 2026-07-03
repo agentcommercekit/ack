@@ -4,6 +4,8 @@ import { bytesToBase64url, isBase64url } from "./base64"
 import {
   isPrivateKeyJwk,
   isPublicKeyJwk,
+  isPublicKeyJwkEd25519,
+  isPublicKeyJwkSecp256k1,
   publicKeyBytesToJwk,
   publicKeyJwkToBytes,
   type PublicKeyJwkEd25519,
@@ -24,10 +26,10 @@ describe("JWK encoding", () => {
 
   describe("publicKeyBytesToJwk", () => {
     test("converts Ed25519 public key to JWK", () => {
-      const jwk = publicKeyBytesToJwk(
-        Ed25519Bytes,
-        "Ed25519",
-      ) as PublicKeyJwkEd25519
+      const jwk = publicKeyBytesToJwk(Ed25519Bytes, "Ed25519")
+      if (!isPublicKeyJwkEd25519(jwk)) {
+        throw new Error("Expected Ed25519 public key JWK")
+      }
       expect(jwk).toEqual({
         kty: "OKP",
         crv: "Ed25519",
@@ -37,10 +39,10 @@ describe("JWK encoding", () => {
     })
 
     test("converts secp256k1 public key to JWK", () => {
-      const jwk = publicKeyBytesToJwk(
-        secp256k1Bytes,
-        "secp256k1",
-      ) as PublicKeyJwkSecp256k1
+      const jwk = publicKeyBytesToJwk(secp256k1Bytes, "secp256k1")
+      if (!isPublicKeyJwkSecp256k1(jwk)) {
+        throw new Error("Expected secp256k1 public key JWK")
+      }
       expect(jwk).toEqual({
         kty: "EC",
         crv: "secp256k1",
@@ -175,19 +177,13 @@ describe("JWK encoding", () => {
 
   describe("roundtrip", () => {
     test("roundtrips Ed25519 public key through JWK", () => {
-      const jwk = publicKeyBytesToJwk(
-        Ed25519Bytes,
-        "Ed25519",
-      ) as PublicKeyJwkEd25519
+      const jwk = publicKeyBytesToJwk(Ed25519Bytes, "Ed25519")
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(Ed25519Bytes)
     })
 
     test("roundtrips secp256k1 public key through JWK", () => {
-      const jwk = publicKeyBytesToJwk(
-        secp256k1Bytes,
-        "secp256k1",
-      ) as PublicKeyJwkSecp256k1
+      const jwk = publicKeyBytesToJwk(secp256k1Bytes, "secp256k1")
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(secp256k1Bytes)
     })

@@ -72,7 +72,7 @@ Details:
     log("")
   } catch (error: unknown) {
     log(errorMessage("Identity extraction failed"))
-    log(colors.dim((error as Error).toString()))
+    log(colors.dim(String(error)))
     return
   }
 
@@ -93,7 +93,7 @@ Details:
     log(colors.dim(reconstructedJwt), { wrap: false })
   } catch (error: unknown) {
     log(errorMessage("Bidirectional conversion failed"))
-    log(colors.dim((error as Error).toString()))
+    log(colors.dim(String(error)))
     return
   }
 

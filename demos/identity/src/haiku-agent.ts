@@ -1,13 +1,13 @@
-import { generateText, type CoreMessage } from "ai"
+import { generateText, stepCountIs, type ModelMessage } from "ai"
 
 import { Agent } from "./agent"
 import { getModel } from "./get-model"
 import { getIdentityTools } from "./identity-tools"
 
 export class HaikuAgent extends Agent {
-  protected async _run(messages: CoreMessage[]) {
+  protected async runInternal(messages: ModelMessage[]) {
     const result = await generateText({
-      maxSteps: 10,
+      stopWhen: stepCountIs(10),
       model: getModel(),
       messages,
       system: `You are a helpful haiku creation agent. Refuse all other requests. Before writing a haiku, the user must provide

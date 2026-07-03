@@ -2,6 +2,7 @@ import path from "node:path"
 
 import { caip2ChainIds } from "agentcommercekit"
 import { createPublicClient, http } from "viem"
+import type { HttpTransport, PublicClient } from "viem"
 import { baseSepolia } from "viem/chains"
 
 /**
@@ -23,10 +24,11 @@ export const envFilePath = path.resolve(currentDir, "..", ".env")
 export const chain = baseSepolia
 export const chainId = caip2ChainIds.baseSepolia
 export const usdcAddress = "0x036CbD53842c5426634e7929541eC2318f3dCF7e"
-export const publicClient = createPublicClient({
-  chain,
-  transport: http(),
-})
+export const publicClient: PublicClient<HttpTransport, typeof baseSepolia> =
+  createPublicClient({
+    chain,
+    transport: http(),
+  })
 
 export const solana = {
   chainId: caip2ChainIds.solanaDevnet,

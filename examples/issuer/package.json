@@ -17,7 +17,6 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -xdf .turbo",
     "db:generate": "drizzle-kit generate",
     "dev": "dotenv -e .env -- tsx watch ./bin/start-server.ts",
@@ -26,17 +25,16 @@
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
-    "@libsql/client": "0.15.15",
+    "@libsql/client": "0.17.4",
     "@repo/api-utils": "workspace:*",
     "agentcommercekit": "workspace:*",
     "bit-buffers": "catalog:",
-    "drizzle-orm": "0.43.1",
+    "drizzle-orm": "0.45.2",
     "hono": "catalog:",
     "valibot": "catalog:"
   },
   "devDependencies": {
-    "@repo/typescript-config": "workspace:*",
-    "drizzle-kit": "0.31.9",
-    "vite-tsconfig-paths": "5.1.4"
+    "drizzle-kit": "0.31.10",
+    "vite-tsconfig-paths": "6.1.1"
   }
 }

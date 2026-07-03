@@ -21,15 +21,15 @@ import { verifyParsedCredential } from "./verify-parsed-credential"
 import { verifyProof } from "./verify-proof"
 
 vi.mock("./is-expired", () => ({
-  isExpired: vi.fn(),
+  isExpired: vi.fn<typeof isExpired>(),
 }))
 
 vi.mock("./is-revoked", () => ({
-  isRevoked: vi.fn(),
+  isRevoked: vi.fn<typeof isRevoked>(),
 }))
 
 vi.mock("./verify-proof", () => ({
-  verifyProof: vi.fn(),
+  verifyProof: vi.fn<typeof verifyProof>(),
 }))
 
 async function setup() {
@@ -57,18 +57,20 @@ async function setup() {
     },
   })
 
-  credential.issuer = {
-    id: issuerDid,
-  }
-
-  const vc = {
+  const vc: Verifiable<W3CCredential> = {
     ...credential,
+    issuer: { id: issuerDid },
     // just dummy fields, we mock the actual proof verification
     proof: {
       type: "JwtProof2020",
       jwt: "test.jwt.token",
     },
-  } as unknown as Verifiable<W3CCredential>
+  }
+
+  // `verifyProof` returns the credential decoded from the verified proof. In
+  // the happy path that matches the object under test, so default the mock to
+  // return `vc` itself.
+  vi.mocked(verifyProof).mockResolvedValue(vc)
 
   return { vc, issuerDid, resolver }
 }
@@ -77,7 +79,6 @@ describe("verifyParsedCredential", () => {
   beforeEach(() => {
     vi.mocked(isExpired).mockReturnValue(false)
     vi.mocked(isRevoked).mockResolvedValue(false)
-    vi.mocked(verifyProof).mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -215,6 +216,50 @@ describe("verifyParsedCredential", () => {
         resolver,
       }),
     ).resolves.not.toThrow()
+  })
+
+  it("returns the proof-decoded credential and ignores tampered outer fields", async () => {
+    const { vc, issuerDid, resolver } = await setup()
+
+    // The authoritative credential decoded from the verified proof
+    const verifiedSubject = { id: "did:example:subject", role: "user" }
+    const verifiedCredential: Verifiable<W3CCredential> = {
+      ...vc,
+      issuer: { id: issuerDid },
+      credentialSubject: verifiedSubject,
+    }
+    vi.mocked(verifyProof).mockResolvedValue(verifiedCredential)
+
+    // The caller-supplied object carries tampered fields (untrusted issuer,
+    // escalated subject) while reusing the same valid proof.
+    const tampered: Verifiable<W3CCredential> = {
+      ...vc,
+      issuer: { id: "did:example:attacker" },
+      credentialSubject: { id: "did:example:subject", role: "admin" },
+    }
+
+    const received: unknown[] = []
+
+    const result = await verifyParsedCredential(tampered, {
+      // Only the real issuer is trusted; the tampered "attacker" issuer is not
+      trustedIssuers: [issuerDid],
+      resolver,
+      verifiers: [
+        {
+          accepts: () => true,
+          verify: (subject) => {
+            received.push(subject)
+            return Promise.resolve()
+          },
+        },
+      ],
+    })
+
+    // Returns the verified credential (the contract callers like
+    // verifyPaymentReceipt rely on), not the caller-supplied object
+    expect(result).toBe(verifiedCredential)
+    // Trust decisions used the verified payload, not the tampered outer object
+    expect(received).toEqual([verifiedSubject])
   })
 
   it("verifies a valid credential without a list of trusted issuers", async () => {

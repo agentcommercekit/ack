@@ -6,16 +6,15 @@ import {
   getDidResolver,
   verifyPaymentRequestToken,
   type JwtString,
-  type PaymentReceiptCredential,
-  type Verifiable,
 } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
-import { Hono, type Env, type TypedResponse } from "hono"
+import { Hono, type Context, type Env, type TypedResponse } from "hono"
 import { env } from "hono/adapter"
 import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 
 import { PAYMENT_SERVICE_URL } from "./constants"
+import { demoPaymentPolicy, evaluatePaymentPolicy } from "./payment-policy"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
@@ -24,6 +23,11 @@ app.use(logger())
 const bodySchema = v.object({
   paymentOptionId: v.string(),
   paymentRequestToken: jwtStringSchema,
+})
+
+const receiptResponseSchema = v.object({
+  receipt: jwtStringSchema,
+  details: v.union([jwtStringSchema, v.record(v.string(), v.unknown())]),
 })
 
 const name = colors.green(colors.bold("[Payment Service]"))
@@ -39,8 +43,13 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
     await c.req.json(),
   )
 
-  // Verify the payment request token and payment option are valid
-  await validatePaymentOption(paymentOptionId, paymentRequestToken)
+  // Verify the payment request token and payment option are valid before
+  // returning an execution URL.
+  const { paymentOption } = await validatePaymentOption(
+    paymentOptionId,
+    paymentRequestToken,
+  )
+  enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
@@ -81,6 +90,7 @@ app.post(
     if (!receiptServiceUrl) {
       throw new Error(errorMessage("Receipt service URL is required"))
     }
+    enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
 
     const payload = {
       paymentRequestToken,
@@ -105,10 +115,10 @@ app.post(
       }),
     })
 
-    const { receipt, details } = (await response.json()) as {
-      receipt: string
-      details: Verifiable<PaymentReceiptCredential>
-    }
+    const { receipt, details } = v.parse(
+      receiptResponseSchema,
+      await response.json(),
+    )
 
     return c.json({
       receipt,
@@ -147,6 +157,30 @@ async function validatePaymentOption(
     paymentRequest,
     paymentOption,
   }
+}
+
+function enforcePaymentPolicy(
+  paymentOption: Awaited<
+    ReturnType<typeof validatePaymentOption>
+  >["paymentOption"],
+  allowedRecipients: readonly string[],
+) {
+  const decision = evaluatePaymentPolicy(paymentOption, {
+    ...demoPaymentPolicy,
+    allowedRecipients,
+  })
+
+  if (decision.status !== "approved") {
+    log(errorMessage(`${name} ${decision.reason}`))
+    throw new HTTPException(decision.status === "denied" ? 403 : 409, {
+      message: decision.reason,
+    })
+  }
+}
+
+async function getTrustedRecipients(c: Context<Env>) {
+  const serverIdentity = await getKeypairInfo(env(c).SERVER_PRIVATE_KEY_HEX)
+  return [serverIdentity.did]
 }
 
 serve({

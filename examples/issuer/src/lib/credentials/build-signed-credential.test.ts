@@ -91,6 +91,6 @@ describe("buildSignedCredential", async () => {
 
     expect(signedCredential.proof).toBeDefined()
     expect(signedCredential.proof.type).toBe("JwtProof2020")
-    expect(isJwtString(signedCredential.proof.jwt as string)).toBeTruthy()
+    expect(isJwtString(signedCredential.proof.jwt)).toBeTruthy()
   })
 })

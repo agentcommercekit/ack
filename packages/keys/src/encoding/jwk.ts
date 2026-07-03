@@ -2,6 +2,10 @@ import type { KeyCurve } from "../key-curves"
 import { getPublicKeyFromPrivateKey } from "../public-key"
 import { base64urlToBytes, bytesToBase64url } from "./base64"
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
 /**
  * JWK-encoding
  */
@@ -76,21 +80,19 @@ function isJwkSecp256(
   jwk: unknown,
   crv: "secp256k1" | "secp256r1",
 ): jwk is JwkSecp256k1 | JwkSecp256r1 {
-  if (typeof jwk !== "object" || jwk === null) {
+  if (!isRecord(jwk)) {
     return false
   }
 
-  const obj = jwk as Record<string, unknown>
-
-  if (obj.kty !== "EC" || obj.crv !== crv) {
+  if (jwk.kty !== "EC" || jwk.crv !== crv) {
     return false
   }
 
-  if (typeof obj.x !== "string" || obj.x.length === 0) {
+  if (typeof jwk.x !== "string" || jwk.x.length === 0) {
     return false
   }
 
-  if (typeof obj.y !== "string" || obj.y.length === 0) {
+  if (typeof jwk.y !== "string" || jwk.y.length === 0) {
     return false
   }
 
@@ -124,21 +126,19 @@ export function isJwkSecp256r1(jwk: unknown): jwk is JwkSecp256r1 {
  * @returns True if the JWK is a valid Ed25519 public key JWK
  */
 export function isJwkEd25519(jwk: unknown): jwk is JwkEd25519 {
-  if (typeof jwk !== "object" || jwk === null) {
+  if (!isRecord(jwk)) {
     return false
   }
 
-  const obj = jwk as Record<string, unknown>
-
-  if (obj.kty !== "OKP" || obj.crv !== "Ed25519") {
+  if (jwk.kty !== "OKP" || jwk.crv !== "Ed25519") {
     return false
   }
 
-  if (typeof obj.x !== "string" || obj.x.length === 0) {
+  if (typeof jwk.x !== "string" || jwk.x.length === 0) {
     return false
   }
 
-  if ("y" in obj) {
+  if ("y" in jwk) {
     return false
   }
 
@@ -249,7 +249,7 @@ export function publicKeyBytesToJwk(
     }
 
     default:
-      throw new Error(`Unsupported curve: ${curve}`)
+      throw new Error(`Unsupported curve: ${String(curve)}`)
   }
 }
 
@@ -288,13 +288,3 @@ export function publicKeyJwkToBytes(jwk: PublicKeyJwk): Uint8Array {
   // For Ed25519, the x field is the complete public key
   return xBytes
 }
-
-/**
- * @deprecated Use `publicKeyBytesToJwk` instead
- */
-export const bytesToJwk = publicKeyBytesToJwk
-
-/**
- * @deprecated Use `publicKeyJwkToBytes` instead
- */
-export const jwkToBytes = publicKeyJwkToBytes

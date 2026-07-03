@@ -14,7 +14,9 @@ export async function updateEnvFile(
       envContent = await fs.readFile(envPath, { encoding: "utf8" })
     } catch (error) {
       // .env file doesn't exist, will create it
-      if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+      const code =
+        error instanceof Error && "code" in error ? error.code : undefined
+      if (code !== "ENOENT") {
         throw error
       }
     }
@@ -58,6 +60,7 @@ export async function updateEnvFile(
       ),
     )
   } catch (error) {
-    console.error(errorMessage(`Failed to update .env file: ${error}`))
+    const message = error instanceof Error ? error.message : String(error)
+    console.error(errorMessage(`Failed to update .env file: ${message}`))
   }
 }

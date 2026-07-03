@@ -17,7 +17,6 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "demo": "tsx ./src/index.ts",
     "test": "vitest"
@@ -27,8 +26,5 @@
     "agentcommercekit": "workspace:*",
     "valibot": "catalog:",
     "viem": "catalog:"
-  },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
   }
 }

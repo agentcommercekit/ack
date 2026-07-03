@@ -11,7 +11,7 @@ vi.mock("did-jwt", async () => {
   const actual = await vi.importActual("did-jwt")
   return {
     ...actual,
-    verifyJWT: vi.fn(),
+    verifyJWT: vi.fn<typeof verifyJWT>(),
   }
 })
 

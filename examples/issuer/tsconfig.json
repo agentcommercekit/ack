@@ -1,6 +1,8 @@
 {
-  "extends": "@repo/typescript-config/base-app.json",
+  "extends": "../../tsconfig.json",
   "compilerOptions": {
+    "allowJs": true,
+    "jsx": "preserve",
     "paths": {
       "@/*": ["./src/*"]
     }
