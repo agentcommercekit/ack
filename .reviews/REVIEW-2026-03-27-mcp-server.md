@@ -42,6 +42,7 @@
 **Verdict:** PASS | **Confidence:** HIGH
 
 File-by-file justification:
+
 - `package.json` -- new package definition for the MCP server. Required.
 - `src/index.ts` -- server entrypoint, registers tools, connects stdio transport. Required.
 - `src/tools/identity.ts` -- ACK-ID tools (create/sign/verify credential, resolve DID). Required.
@@ -65,9 +66,11 @@ No speculative code, no drive-by refactors, no feature extras.
 **Verdict:** UNDERSTOOD | **Confidence:** HIGH
 
 ### `src/index.ts`
+
 Creates an `McpServer` instance, registers four groups of tools (identity, payment-requests, payment-receipts, utility), then connects via stdio transport. No branching. Top-level await on `server.connect()`.
 
 ### `src/util.ts`
+
 - `resolver` -- singleton `getDidResolver()` instance shared across all tools.
 - `keypairFromJwk(jwkJson)` -- parses a JWK JSON string, delegates to `jwkToKeypair`. Throws on invalid JSON or missing JWK fields (delegated to library).
 - `curveToAlg(curve)` -- maps curve name to JWT algorithm. Three supported curves, throws on unsupported. Switch with default throw.
@@ -76,20 +79,24 @@ Creates an `McpServer` instance, registers four groups of tools (identity, payme
 - `verification(valid, data)` -- delegates to `ok()` with `{ valid, ...data }`. Used for verify-style tools that return valid/invalid rather than success/error.
 
 ### `src/tools/identity.ts`
+
 - `ack_create_controller_credential` -- creates unsigned VC with subject/controller/optional issuer DIDs. Inputs: 3 strings (subject, controller, issuer?). Output: JSON credential. Branches: try/catch only.
 - `ack_sign_credential` -- parses credential JSON, parses JWK, signs credential as JWT. Validates that parsed credential is a non-null, non-array object. Branches: try/catch, plus explicit type check on `JSON.parse` result.
 - `ack_verify_credential` -- parses JWT credential, verifies signature/expiry, optionally checks trusted issuers. Returns verification result (valid + details or invalid + reason). Two branches: success path returns `verification(true, ...)`, catch returns `verification(false, ...)`.
 - `ack_resolve_did` -- resolves DID URI to DID document. Input validation delegated to `resolveDid()` which calls `isDidUri()` internally.
 
 ### `src/tools/payment-requests.ts`
+
 - `ack_create_payment_request` -- validates at least one payment option exists, generates random ID, builds `PaymentRequestInit`, optionally adds expiry from seconds, signs JWT. Branches: empty options check (throw), expiresInSeconds presence check (conditional field assignment), try/catch.
 - `ack_verify_payment_request` -- verifies payment request JWT, optionally checks issuer. Two paths: success (verification true) or catch (verification false).
 
 ### `src/tools/payment-receipts.ts`
+
 - `ack_create_payment_receipt` -- creates unsigned receipt credential from payment request token, option ID, issuer/payer DIDs, optional metadata. try/catch only.
 - `ack_verify_payment_receipt` -- verifies receipt JWT, optionally checks trusted receipt issuers and payment request issuer. Two paths: success or catch.
 
 ### `src/tools/utility.ts`
+
 - `ack_generate_keypair` -- generates keypair for specified curve (default secp256k1), returns private key hex, public key hex, JWK string, DID, and curve name. try/catch only.
 
 ---

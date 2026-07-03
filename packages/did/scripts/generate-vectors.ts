@@ -1,9 +1,14 @@
 import { generateKeypair } from "@agentcommercekit/keys"
-import { hexStringToBytes, bytesToHexString } from "@agentcommercekit/keys/encoding"
+import {
+  hexStringToBytes,
+  bytesToHexString,
+} from "@agentcommercekit/keys/encoding"
+
 import { createDidKeyUri } from "../src/methods/did-key.ts"
 
 async function main() {
-  const privHex = "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60"
+  const privHex =
+    "9d61b19deffd5a60ba844af492ec2cc44449c5697b326919703bac031cae7f60"
   const privBytes = hexStringToBytes(privHex)
 
   const ed = await generateKeypair("Ed25519", privBytes)
@@ -19,4 +24,4 @@ async function main() {
   const compressed = getPublicKeyBytes(privBytes, true)
   console.log("secp256k1 pubkey (compressed):", bytesToHexString(compressed))
 }
-main()
+main().catch(console.error)

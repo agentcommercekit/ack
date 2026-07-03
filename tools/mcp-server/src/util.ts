@@ -23,6 +23,9 @@ export function keypairFromJwk(jwkJson: string): Keypair {
   if (typeof jwk !== "object" || jwk === null || Array.isArray(jwk)) {
     throw new Error("JWK must be a JSON object")
   }
+  if (!jwk.d) {
+    throw new Error("JWK must contain a private key (d field)")
+  }
   return jwkToKeypair(jwk)
 }
 

@@ -8,6 +8,7 @@
 ---
 
 ## Pass 0: Evidence Ledger
+
 - **Files read:**
   - `packages/ack-pay/src/errors.ts` (lines 1-6, full file)
   - `packages/ack-pay/src/verify-payment-request-token.ts` (lines 1-65, full file)
@@ -29,6 +30,7 @@
   - **Finding:** No tests asserting `.cause` is preserved. **Status: FIXED.** Commit `e74f097` added cause assertions to all 3 JWT-verification error paths (invalid format, expired, invalid signature) plus a negative assertion for the schema-validation path. Verified by reading the full test file and confirming all 4 error tests now assert on `.cause`. Tests pass.
 
 ## Pass 0.5: Scope Check
+
 **Task:** Preserve the original error as `.cause` when `verifyPaymentRequestToken` wraps JWT verification failures in `InvalidPaymentRequestTokenError`.
 **Verdict:** PASS | **Confidence:** HIGH
 
@@ -39,25 +41,31 @@
 No speculative code. No drive-by refactors. No feature extras. Every changed line maps to the stated task.
 
 ## Pass 1: Comprehension Check
+
 **Verdict:** UNDERSTOOD | **Confidence:** HIGH
 
 ### `InvalidPaymentRequestTokenError` constructor (errors.ts:1-6)
+
 **What it does:** Custom error class that accepts an optional message (defaulting to "Invalid payment request token") and optional `ErrorOptions` (which can carry `cause`). Passes both to the native `Error` constructor via `super(message, options)`.
 **Branches:** None.
 **Inputs:** message (string), options (ErrorOptions). **Output:** Error instance with `.name` set.
 
 ### `verifyPaymentRequestToken` catch block (verify-payment-request-token.ts:46-48)
+
 **What it does:** Catches any error thrown by `verifyJwt()` and re-throws it wrapped in `InvalidPaymentRequestTokenError`, passing the caught error as `.cause` via `{ cause: err }`. The `undefined` first argument uses the default message.
 **Branches:**
+
 1. `verifyJwt` succeeds -> continues to schema validation (line 50).
 2. `verifyJwt` throws -> caught, re-thrown as `InvalidPaymentRequestTokenError` with cause (line 47).
 3. Schema validation fails -> `InvalidPaymentRequestTokenError` thrown without cause (line 56-58).
 4. Schema validation succeeds -> returns `{ paymentRequest, parsed }` (line 61-64).
 
 ### Test changes (verify-payment-request-token.test.ts)
+
 All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toThrow()`, enabling inspection of the error object's properties. Three tests verify `.cause` is defined and is an `Error` instance. One test verifies `.cause` is `undefined` for schema validation failures (correct -- no caught error to wrap).
 
 ## Pass 2: Contract & Integration
+
 **Verdict:** PASS | **Confidence:** HIGH
 
 - **Constructor signature:** `ErrorOptions` is optional with no default. All existing call sites that construct `InvalidPaymentRequestTokenError()` without options continue to work unchanged. The schema-validation throw at line 56 passes only a message string, which still works.
@@ -70,6 +78,7 @@ All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toTh
 - **Type compatibility:** `tsc -b` shows no new errors. `ErrorOptions` is a built-in TypeScript type (ES2022+).
 
 ## Pass 3: Failure & Adversarial
+
 **Verdict:** PASS | **Confidence:** HIGH
 
 - **Error exposure:** `formatErrorResponse` only serializes `error.message`, not `.cause`. The original JWT error (which could contain internal details about JWT structure, key IDs, etc.) is NOT exposed in API responses. It is available programmatically for server-side logging/debugging, which is the correct behavior for a fintech library.
@@ -79,6 +88,7 @@ All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toTh
 - **Replay/idempotency:** Not affected by this change.
 
 ## Pass 4: Code Craft
+
 **Verdict:** PASS | **Confidence:** HIGH
 
 - **Single responsibility:** `errors.ts` defines the error class. `verify-payment-request-token.ts` uses it. Clean separation.
@@ -90,6 +100,7 @@ All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toTh
 - **Analogous error classes:** `CredentialVerificationError` and `DidResolutionError` in other packages do NOT accept `ErrorOptions`. This is a potential future improvement for those classes but is NOT a blocking concern for this PR -- those classes don't currently wrap caught errors in the same pattern.
 
 ## Pass 5: Test Quality
+
 **Verdict:** PASS | **Confidence:** HIGH
 
 - **Tests exist for new behavior:** All 3 error paths where `.cause` is set are tested:
@@ -103,6 +114,7 @@ All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toTh
 - **Prior review gap addressed:** The fix commit `e74f097` added exactly the missing assertions. All 4 error-path tests now verify `.cause` behavior. This is confirmed by reading the full test file and running the test suite (32 tests pass).
 
 ## Pass 6: System Fit
+
 **Verdict:** PASS | **Confidence:** HIGH
 
 - **Aligns with architecture:** Error wrapping with `.cause` is a standard JavaScript pattern (ES2022 `Error` cause). Preserving the original error aids debugging in payment verification flows.
@@ -112,6 +124,7 @@ All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toTh
 - **No new dependencies:** Uses built-in `ErrorOptions` type.
 
 ## Pass 7: What's Missing?
+
 **Verdict:** PASS | **Confidence:** HIGH
 
 - **Analogous code paths:** Checked `verify-payment-receipt.ts` -- it calls `verifyPaymentRequestToken` and lets errors propagate. The `CredentialVerificationError` and `DidResolutionError` classes in other packages do not currently accept `ErrorOptions`, but they also do not currently wrap caught errors in their constructors, so this is not a gap -- it would be an enhancement for a separate PR.
@@ -120,6 +133,7 @@ All error-path tests now use `.catch((e) => e)` pattern instead of `rejects.toTh
 - **Cleanup:** No dead code, unused imports, or stale comments.
 
 ## Summary (Fintech Bar)
+
 - **Ship as-is:** Yes. All passes PASS at HIGH confidence. The change is minimal, correct, backwards-compatible, and fully tested. The prior review finding (missing cause assertions) has been addressed in commit `e74f097` with comprehensive test coverage across all error paths. No security gaps, no crypto changes, no payment logic changes -- only error diagnostic improvement.
 - **Ship after fixes:** N/A
 - **Do not ship:** N/A

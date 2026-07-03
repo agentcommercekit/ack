@@ -27,4 +27,7 @@ registerPaymentReceiptTools(server)
 registerUtilityTools(server)
 
 const transport = new StdioServerTransport()
-await server.connect(transport)
+await server.connect(transport).catch((error) => {
+  console.error("MCP server failed to start:", error)
+  process.exit(1)
+})

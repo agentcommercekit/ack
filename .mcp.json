@@ -2,8 +2,7 @@
   "mcpServers": {
     "ack": {
       "command": "npx",
-      "args": ["tsx", "./tools/mcp-server/src/index.ts"],
-      "cwd": "/Users/vayu/Dev/Projects/agentcommercekit/ack"
+      "args": ["tsx", "./tools/mcp-server/src/index.ts"]
     }
   }
 }
