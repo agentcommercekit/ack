@@ -9,14 +9,19 @@
 import {
   createControllerCredential,
   createDidKeyUri,
+  createDidPkhUri,
+  createDidWebUri,
+  createJwt,
   createJwtSigner,
   createPaymentReceipt,
   createSignedPaymentRequest,
   generateKeypair,
+  getControllerClaimVerifier,
   getDidResolver,
   keypairToJwk,
   parseJwtCredential,
   signCredential,
+  verifyJwt,
   verifyParsedCredential,
   verifyPaymentRequestToken,
   verifyPaymentReceipt,
@@ -60,7 +65,9 @@ describe("full agent workflow", () => {
 
     expect(signedCredential).toMatch(/^eyJ/)
 
-    // 4. Anyone can verify the signed credential
+    // 4. Anyone can verify the signed credential (signature + expiry)
+    // Note: controller claim verification requires did:web (not did:key)
+    // — see the "rejects a forged controller claim" test for that path
     const parsed = await parseJwtCredential(signedCredential, resolver)
     await verifyParsedCredential(parsed, { resolver })
 
@@ -152,6 +159,74 @@ describe("full agent workflow", () => {
     await expect(
       parseJwtCredential(signedByAttacker as JwtString, resolver),
     ).rejects.toThrow()
+  })
+
+  it("rejects a controller credential with a forged controller claim", async () => {
+    const realOwnerKeypair = await generateKeypair("secp256k1")
+    const attackerKeypair = await generateKeypair("secp256k1")
+    const realOwnerDid = createDidKeyUri(realOwnerKeypair)
+    const attackerDid = createDidKeyUri(attackerKeypair)
+    const agentDid = createDidKeyUri(await generateKeypair("secp256k1"))
+
+    // Attacker creates a credential claiming agent is controlled by realOwner
+    // but signs with their own key (using their own DID as issuer)
+    const credential = createControllerCredential({
+      subject: agentDid,
+      controller: realOwnerDid,
+      issuer: attackerDid,
+    })
+
+    const signedByAttacker = await signCredential(credential, {
+      did: attackerDid,
+      signer: createJwtSigner(attackerKeypair),
+      alg: "ES256K",
+    })
+
+    // Without controller claim verifier, this would pass (just checks signature)
+    // With it, it should fail because the issuer isn't authorized
+    const parsed = await parseJwtCredential(
+      signedByAttacker as JwtString,
+      resolver,
+    )
+    await expect(
+      verifyParsedCredential(parsed, {
+        resolver,
+        verifiers: [getControllerClaimVerifier()],
+        trustedIssuers: [realOwnerDid],
+      }),
+    ).rejects.toThrow()
+  })
+
+  it("creates did:web and did:pkh URIs", () => {
+    const webDid = createDidWebUri("https://example.com")
+    expect(webDid).toBe("did:web:example.com")
+
+    const webDidWithPath = createDidWebUri("https://example.com/agents/1")
+    expect(webDidWithPath).toMatch(/^did:web:/)
+
+    const pkhDid = createDidPkhUri(
+      "eip155:1",
+      "0x1234567890abcdef1234567890abcdef12345678",
+    )
+    expect(pkhDid).toMatch(/^did:pkh:eip155:1:/)
+  })
+
+  it("creates and verifies a raw JWT for challenge-response", async () => {
+    const keypair = await generateKeypair("secp256k1")
+    const did = createDidKeyUri(keypair)
+    const audience = "did:web:verifier.example.com"
+
+    const jwt = await createJwt(
+      { challenge: "nonce-abc123", aud: audience },
+      { issuer: did, signer: createJwtSigner(keypair) },
+      { alg: curveToAlg(keypair.curve) },
+    )
+
+    expect(jwt).toMatch(/^eyJ/)
+
+    const result = await verifyJwt(jwt, { resolver, issuer: did, audience })
+    expect(result.payload.challenge).toBe("nonce-abc123")
+    expect(result.issuer).toBe(did)
   })
 
   it("throws for a payment request from an untrusted issuer", async () => {

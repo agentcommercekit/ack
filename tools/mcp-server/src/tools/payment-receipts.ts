@@ -15,7 +15,7 @@ import { err, ok, resolver, verification } from "../util"
 export function registerPaymentReceiptTools(server: McpServer) {
   server.tool(
     "ack_create_payment_receipt",
-    "Create a payment receipt as a W3C Verifiable Credential, proving that a payment was made.",
+    "Create an unsigned payment receipt as a W3C Verifiable Credential. The output is unsigned JSON — you must pass it to ack_sign_credential with the receipt issuer's JWK and DID to get a signed JWT, then verify it with ack_verify_payment_receipt.",
     {
       paymentRequestToken: z
         .string()
@@ -56,7 +56,7 @@ export function registerPaymentReceiptTools(server: McpServer) {
 
   server.tool(
     "ack_verify_payment_receipt",
-    "Verify a payment receipt credential. Checks the receipt signature and optionally verifies the embedded payment request.",
+    "Verify a signed payment receipt JWT (from ack_sign_credential after ack_create_payment_receipt). Checks receipt signature, receipt claims, and optionally the embedded payment request. Returns {valid: true/false}.",
     {
       receipt: z.string().describe("The receipt as a signed JWT string"),
       trustedReceiptIssuers: z

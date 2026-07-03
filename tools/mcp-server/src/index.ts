@@ -10,6 +10,7 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 
 import { registerIdentityTools } from "./tools/identity"
+import { registerJwtTools } from "./tools/jwt"
 import { registerPaymentReceiptTools } from "./tools/payment-receipts"
 import { registerPaymentRequestTools } from "./tools/payment-requests"
 import { registerUtilityTools } from "./tools/utility"
@@ -20,6 +21,7 @@ const server = new McpServer({
 })
 
 registerIdentityTools(server)
+registerJwtTools(server)
 registerPaymentRequestTools(server)
 registerPaymentReceiptTools(server)
 registerUtilityTools(server)

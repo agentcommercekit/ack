@@ -14,11 +14,15 @@ const EXPECTED_TOOLS = [
   "ack_sign_credential",
   "ack_verify_credential",
   "ack_resolve_did",
+  "ack_create_jwt",
+  "ack_verify_jwt",
   "ack_create_payment_request",
   "ack_verify_payment_request",
   "ack_create_payment_receipt",
   "ack_verify_payment_receipt",
   "ack_generate_keypair",
+  "ack_create_did_web",
+  "ack_create_did_pkh",
 ]
 
 describe("MCP server over stdio", () => {
@@ -47,7 +51,7 @@ describe("MCP server over stdio", () => {
     expect(info!.name).toBe("ack")
   })
 
-  it("lists all 9 tools", async () => {
+  it("lists all 13 tools", async () => {
     const { tools } = await client.listTools()
     const names = tools.map((t) => t.name).sort()
     expect(names).toEqual([...EXPECTED_TOOLS].sort())

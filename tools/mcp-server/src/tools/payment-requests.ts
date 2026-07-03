@@ -35,7 +35,7 @@ const paymentOptionSchema = z.object({
 export function registerPaymentRequestTools(server: McpServer) {
   server.tool(
     "ack_create_payment_request",
-    "Create a signed payment request token (JWT) for use in HTTP 402 responses. The jwk parameter should be the JWK string returned by ack_generate_keypair.",
+    "Create a signed payment request token (JWT) for use in HTTP 402 responses. Unlike receipts, this creates AND signs in one step. Verify the result with ack_verify_payment_request.",
     {
       description: z
         .string()
@@ -56,7 +56,7 @@ export function registerPaymentRequestTools(server: McpServer) {
       signerJwk: z
         .string()
         .describe(
-          "JWK JSON string containing the signer's private key (from ack_generate_keypair)",
+          "JWK JSON string containing the signer's private key (from ack_generate_keypair or any valid private key JWK)",
         ),
       signerDid: z
         .string()
@@ -102,7 +102,7 @@ export function registerPaymentRequestTools(server: McpServer) {
 
   server.tool(
     "ack_verify_payment_request",
-    "Verify and parse a payment request JWT. Returns the decoded payment request if valid.",
+    "Verify and parse a payment request JWT (from ack_create_payment_request). Returns the decoded payment request if valid, including payment options and issuer. Returns {valid: true/false}.",
     {
       token: z.string().describe("The payment request JWT string"),
       issuer: z

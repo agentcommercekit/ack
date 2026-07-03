@@ -5,6 +5,7 @@ import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import {
   createControllerCredential,
   createJwtSigner,
+  getControllerClaimVerifier,
   parseJwtCredential,
   resolveDid,
   signCredential,
@@ -27,7 +28,7 @@ import {
 export function registerIdentityTools(server: McpServer) {
   server.tool(
     "ack_create_controller_credential",
-    "Create a W3C Verifiable Credential proving that a subject DID (e.g. an agent) is controlled by a controller DID (e.g. the owner). Requires both subjectDid and controllerDid.",
+    "Create an unsigned W3C Verifiable Credential proving that a subject DID (e.g. an agent) is controlled by a controller DID (e.g. the owner). Pass the JSON output to ack_sign_credential to get a signed JWT.",
     {
       subjectDid: z
         .string()
@@ -60,15 +61,17 @@ export function registerIdentityTools(server: McpServer) {
 
   server.tool(
     "ack_sign_credential",
-    "Sign a W3C Verifiable Credential, returning a signed JWT string. Requires the credential JSON, the signer's JWK (from ack_generate_keypair), and the signer's DID.",
+    "Sign a W3C Verifiable Credential, returning a signed JWT string. Pass the JSON output from ack_create_controller_credential or ack_create_payment_receipt as the credential parameter. The resulting JWT can be verified with ack_verify_credential or ack_verify_payment_receipt.",
     {
       credential: z
         .string()
-        .describe("JSON string of the W3C credential to sign"),
+        .describe(
+          "JSON string of the W3C credential to sign (output from ack_create_controller_credential or ack_create_payment_receipt)",
+        ),
       signerJwk: z
         .string()
         .describe(
-          "JWK JSON string containing the signer's private key (from ack_generate_keypair)",
+          "JWK JSON string containing the signer's private key (from ack_generate_keypair or any valid private key JWK)",
         ),
       signerDid: z.string().describe("DID of the signer (must match the JWK)"),
     },
@@ -97,7 +100,7 @@ export function registerIdentityTools(server: McpServer) {
 
   server.tool(
     "ack_verify_credential",
-    "Verify a signed credential JWT. Checks signature, expiration, and optionally trusted issuers.",
+    "Verify a signed credential JWT (from ack_sign_credential). Checks signature, expiration, and optionally trusted issuers. Set verifyControllerClaims to true to also verify the controller relationship against the subject's DID document (requires did:web or similar — did:key does not support this). Returns {valid: true/false}.",
     {
       jwt: z.string().describe("The signed credential JWT string"),
       trustedIssuers: z
@@ -106,13 +109,23 @@ export function registerIdentityTools(server: McpServer) {
         .describe(
           "List of trusted issuer DIDs. If provided, the credential issuer must be in this list.",
         ),
+      verifyControllerClaims: z
+        .boolean()
+        .optional()
+        .describe(
+          "If true, verify controller claims against the subject's DID document. Requires the subject DID to declare a controller (e.g. did:web). Defaults to false.",
+        ),
     },
-    async ({ jwt, trustedIssuers }) => {
+    async ({ jwt, trustedIssuers, verifyControllerClaims }) => {
       try {
         const credential = await parseJwtCredential(jwt as JwtString, resolver)
+        const verifiers = verifyControllerClaims
+          ? [getControllerClaimVerifier()]
+          : []
         await verifyParsedCredential(credential, {
           resolver,
           trustedIssuers,
+          verifiers,
         })
         return verification(true, {
           issuer: credential.issuer,
