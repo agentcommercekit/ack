@@ -20,17 +20,14 @@
   "type": "module",
   "main": "./src/index.ts",
   "scripts": {
-    "check:types": "tsc --noEmit",
     "clean": "git clean -fdX .turbo",
     "start": "tsx ./src/index.ts",
     "test": "vitest"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.21.2",
+    "@modelcontextprotocol/sdk": "1.29.0",
     "agentcommercekit": "workspace:*",
     "zod": "catalog:"
   },
-  "devDependencies": {
-    "@repo/typescript-config": "workspace:*"
-  }
+  "devDependencies": {}
 }
