@@ -53,6 +53,7 @@ overrides:
   esbuild: "^0.25.0"
   jsondiffpatch: "^0.7.2"
   js-yaml@<3.15.0: ^3.15.0
+  adm-zip@<0.6.0: ^0.6.0
 
 allowBuilds:
   better-sqlite3: true
@@ -63,3 +64,4 @@ allowBuilds:
 
 minimumReleaseAgeExclude:
   - js-yaml@3.15.0
+  - adm-zip@0.6.0
