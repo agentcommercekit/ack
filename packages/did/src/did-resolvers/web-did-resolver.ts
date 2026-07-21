@@ -44,6 +44,16 @@ export interface DidWebResolverOptions {
    * @default []
    */
   allowedHttpHosts?: string[]
+  /**
+   * Milliseconds to wait for the DID document fetch before aborting. A
+   * `did:web` resolution fetches the host named in the DID, so an
+   * unresponsive host would otherwise hang the caller indefinitely. Omit to
+   * keep the previous behaviour (no timeout).
+   *
+   * The timeout is applied via an `AbortSignal` on the request. A custom
+   * `fetch` must honour `init.signal` for it to take effect.
+   */
+  timeout?: number
 }
 
 const DEFAULT_ALLOWED_HTTP_HOSTS: string[] = []
@@ -57,9 +67,15 @@ const DEFAULT_DOC_PATH = "/.well-known/did.json"
  */
 async function fetchDidDocumentAtUrl(
   url: string | URL,
-  { fetch = globalThis.fetch }: { fetch?: FetchLike } = {},
+  {
+    fetch = globalThis.fetch,
+    timeout,
+  }: { fetch?: FetchLike; timeout?: number } = {},
 ): Promise<DidDocument> {
-  const res = await fetch(url, { mode: "cors" })
+  const res = await fetch(url, {
+    mode: "cors",
+    ...(timeout !== undefined ? { signal: AbortSignal.timeout(timeout) } : {}),
+  })
 
   if (!res.ok) {
     throw new Error(
@@ -141,7 +157,15 @@ export function getResolver({
   docPath = DEFAULT_DOC_PATH,
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
+  timeout,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
+  // Fail fast on a bad timeout: `AbortSignal.timeout` throws on non-positive,
+  // non-integer or non-finite values, and that would otherwise surface as a
+  // misleading `notFound` resolution error rather than a programmer error.
+  if (timeout !== undefined && (!Number.isInteger(timeout) || timeout <= 0)) {
+    throw new TypeError("`timeout` must be a positive integer (milliseconds)")
+  }
+
   async function resolve(
     did: string,
     parsed: ParsedDID,
@@ -155,7 +179,7 @@ export function getResolver({
     let didDocument: DIDDocument | null = null
 
     try {
-      didDocument = await fetchDidDocumentAtUrl(url, { fetch })
+      didDocument = await fetchDidDocumentAtUrl(url, { fetch, timeout })
 
       if (!isDidDocumentForDid(didDocument, did)) {
         throw new Error("DID document id does not match requested did")

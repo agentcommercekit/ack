@@ -375,5 +375,115 @@ describe("web-did-resolver", () => {
       expect(customFetch).toHaveBeenCalled()
       expect(mockFetch).not.toHaveBeenCalled()
     })
+
+    it("passes an abort signal built from the configured timeout", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockDidDocument),
+      })
+      const timeoutSpy = vi.spyOn(AbortSignal, "timeout")
+
+      const did = "did:web:example.com"
+      const resolver = getResolver({ timeout: 5000 })
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com",
+      }
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
+
+      expect(timeoutSpy).toHaveBeenCalledWith(5000)
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://example.com/.well-known/did.json",
+        expect.objectContaining({
+          mode: "cors",
+          signal: expect.any(AbortSignal),
+        }),
+      )
+      timeoutSpy.mockRestore()
+    })
+
+    it("does not pass a signal when no timeout is set", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockDidDocument),
+      })
+
+      const did = "did:web:example.com"
+      const resolver = getResolver()
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com",
+      }
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
+
+      // Exact init, so this fails if a signal (or anything else) is added.
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://example.com/.well-known/did.json",
+        { mode: "cors" },
+      )
+    })
+
+    it("throws for an invalid timeout", () => {
+      expect(() => getResolver({ timeout: 0 })).toThrow(TypeError)
+      expect(() => getResolver({ timeout: -1 })).toThrow(TypeError)
+      expect(() => getResolver({ timeout: 1.5 })).toThrow(TypeError)
+      expect(() => getResolver({ timeout: NaN })).toThrow(TypeError)
+    })
+
+    it("surfaces a timed-out fetch as a notFound resolution error", async () => {
+      mockFetch.mockRejectedValueOnce(
+        new DOMException("The operation timed out.", "TimeoutError"),
+      )
+
+      const did = "did:web:example.com"
+      const resolver = getResolver({ timeout: 1 })
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com",
+      }
+      const result = await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
+
+      expect(result.didDocument).toBeNull()
+      expect(result.didResolutionMetadata.error).toBe("notFound")
+      expect(result.didResolutionMetadata.message).toContain(
+        "The operation timed out.",
+      )
+    })
   })
 })
