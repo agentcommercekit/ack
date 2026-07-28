@@ -44,6 +44,17 @@ export interface DidWebResolverOptions {
    * @default []
    */
   allowedHttpHosts?: string[]
+  /**
+   * Whether to follow HTTP redirects while fetching the did document.
+   *
+   * The `allowedHttpHosts` check applies to the resolved URL only, so a
+   * followed redirect can move the request to a host or scheme that check
+   * would have rejected. did:web documents are served directly at a
+   * well-known path, so redirects are refused by default.
+   *
+   * @default false
+   */
+  followRedirects?: boolean
 }
 
 const DEFAULT_ALLOWED_HTTP_HOSTS: string[] = []
@@ -57,9 +68,15 @@ const DEFAULT_DOC_PATH = "/.well-known/did.json"
  */
 async function fetchDidDocumentAtUrl(
   url: string | URL,
-  { fetch = globalThis.fetch }: { fetch?: FetchLike } = {},
+  {
+    fetch = globalThis.fetch,
+    followRedirects = false,
+  }: { fetch?: FetchLike; followRedirects?: boolean } = {},
 ): Promise<DidDocument> {
-  const res = await fetch(url, { mode: "cors" })
+  const res = await fetch(url, {
+    mode: "cors",
+    redirect: followRedirects ? "follow" : "error",
+  })
 
   if (!res.ok) {
     throw new Error(
@@ -141,6 +158,7 @@ export function getResolver({
   docPath = DEFAULT_DOC_PATH,
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
+  followRedirects = false,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
   async function resolve(
     did: string,
@@ -155,7 +173,10 @@ export function getResolver({
     let didDocument: DIDDocument | null = null
 
     try {
-      didDocument = await fetchDidDocumentAtUrl(url, { fetch })
+      didDocument = await fetchDidDocumentAtUrl(url, {
+        fetch,
+        followRedirects,
+      })
 
       if (!isDidDocumentForDid(didDocument, did)) {
         throw new Error("DID document id does not match requested did")
