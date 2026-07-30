@@ -197,7 +197,6 @@ describe("verifyJwt()", () => {
     },
   )
 
-
   it("does not require an aud claim when no audience is expected", async () => {
     const jwt = await createJwt(
       { sub: "did:example:subject" },
