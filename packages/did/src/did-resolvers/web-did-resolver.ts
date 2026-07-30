@@ -86,8 +86,9 @@ async function fetchDidDocumentAtUrl(
     (res.type === "opaqueredirect" || (res.status >= 300 && res.status < 400))
   ) {
     const location = res.headers.get("location")
+    const target = location ? ` to ${location}` : ""
     throw new Error(
-      `DID resolution refused a redirect${location ? ` to ${location}` : ""}`,
+      `DID resolution refused a redirect${target}. Set followRedirects: true to allow redirects.`,
     )
   }
 

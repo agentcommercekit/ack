@@ -384,7 +384,7 @@ describe("web-did-resolver", () => {
       )
       expect(result.didResolutionMetadata.error).toBe("notFound")
       expect(result.didResolutionMetadata.message).toBe(
-        "resolver_error: DID resolution refused a redirect to http://internal.host/did.json",
+        "resolver_error: DID resolution refused a redirect to http://internal.host/did.json. Set followRedirects: true to allow redirects.",
       )
     })
 
@@ -419,7 +419,7 @@ describe("web-did-resolver", () => {
 
       expect(result.didResolutionMetadata.error).toBe("notFound")
       expect(result.didResolutionMetadata.message).toBe(
-        "resolver_error: DID resolution refused a redirect",
+        "resolver_error: DID resolution refused a redirect. Set followRedirects: true to allow redirects.",
       )
     })
 
