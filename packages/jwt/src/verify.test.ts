@@ -112,8 +112,8 @@ describe("verifyJwt()", () => {
   })
 
   it("forwards the audience and passes when the aud claim is present", async () => {
-    // The realistic path: the caller supplies `audience` (which did-jwt
-    // matches) and `requireAudience` on top (which rejects an absent aud).
+    // The realistic path: the caller supplies `audience`; did-jwt matches
+    // the value and verifyJwt rejects an absent aud.
     const jwt = await createJwt(
       { sub: "did:example:subject", aud: "did:example:audience" },
       { issuer: "did:example:issuer", signer },
@@ -145,21 +145,16 @@ describe("verifyJwt()", () => {
 
     const result = await verifyJwt(jwt, {
       audience: "did:example:audience",
-      requireAudience: true,
     })
 
-    // `audience` is forwarded to did-jwt, `requireAudience` is not.
     expect(verifyJWT).toHaveBeenCalledWith(
       jwt,
       expect.objectContaining({ audience: "did:example:audience" }),
     )
-    expect(vi.mocked(verifyJWT).mock.calls[0]?.[1]).not.toHaveProperty(
-      "requireAudience",
-    )
     expect(result.payload.aud).toBe("did:example:audience")
   })
 
-  it("throws when requireAudience is set and the aud claim is an empty array", async () => {
+  it("throws when an audience is expected and the aud claim is an empty array", async () => {
     const jwt = await createJwt(
       { sub: "did:example:subject" },
       { issuer: "did:example:issuer", signer },
@@ -189,12 +184,12 @@ describe("verifyJwt()", () => {
 
     vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
 
-    await expect(verifyJwt(jwt, { requireAudience: true })).rejects.toThrow(
-      "JWT audience is required but missing",
-    )
+    await expect(
+      verifyJwt(jwt, { audience: "did:example:audience" }),
+    ).rejects.toThrow("JWT audience is required but missing")
   })
 
-  it("throws when requireAudience is set and the aud claim is missing", async () => {
+  it("throws when an audience is expected and the aud claim is missing", async () => {
     const jwt = await createJwt(
       { sub: "did:example:subject" },
       { issuer: "did:example:issuer", signer },
@@ -220,9 +215,36 @@ describe("verifyJwt()", () => {
 
     vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
 
-    await expect(verifyJwt(jwt, { requireAudience: true })).rejects.toThrow(
-      "JWT audience is required but missing",
+    await expect(
+      verifyJwt(jwt, { audience: "did:example:audience" }),
+    ).rejects.toThrow("JWT audience is required but missing")
+  })
+
+  it("does not require an aud claim when no audience is expected", async () => {
+    const jwt = await createJwt(
+      { sub: "did:example:subject" },
+      { issuer: "did:example:issuer", signer },
     )
+
+    const mockVerifiedResult: JWTVerified = {
+      verified: true,
+      payload: { iss: "did:example:issuer", sub: "did:example:subject" },
+      didResolutionResult: {
+        didResolutionMetadata: {},
+        didDocument: null,
+        didDocumentMetadata: {},
+      },
+      issuer: "did:example:issuer",
+      signer: {
+        id: "did:example:issuer#key-1",
+        type: "JsonWebKey2020",
+        controller: "did:example:issuer",
+      },
+      jwt,
+    }
+    vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
+
+    await expect(verifyJwt(jwt)).resolves.toMatchObject({ verified: true })
   })
 
   it("throws error when issuer does not match expected issuer", async () => {

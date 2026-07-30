@@ -74,9 +74,11 @@ export async function verifyA2ASignedMessage(
   } = v.parse(messageWithSignatureSchema, message)
 
   // Parse the signature from the message metadata, ensuring it is
-  // signed by the counterparty and intended for the provided DID
+  // signed by the counterparty. Signed messages do not carry an `aud`
+  // claim today (`createSignedA2AMessage` has no recipient parameter), so
+  // no audience is expected here; the handshake path above does embed and
+  // verify `aud`.
   const verified = await verifyJwt(metadata.sig, {
-    audience: did,
     issuer: counterparty,
     resolver,
   })

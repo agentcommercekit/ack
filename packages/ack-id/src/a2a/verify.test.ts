@@ -174,7 +174,7 @@ describe("verifyA2ASignedMessage", () => {
     expect(result.verified).toBe(true)
   })
 
-  it("requires audience=self and issuer=counterparty for signature verification", async () => {
+  it("requires issuer=counterparty for signature verification", async () => {
     mockValidSignature()
 
     await verifyA2ASignedMessage(signedMessage("hello", "the.sig"), {
@@ -182,8 +182,9 @@ describe("verifyA2ASignedMessage", () => {
       counterparty: userDid,
     })
 
+    // Signed messages carry no aud claim today, so no audience is expected;
+    // the handshake flow embeds and verifies aud.
     expect(verifyJwt).toHaveBeenCalledWith("the.sig", {
-      audience: agentDid,
       issuer: userDid,
       resolver: expect.anything(),
     })
