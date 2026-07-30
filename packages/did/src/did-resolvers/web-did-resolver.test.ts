@@ -457,6 +457,7 @@ describe("web-did-resolver", () => {
       expect(() => getResolver({ timeout: -1 })).toThrow(RangeError)
       expect(() => getResolver({ timeout: 1.5 })).toThrow(RangeError)
       expect(() => getResolver({ timeout: NaN })).toThrow(RangeError)
+      expect(() => getResolver({ timeout: 2147483648 })).toThrow(RangeError)
     })
 
     it("surfaces a timed-out fetch as a notFound resolution error", async () => {
