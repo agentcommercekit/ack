@@ -154,40 +154,47 @@ describe("verifyJwt()", () => {
     expect(result.payload.aud).toBe("did:example:audience")
   })
 
-  it("throws when an audience is expected and the aud claim is an empty array", async () => {
-    const jwt = await createJwt(
-      { sub: "did:example:subject" },
-      { issuer: "did:example:issuer", signer },
-    )
+  it.each([
+    { label: "an empty array", aud: [] as string[] },
+    { label: "an empty string", aud: "" },
+    { label: "an array with only an empty string", aud: [""] },
+  ])(
+    "throws when an audience is expected and the aud claim is $label",
+    async ({ aud }) => {
+      const jwt = await createJwt(
+        { sub: "did:example:subject" },
+        { issuer: "did:example:issuer", signer },
+      )
 
-    const mockVerifiedResult: JWTVerified = {
-      verified: true,
-      payload: {
-        iss: "did:example:issuer",
-        sub: "did:example:subject",
-        aud: [],
-      },
-      didResolutionResult: {
-        didResolutionMetadata: {},
-        didDocument: null,
-        didDocumentMetadata: {},
-      },
-      issuer: "did:example:issuer",
-      signer: {
-        id: "did:example:issuer#key-1",
-        type: "Multikey",
-        controller: "did:example:issuer",
-        publicKeyHex: "02...",
-      },
-      jwt,
-    }
+      const mockVerifiedResult: JWTVerified = {
+        verified: true,
+        payload: {
+          iss: "did:example:issuer",
+          sub: "did:example:subject",
+          aud,
+        },
+        didResolutionResult: {
+          didResolutionMetadata: {},
+          didDocument: null,
+          didDocumentMetadata: {},
+        },
+        issuer: "did:example:issuer",
+        signer: {
+          id: "did:example:issuer#key-1",
+          type: "Multikey",
+          controller: "did:example:issuer",
+          publicKeyHex: "02...",
+        },
+        jwt,
+      }
 
-    vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
+      vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
 
-    await expect(
-      verifyJwt(jwt, { audience: "did:example:audience" }),
-    ).rejects.toThrow("JWT audience is required but missing")
-  })
+      await expect(
+        verifyJwt(jwt, { audience: "did:example:audience" }),
+      ).rejects.toThrow("JWT audience is required but missing")
+    },
+  )
 
   it("throws when an audience is expected and the aud claim is missing", async () => {
     const jwt = await createJwt(
