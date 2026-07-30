@@ -75,8 +75,21 @@ async function fetchDidDocumentAtUrl(
 ): Promise<DidDocument> {
   const res = await fetch(url, {
     mode: "cors",
-    redirect: followRedirects ? "follow" : "error",
+    redirect: followRedirects ? "follow" : "manual",
   })
+
+  // With `redirect: "manual"` a redirect resolves instead of throwing, so we
+  // can report it precisely. Node exposes the 3xx status and Location header;
+  // browsers return an opaque redirect (type "opaqueredirect", status 0).
+  if (
+    !followRedirects &&
+    (res.type === "opaqueredirect" || (res.status >= 300 && res.status < 400))
+  ) {
+    const location = res.headers.get("location")
+    throw new Error(
+      `DID resolution refused a redirect${location ? ` to ${location}` : ""}`,
+    )
+  }
 
   if (!res.ok) {
     throw new Error(
