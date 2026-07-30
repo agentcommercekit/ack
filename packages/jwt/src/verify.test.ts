@@ -154,8 +154,9 @@ describe("verifyJwt()", () => {
     expect(result.payload.aud).toBe("did:example:audience")
   })
 
-  it.each([
-    { label: "an empty array", aud: [] as string[] },
+  it.each<{ label: string; aud: string | string[] | undefined }>([
+    { label: "missing", aud: undefined },
+    { label: "an empty array", aud: [] },
     { label: "an empty string", aud: "" },
     { label: "an array with only an empty string", aud: [""] },
   ])(
@@ -171,7 +172,7 @@ describe("verifyJwt()", () => {
         payload: {
           iss: "did:example:issuer",
           sub: "did:example:subject",
-          aud,
+          ...(aud === undefined ? {} : { aud }),
         },
         didResolutionResult: {
           didResolutionMetadata: {},
@@ -196,36 +197,6 @@ describe("verifyJwt()", () => {
     },
   )
 
-  it("throws when an audience is expected and the aud claim is missing", async () => {
-    const jwt = await createJwt(
-      { sub: "did:example:subject" },
-      { issuer: "did:example:issuer", signer },
-    )
-
-    const mockVerifiedResult: JWTVerified = {
-      verified: true,
-      payload: { iss: "did:example:issuer", sub: "did:example:subject" },
-      didResolutionResult: {
-        didResolutionMetadata: {},
-        didDocument: null,
-        didDocumentMetadata: {},
-      },
-      issuer: "did:example:issuer",
-      signer: {
-        id: "did:example:issuer#key-1",
-        type: "Multikey",
-        controller: "did:example:issuer",
-        publicKeyHex: "02...",
-      },
-      jwt,
-    }
-
-    vi.mocked(verifyJWT).mockResolvedValueOnce(mockVerifiedResult)
-
-    await expect(
-      verifyJwt(jwt, { audience: "did:example:audience" }),
-    ).rejects.toThrow("JWT audience is required but missing")
-  })
 
   it("does not require an aud claim when no audience is expected", async () => {
     const jwt = await createJwt(
