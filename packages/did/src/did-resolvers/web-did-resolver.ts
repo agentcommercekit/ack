@@ -45,13 +45,11 @@ export interface DidWebResolverOptions {
    */
   allowedHttpHosts?: string[]
   /**
-   * Milliseconds to wait for the DID document fetch before aborting. A
-   * `did:web` resolution fetches the host named in the DID, so an
-   * unresponsive host would otherwise hang the caller indefinitely. Omit to
-   * keep the previous behaviour (no timeout).
+   * Milliseconds to wait for the DID document fetch before aborting.
    *
    * The timeout is applied via an `AbortSignal` on the request. A custom
    * `fetch` must honour `init.signal` for it to take effect.
+   * @default 5000
    */
   timeout?: number
 }
@@ -157,13 +155,14 @@ export function getResolver({
   docPath = DEFAULT_DOC_PATH,
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
-  timeout,
+  timeout = 5000,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
-  // Fail fast on a bad timeout: `AbortSignal.timeout` throws on non-positive,
-  // non-integer or non-finite values, and that would otherwise surface as a
-  // misleading `notFound` resolution error rather than a programmer error.
-  if (timeout !== undefined && (!Number.isInteger(timeout) || timeout <= 0)) {
-    throw new TypeError("`timeout` must be a positive integer (milliseconds)")
+  // Fail fast on a bad timeout rather than surfacing it later as a
+  // misleading `notFound` resolution error: `AbortSignal.timeout` throws on
+  // negative, non-integer or non-finite values, and 0, while legal for the
+  // API, would abort every request before it starts.
+  if (timeout <= 0 || !Number.isInteger(timeout)) {
+    throw new RangeError("`timeout` must be a positive integer (milliseconds)")
   }
 
   async function resolve(

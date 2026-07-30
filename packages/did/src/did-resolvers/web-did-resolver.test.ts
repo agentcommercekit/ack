@@ -60,7 +60,7 @@ describe("web-did-resolver", () => {
       })
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/.well-known/did.json",
-        { mode: "cors" },
+        { mode: "cors", signal: expect.any(AbortSignal) },
       )
     })
 
@@ -92,7 +92,7 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/custom/path/did.json",
-        { mode: "cors" },
+        { mode: "cors", signal: expect.any(AbortSignal) },
       )
     })
 
@@ -125,7 +125,7 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/.well-known/did.json",
-        { mode: "cors" },
+        { mode: "cors", signal: expect.any(AbortSignal) },
       )
     })
 
@@ -161,7 +161,7 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/issuers/v1/did.json",
-        { mode: "cors" },
+        { mode: "cors", signal: expect.any(AbortSignal) },
       )
     })
 
@@ -197,7 +197,7 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/issuers/v1/did.json",
-        { mode: "cors" },
+        { mode: "cors", signal: expect.any(AbortSignal) },
       )
     })
 
@@ -414,11 +414,12 @@ describe("web-did-resolver", () => {
       timeoutSpy.mockRestore()
     })
 
-    it("does not pass a signal when no timeout is set", async () => {
+    it("applies the 5000ms default timeout when none is set", async () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve(mockDidDocument),
       })
+      const timeoutSpy = vi.spyOn(AbortSignal, "timeout")
 
       const did = "did:web:example.com"
       const resolver = getResolver()
@@ -440,18 +441,22 @@ describe("web-did-resolver", () => {
         {},
       )
 
-      // Exact init, so this fails if a signal (or anything else) is added.
+      expect(timeoutSpy).toHaveBeenCalledWith(5000)
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/.well-known/did.json",
-        { mode: "cors" },
+        expect.objectContaining({
+          mode: "cors",
+          signal: expect.any(AbortSignal),
+        }),
       )
+      timeoutSpy.mockRestore()
     })
 
     it("throws for an invalid timeout", () => {
-      expect(() => getResolver({ timeout: 0 })).toThrow(TypeError)
-      expect(() => getResolver({ timeout: -1 })).toThrow(TypeError)
-      expect(() => getResolver({ timeout: 1.5 })).toThrow(TypeError)
-      expect(() => getResolver({ timeout: NaN })).toThrow(TypeError)
+      expect(() => getResolver({ timeout: 0 })).toThrow(RangeError)
+      expect(() => getResolver({ timeout: -1 })).toThrow(RangeError)
+      expect(() => getResolver({ timeout: 1.5 })).toThrow(RangeError)
+      expect(() => getResolver({ timeout: NaN })).toThrow(RangeError)
     })
 
     it("surfaces a timed-out fetch as a notFound resolution error", async () => {
