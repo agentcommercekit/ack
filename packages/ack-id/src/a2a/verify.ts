@@ -62,7 +62,9 @@ export async function verifyA2AHandshakeMessage(
 
 export async function verifyA2ASignedMessage(
   message: Message,
-  { did, counterparty, resolver = getDidResolver() }: VerifyA2AHandshakeOptions,
+  // `did` stays in the options type for callers, but signed messages carry
+  // no `aud` claim today, so there is nothing to verify it against.
+  { counterparty, resolver = getDidResolver() }: VerifyA2AHandshakeOptions,
 ): Promise<JwtVerified> {
   // Ensure the message is a valid A2A signed message
   // We need to remove the auto-generated contextId from the message
@@ -74,9 +76,11 @@ export async function verifyA2ASignedMessage(
   } = v.parse(messageWithSignatureSchema, message)
 
   // Parse the signature from the message metadata, ensuring it is
-  // signed by the counterparty and intended for the provided DID
+  // signed by the counterparty. Signed messages do not carry an `aud`
+  // claim today (`createSignedA2AMessage` has no recipient parameter), so
+  // no audience is expected here; the handshake path above does embed and
+  // verify `aud`.
   const verified = await verifyJwt(metadata.sig, {
-    audience: did,
     issuer: counterparty,
     resolver,
   })
