@@ -1,27 +1,221 @@
 # @agentcommercekit/vc
 
+## 0.11.0
+
+### Minor Changes
+
+- [#117](https://github.com/agentcommercekit/ack/pull/117)
+  [`97985ca`](https://github.com/agentcommercekit/ack/commit/97985caa33c305367484c09d658b680323bbb982)
+  Thanks [@venables](https://github.com/venables)! - Tighten two
+  `@agentcommercekit/vc` public type signatures. These remove unchecked casts
+  and are breaking only for callers that passed explicit type arguments:
+
+  - `parseJwtCredential` no longer accepts a `<T extends W3CCredential>` type
+    parameter and now returns `Promise<Verifiable<W3CCredential>>`. The old
+    generic was an unchecked cast — the function cannot prove a decoded
+    credential matches an arbitrary `T`. Migration: drop the type argument and,
+    if you need a narrower type, parse/validate the returned
+    `Verifiable<W3CCredential>` against your own schema.
+  - `createCredential` now returns `W3CCredential` instead of the generic `T`.
+    The `<T>` parameter still types `attestation`. Migration: if you relied on
+    the narrowed return type, assert or parse the returned `W3CCredential` at
+    the call site.
+
+- [#135](https://github.com/agentcommercekit/ack/pull/135)
+  [`614122f`](https://github.com/agentcommercekit/ack/commit/614122fb7cc8dbfcb3bf919d554526e4a8e88b61)
+  Thanks [@venables](https://github.com/venables)! - Security: fail closed when
+  a credential's revocation status cannot be verified (CWE-299).
+
+  `isRevoked` treated every failure as "not revoked". A network error, DNS
+  failure, timeout, HTTP 4xx/5xx, non-JSON body, or any body that did not match
+  the expected shape resolved to `false`, so `verifyParsedCredential` accepted a
+  revoked credential. Anyone able to disrupt reachability of the status list —
+  or simply presenting a credential while the status endpoint was down — could
+  use a revoked credential indefinitely.
+
+  The fetched status list was also trusted on shape alone: its proof was never
+  verified, its issuer never checked, and it was never bound to the URL the
+  credential pointed at. A tampered or substituted list therefore cleared
+  revocation for every credential it covered. `statusListIndex` went through
+  `parseInt`, so a non-numeric value produced `NaN` and read as an unset bit,
+  and an index past the end of the list also read as unset. The entry's
+  `statusPurpose` was ignored, and a `credentialStatus` of an unrecognized type
+  was silently skipped.
+
+  `isRevoked(credential, options)` now takes a resolver and throws
+  `RevocationCheckError` when the status cannot be established, or
+  `UnsupportedCredentialStatusError` for a status it does not implement. It
+  verifies the status list credential's proof, requires it to be issued by the
+  credential's issuer (override with `revocation.trustedStatusListIssuers`),
+  requires its `id` to match the dereferenced URL, rejects an expired list,
+  requires the entry and list `statusPurpose` to match, validates
+  `statusListIndex` and its bounds, restricts the status list URL to `http(s)`,
+  and applies a 5s timeout (override with `revocation.statusListTimeoutMs`).
+
+  `verifyParsedCredential` accepts a `revocation` option and now rejects
+  credentials whose revocation status is undeterminable, so
+  `verifyPaymentReceipt` rejects them too. It also checks `trustedIssuers`
+  before the revocation check, so an untrusted issuer can no longer make the
+  verifier dereference a URL of the issuer's choosing.
+
+  A status list credential stays validly signed after the issuer publishes a
+  newer version, so anyone holding an older copy could serve it back and clear a
+  later revocation. `createStatusListCredential` now sets an `expirationDate`,
+  24 hours out by default, and issuers must republish the list before it lapses.
+  For issuers that publish no expiry, `revocation.maxStatusListAgeMs` bounds how
+  old an accepted list may be.
+
+  `RevocationCheckError` carries one fixed message and puts the URL and the
+  response in `detail` and `cause`. API error handlers return the message of a
+  `CredentialVerificationError` to the caller, so the detail must not travel
+  with it.
+
+  This release is `minor`, not `patch`: `isRevoked` takes a required second
+  argument, `isRevocable` accepts fewer shapes, and both throw where they
+  returned `false`.
+
+  The `examples/issuer` status endpoint served the credential wrapped in this
+  API's `{ ok, data }` envelope, which is not a credential. Every revocation
+  check against it failed open. It now serves the signed credential directly, as
+  the W3C Bitstring Status List spec requires.
+
+- [#116](https://github.com/agentcommercekit/ack/pull/116)
+  [`8e9cf8e`](https://github.com/agentcommercekit/ack/commit/8e9cf8ef687d4c1517da55eb373cbe38e628e538)
+  Thanks [@venables](https://github.com/venables)! - Adopt
+  [`web-identity-schemas`](https://github.com/catena-labs/web-identity-schemas)
+  as the source of truth for DID/JWT/VC validation schemas and DID/JWT types,
+  and **drop Zod v3 support**.
+
+  Breaking changes:
+
+  - **Zod v3 is no longer supported.** The `./schemas/zod/v3` and
+    `./schemas/zod/v4` subpath exports are removed; each package now exports a
+    single `./schemas/zod` (Zod v4). The `zod` optional peer range is now
+    `^4.0.0`. Import from `@agentcommercekit/<pkg>/schemas/zod` instead of
+    `.../schemas/zod/v3` or `.../schemas/zod/v4`.
+  - **DID validation is stricter.** `didUriSchema` and `isDidUri` now enforce
+    the full DID-core syntax (via `web-identity-schemas`' `DidSchema`/`isDid`)
+    instead of a permissive `startsWith("did:")` check. Malformed DIDs that
+    previously passed are now rejected (and validation error details have
+    changed).
+  - `DidUri` and `JwtString` are now re-exported from `web-identity-schemas`
+    (`Did` and `JwtString` respectively). They remain structurally compatible;
+    `JwtString` widens to `string`.
+  - **VC validation is stricter.** `credentialSchema` (and the `isCredential`
+    guard built on it) is now backed by w-i-s' `CredentialV1Schema`, which
+    enforces the VC Data Model v1.1 shape: the `@context` must start with the v1
+    core URI, `type` must include `"VerifiableCredential"`, `issuanceDate` must
+    be an ISO-8601 datetime, and `id` must be a URI. Loosely-shaped objects that
+    the previous hand-rolled schema accepted may now be rejected. ACK-issued
+    credentials (always v1) are unaffected, and the credential-verification path
+    (`parseJwtCredential`/`verifyParsedCredential`) is unchanged — it still uses
+    a separate structural guard, not this authoring schema.
+
+  `web-identity-schemas` is now a dependency of `did`, `jwt`, and `vc`. The VC
+  credential schema is now backed by w-i-s' `CredentialV1Schema` while
+  preserving ACK's issuer-normalization and `JwtProof2020` handling. CAIP,
+  payment, A2A, controller-claim, and `JwtProof2020` schemas remain hand-rolled.
+
+### Patch Changes
+
+- [#115](https://github.com/agentcommercekit/ack/pull/115)
+  [`101a823`](https://github.com/agentcommercekit/ack/commit/101a8233aabf67b1869e529a7a4b3e18a1acdf45)
+  Thanks [@venables](https://github.com/venables)! - Validate the decoded
+  credential shape in `parseJwtCredential` instead of relying on an unchecked
+  cast. `verifyCredential` (did-jwt-vc) returns its own credential shape;
+  `parseJwtCredential` now checks it conforms to `W3CCredential` via
+  `isCredential` and throws `InvalidCredentialError` on a divergent shape,
+  rather than silently casting it.
+
+- [#113](https://github.com/agentcommercekit/ack/pull/113)
+  [`81c68bf`](https://github.com/agentcommercekit/ack/commit/81c68bfc6b4db0c88b1771d6e7ab3b48cfb71751)
+  Thanks [@venables](https://github.com/venables)! - Security: bind credential
+  trust decisions to the verified proof.
+
+  `verifyParsedCredential` previously verified the JWT in `proof.jwt` but then
+  made every trust decision (expiry, revocation, trusted-issuer, claim
+  verifiers) from the caller-supplied credential object, which is not bound to
+  the proof. An attacker could wrap a valid `proof.jwt` in an object with
+  tampered `issuer` / `credentialSubject` fields and pass verification.
+  `verifyPaymentReceipt` had the same gap on its object-input path, returning
+  the tampered `paymentRequestToken` and `receipt`.
+
+  `verifyProof` and `verifyParsedCredential` now return the credential decoded
+  from the verified proof, and all trust decisions and returned values flow from
+  that credential. The JWT-string input paths were already safe.
+
+- [#135](https://github.com/agentcommercekit/ack/pull/135)
+  [`614122f`](https://github.com/agentcommercekit/ack/commit/614122fb7cc8dbfcb3bf919d554526e4a8e88b61)
+  Thanks [@venables](https://github.com/venables)! - Security: bind a
+  credential's issuer to the DID that signed it (CWE-290).
+
+  `parseJwtCredential` returned the credential `normalizeCredential` builds from
+  the JWT. That function derives the issuer as `{ id: iss, ...payload.issuer }`,
+  so an `issuer` object in the payload replaces the `id` taken from `iss`. The
+  signature binds `iss` only, and nothing compared the two.
+
+  Anyone could therefore sign a credential with their own key, put
+  `issuer: { id: "<any DID>" }` in the payload, and produce a credential that
+  verifies and reports that DID as its issuer. Every issuer check downstream
+  accepted it: the `trustedIssuers` list in `verifyParsedCredential`,
+  `trustedReceiptIssuers` in `verifyPaymentReceipt`, and the status list issuer
+  check in `isRevoked`. With `jti` set to the status list URL, the same forgery
+  also passed the URL binding on a status list credential and cleared a
+  revocation.
+
+  `parseJwtCredential` now rejects a credential whose `issuer.id` differs from
+  the verified signer, with `InvalidCredentialError`.
+
+  This covers the credential path only. `verifyPresentation` is re-exported from
+  did-jwt-vc unchanged, and `normalizeJwtPresentationPayload` sets `holder` from
+  `iss` only when the payload carries no `holder`, so a presentation can still
+  name a holder that did not sign it. That function also does not verify the
+  proofs of the credentials it embeds. Nothing in this repository calls it.
+  Treat its result as unverified until a bound wrapper replaces it.
+
+- Updated dependencies
+  [[`cdec76a`](https://github.com/agentcommercekit/ack/commit/cdec76a840855d29b62b008b44a03e80d2337ce8),
+  [`3f3be14`](https://github.com/agentcommercekit/ack/commit/3f3be1476b2f1d8dd28c687f6b211694ee625269),
+  [`e5c6951`](https://github.com/agentcommercekit/ack/commit/e5c6951d60e00514f9eb4f525f30ef5d1d729057),
+  [`8e9cf8e`](https://github.com/agentcommercekit/ack/commit/8e9cf8ef687d4c1517da55eb373cbe38e628e538),
+  [`7c1739a`](https://github.com/agentcommercekit/ack/commit/7c1739a8c1301f693511df2ebbcb1c89d5a8f64d),
+  [`97985ca`](https://github.com/agentcommercekit/ack/commit/97985caa33c305367484c09d658b680323bbb982),
+  [`8e9cf8e`](https://github.com/agentcommercekit/ack/commit/8e9cf8ef687d4c1517da55eb373cbe38e628e538)]:
+  - @agentcommercekit/did@0.11.0
+  - @agentcommercekit/jwt@0.11.0
+  - @agentcommercekit/keys@0.11.0
+
 ## 0.10.1
 
 ### Patch Changes
 
-- Updated dependencies [[`e223835`](https://github.com/agentcommercekit/ack/commit/e2238355ced067c1a5f993fff52f3796055160e2)]:
+- Updated dependencies
+  [[`e223835`](https://github.com/agentcommercekit/ack/commit/e2238355ced067c1a5f993fff52f3796055160e2)]:
   - @agentcommercekit/did@0.10.1
 
 ## 0.9.1
 
 ### Patch Changes
 
-- [#31](https://github.com/agentcommercekit/ack/pull/31) [`a5d7c82`](https://github.com/agentcommercekit/ack/commit/a5d7c822397eb1ab71c1cad0c770457ec62810bb) Thanks [@edspencer](https://github.com/edspencer)! - Exported createPresentation from VC package
+- [#31](https://github.com/agentcommercekit/ack/pull/31)
+  [`a5d7c82`](https://github.com/agentcommercekit/ack/commit/a5d7c822397eb1ab71c1cad0c770457ec62810bb)
+  Thanks [@edspencer](https://github.com/edspencer)! - Exported
+  createPresentation from VC package
 
 ## 0.9.0
 
 ### Minor Changes
 
-- [#30](https://github.com/agentcommercekit/ack/pull/30) [`b38740a`](https://github.com/agentcommercekit/ack/commit/b38740a0b9faad5b7a8405a7a4b5dfbde40c3818) Thanks [@domleboss97](https://github.com/domleboss97)! - Update credential signing to return only jwt; add domain and challenge to verifiable presentation signing.
+- [#30](https://github.com/agentcommercekit/ack/pull/30)
+  [`b38740a`](https://github.com/agentcommercekit/ack/commit/b38740a0b9faad5b7a8405a7a4b5dfbde40c3818)
+  Thanks [@domleboss97](https://github.com/domleboss97)! - Update credential
+  signing to return only jwt; add domain and challenge to verifiable
+  presentation signing.
 
 ### Patch Changes
 
-- Updated dependencies [[`05d7c03`](https://github.com/agentcommercekit/ack/commit/05d7c033ea150b840429c112f9c41e2c0c89ac78)]:
+- Updated dependencies
+  [[`05d7c03`](https://github.com/agentcommercekit/ack/commit/05d7c033ea150b840429c112f9c41e2c0c89ac78)]:
   - @agentcommercekit/keys@0.9.0
   - @agentcommercekit/did@0.9.0
   - @agentcommercekit/jwt@0.9.0
@@ -30,20 +224,32 @@
 
 ### Patch Changes
 
-- [#28](https://github.com/agentcommercekit/ack/pull/28) [`3d1f83f`](https://github.com/agentcommercekit/ack/commit/3d1f83faafaac388d6b977a1929180d8d20fa751) Thanks [@domleboss97](https://github.com/domleboss97)! - Scope return type of did pkh creation; improve did uri typing
+- [#28](https://github.com/agentcommercekit/ack/pull/28)
+  [`3d1f83f`](https://github.com/agentcommercekit/ack/commit/3d1f83faafaac388d6b977a1929180d8d20fa751)
+  Thanks [@domleboss97](https://github.com/domleboss97)! - Scope return type of
+  did pkh creation; improve did uri typing
 
-- Updated dependencies [[`3d1f83f`](https://github.com/agentcommercekit/ack/commit/3d1f83faafaac388d6b977a1929180d8d20fa751)]:
+- Updated dependencies
+  [[`3d1f83f`](https://github.com/agentcommercekit/ack/commit/3d1f83faafaac388d6b977a1929180d8d20fa751)]:
   - @agentcommercekit/did@0.8.2
 
 ## 0.8.1
 
 ### Patch Changes
 
-- [#27](https://github.com/agentcommercekit/ack/pull/27) [`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9) Thanks [@venables](https://github.com/venables)! - Add did:pkh support for more chains, including solana
+- [#27](https://github.com/agentcommercekit/ack/pull/27)
+  [`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9)
+  Thanks [@venables](https://github.com/venables)! - Add did:pkh support for
+  more chains, including solana
 
-- [#27](https://github.com/agentcommercekit/ack/pull/27) [`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9) Thanks [@venables](https://github.com/venables)! - Add schemas for CAIP-2, CAIP-10, CAIP-19 which are used by did:pkh
+- [#27](https://github.com/agentcommercekit/ack/pull/27)
+  [`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9)
+  Thanks [@venables](https://github.com/venables)! - Add schemas for CAIP-2,
+  CAIP-10, CAIP-19 which are used by did:pkh
 
-- Updated dependencies [[`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9), [`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9)]:
+- Updated dependencies
+  [[`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9),
+  [`8ea5846`](https://github.com/agentcommercekit/ack/commit/8ea5846b931bad5cd94ad1302ddf00ed51c285c9)]:
   - @agentcommercekit/keys@0.8.1
   - @agentcommercekit/did@0.8.1
   - @agentcommercekit/jwt@0.8.1
@@ -52,13 +258,17 @@
 
 ### Minor Changes
 
-- [#24](https://github.com/agentcommercekit/ack/pull/24) [`f21bf4d`](https://github.com/agentcommercekit/ack/commit/f21bf4d399f673559a342c4b0bf9a6e088154408) Thanks [@edspencer](https://github.com/edspencer)! - Replaced StatusList2021 with BitstringStatusList for VC revocation
+- [#24](https://github.com/agentcommercekit/ack/pull/24)
+  [`f21bf4d`](https://github.com/agentcommercekit/ack/commit/f21bf4d399f673559a342c4b0bf9a6e088154408)
+  Thanks [@edspencer](https://github.com/edspencer)! - Replaced StatusList2021
+  with BitstringStatusList for VC revocation
 
 ## 0.7.1
 
 ### Patch Changes
 
-- Updated dependencies [[`fceb090`](https://github.com/agentcommercekit/ack/commit/fceb09050306374157b739f50f098a07b4cefaad)]:
+- Updated dependencies
+  [[`fceb090`](https://github.com/agentcommercekit/ack/commit/fceb09050306374157b739f50f098a07b4cefaad)]:
   - @agentcommercekit/keys@0.7.1
   - @agentcommercekit/did@0.7.1
   - @agentcommercekit/jwt@0.7.1
@@ -67,7 +277,8 @@
 
 ### Patch Changes
 
-- Updated dependencies [[`36da071`](https://github.com/agentcommercekit/ack/commit/36da0717b65d7f882c7a16cd4e6a1667d8dfccb6)]:
+- Updated dependencies
+  [[`36da071`](https://github.com/agentcommercekit/ack/commit/36da0717b65d7f882c7a16cd4e6a1667d8dfccb6)]:
   - @agentcommercekit/keys@0.6.1
   - @agentcommercekit/did@0.6.1
   - @agentcommercekit/jwt@0.6.1
@@ -76,17 +287,32 @@
 
 ### Minor Changes
 
-- [#19](https://github.com/agentcommercekit/ack/pull/19) [`ad7b0a0`](https://github.com/agentcommercekit/ack/commit/ad7b0a0327c2cd0366a37f7ab96a53a456934fc3) Thanks [@venables](https://github.com/venables)! - Update interfaces to separate key curves from jwt signing algorithms
+- [#19](https://github.com/agentcommercekit/ack/pull/19)
+  [`ad7b0a0`](https://github.com/agentcommercekit/ack/commit/ad7b0a0327c2cd0366a37f7ab96a53a456934fc3)
+  Thanks [@venables](https://github.com/venables)! - Update interfaces to
+  separate key curves from jwt signing algorithms
 
-- [#14](https://github.com/agentcommercekit/ack/pull/14) [`2c8ae7a`](https://github.com/agentcommercekit/ack/commit/2c8ae7ab1b6a2bcc6ae51414e673d168a0f484b6) Thanks [@venables](https://github.com/venables)! - Add zod v4 schema support.
+- [#14](https://github.com/agentcommercekit/ack/pull/14)
+  [`2c8ae7a`](https://github.com/agentcommercekit/ack/commit/2c8ae7ab1b6a2bcc6ae51414e673d168a0f484b6)
+  Thanks [@venables](https://github.com/venables)! - Add zod v4 schema support.
 
-- [#20](https://github.com/agentcommercekit/ack/pull/20) [`829f5e7`](https://github.com/agentcommercekit/ack/commit/829f5e7c4a546f9ec0cf61d0cd19c99d62fd4eb9) Thanks [@venables](https://github.com/venables)! - Improve JWK encoding/decoding and public key methods
+- [#20](https://github.com/agentcommercekit/ack/pull/20)
+  [`829f5e7`](https://github.com/agentcommercekit/ack/commit/829f5e7c4a546f9ec0cf61d0cd19c99d62fd4eb9)
+  Thanks [@venables](https://github.com/venables)! - Improve JWK
+  encoding/decoding and public key methods
 
 ### Patch Changes
 
-- [#17](https://github.com/agentcommercekit/ack/pull/17) [`37e8d5d`](https://github.com/agentcommercekit/ack/commit/37e8d5dd76f7e97d077516c824bb5915fbd02889) Thanks [@venables](https://github.com/venables)! - Add Skyfire KYA (Kmow Your Agent) Token demo
+- [#17](https://github.com/agentcommercekit/ack/pull/17)
+  [`37e8d5d`](https://github.com/agentcommercekit/ack/commit/37e8d5dd76f7e97d077516c824bb5915fbd02889)
+  Thanks [@venables](https://github.com/venables)! - Add Skyfire KYA (Kmow Your
+  Agent) Token demo
 
-- Updated dependencies [[`ad7b0a0`](https://github.com/agentcommercekit/ack/commit/ad7b0a0327c2cd0366a37f7ab96a53a456934fc3), [`2c8ae7a`](https://github.com/agentcommercekit/ack/commit/2c8ae7ab1b6a2bcc6ae51414e673d168a0f484b6), [`829f5e7`](https://github.com/agentcommercekit/ack/commit/829f5e7c4a546f9ec0cf61d0cd19c99d62fd4eb9), [`2ce8d11`](https://github.com/agentcommercekit/ack/commit/2ce8d11998251a7c274239e3dfa85d2afc99576f)]:
+- Updated dependencies
+  [[`ad7b0a0`](https://github.com/agentcommercekit/ack/commit/ad7b0a0327c2cd0366a37f7ab96a53a456934fc3),
+  [`2c8ae7a`](https://github.com/agentcommercekit/ack/commit/2c8ae7ab1b6a2bcc6ae51414e673d168a0f484b6),
+  [`829f5e7`](https://github.com/agentcommercekit/ack/commit/829f5e7c4a546f9ec0cf61d0cd19c99d62fd4eb9),
+  [`2ce8d11`](https://github.com/agentcommercekit/ack/commit/2ce8d11998251a7c274239e3dfa85d2afc99576f)]:
   - @agentcommercekit/keys@0.6.0
   - @agentcommercekit/did@0.6.0
   - @agentcommercekit/jwt@0.6.0
@@ -95,33 +321,42 @@
 
 ### Patch Changes
 
-- Updated dependencies [[`70b3fc9`](https://github.com/agentcommercekit/ack/commit/70b3fc913b72a3d1322e88db675845409217039b)]:
+- Updated dependencies
+  [[`70b3fc9`](https://github.com/agentcommercekit/ack/commit/70b3fc913b72a3d1322e88db675845409217039b)]:
   - @agentcommercekit/jwt@0.4.0
 
 ## 0.3.1
 
 ### Patch Changes
 
-- Updated dependencies [[`66741d6`](https://github.com/agentcommercekit/ack/commit/66741d64221a0ca382f9279fbe1babf4a92b52d4)]:
+- Updated dependencies
+  [[`66741d6`](https://github.com/agentcommercekit/ack/commit/66741d64221a0ca382f9279fbe1babf4a92b52d4)]:
   - @agentcommercekit/did@0.3.1
 
 ## 0.3.0
 
 ### Minor Changes
 
-- [#6](https://github.com/agentcommercekit/ack/pull/6) [`606f73c`](https://github.com/agentcommercekit/ack/commit/606f73cf3d3271559aed8d21a2a1c228789a1a9f) Thanks [@domleboss97](https://github.com/domleboss97)! - add verifiable presentation creation and signing
+- [#6](https://github.com/agentcommercekit/ack/pull/6)
+  [`606f73c`](https://github.com/agentcommercekit/ack/commit/606f73cf3d3271559aed8d21a2a1c228789a1a9f)
+  Thanks [@domleboss97](https://github.com/domleboss97)! - add verifiable
+  presentation creation and signing
 
 ## 0.2.1
 
 ### Patch Changes
 
-- [#4](https://github.com/agentcommercekit/ack/pull/4) [`5b1c8b1`](https://github.com/agentcommercekit/ack/commit/5b1c8b1b8105e781f977379f019f96efbcab3e27) Thanks [@domleboss97](https://github.com/domleboss97)! - Define explicit W3CCredential type to resolve TS compiler issues with inferred return types
+- [#4](https://github.com/agentcommercekit/ack/pull/4)
+  [`5b1c8b1`](https://github.com/agentcommercekit/ack/commit/5b1c8b1b8105e781f977379f019f96efbcab3e27)
+  Thanks [@domleboss97](https://github.com/domleboss97)! - Define explicit
+  W3CCredential type to resolve TS compiler issues with inferred return types
 
 ## 0.2.0
 
 ### Patch Changes
 
-- Updated dependencies [[`4104ffe`](https://github.com/agentcommercekit/ack/commit/4104ffeae34c7ae972b375871feb09bbe5d27b73)]:
+- Updated dependencies
+  [[`4104ffe`](https://github.com/agentcommercekit/ack/commit/4104ffeae34c7ae972b375871feb09bbe5d27b73)]:
   - @agentcommercekit/keys@0.2.0
   - @agentcommercekit/did@0.2.0
   - @agentcommercekit/jwt@0.2.0
