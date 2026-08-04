@@ -4,6 +4,12 @@ import type { bitstringStatusListClaimSchema } from "../schemas/valibot"
 import type { W3CCredential } from "../types"
 
 type BitstringStatusListEntry = {
+  /**
+   * The specification makes this optional, but `CredentialStatus` requires it
+   * to stay assignable to did-jwt-vc's `CredentialPayload`. No check here reads
+   * it: the list is bound to the credential through `statusListCredential` and
+   * the list's own `id`.
+   */
   id: string
   type: "BitstringStatusListEntry"
   statusPurpose: string
