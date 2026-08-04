@@ -39,4 +39,10 @@ export const bitstringStatusListClaimSchema = z.object({
   type: z.literal("BitstringStatusList"),
   statusPurpose: z.string(),
   encodedList: z.string(),
+  /**
+   * Bits per entry. Defaults to 1 when absent. A list that packs several bits
+   * per entry puts them at `statusListIndex * statusSize`, so a reader that
+   * ignores this field reads the wrong bit.
+   */
+  statusSize: z.number().optional(),
 })

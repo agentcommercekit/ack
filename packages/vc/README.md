@@ -80,8 +80,45 @@ const revocableCredential = await makeRevocable(credential, {
 })
 
 // Check if credential is revoked
-const revoked = await isRevoked(credential)
+const revoked = await isRevoked(credential, { resolver })
 ```
+
+`isRevoked` fails closed. It resolves the status list credential, verifies its
+proof, and requires it to be issued by the credential's issuer (override with
+`trustedStatusListIssuers`) and bound to the URL the credential points at. If
+the status cannot be established — the list is unreachable, unsigned, expired,
+served by the wrong issuer, or too short to cover the credential's index — it
+throws a `RevocationCheckError` rather than reporting "not revoked". A
+`credentialStatus` this library does not implement throws
+`UnsupportedCredentialStatusError` for the same reason.
+
+Pass the credential decoded from a verified proof, not a caller-supplied
+object: an unverified `credentialStatus` is attacker-controlled.
+
+Issuers must serve the status list credential itself at the status list URL,
+signed and unwrapped. A body wrapped in an API envelope is not a credential and
+will fail the check.
+
+Every version of a status list stays validly signed after the issuer publishes a
+later one, so a party holding an older copy can serve it back and clear a
+revocation that happened after it. `createStatusListCredential` therefore sets an
+`expirationDate` 24 hours out by default; republish the list before it lapses, or
+pass your own `expirationDate`. When you consume lists from an issuer that
+publishes no expiry, set `maxStatusListAgeMs` to bound how old an accepted list
+may be:
+
+```ts
+await isRevoked(credential, { resolver, maxStatusListAgeMs: 60 * 60 * 1000 })
+```
+
+`RevocationCheckError` uses one fixed message and puts the URL and the response
+in `detail` and `cause`. `UnsupportedCredentialStatusError` does the same with
+the status it could not read. Log `detail`; do not return it to a caller.
+
+Two limits on the fetch are worth knowing. `statusListTimeoutMs` bounds the
+status list request only, not the DID resolution that verifies its proof. And
+the request does not follow redirects, so serve the credential at the URL the
+`statusListCredential` names.
 
 ## API Reference
 
@@ -96,7 +133,7 @@ const revoked = await isRevoked(credential)
 - `verifyParsedCredential(credential, options)` - Verify a credential's proof, expiration, and other claims
 - `verifyProof(proof, resolver)` - Verify a credential's proof
 - `isExpired(credential)` - Check if a credential is expired
-- `isRevoked(credential)` - Check if a credential has been revoked
+- `isRevoked(credential, options)` - Check if a credential has been revoked, against a verified status list credential
 - `parsedJwtCredential(jwt, resolver)` - Parse a JWT credential string into a W3C Credential
 
 ### Revocation

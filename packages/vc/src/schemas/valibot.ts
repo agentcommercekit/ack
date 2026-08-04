@@ -43,4 +43,10 @@ export const bitstringStatusListClaimSchema = v.object({
   type: v.literal("BitstringStatusList"),
   statusPurpose: v.string(),
   encodedList: v.string(),
+  /**
+   * Bits per entry. Defaults to 1 when absent. A list that packs several bits
+   * per entry puts them at `statusListIndex * statusSize`, so a reader that
+   * ignores this field reads the wrong bit.
+   */
+  statusSize: v.optional(v.number()),
 })

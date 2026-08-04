@@ -12,6 +12,7 @@ import {
   CredentialExpiredError,
   CredentialRevokedError,
   InvalidProofError,
+  RevocationCheckError,
   UnsupportedCredentialTypeError,
   UntrustedIssuerError,
 } from "./errors"
@@ -127,6 +128,40 @@ describe("verifyParsedCredential", () => {
     ).rejects.toThrow(CredentialRevokedError)
   })
 
+  it("throws when the revocation status cannot be determined", async () => {
+    const { vc, issuerDid, resolver } = await setup()
+
+    // `isRevoked` fails closed, so an unreachable or untrustworthy status list
+    // must fail verification rather than pass it.
+    vi.mocked(isRevoked).mockRejectedValue(new RevocationCheckError())
+
+    await expect(
+      verifyParsedCredential(vc, {
+        trustedIssuers: [issuerDid],
+        resolver,
+      }),
+    ).rejects.toThrow(RevocationCheckError)
+  })
+
+  it("passes revocation options and the resolver to the revocation check", async () => {
+    const { vc, issuerDid, resolver } = await setup()
+
+    await verifyParsedCredential(vc, {
+      trustedIssuers: [issuerDid],
+      resolver,
+      revocation: {
+        trustedStatusListIssuers: ["did:example:status-list-issuer"],
+        statusListTimeoutMs: 1234,
+      },
+    })
+
+    expect(isRevoked).toHaveBeenCalledWith(vc, {
+      resolver,
+      trustedStatusListIssuers: ["did:example:status-list-issuer"],
+      statusListTimeoutMs: 1234,
+    })
+  })
+
   it("throws for non-trusted issuer", async () => {
     const { vc, resolver } = await setup()
 
@@ -136,6 +171,22 @@ describe("verifyParsedCredential", () => {
         resolver,
       }),
     ).rejects.toThrow(UntrustedIssuerError)
+  })
+
+  it("rejects a non-trusted issuer before it checks revocation", async () => {
+    const { vc, resolver } = await setup()
+
+    // The revocation check dereferences a URL taken from the credential. An
+    // untrusted issuer must never reach it, or any caller can choose a URL for
+    // this process to request.
+    await expect(
+      verifyParsedCredential(vc, {
+        trustedIssuers: ["did:example:123"],
+        resolver,
+      }),
+    ).rejects.toThrow(UntrustedIssuerError)
+
+    expect(isRevoked).not.toHaveBeenCalled()
   })
 
   it("throws for an invalid proof", async () => {

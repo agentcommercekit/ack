@@ -3,7 +3,7 @@ import {
   createDidWebUri,
   getDidResolver,
 } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
+import { createJwt, createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { verifyCredential } from "did-jwt-vc"
 import { expect, it, vi } from "vitest"
@@ -35,9 +35,33 @@ function mockDecodedCredential(verifiableCredential: unknown): void {
   const mocked = vi.mocked(verifyCredential)
   mocked.mockImplementationOnce(() =>
     Promise.resolve(
-      Object.assign(Object.create(null), { verifiableCredential }),
+      Object.assign(Object.create(null), {
+        verifiableCredential,
+        // `parseJwtCredential` compares the decoded issuer against the DID the
+        // signature binds, so the stub must report a matching signer.
+        issuer: decodedIssuerId(verifiableCredential),
+      }),
     ),
   )
+}
+
+/**
+ * Read `issuer.id` off a decoded-credential fixture, which may be any shape.
+ */
+function decodedIssuerId(credential: unknown): string | undefined {
+  if (typeof credential !== "object" || credential === null) {
+    return undefined
+  }
+
+  const { issuer } = credential as { issuer?: unknown }
+
+  if (typeof issuer !== "object" || issuer === null) {
+    return undefined
+  }
+
+  const { id } = issuer as { id?: unknown }
+
+  return typeof id === "string" ? id : undefined
 }
 
 it("parseJwtCredential should parse a valid credential", async () => {
@@ -137,5 +161,41 @@ it("returns the decoded credential for a JSON-LD object context entry", async ()
 
   await expect(parseJwtCredential("a.b.c", resolver)).resolves.toBe(
     verifiableCredential,
+  )
+})
+
+it("rejects a credential whose payload issuer does not match the signer", async () => {
+  const resolver = getDidResolver()
+
+  const attackerKeypair = await generateKeypair("secp256k1")
+  const attackerDid = createDidWebUri("https://attacker.example.com")
+  resolver.addToCache(
+    attackerDid,
+    createDidDocumentFromKeypair({
+      did: attackerDid,
+      keypair: attackerKeypair,
+    }),
+  )
+
+  const victimDid = createDidWebUri("https://issuer.example.com")
+
+  // `normalizeCredential` builds the issuer as `{ id: iss, ...payload.issuer }`,
+  // so a payload-level `issuer.id` replaces the DID bound to the signature.
+  const jwt = await createJwt(
+    {
+      issuer: { id: victimDid },
+      nbf: Math.floor(Date.now() / 1000) - 10,
+      vc: {
+        "@context": ["https://www.w3.org/2018/credentials/v1"],
+        type: ["VerifiableCredential"],
+        credentialSubject: { id: "did:web:subject.example.com" },
+      },
+    },
+    { issuer: attackerDid, signer: createJwtSigner(attackerKeypair) },
+    { alg: "ES256K" },
+  )
+
+  await expect(parseJwtCredential(jwt, resolver)).rejects.toThrow(
+    InvalidCredentialError,
   )
 })

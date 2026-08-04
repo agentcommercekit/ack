@@ -9,7 +9,8 @@ import {
   UntrustedIssuerError,
 } from "./errors"
 import { isExpired } from "./is-expired"
-import { isRevoked } from "./is-revoked"
+import { isRevoked, type RevocationCheckOptions } from "./is-revoked"
+import { isVerifiable } from "./is-verifiable"
 import type { ClaimVerifier } from "./types"
 import { verifyProof } from "./verify-proof"
 
@@ -26,17 +27,11 @@ type VerifyCredentialOptions = {
    * The list of claim verifiers to use
    */
   verifiers?: ClaimVerifier[]
-}
-
-function isVerifiable(
-  credential: W3CCredential,
-): credential is Verifiable<W3CCredential> {
-  return (
-    "proof" in credential &&
-    credential.proof !== null &&
-    typeof credential.proof === "object" &&
-    "type" in credential.proof
-  )
+  /**
+   * Options for the revocation check. The resolver is shared with the
+   * credential's own verification.
+   */
+  revocation?: Omit<RevocationCheckOptions, "resolver">
 }
 
 /**
@@ -74,12 +69,12 @@ export async function verifyParsedCredential(
     throw new CredentialExpiredError()
   }
 
-  if (await isRevoked(verifiedCredential)) {
-    throw new CredentialRevokedError()
-  }
-
   // If trustedIssuers is defined, we require the issuer is in the array (even
   // if the array is empty). If it is not defined, we skip the check.
+  //
+  // This runs before the revocation check on purpose. The revocation check
+  // dereferences a URL taken from the credential, so checking the issuer first
+  // means an untrusted issuer never makes this process send a request.
   if (
     Array.isArray(options.trustedIssuers) &&
     !options.trustedIssuers.includes(verifiedCredential.issuer.id)
@@ -87,6 +82,17 @@ export async function verifyParsedCredential(
     throw new UntrustedIssuerError(
       `Issuer is not trusted '${verifiedCredential.issuer.id}'`,
     )
+  }
+
+  // `isRevoked` throws when the status cannot be established, so an unreachable
+  // or untrustworthy status list fails verification instead of quietly passing.
+  if (
+    await isRevoked(verifiedCredential, {
+      ...options.revocation,
+      resolver: options.resolver,
+    })
+  ) {
+    throw new CredentialRevokedError()
   }
 
   // If verifiers are provided, we verify the credential against them.
