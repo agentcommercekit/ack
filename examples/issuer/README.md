@@ -269,14 +269,28 @@ curl --request DELETE \
 
 #### GET /status/:listId
 
-Retrieve a Bitstring Status List credential for checking revocation status
+Retrieve a Bitstring Status List credential for checking revocation status.
+
+Unlike the other endpoints, this one returns the signed credential directly
+rather than in the `{ ok, data }` envelope. Verifiers dereference this URL as
+the credential's `statusListCredential` and expect the credential itself; a
+wrapped body cannot be verified, so revocation checks would fail.
 
 **Response Body**
 
 ```json
 {
-  "ok": true,
-  "data": "jwt-string"
+  "@context": ["https://www.w3.org/2018/credentials/v1"],
+  "id": "http://localhost:3456/status/1",
+  "type": ["VerifiableCredential", "BitstringStatusListCredential"],
+  "issuer": { "id": "did:web:..." },
+  "credentialSubject": {
+    "id": "http://localhost:3456/status/1#list",
+    "type": "BitstringStatusList",
+    "statusPurpose": "revocation",
+    "encodedList": "..."
+  },
+  "proof": { "type": "JwtProof2020", "jwt": "jwt-string" }
 }
 ```
 
