@@ -1,0 +1,251 @@
+name: Publish
+
+# Phase 2 of the two-phase changesets release: publish the versions already on
+# main to npm. Phase 1 is release.yaml, which opens the version-bump PR.
+#
+# This is the release button: dispatch it from main after the version PR merges.
+# Nothing publishes automatically on merge -- the `verify` job re-runs the full
+# check suite and the `publish` job sits behind the `npm-publish` environment,
+# so a human approves the actual registry write.
+#
+# npm auth is a granular access token (NPM_TOKEN), not OIDC trusted publishing.
+# `changeset publish` shells out to `pnpm publish` in a pnpm workspace, and pnpm
+# 11 supports neither trusted publishing nor --provenance (only --otp). Moving
+# to OIDC would mean packing tarballs and publishing them with npm directly,
+# bypassing changesets' publish path.
+#
+# Tags are created through the GitHub API rather than `git push`, so no
+# push-capable git credential is ever persisted in the runner's checkout.
+
+on:
+  workflow_dispatch: {}
+
+permissions: {}
+
+# Never cancel in flight: `changeset publish` walks the packages one at a time
+# and a cancelled run leaves a partially published release behind.
+concurrency:
+  group: publish
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify
+    if: github.repository == 'agentcommercekit/ack'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    outputs:
+      version: ${{ steps.unpublished.outputs.version }}
+      count: ${{ steps.unpublished.outputs.count }}
+      packages: ${{ steps.unpublished.outputs.packages }}
+    steps:
+      - name: Refuse if not dispatched from main
+        env:
+          REF: ${{ github.ref }}
+        run: |
+          set -euo pipefail
+          if [ "$REF" != "refs/heads/main" ]; then
+            echo "Refusing: must dispatch from main, got $REF" >&2
+            exit 1
+          fi
+
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # Decide what would be published BEFORE spending 20 minutes on the check
+      # suite. Dispatching with nothing to publish is a mistake worth surfacing
+      # immediately -- usually it means the version PR was never merged.
+      - name: Determine packages to publish
+        id: unpublished
+        run: node .github/scripts/unpublished-packages.mjs
+
+      - name: Refuse if there is nothing to publish
+        env:
+          COUNT: ${{ steps.unpublished.outputs.count }}
+        run: |
+          set -euo pipefail
+          if [ "$COUNT" = "0" ]; then
+            echo "Refusing: every workspace package version is already on npm." >&2
+            echo "Merge the version PR from the Release workflow first." >&2
+            exit 1
+          fi
+
+      # Verifies the tree that is about to ship, not a cached approximation of
+      # it. `check` runs build + lint (including type checking) + format + test.
+      - name: Run full check suite
+        env:
+          ANTHROPIC_API_KEY: secret
+          ISSUER_PRIVATE_KEY: "0xa45f5c566918ef954e8c200a96b14092cabcd69cb8a1a132804a2b8cbb8489a1"
+          VERIFIER_PRIVATE_KEY: "0xeeca8f89b2f5196126f7d9199e739153bd43a13f9cdd1099e7191a33143a2059"
+        run: pnpm run check
+
+      - name: Verify registry signatures of the dependency tree
+        run: pnpm audit signatures
+
+      - name: Summary
+        env:
+          VERSION: ${{ steps.unpublished.outputs.version }}
+          COUNT: ${{ steps.unpublished.outputs.count }}
+          PACKAGES: ${{ steps.unpublished.outputs.packages }}
+        run: |
+          {
+            echo "## Verify"
+            echo ""
+            echo "- Release version: **v$VERSION**"
+            echo "- Packages to publish: **$COUNT**"
+            echo ""
+            for package in $PACKAGES; do
+              echo "  - \`$package\`"
+            done
+            echo ""
+            echo "Awaiting approval on the \`npm-publish\` environment."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  publish:
+    name: Publish to npm
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # Approval gate. Configure `npm-publish` with required reviewers and limit
+    # its deployment branches to `main`; NPM_TOKEN lives here as an environment
+    # secret so no other workflow in the repo can reach it.
+    environment: npm-publish
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+          # changeset publish tags each released package; it needs the existing
+          # tags to know which ones already exist.
+          fetch-depth: 0
+          fetch-tags: true
+
+      - uses: ./.github/actions/setup
+
+      - name: Build packages
+        run: pnpm run build
+
+      # Written literally, with no token in the file: both npm and pnpm expand
+      # ${NPM_TOKEN} from the environment when reading a user-level .npmrc, so
+      # the secret exists only in the publish step's env and never on disk.
+      - name: Configure npm auth
+        run: |
+          set -euo pipefail
+          # shellcheck disable=SC2016 # npm and pnpm expand ${NPM_TOKEN} when they
+          # read the file; expanding it here would write the secret to disk.
+          printf '//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n' >> "$HOME/.npmrc"
+
+      # changesets creates annotated tags, which need an identity to sign off.
+      - name: Configure git identity
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      # Sorted explicitly: `comm` below assumes both inputs are in the same
+      # collation order, which git's default refname sort does not guarantee
+      # across locales.
+      - name: Record pre-existing tags
+        run: git tag --list | LC_ALL=C sort > /tmp/tags-before.txt
+
+      - name: Publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: pnpm exec changeset publish
+
+      # changeset publish tags locally. Create the refs through the API rather
+      # than pushing, so the job never holds a push-capable git credential.
+      - name: Push new tags
+        id: tags
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          git tag --list | LC_ALL=C sort > /tmp/tags-after.txt
+          new_tags=$(comm -13 /tmp/tags-before.txt /tmp/tags-after.txt)
+          if [ -z "$new_tags" ]; then
+            echo "Refusing: publish created no new tags; nothing was released." >&2
+            exit 1
+          fi
+          for tag in $new_tags; do
+            # Singular git/ref/ is the exact-match endpoint; the plural form
+            # falls back to prefix matching, which would report a hit for an
+            # unrelated longer tag.
+            if gh api "repos/$REPO/git/ref/tags/$tag" >/dev/null 2>&1; then
+              echo "Tag $tag already exists on the remote; skipping."
+              continue
+            fi
+            # Create an annotated tag object rather than a lightweight ref, to
+            # match every tag this repo has published so far and to leave
+            # something a future `git verify-tag` can check.
+            tag_sha=$(gh api -X POST "repos/$REPO/git/tags" \
+              -f "tag=$tag" \
+              -f "message=$tag" \
+              -f "object=$SHA" \
+              -f "type=commit" \
+              --jq .sha)
+            gh api -X POST "repos/$REPO/git/refs" \
+              -f "ref=refs/tags/$tag" \
+              -f "sha=$tag_sha" >/dev/null
+            echo "Created annotated tag $tag at $SHA"
+          done
+          {
+            echo "new_tags<<EOF"
+            printf '%s\n' "$new_tags"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      # One release per version, not per package: all eight packages are
+      # version-locked, so eight near-identical releases would be noise.
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          VERSION: ${{ needs.verify.outputs.version }}
+          PACKAGES: ${{ needs.verify.outputs.packages }}
+        run: |
+          set -euo pipefail
+          tag="agentcommercekit@$VERSION"
+          if gh release view "$tag" --repo "$REPO" >/dev/null 2>&1; then
+            echo "Release $tag already exists; skipping."
+            exit 0
+          fi
+          notes=$(
+            echo "Published to npm:"
+            echo ""
+            for package in $PACKAGES; do
+              echo "- [\`$package@$VERSION\`](https://www.npmjs.com/package/$package/v/$VERSION)"
+            done
+            echo ""
+            echo "See each package's \`CHANGELOG.md\` for the full set of changes."
+          )
+          gh release create "$tag" --repo "$REPO" \
+            --title "v$VERSION" \
+            --notes "$notes"
+
+      - name: Summary
+        env:
+          VERSION: ${{ needs.verify.outputs.version }}
+          NEW_TAGS: ${{ steps.tags.outputs.new_tags }}
+        run: |
+          {
+            echo "## Published"
+            echo ""
+            echo "Release **v$VERSION** is live on npm."
+            echo ""
+            echo "Tags created:"
+            echo ""
+            for tag in $NEW_TAGS; do
+              echo "- \`$tag\`"
+            done
+          } >> "$GITHUB_STEP_SUMMARY"
