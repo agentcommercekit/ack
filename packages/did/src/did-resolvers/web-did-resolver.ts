@@ -44,10 +44,20 @@ export interface DidWebResolverOptions {
    * @default []
    */
   allowedHttpHosts?: string[]
+  /**
+   * Milliseconds to wait for the DID document fetch before aborting. Must
+   * be a positive integer of at most 2147483647 (the 32-bit timer limit).
+   *
+   * The timeout is applied via an `AbortSignal` on the request. A custom
+   * `fetch` must honour `init.signal` for it to take effect.
+   * @default 5000
+   */
+  timeout?: number
 }
 
 const DEFAULT_ALLOWED_HTTP_HOSTS: string[] = []
 const DEFAULT_DOC_PATH = "/.well-known/did.json"
+const MAX_TIMEOUT_MS = 2147483647
 
 /**
  * Get a did document from a url and validate that it is a DidDocument
@@ -57,9 +67,15 @@ const DEFAULT_DOC_PATH = "/.well-known/did.json"
  */
 async function fetchDidDocumentAtUrl(
   url: string | URL,
-  { fetch = globalThis.fetch }: { fetch?: FetchLike } = {},
+  {
+    fetch = globalThis.fetch,
+    timeout,
+  }: { fetch?: FetchLike; timeout?: number } = {},
 ): Promise<DidDocument> {
-  const res = await fetch(url, { mode: "cors" })
+  const res = await fetch(url, {
+    mode: "cors",
+    ...(timeout !== undefined ? { signal: AbortSignal.timeout(timeout) } : {}),
+  })
 
   if (!res.ok) {
     throw new Error(
@@ -141,7 +157,20 @@ export function getResolver({
   docPath = DEFAULT_DOC_PATH,
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
+  timeout = 5000,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
+  // Fail fast on a bad timeout rather than surfacing it later as a
+  // misleading `notFound` resolution error. `AbortSignal.timeout` throws on
+  // negative, non-integer or non-finite values; 0 is legal for the API but
+  // would abort every request before it starts; and values beyond the
+  // 32-bit timer range either clamp the timer to 1ms or throw at fetch
+  // time, depending on the runtime.
+  if (timeout <= 0 || timeout > MAX_TIMEOUT_MS || !Number.isInteger(timeout)) {
+    throw new RangeError(
+      "`timeout` must be a positive integer of at most 2147483647 milliseconds",
+    )
+  }
+
   async function resolve(
     did: string,
     parsed: ParsedDID,
@@ -155,7 +184,7 @@ export function getResolver({
     let didDocument: DIDDocument | null = null
 
     try {
-      didDocument = await fetchDidDocumentAtUrl(url, { fetch })
+      didDocument = await fetchDidDocumentAtUrl(url, { fetch, timeout })
 
       if (!isDidDocumentForDid(didDocument, did)) {
         throw new Error("DID document id does not match requested did")
