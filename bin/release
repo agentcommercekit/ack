@@ -1,10 +1,24 @@
 #!/usr/bin/env sh
 
+#
+# Local fallback for publishing packages to npm.
+#
+# The supported path is CI: the Release workflow opens the version PR and the
+# Publish workflow ships it. See RELEASING.md. Use this only when CI cannot run.
+#
+# Requires an npm session with publish rights on the agentcommercekit scope.
+# With account-level 2FA set to auth-and-writes, pass a one-time password:
+#
+#   ./bin/release --otp=123456
+#
+
+set -eu
+
 # Clean repository
-pnpm run Clean
+pnpm run clean
 
 # Build packages
 pnpm run build
 
 # Publish packages
-pnpm exec changeset publish
+pnpm exec changeset publish "$@"
