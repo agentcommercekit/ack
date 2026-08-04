@@ -61,6 +61,10 @@ Adding a new type requires updating both schema files **and** the `exports` map 
 - Exact versions enforced by `saveExact: true` in `pnpm-workspace.yaml`.
 - Workspace deps use `workspace:*`; shared external versions use `catalog:` (pnpm catalog in `pnpm-workspace.yaml`).
 
+## Releasing
+
+Changesets, driven by CI — see [RELEASING.md](./RELEASING.md). A PR that changes published behavior needs a changeset (`pnpm exec changeset`). All eight published packages are version-locked by the `linked` group in `.changeset/config.json`, so they always share a version. Packages are on `0.x`: a breaking change is a **minor** bump, and `major` is reserved for the deliberate `1.0.0`.
+
 ## Testing
 
 Vitest, one `vitest.config.ts` per package, `*.test.ts` co-located with source.

@@ -50,11 +50,15 @@ follow these steps:
    `git checkout -b feature/your-feature-name` or
    `git checkout -b bugfix/issue-number`).
 3. **Make your changes:** Implement your feature or bug fix.
-4. **Commit your changes:** Commit your changes with a clear and descriptive
+4. **Add a changeset:** If your change affects a published package, run
+   `pnpm exec changeset`, select the affected packages and bump type, and commit
+   the generated file. Write the entry as release notes for users. See
+   [RELEASING.md](./RELEASING.md).
+5. **Commit your changes:** Commit your changes with a clear and descriptive
    commit message.
-5. **Push to your branch:** Push your changes to your branch in your fork (e.g.,
+6. **Push to your branch:** Push your changes to your branch in your fork (e.g.,
    `git push origin feature/your-feature-name`).
-6. **Open a Pull Request (PR):** Open a pull request from your branch to the
+7. **Open a Pull Request (PR):** Open a pull request from your branch to the
    `main` branch of the Agent Commerce Kit repository.
    - Ensure your PR description clearly describes the changes and links to any
      relevant issues.
