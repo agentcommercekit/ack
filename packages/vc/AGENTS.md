@@ -9,7 +9,7 @@ W3C Verifiable Credentials: creation, signing, verification, and revocation.
 ## Verification Chain
 
 ```
-verifyParsedCredential() → verifyProof() → check expiry → check revocation → verify trusted issuer → verify claims
+verifyParsedCredential() → verifyProof() → check expiry → verify trusted issuer → check revocation → verify claims
 ```
 
 Claims are verified via the `ClaimVerifier` strategy interface:

@@ -27,9 +27,33 @@ vi.mock("./verify-credential-jwt", () => ({
 function mockDecodedCredential(verifiableCredential: unknown): void {
   vi.mocked(verifyCredential).mockImplementationOnce(() =>
     Promise.resolve(
-      Object.assign(Object.create(null), { verifiableCredential }),
+      Object.assign(Object.create(null), {
+        verifiableCredential,
+        // `parseJwtCredential` compares the decoded issuer against the DID the
+        // signature binds, so the stub must report a matching signer.
+        issuer: decodedIssuerId(verifiableCredential),
+      }),
     ),
   )
+}
+
+/**
+ * Read `issuer.id` off a decoded-credential fixture, which may be any shape.
+ */
+function decodedIssuerId(credential: unknown): string | undefined {
+  if (typeof credential !== "object" || credential === null) {
+    return undefined
+  }
+
+  const { issuer } = credential as { issuer?: unknown }
+
+  if (typeof issuer !== "object" || issuer === null) {
+    return undefined
+  }
+
+  const { id } = issuer as { id?: unknown }
+
+  return typeof id === "string" ? id : undefined
 }
 
 describe("verifyProof", () => {

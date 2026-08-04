@@ -65,5 +65,17 @@ export async function parseJwtCredential(
     )
   }
 
+  // The signature binds the `iss` claim, and `result.issuer` is that claim.
+  // `normalizeCredential` builds the credential issuer as
+  // `{ id: iss, ...payload.issuer }`, so an `issuer.id` in the payload silently
+  // replaces the DID that signed. Without this check anyone can sign a
+  // credential with their own key, name another DID as the issuer, and pass
+  // every downstream issuer check.
+  if (result.verifiableCredential.issuer.id !== result.issuer) {
+    throw new InvalidCredentialError(
+      "Credential issuer does not match the DID that signed the JWT",
+    )
+  }
+
   return result.verifiableCredential
 }

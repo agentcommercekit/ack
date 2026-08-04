@@ -55,10 +55,20 @@ export interface DidWebResolverOptions {
    * @default false
    */
   followRedirects?: boolean
+  /**
+   * Milliseconds to wait for the DID document fetch before aborting. Must
+   * be a positive integer of at most 2147483647 (the 32-bit timer limit).
+   *
+   * The timeout is applied via an `AbortSignal` on the request. A custom
+   * `fetch` must honour `init.signal` for it to take effect.
+   * @default 5000
+   */
+  timeout?: number
 }
 
 const DEFAULT_ALLOWED_HTTP_HOSTS: string[] = []
 const DEFAULT_DOC_PATH = "/.well-known/did.json"
+const MAX_TIMEOUT_MS = 2147483647
 
 /**
  * Get a did document from a url and validate that it is a DidDocument
@@ -71,11 +81,17 @@ async function fetchDidDocumentAtUrl(
   {
     fetch = globalThis.fetch,
     followRedirects = false,
-  }: { fetch?: FetchLike; followRedirects?: boolean } = {},
+    timeout,
+  }: {
+    fetch?: FetchLike
+    followRedirects?: boolean
+    timeout?: number
+  } = {},
 ): Promise<DidDocument> {
   const res = await fetch(url, {
     mode: "cors",
     redirect: followRedirects ? "follow" : "manual",
+    ...(timeout !== undefined ? { signal: AbortSignal.timeout(timeout) } : {}),
   })
 
   // With `redirect: "manual"` a redirect resolves instead of throwing, so we
@@ -173,7 +189,20 @@ export function getResolver({
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
   followRedirects = false,
+  timeout = 5000,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
+  // Fail fast on a bad timeout rather than surfacing it later as a
+  // misleading `notFound` resolution error. `AbortSignal.timeout` throws on
+  // negative, non-integer or non-finite values; 0 is legal for the API but
+  // would abort every request before it starts; and values beyond the
+  // 32-bit timer range either clamp the timer to 1ms or throw at fetch
+  // time, depending on the runtime.
+  if (timeout <= 0 || timeout > MAX_TIMEOUT_MS || !Number.isInteger(timeout)) {
+    throw new RangeError(
+      "`timeout` must be a positive integer of at most 2147483647 milliseconds",
+    )
+  }
+
   async function resolve(
     did: string,
     parsed: ParsedDID,
@@ -190,6 +219,7 @@ export function getResolver({
       didDocument = await fetchDidDocumentAtUrl(url, {
         fetch,
         followRedirects,
+        timeout,
       })
 
       if (!isDidDocumentForDid(didDocument, did)) {
