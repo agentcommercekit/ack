@@ -65,12 +65,14 @@ Two details are what make the budget hold rather than merely look right:
   running total and then wrote to it would let two concurrent payments both
   observe the pre-payment total and both pass. `SpendLedger.reserve` does both
   at once.
-- **Reservations are keyed by payment attempt.** The Stripe path authorizes
+- **Reservations are keyed by payment execution.** The Stripe path authorizes
   twice for a single payment — once for the payment URL, once on the callback —
-  so reservations are keyed by payment request id plus payment option id, and
-  the second authorization re-checks the window without counting the payment
-  twice. A reservation is committed once the receipt is issued, and released if
-  the Receipt Service call fails.
+  so the Payment Service mints an execution id at initiation and carries it
+  through the callback URL. The second authorization then re-checks the window
+  without counting the payment twice, while a second execution of the same
+  Payment Request is charged separately, since it moves money separately. A
+  reservation is committed once the receipt is issued, and released if signing
+  or the Receipt Service call fails.
 
 > [!IMPORTANT]
 > This is still a demo, not production spend control. The ledger lives in
@@ -82,6 +84,13 @@ Two details are what make the budget hold rather than merely look right:
 > would key the budget on its authenticated payer — ACK-Pay carries no payer
 > identity on the payment execution request, so the demo tracks the single
 > autonomous payer it spends as.
+>
+> The callback re-authorizes after the card has already been captured, so a
+> denial there stops the receipt without stopping the charge. In practice this
+> needs the initiation reservation to have aged out of the window and later
+> payments to have filled the budget, which the one-hour window makes unlikely
+> — but a real Payment Service should settle and flag an over-budget capture
+> for reconciliation rather than refuse it.
 
 The demo allowlist is based on the configured server identity, not the issuer
 claimed by each incoming Payment Request token. A real Payment Service should

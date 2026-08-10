@@ -175,31 +175,37 @@ describe("createSpendLedger", () => {
 })
 
 describe("spendReference", () => {
-  it("returns the same key for the same payment attempt", () => {
-    expect(spendReference("request-1", "stripe-usd")).toBe(
-      spendReference("request-1", "stripe-usd"),
+  it("returns the same key for both calls of one execution", () => {
+    expect(spendReference("request-1", "stripe-usd", "execution-1")).toBe(
+      spendReference("request-1", "stripe-usd", "execution-1"),
     )
   })
 
   it("distinguishes payment options within one payment request", () => {
-    expect(spendReference("request-1", "stripe-usd")).not.toBe(
-      spendReference("request-1", "usdc-base-sepolia"),
+    expect(spendReference("request-1", "stripe-usd", "execution-1")).not.toBe(
+      spendReference("request-1", "usdc-base-sepolia", "execution-1"),
+    )
+  })
+
+  it("distinguishes executions of the same payment request", () => {
+    expect(spendReference("request-1", "stripe-usd", "execution-1")).not.toBe(
+      spendReference("request-1", "stripe-usd", "execution-2"),
     )
   })
 
   it("does not collide when an id contains the separator", () => {
-    // Both ids come from the Payment Request as unconstrained strings, so a
-    // plain `${a}:${b}` would map these two attempts onto one reservation and
-    // drop the second amount from the window.
-    expect(spendReference("request:1", "stripe-usd")).not.toBe(
-      spendReference("request", "1:stripe-usd"),
+    // The ids come from the Payment Request as unconstrained strings, so a
+    // plain `${a}:${b}` would map these two executions onto one reservation
+    // and drop the second amount from the window.
+    expect(spendReference("request:1", "stripe-usd", "execution-1")).not.toBe(
+      spendReference("request", "1:stripe-usd", "execution-1"),
     )
   })
 
-  it("keeps colliding-shaped attempts on separate budget entries", () => {
+  it("charges a second execution of one payment request against the budget", () => {
     const limit = 1_000n
     const first = ledger.reserve({
-      reference: spendReference("request:1", "stripe-usd"),
+      reference: spendReference("request-1", "stripe-usd", "execution-1"),
       subject: SUBJECT,
       currency: "USDC",
       amount: 600n,
@@ -207,7 +213,30 @@ describe("spendReference", () => {
       limit,
     })
     const second = ledger.reserve({
-      reference: spendReference("request", "1:stripe-usd"),
+      reference: spendReference("request-1", "stripe-usd", "execution-2"),
+      subject: SUBJECT,
+      currency: "USDC",
+      amount: 600n,
+      windowMs: WINDOW_MS,
+      limit,
+    })
+
+    expect(first).toEqual({ status: "reserved", spent: 600n })
+    expect(second).toEqual({ status: "exceeded", spent: 600n, limit })
+  })
+
+  it("keeps colliding-shaped executions on separate budget entries", () => {
+    const limit = 1_000n
+    const first = ledger.reserve({
+      reference: spendReference("request:1", "stripe-usd", "execution-1"),
+      subject: SUBJECT,
+      currency: "USDC",
+      amount: 600n,
+      windowMs: WINDOW_MS,
+      limit,
+    })
+    const second = ledger.reserve({
+      reference: spendReference("request", "1:stripe-usd", "execution-1"),
       subject: SUBJECT,
       currency: "USDC",
       amount: 600n,

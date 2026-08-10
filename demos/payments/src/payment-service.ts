@@ -57,17 +57,24 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
     paymentOptionId,
     paymentRequestToken,
   )
+  // Budget is reserved per payment execution, not per Payment Request. A
+  // Payment Request can be presented for execution more than once, and each
+  // execution moves money, so they must consume the budget separately. The id
+  // is minted here and carried through the callback URL so the two calls of
+  // one execution still reserve once.
+  const executionId = crypto.randomUUID()
   const payerIdentity = await getPayerIdentity(c)
   await enforcePaymentPolicy(c, paymentOption, {
     subject: payerIdentity.did,
-    reference: spendReference(paymentRequest.id, paymentOptionId),
+    reference: spendReference(paymentRequest.id, paymentOptionId, executionId),
   })
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
   // This is a placeholder for an actual Strip Payment URL which would
   // have webhook callbacks already set up
-  const paymentUrl = `https://payments.stripe.com/payment-url/?return_to=${PAYMENT_SERVICE_URL}/stripe-callback`
+  const returnTo = `${PAYMENT_SERVICE_URL}/stripe-callback?executionId=${executionId}`
+  const paymentUrl = `https://payments.stripe.com/payment-url/?return_to=${encodeURIComponent(returnTo)}`
 
   return c.json({
     paymentUrl,
@@ -101,9 +108,17 @@ app.post(
       throw new Error(errorMessage("Receipt service URL is required"))
     }
 
-    // Re-authorizing under the same reference re-checks the window without
-    // counting this payment a second time.
-    const reference = spendReference(paymentRequest.id, paymentOptionId)
+    // Re-authorizing under the execution's own reference re-checks the window
+    // without counting this payment a second time. A real Payment Service
+    // would resolve the execution from the provider's session id server-side
+    // rather than trusting the caller to echo it back; a caller that supplies
+    // an unknown id here is charged against the budget again rather than
+    // escaping it.
+    const reference = spendReference(
+      paymentRequest.id,
+      paymentOptionId,
+      c.req.query("executionId") ?? crypto.randomUUID(),
+    )
     await enforcePaymentPolicy(c, paymentOption, {
       subject: payerIdentity.did,
       reference,
@@ -119,15 +134,15 @@ app.post(
       payerDid: payerIdentity.did,
     }
 
-    const signedPayload = await createJwt(payload, {
-      issuer: payerIdentity.did,
-      signer: payerIdentity.jwtSigner,
-    })
-
     log(colors.dim(`${name} Getting receipt from Receipt Service...`))
 
     let receiptResponse: v.InferOutput<typeof receiptResponseSchema>
     try {
+      const signedPayload = await createJwt(payload, {
+        issuer: payerIdentity.did,
+        signer: payerIdentity.jwtSigner,
+      })
+
       const response = await fetch(receiptServiceUrl, {
         method: "POST",
         body: JSON.stringify({
