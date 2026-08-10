@@ -16,7 +16,7 @@ import * as v from "valibot"
 
 import { PAYMENT_SERVICE_URL } from "./constants"
 import { authorizePayment, demoPaymentPolicy } from "./payment-policy"
-import { createSpendLedger } from "./spend-ledger"
+import { createSpendLedger, spendReference } from "./spend-ledger"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
@@ -179,14 +179,6 @@ async function validatePaymentOption(
     paymentRequest,
     paymentOption,
   }
-}
-
-/**
- * Identifies one payment attempt across both calls of the Stripe flow, so the
- * payment URL request and the callback reserve budget once, not twice.
- */
-function spendReference(paymentRequestId: string, paymentOptionId: string) {
-  return `${paymentRequestId}:${paymentOptionId}`
 }
 
 async function enforcePaymentPolicy(

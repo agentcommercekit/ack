@@ -78,6 +78,26 @@ export interface SpendLedgerOptions {
 }
 
 /**
+ * Builds the reservation key identifying one payment attempt, so both calls of
+ * the Stripe flow reserve against the same entry.
+ *
+ * Both parts are unconstrained strings carried in the Payment Request, so they
+ * are encoded rather than concatenated: a plain `${a}:${b}` lets
+ * `("a:b", "c")` and `("a", "b:c")` collide, and a collision would silently
+ * overwrite an earlier reservation and drop its amount from the window.
+ *
+ * @param paymentRequestId - `id` of the verified Payment Request
+ * @param paymentOptionId - `id` of the selected payment option
+ * @returns A key unique to the pair
+ */
+export function spendReference(
+  paymentRequestId: string,
+  paymentOptionId: string,
+): string {
+  return JSON.stringify([paymentRequestId, paymentOptionId])
+}
+
+/**
  * Creates an in-memory spend ledger.
  *
  * All calls are expected to share one window length (the one configured on the
