@@ -1,0 +1,46 @@
+# ACK-Pay Interoperability: MPP and x402
+
+> **Status:** Non-normative. This page describes conceptual mappings only and does not add
+> required fields to the `PaymentReceiptCredential` schema or change verifier semantics.
+
+ACK-Pay already models the core primitives needed for agent commerce: a server-issued
+payment request, client/payment-service execution, and a verifiable receipt. Two emerging
+protocols — MPP and x402 — model similar flows around HTTP 402. This page maps ACK-Pay
+concepts to both, so implementers can compose ACK with either without forcing
+protocol-specific fields into the ACK core schema.
+
+## Concept mapping
+
+| ACK-Pay                  | MPP                              | x402                                        |
+| ------------------------ | --------------------------------- | -------------------------------------------- |
+| Payment Request          | Challenge                         | PaymentRequired / PaymentRequirements        |
+| Payment option           | Payment method / payment request  | scheme + network + requirements              |
+| Payment execution proof  | Credential                        | PaymentPayload / Payment-Signature           |
+| Payment receipt VC       | Receipt                           | Payment Response / signed receipt extension  |
+| Receipt issuer           | Server / payment verifier         | facilitator / resource server                |
+| Human oversight / policy | client/payment-service policy     | client/facilitator policy layer              |
+
+## Where ACK adds value
+
+- **Rail-neutral core.** ACK-Pay does not depend on MPP or x402; either can sit underneath
+  an ACK-Pay flow as the execution rail.
+- **Verifiable receipts.** ACK receipts are portable, signed credentials rather than a
+  protocol-specific response object.
+- **Composable metadata.** Protocol-specific references (e.g. an x402 payment response
+  hash, or an MPP session id) can be carried as opaque extension metadata on the receipt
+  without changing the required schema fields.
+
+## Example: carrying an execution reference in receipt metadata
+
+```json
+{
+  "type": ["VerifiableCredential", "PaymentReceiptCredential"],
+  "credentialSubject": {
+    "paymentRequestToken": "...",
+    "paymentOptionId": "...",
+    "evidence": {
+      "executionRef": "x402:0xabc123...",
+      "settlementNetwork": "base"
+    }
+  }
+}
