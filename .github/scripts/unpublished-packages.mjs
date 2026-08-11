@@ -9,8 +9,10 @@
 // shelling out to `npm view` 8 times -- these are public packages, so no auth is
 // involved, and one fetch per package keeps the failure mode obvious.
 //
-// Writes `count`, `packages` and `version` to $GITHUB_OUTPUT when running under
-// Actions; always prints a human-readable table to stdout.
+// Writes `count`, `packages`, `released` and `version` to $GITHUB_OUTPUT when
+// running under Actions; always prints a human-readable table to stdout.
+// `packages` is what this run still has to publish; `released` is every package
+// at the release version, which is what the release notes should name.
 
 import { appendFileSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
@@ -67,9 +69,37 @@ for (const result of results) {
   )
 }
 
-// Every package is version-locked by the `linked` group in
-// .changeset/config.json, so the umbrella package's version names the release.
-const umbrella = results.find((result) => result.name === "agentcommercekit")
+// Name the release after the packages that actually ship, not after the
+// umbrella manifest. The `linked` group in .changeset/config.json aligns the
+// versions of the packages in a given release, but it does not release every
+// member every time -- at 0.10.1, caip stayed on 0.1.0 and jwt/keys on 0.9.0.
+// So one run must publish exactly one version; more than one means the working
+// tree is inconsistent, and picking either would mislabel the tag and release.
+const versions = [...new Set(unpublished.map((result) => result.version))]
+
+if (versions.length > 1) {
+  throw new Error(
+    `Refusing: the packages to publish carry ${versions.length} different versions (${versions.join(", ")}). Expected one. Either a failed publish stranded a package on an older version, or a new package joined the workspace without a changeset. Fix that package's version, or publish it by hand (see RELEASING.md), then dispatch again.`,
+  )
+}
+
+const version = versions[0] ?? ""
+
+// The release notes name every package at the release version, not just the
+// ones this run still has to publish. After a partial failure, a second
+// dispatch sees a shorter `unpublished` list, and notes built from it would
+// omit the packages that the first run already shipped.
+const released = results.filter((result) => result.version === version)
+
+// The workflow names the tag and the GitHub release `agentcommercekit@<version>`,
+// so the umbrella package has to be part of this release for that name to mean
+// anything. It depends on all seven scoped packages, so any release cascades to
+// it -- if it is missing here, the version came from somewhere unexpected.
+if (version !== "" && !released.some((r) => r.name === "agentcommercekit")) {
+  throw new Error(
+    `Refusing: the release version is ${version}, but agentcommercekit is not at that version. The release tag would name a version the umbrella package never published.`,
+  )
+}
 
 if (process.env.GITHUB_OUTPUT) {
   appendFileSync(
@@ -77,7 +107,8 @@ if (process.env.GITHUB_OUTPUT) {
     [
       `count=${unpublished.length}`,
       `packages=${unpublished.map((result) => result.name).join(" ")}`,
-      `version=${umbrella?.version ?? ""}`,
+      `released=${released.map((result) => result.name).join(" ")}`,
+      `version=${version}`,
       "",
     ].join("\n"),
   )

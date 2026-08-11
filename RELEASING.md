@@ -3,9 +3,11 @@
 Releases are driven by [changesets](https://github.com/changesets/changesets)
 and run in CI. There are two buttons, in order.
 
-All published packages are version-locked by the `linked` group in
-`.changeset/config.json`, so every release moves all eight packages to the same
-version.
+The `linked` group in `.changeset/config.json` gives every package in a release
+the same version. It does not release every package every time. A package with
+no changeset, and no changed dependency, keeps its current version — at 0.10.1,
+`caip` stayed on 0.1.0 and `jwt`/`keys` stayed on 0.9.0. Use `fixed` instead of
+`linked` if you ever want all eight to move together.
 
 ## 1. Land a changeset with your change
 
@@ -79,4 +81,54 @@ account-level 2FA:
 ./bin/release --otp=123456
 ```
 
-Prefer CI. This path skips the approval gate and the verification steps.
+Prefer CI. This path skips the approval gate and the verification steps. It also
+leaves the release record incomplete: `changeset publish` writes the tags to your
+local clone only, and it creates no GitHub release. Finish by hand:
+
+```bash
+git push --follow-tags
+gh release create "agentcommercekit@<version>" \
+  --target "$(git rev-parse HEAD)" \
+  --title "v<version>" --generate-notes
+```
+
+## Repairing a half-finished release
+
+The publish workflow pushes the tags of every package that reached npm, even when
+a later package fails, so a re-dispatch normally finishes the release. Re-dispatch
+before you merge anything else: the workflow always publishes and tags from the
+current `main`, so a `main` that moved in between would ship the remaining
+packages from a newer tree under the same version numbers. If `main` has already
+moved, repair by hand instead of re-dispatching.
+
+Three states still need a hand.
+
+**npm has every version, but tags or the GitHub release are missing.** The
+workflow refuses to run again, because it sees nothing left to publish. The lost
+tags lived in the runner's clone, so nothing in your own clone can push them —
+recreate each one first, at the commit that was published, then push them by
+name:
+
+```bash
+version="0.12.0"
+sha=$(git rev-parse "<release-commit>")
+for pkg in agentcommercekit @agentcommercekit/vc; do   # the missing ones
+  git tag -a "$pkg@$version" "$sha" -m "$pkg@$version"
+  git push origin "$pkg@$version"
+done
+gh release create "agentcommercekit@$version" \
+  --target "$sha" --title "v$version" --generate-notes
+```
+
+**The run was cancelled part way.** This is the worst state, so let a publish
+finish red rather than cancel it. `changeset publish` writes its tags only after
+the whole publish loop returns, so a cancelled process leaves packages on npm
+with no tags at all. Re-dispatch to publish the rest, then recreate the missing
+tags with the commands above.
+
+**One package sits on a different version from the rest.** The pre-flight script
+refuses the dispatch, because the packages to publish no longer share one
+version. Either a failed publish stranded a package, or a new package joined the
+workspace without a changeset. Publish a stranded package by hand with
+`pnpm --filter "<pkg>" publish`, or add a changeset for a new one and merge the
+version PR. Then dispatch the workflow again.

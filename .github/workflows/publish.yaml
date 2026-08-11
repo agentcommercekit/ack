@@ -40,6 +40,7 @@ jobs:
       version: ${{ steps.unpublished.outputs.version }}
       count: ${{ steps.unpublished.outputs.count }}
       packages: ${{ steps.unpublished.outputs.packages }}
+      released: ${{ steps.unpublished.outputs.released }}
     steps:
       - name: Refuse if not dispatched from main
         env:
@@ -93,6 +94,7 @@ jobs:
           VERSION: ${{ steps.unpublished.outputs.version }}
           COUNT: ${{ steps.unpublished.outputs.count }}
           PACKAGES: ${{ steps.unpublished.outputs.packages }}
+          RELEASED: ${{ steps.unpublished.outputs.released }}
         run: |
           {
             echo "## Verify"
@@ -101,6 +103,12 @@ jobs:
             echo "- Packages to publish: **$COUNT**"
             echo ""
             for package in $PACKAGES; do
+              echo "  - \`$package\`"
+            done
+            echo ""
+            echo "Packages the GitHub release will name:"
+            echo ""
+            for package in $RELEASED; do
               echo "  - \`$package\`"
             done
             echo ""
@@ -153,8 +161,14 @@ jobs:
       # Sorted explicitly: `comm` below assumes both inputs are in the same
       # collation order, which git's default refname sort does not guarantee
       # across locales.
+      # pipefail matters here: Actions runs `bash -e`, which does not set it, so
+      # a failing `git tag --list` piped into a successful `sort` would exit 0
+      # and leave an empty baseline. Every existing tag would then look new.
       - name: Record pre-existing tags
-        run: git tag --list | LC_ALL=C sort > /tmp/tags-before.txt
+        id: tags-before
+        run: |
+          set -euo pipefail
+          git tag --list | LC_ALL=C sort > /tmp/tags-before.txt
 
       - name: Publish
         env:
@@ -163,8 +177,27 @@ jobs:
 
       # changeset publish tags locally. Create the refs through the API rather
       # than pushing, so the job never holds a push-capable git credential.
+      #
+      # Runs even when the publish step fails. On a partial failure changesets
+      # tags the packages that did publish and only then exits non-zero
+      # (changesets-cli.cjs.js: tagPublish() for successes, then ExitError(1)).
+      # Skipping this step would destroy those tags with the runner, and a
+      # second dispatch could not recreate them -- getUnpublishedPackages()
+      # drops packages the registry already has, so changesets never tags them
+      # again. The job still ends red; the tags just survive.
+      #
+      # This does NOT rescue a cancelled run. changesets calls tagPublish() only
+      # after the whole publish loop returns, so a process killed part way writes
+      # no tags at all. That leaves packages on npm with no tag, which the repair
+      # section of RELEASING.md covers. Prefer letting a publish finish red over
+      # cancelling it.
+      #
+      # The outcome guard keeps this step honest when an earlier step failed and
+      # /tmp/tags-before.txt was never written -- without it, `comm` dies on the
+      # missing file and buries the real failure.
       - name: Push new tags
         id: tags
+        if: ${{ always() && steps.tags-before.outcome == 'success' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
@@ -174,7 +207,7 @@ jobs:
           git tag --list | LC_ALL=C sort > /tmp/tags-after.txt
           new_tags=$(comm -13 /tmp/tags-before.txt /tmp/tags-after.txt)
           if [ -z "$new_tags" ]; then
-            echo "Refusing: publish created no new tags; nothing was released." >&2
+            echo "No new tags were created. Check npm before you dispatch again (see RELEASING.md)." >&2
             exit 1
           fi
           for tag in $new_tags; do
@@ -205,14 +238,18 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      # One release per version, not per package: all eight packages are
-      # version-locked, so eight near-identical releases would be noise.
+      # One release per version, not per package: the packages in a release all
+      # carry the same version, so one release per package would be noise.
+      #
+      # Skipped when an earlier step failed, so a partial publish never
+      # announces itself as a finished release.
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
           VERSION: ${{ needs.verify.outputs.version }}
-          PACKAGES: ${{ needs.verify.outputs.packages }}
+          PACKAGES: ${{ needs.verify.outputs.released }}
         run: |
           set -euo pipefail
           tag="agentcommercekit@$VERSION"
@@ -229,7 +266,11 @@ jobs:
             echo ""
             echo "See each package's \`CHANGELOG.md\` for the full set of changes."
           )
+          # --target pins the release to the published commit. Without it, gh
+          # creates a missing tag at the default branch head, which can point
+          # the release at a tree that was never published.
           gh release create "$tag" --repo "$REPO" \
+            --target "$SHA" \
             --title "v$VERSION" \
             --notes "$notes"
 
