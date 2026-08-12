@@ -8,11 +8,20 @@ name: Publish
 # check suite and the `publish` job sits behind the `npm-publish` environment,
 # so a human approves the actual registry write.
 #
-# npm auth is a granular access token (NPM_TOKEN), not OIDC trusted publishing.
-# `changeset publish` shells out to `pnpm publish` in a pnpm workspace, and pnpm
-# 11 supports neither trusted publishing nor --provenance (only --otp). Moving
-# to OIDC would mean packing tarballs and publishing them with npm directly,
-# bypassing changesets' publish path.
+# npm auth is OIDC trusted publishing. There is no npm token anywhere in this
+# repo, so there is no long-lived publishing credential to leak or rotate, and
+# the account's auth-and-writes 2FA no longer blocks an unattended release.
+#
+# pnpm implements trusted publishing itself -- it does not shell out to the npm
+# CLI. It exchanges the GitHub Actions id token for a short-lived registry token
+# (releasing/commands/lib/publish/oidc/), and attaches provenance automatically.
+# That works through `changeset publish`, which runs `pnpm publish` per package.
+#
+# The OIDC path is on by default but degrades quietly: pnpm catches a missing
+# id token, warns "Skipped OIDC", and falls back to whatever token is
+# configured. With no token configured a misconfigured run fails on a 401
+# instead of silently publishing with a credential, and the pre-flight check in
+# the publish job turns the most likely cause into a clear error first.
 #
 # Tags are created through the GitHub API rather than `git push`, so no
 # push-capable git credential is ever persisted in the runner's checkout.
@@ -121,10 +130,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     # Approval gate. Configure `npm-publish` with required reviewers and limit
-    # its deployment branches to `main`; NPM_TOKEN lives here as an environment
-    # secret so no other workflow in the repo can reach it.
+    # its deployment branches to `main`. It holds no secrets -- trusted
+    # publishing needs none -- so its only job is to stop the registry write
+    # until a human approves it.
     environment: npm-publish
     permissions:
+      # id-token mints the OIDC token that pnpm exchanges for a short-lived
+      # registry token, and that sigstore signs the provenance attestation with.
+      id-token: write
       contents: write
     steps:
       - uses: actions/checkout@v4
@@ -141,15 +154,17 @@ jobs:
       - name: Build packages
         run: pnpm run build
 
-      # Written literally, with no token in the file: both npm and pnpm expand
-      # ${NPM_TOKEN} from the environment when reading a user-level .npmrc, so
-      # the secret exists only in the publish step's env and never on disk.
-      - name: Configure npm auth
+      # pnpm treats a missing id token as a soft failure: it warns "Skipped
+      # OIDC" and falls back to a configured token. There is no token here, so
+      # the run would fail anyway -- but on a 401 from the registry, which says
+      # nothing about the cause. Fail on the real reason instead.
+      - name: Confirm OIDC is available
         run: |
           set -euo pipefail
-          # shellcheck disable=SC2016 # npm and pnpm expand ${NPM_TOKEN} when they
-          # read the file; expanding it here would write the secret to disk.
-          printf '//registry.npmjs.org/:_authToken=${NPM_TOKEN}\n' >> "$HOME/.npmrc"
+          if [ -z "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ]; then
+            echo "Refusing: no OIDC id token. The job needs 'id-token: write'." >&2
+            exit 1
+          fi
 
       # changesets creates annotated tags, which need an identity to sign off.
       - name: Configure git identity
@@ -170,9 +185,13 @@ jobs:
           set -euo pipefail
           git tag --list | LC_ALL=C sort > /tmp/tags-before.txt
 
+      # No .npmrc and no token: pnpm exchanges the id token for a short-lived
+      # registry token per package, and attaches provenance on its own. A 401
+      # here means the trusted publisher on npmjs.com does not match this
+      # repository, this workflow filename, or this environment. A log line
+      # reading "Skipped OIDC" means pnpm fell back and the run is publishing
+      # unauthenticated -- see RELEASING.md.
       - name: Publish
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: pnpm exec changeset publish
 
       # changeset publish tags locally. Create the refs through the API rather

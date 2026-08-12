@@ -49,41 +49,71 @@ The workflow:
 5. Runs `changeset publish`, creates the git tags through the GitHub API, and
    opens a GitHub release for the version.
 
+## How the workflow authenticates
+
+npm **trusted publishing**. There is no npm token in this repository. The publish
+job asks GitHub for an OIDC id token, and pnpm exchanges that for a registry
+token that lives for a few minutes. Nothing long-lived exists to leak or rotate,
+and the account's `auth-and-writes` 2FA does not apply, because there is no token
+for it to protect.
+
+pnpm does this itself — it does not call the npm CLI. It exchanges the id token
+in `releasing/commands/lib/publish/oidc/` and attaches a provenance attestation
+automatically, so this works through `changeset publish`, which runs
+`pnpm publish` for each package.
+
 ## One-time setup
 
-- **`NPM_TOKEN`** — a granular npm access token, stored as an **environment**
-  secret on `npm-publish` (not a repository secret, so no other workflow can
-  reach it). Scope it to read+write on `agentcommercekit` and the
-  `@agentcommercekit` scope. It must be an automation-class token: the account
-  has 2FA set to `auth-and-writes`, and a token that prompts for a one-time
-  password cannot work unattended.
+- **Trusted publisher on npmjs.com, for each of the eight published packages.**
+  On the package's Settings → Publishing access, add a trusted publisher:
+
+  | Field       | Value                  |
+  | ----------- | ---------------------- |
+  | Repository  | `agentcommercekit/ack` |
+  | Workflow    | `publish.yaml`         |
+  | Environment | `npm-publish`          |
+
+  All three have to match the workflow exactly, or the exchange returns 401.
+  Renaming the workflow file breaks publishing until you update all eight.
+
 - **`npm-publish` environment** — required reviewers, and deployment branches
-  limited to `main`.
+  limited to `main`. It stores no secrets; it only gates the registry write.
 - **GitHub App** — `ACTIONS_APP_ID` (variable) and `ACTIONS_APP_PRIVATE_KEY`
   (secret) already exist for `audit-fix.yaml`. The Release workflow reuses them
   to open the version PR under the app identity, so the PR triggers the check
   workflow.
 
-## Why not OIDC trusted publishing
+### If publishing fails on auth
 
-`changeset publish` shells out to `pnpm publish` in a pnpm workspace, and pnpm 11
-supports neither npm trusted publishing nor `--provenance` — only `--otp`.
-Adopting OIDC would mean packing tarballs and publishing them with `npm`
-directly, bypassing changesets' publish path.
+pnpm treats a missing id token as a soft failure: it logs `Skipped OIDC` and
+falls back to a configured token. Because no token is configured, the run then
+fails on a 401 that says nothing about the cause. Read the log:
+
+- `Refusing: no OIDC id token` — the job lost `id-token: write`.
+- `Skipped OIDC` followed by a 401 — GitHub issued the token but npm rejected the
+  exchange. The trusted publisher does not match the repository, the workflow
+  filename, or the environment.
+- A 401 with no `Skipped OIDC` line — the package has no trusted publisher
+  configured at all.
 
 ## Manual fallback
 
-`./bin/release` cleans, builds, and publishes from a local checkout. It needs an
-npm session with publish rights, and a one-time password because of
-account-level 2FA:
+`./bin/release` cleans, builds, and publishes from a local checkout. Trusted
+publishing does not apply off a runner, so this path still needs an npm session
+with publish rights and a one-time password, because of account-level 2FA:
 
 ```bash
 ./bin/release --otp=123456
 ```
 
-Prefer CI. This path skips the approval gate and the verification steps. It also
-leaves the release record incomplete: `changeset publish` writes the tags to your
-local clone only, and it creates no GitHub release. Finish by hand:
+Prefer CI, and treat this as a last resort. It skips the approval gate and the
+verification steps, and it publishes with no trust evidence — a downgrade from
+the trusted-publisher level that CI produces. pnpm's `trust-policy` is off by
+default, so this does not break installs today, but anyone running
+`trust-policy=no-downgrade` would refuse the version.
+
+It also leaves the release record incomplete: `changeset publish` writes the tags
+to your local clone only, and it creates no GitHub release. Finish by hand:
 
 ```bash
 git push --follow-tags
