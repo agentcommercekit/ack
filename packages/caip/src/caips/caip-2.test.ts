@@ -41,6 +41,15 @@ describe("caip2Parts", () => {
       "Invalid CAIP-2 chain ID",
     )
   })
+
+  it("throws for a chain ID with a trailing extra colon segment", () => {
+    // Regression test: a naive `split(":")` would silently drop everything
+    // after the second colon and happily return { namespace: "eip155",
+    // reference: "1" } for this malformed input instead of rejecting it.
+    expect(() => caip2Parts("eip155:1:extra" as `${string}:${string}`)).toThrow(
+      "Invalid CAIP-2 chain ID",
+    )
+  })
 })
 
 describe("caip2ChainIdRegex", () => {
