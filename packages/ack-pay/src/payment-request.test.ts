@@ -29,6 +29,19 @@ describe("isPaymentRequest", () => {
     ).toBe(false)
   })
 
+  // `decimals` scales `amount`, so a negative value has to be rejected rather
+  // than normalized: reading it as 0 silently changes what the request asks for.
+  it("returns false if decimals is negative", () => {
+    expect(
+      isPaymentRequest({
+        ...validPaymentRequest,
+        paymentOptions: [
+          { ...validPaymentRequest.paymentOptions[0], decimals: -2 },
+        ],
+      }),
+    ).toBe(false)
+  })
+
   it("returns false if given null", () => {
     expect(isPaymentRequest(null)).toBe(false)
   })
