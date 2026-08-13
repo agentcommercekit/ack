@@ -35,7 +35,7 @@ describe.each(Object.entries(validators))(
       ).toBe(true)
     })
 
-    it("accepts a file part", () => {
+    it("accepts a file part carrying a uri", () => {
       expect(
         accepts({
           kind: "message",
@@ -43,6 +43,22 @@ describe.each(Object.entries(validators))(
           role: "user",
           parts: [
             { kind: "file", file: { uri: "https://example.com/receipt.pdf" } },
+          ],
+        }),
+      ).toBe(true)
+    })
+
+    it("accepts a file part carrying bytes", () => {
+      expect(
+        accepts({
+          kind: "message",
+          messageId: "msg-1",
+          role: "user",
+          parts: [
+            {
+              kind: "file",
+              file: { mimeType: "application/pdf", bytes: "aGVsbG8=" },
+            },
           ],
         }),
       ).toBe(true)
