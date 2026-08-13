@@ -38,9 +38,10 @@ export const caip2ChainIds = {
 } as const
 
 export function caip2Parts(caip: Caip2ChainId): Caip2ChainIdParts {
-  const [namespace, reference] = caip.split(":")
+  const parts = caip.split(":")
+  const [namespace, reference] = parts
 
-  if (!namespace || !reference) {
+  if (!namespace || !reference || parts.length !== 2) {
     throw new Error("Invalid CAIP-2 chain ID")
   }
 

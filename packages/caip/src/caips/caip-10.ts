@@ -48,8 +48,9 @@ export function createCaip10AccountId(
 }
 
 export function caip10Parts(caip: Caip10AccountId): Caip10AccountIdParts {
-  const [namespace, reference, accountId] = caip.split(":")
-  if (!namespace || !reference || !accountId) {
+  const parts = caip.split(":")
+  const [namespace, reference, accountId] = parts
+  if (!namespace || !reference || !accountId || parts.length !== 3) {
     throw new Error("Invalid CAIP-10 account ID")
   }
   return { namespace, reference, accountId }

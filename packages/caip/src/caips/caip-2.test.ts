@@ -41,6 +41,17 @@ describe("caip2Parts", () => {
       "Invalid CAIP-2 chain ID",
     )
   })
+
+  it("throws for a chain ID with an extra colon-delimited segment", () => {
+    // Per the CAIP-2 spec, the reference component cannot contain a colon
+    // (caip2ReferencePattern is `[-_a-zA-Z0-9]{1,32}`), so a third
+    // colon-delimited segment makes the whole string invalid. A naive
+    // `split(":")` + destructure silently drops the extra segment instead
+    // of rejecting the malformed input.
+    expect(() =>
+      caip2Parts("eip155:1:evil" as `${string}:${string}`),
+    ).toThrow("Invalid CAIP-2 chain ID")
+  })
 })
 
 describe("caip2ChainIdRegex", () => {
