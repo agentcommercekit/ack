@@ -7,15 +7,18 @@ import type { W3CCredential } from "../types"
  * @returns `true` if the credential is expired, `false` otherwise
  */
 export function isExpired(credential: W3CCredential): boolean {
-  if (!credential.expirationDate) {
+  if (credential.expirationDate === undefined) {
     return false
   }
 
   const expirationDate = new Date(credential.expirationDate)
 
   if (isNaN(expirationDate.getTime())) {
-    // Expiration date is invalid, so we consider the credential not expired
-    return false
+    // Expiration date is present but unparseable — fail closed and treat as
+    // expired. Returning false (not expired) would allow a credential with a
+    // garbage date to pass all downstream checks, which is the wrong default
+    // for a security-critical guard.
+    return true
   }
 
   return expirationDate < new Date()

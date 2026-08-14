@@ -47,9 +47,16 @@ describe("isExpired", () => {
     expect(isExpired(credential)).toBe(false)
   })
 
-  it("handles invalid date strings gracefully", () => {
+  it("returns true for an unparseable expiration date (fail-closed)", () => {
     const credential = buildCredential("invalid-date")
+    // An unparseable date must not silently pass as not expired; failing
+    // closed is safer than failing open for a security-critical check.
+    expect(isExpired(credential)).toBe(true)
+  })
 
-    expect(isExpired(credential)).toBe(false)
+  it("returns true for an empty-string expiration date (fail-closed)", () => {
+    const credential = buildCredential("")
+    // Empty string is present but unparseable — fail closed.
+    expect(isExpired(credential)).toBe(true)
   })
 })

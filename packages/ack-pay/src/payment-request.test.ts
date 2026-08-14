@@ -40,4 +40,17 @@ describe("isPaymentRequest", () => {
   it("returns false if given a non-object", () => {
     expect(isPaymentRequest(1)).toBe(false)
   })
+
+  it("returns false when decimals is negative", () => {
+    // decimals uses minValue(0) — a validation that rejects negative values.
+    // The previous toMinValue(0) silently clamped -6 to 0 instead of rejecting it.
+    expect(
+      isPaymentRequest({
+        ...validPaymentRequest,
+        paymentOptions: [
+          { ...validPaymentRequest.paymentOptions[0], decimals: -6 },
+        ],
+      }),
+    ).toBe(false)
+  })
 })
