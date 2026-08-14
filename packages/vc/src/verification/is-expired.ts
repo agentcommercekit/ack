@@ -12,7 +12,7 @@ import type { W3CCredential } from "../types"
  *   expiration date), `false` otherwise
  */
 export function isExpired(credential: W3CCredential): boolean {
-  if (!credential.expirationDate) {
+  if (credential.expirationDate === undefined) {
     return false
   }
 

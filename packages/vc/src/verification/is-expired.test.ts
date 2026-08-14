@@ -52,4 +52,13 @@ describe("isExpired", () => {
 
     expect(isExpired(credential)).toBe(true)
   })
+
+  it("treats a present but empty-string expiration date as expired (fail closed)", () => {
+    // An empty string is present (not `undefined`) but unparseable
+    // (`new Date("")` -> `NaN`). It must not be conflated with an absent
+    // `expirationDate` via a falsy check, or it silently fails open.
+    const credential = buildCredential("")
+
+    expect(isExpired(credential)).toBe(true)
+  })
 })
