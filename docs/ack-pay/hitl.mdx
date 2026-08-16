@@ -22,6 +22,73 @@ Human oversight may be integrated at three key points in the payment lifecycle:
 - **Post-execution Review:** Flagging completed transactions for later human review and auditing, without holding up the real-time execution.
 - **Exception Resolution:** Escalating failed, disputed, or problematic transactions for human intervention and resolution.
 
+## A Minimal Approval Exchange
+
+ACK-Pay does not require a specific workflow engine. A client or Payment Service can represent an approval handoff with two small application-level objects:
+
+```ts
+type PaymentApprovalRequest = {
+  id: string
+  paymentRequestId: string
+  paymentOptionId?: string
+  requesterDid?: string
+  reason?: string
+  expiresAt?: string
+  metadata?: Record<string, unknown>
+}
+
+type PaymentApprovalDecision = {
+  requestId: string
+  decision: "approved" | "denied"
+  approverDid?: string
+  reason?: string
+  decidedAt: string
+  metadata?: Record<string, unknown>
+}
+```
+
+These shapes are intentionally non-normative. They illustrate the boundary between ACK-Pay and an organization's policy or approval system without requiring ACK-Pay itself to become a workflow engine.
+
+## Example Flow
+
+A typical pre-execution approval flow can work as follows:
+
+1. The client receives a signed payment request and selects a payment option.
+2. Local policy determines that the payment requires human approval before execution.
+3. The client or Payment Service creates a `PaymentApprovalRequest` referencing the payment request and, when relevant, the selected payment option.
+4. An approver returns a `PaymentApprovalDecision` with either `approved` or `denied`.
+5. The caller verifies that the decision references the current approval request and is still valid for the pending payment.
+6. Only an approved decision allows the payment execution path to continue.
+7. After execution, the normal ACK-Pay receipt flow remains unchanged.
+
+For example:
+
+```ts
+const approvalRequest: PaymentApprovalRequest = {
+  id: "approval-123",
+  paymentRequestId: paymentRequest.id,
+  paymentOptionId: selectedOption.id,
+  requesterDid: agentDid,
+  reason: "Payment exceeds the autonomous spending threshold",
+  expiresAt: "2030-01-01T12:00:00Z",
+}
+
+const approvalDecision: PaymentApprovalDecision = {
+  requestId: approvalRequest.id,
+  decision: "approved",
+  approverDid: ownerDid,
+  decidedAt: new Date().toISOString(),
+}
+
+if (approvalDecision.decision !== "approved") {
+  throw new Error("Payment was not approved")
+}
+
+// Continue with the existing ACK-Pay execution flow.
+```
+
+Applications should authenticate the approval channel, enforce expiry and replay protections, and record enough context for later audit. Those concerns belong to the policy or approval system rather than the ACK-Pay protocol itself.
+
 ## Human Approval Example Flow
 
 !["Example Human Intervention"](/images/human.png)
