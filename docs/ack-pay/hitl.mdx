@@ -57,8 +57,8 @@ A typical pre-execution approval flow can work as follows:
 2. Local policy determines that the payment requires human approval before execution.
 3. The client or Payment Service creates a `PaymentApprovalRequest` referencing the payment request and, when relevant, the selected payment option.
 4. An approver returns a `PaymentApprovalDecision` with either `approved` or `denied`.
-5. The caller verifies that the decision references the current approval request and is still valid for the pending payment.
-6. Only an approved decision allows the payment execution path to continue.
+5. The caller authenticates the approval response, verifies that it references the current approval request, and checks that the request has not expired.
+6. Only an approved, correctly bound, unexpired decision allows the payment execution path to continue.
 7. After execution, the normal ACK-Pay receipt flow remains unchanged.
 
 For example:
@@ -78,6 +78,15 @@ const approvalDecision: PaymentApprovalDecision = {
   decision: "approved",
   approverDid: ownerDid,
   decidedAt: new Date().toISOString(),
+}
+
+if (approvalDecision.requestId !== approvalRequest.id) {
+  throw new Error("Approval decision does not match this request")
+}
+
+const expiresAt = Date.parse(approvalRequest.expiresAt ?? "")
+if (!Number.isFinite(expiresAt) || expiresAt <= Date.now()) {
+  throw new Error("Approval request is invalid or expired")
 }
 
 if (approvalDecision.decision !== "approved") {
