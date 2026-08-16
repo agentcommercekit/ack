@@ -308,6 +308,10 @@ importers:
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
+    devDependencies:
+      vite-tsconfig-paths:
+        specifier: 6.1.1
+        version: 6.1.1(typescript@7.0.2)(vite@7.3.6(@types/node@26.3.0)(jiti@2.7.0)(tsx@4.23.12)(yaml@2.9.0))
 
   packages/ack-id:
     dependencies:
