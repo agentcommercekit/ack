@@ -339,6 +339,7 @@ describe("Verifier Example Service", () => {
       const json = await res.json()
       expect(json.ok).toBe(true)
       expect(typeof json.data.pong).toBe("string")
+      expect(new Date(json.data.pong).toISOString()).toBe(json.data.pong)
     })
   })
 
