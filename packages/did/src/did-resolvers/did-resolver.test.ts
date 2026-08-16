@@ -11,7 +11,10 @@ describe("DidResolver", () => {
     publicKey: {
       encoding: "hex",
       curve: "secp256k1",
-      value: "0xc0ffee254729296a45a3885639AC7E10F9d54979",
+      // Uncompressed secp256k1 public key, matching the fixture in
+      // `methods/did-key.test.ts`
+      value:
+        "0x040bbd0a3fd05709d2814df8ed91003dc47eeecdded1f21602e9c4a913a094a6bada499b1fb61333e449d86e7de9489dc640774a21baea08bd86db2b8a8a7beba8",
     },
   })
 

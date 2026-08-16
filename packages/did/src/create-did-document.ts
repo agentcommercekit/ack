@@ -1,4 +1,5 @@
 import {
+  encodePublicKey,
   encodePublicKeyFromKeypair,
   type KeyCurve,
   type Keypair,
@@ -8,7 +9,6 @@ import {
 } from "@agentcommercekit/keys"
 import {
   base58ToBytes,
-  bytesToMultibase,
   hexStringToBytes,
 } from "@agentcommercekit/keys/encoding"
 import type { VerificationMethod } from "did-resolver"
@@ -68,17 +68,17 @@ function convertLegacyPublicKeyToMultibase(
 ): DidDocumentPublicKey {
   switch (publicKey.encoding) {
     case "hex":
-      return {
-        encoding: "multibase",
-        curve: publicKey.curve,
-        value: bytesToMultibase(hexStringToBytes(publicKey.value)),
-      }
+      return encodePublicKey(
+        "multibase",
+        hexStringToBytes(publicKey.value),
+        publicKey.curve,
+      )
     case "base58":
-      return {
-        encoding: "multibase",
-        curve: publicKey.curve,
-        value: bytesToMultibase(base58ToBytes(publicKey.value)),
-      }
+      return encodePublicKey(
+        "multibase",
+        base58ToBytes(publicKey.value),
+        publicKey.curve,
+      )
     default:
       return publicKey
   }

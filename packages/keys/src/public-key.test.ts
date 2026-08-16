@@ -1,3 +1,4 @@
+import { varint } from "multiformats"
 import { describe, expect, test } from "vitest"
 
 import { isBase58 } from "./encoding/base58"
@@ -8,10 +9,14 @@ import {
   isPublicKeyJwkSecp256k1,
   isPublicKeyJwkSecp256r1,
 } from "./encoding/jwk"
-import { isMultibase } from "./encoding/multibase"
-import { keyCurves, type KeyCurve } from "./key-curves"
+import { isMultibase, multibaseToBytes } from "./encoding/multibase"
+import { keyCurveMulticodecs, keyCurves, type KeyCurve } from "./key-curves"
 import { generateKeypair } from "./keypair"
-import { encodePublicKeyFromKeypair, isValidPublicKey } from "./public-key"
+import {
+  encodePublicKeyFromKeypair,
+  isValidPublicKey,
+  publicKeyToMultikey,
+} from "./public-key"
 
 const ecCurves = ["secp256k1", "secp256r1"] as const satisfies KeyCurve[]
 
@@ -40,6 +45,24 @@ describe("public-key methods", () => {
       const keypair = await generateKeypair(curve)
       const publicKey = encodePublicKeyFromKeypair("multibase", keypair)
       expect(isMultibase(publicKey.value)).toBe(true)
+    })
+
+    test("encodes public key as a Multikey", async () => {
+      const keypair = await generateKeypair(curve)
+      const value = publicKeyToMultikey(keypair.publicKey, curve)
+
+      expect(encodePublicKeyFromKeypair("multibase", keypair).value).toBe(value)
+
+      const bytes = multibaseToBytes(value)
+      const [code, prefixLength] = varint.decode(bytes)
+
+      // The multicodec code identifies the curve, so a reader can tell one
+      // curve's key from another's
+      expect(code).toBe(keyCurveMulticodecs[curve])
+
+      // Ed25519 has a single 32-byte encoding; the EC curves use their
+      // 33-byte compressed form, which is what their codes identify
+      expect(bytes.length - prefixLength).toBe(curve === "Ed25519" ? 32 : 33)
     })
 
     test("encodes public key to base58", async () => {
