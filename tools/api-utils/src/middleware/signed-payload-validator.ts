@@ -1,8 +1,8 @@
 import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import type { MiddlewareHandler, ValidationTargets } from "hono"
-import { env } from "hono/adapter"
 import { validator } from "hono/validator"
+// SECURITY FIX: Removed 'env' import from 'hono/adapter' as environment-based authentication bypasses are explicitly forbidden.
 import * as v from "valibot"
 
 import { validatePayload } from "../validate-payload"
@@ -53,51 +53,24 @@ export const signedPayloadValidator = <S extends v.GenericSchema>(
     async (value, c): Promise<ValidatedSignedPayload<v.InferOutput<S>>> => {
       const didResolver = c.get("resolver")
 
-      try {
-        const data = v.parse(signedPayloadSchema, value)
-        const { parsed, body } = await validatePayload(
-          data.payload,
-          schema,
-          didResolver,
-        )
+      // SECURITY FIX: Removed the try-catch block and the `ALLOW_UNSIGNED_PAYLOADS` escape hatch.
+      // We now strictly require a cryptographically signed JWT envelope for all protected routes.
+      // Spoofed `X-Payload-Issuer` headers with raw bodies are no longer accepted under any environment condition.
+      const data = v.parse(signedPayloadSchema, value)
+      const { parsed, body } = await validatePayload(
+        data.payload,
+        schema,
+        didResolver,
+      )
 
-        // Enforces a DID for the issuer
-        if (!isDidUri(parsed.issuer)) {
-          throw new Error("Invalid issuer")
-        }
+      // Enforces a DID for the issuer
+      if (!isDidUri(parsed.issuer)) {
+        throw new Error("Invalid issuer")
+      }
 
-        return {
-          issuer: parsed.issuer,
-          body,
-        }
-      } catch (error) {
-        /**
-         * Local-development escape hatch: allow a raw unsigned payload plus an
-         * `X-Payload-Issuer` header to bypass the JWT signature check. This is an
-         * authentication bypass, so it is gated behind an explicit, default-off
-         * `ALLOW_UNSIGNED_PAYLOADS` flag (NOT `NODE_ENV`, which is commonly set to
-         * "development" by accident in deployed environments). Never enable it
-         * outside local development.
-         */
-        if (
-          env<{ ALLOW_UNSIGNED_PAYLOADS?: string }>(c)
-            .ALLOW_UNSIGNED_PAYLOADS === "true"
-        ) {
-          const issuer = c.req.header("X-Payload-Issuer")
-          const parsedPayload = v.safeParse(schema, value)
-          if (isDidUri(issuer) && parsedPayload.success) {
-            console.warn(
-              `[signed-payload-validator] SECURITY: accepting an UNSIGNED payload (issuer "${issuer}" from the X-Payload-Issuer header) because ALLOW_UNSIGNED_PAYLOADS is enabled. Never enable this outside local development.`,
-            )
-            return {
-              issuer,
-              body: parsedPayload.output,
-            }
-          }
-        }
-
-        // Otherwise, rethrow the error
-        throw error
+      return {
+        issuer: parsed.issuer,
+        body,
       }
     },
   )
