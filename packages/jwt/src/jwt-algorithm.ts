@@ -3,7 +3,8 @@ import { isKeyCurve, type KeyCurve } from "@agentcommercekit/keys"
 /**
  * JWT signing algorithms supported by the JWT library
  *
- * The did-jwt library also supports non-standard "ES256K-R" for
+ * The did-jwt library also supports non-standard "ES256K-R" for recovery
+ * signatures, which ACK does not support.
  */
 export const jwtAlgorithms = ["ES256", "ES256K", "EdDSA"] as const
 export type JwtAlgorithm = (typeof jwtAlgorithms)[number]

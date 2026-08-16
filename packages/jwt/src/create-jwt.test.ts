@@ -55,4 +55,22 @@ describe("createJWT", () => {
       "Failed to create JWT",
     )
   })
+
+  it("creates a JWT with custom typ and alg header overrides", async () => {
+    const expectedJwt =
+      "eyJ0eXAiOiJreWErSldUIiwiYWxnIjoiRVMyNTYifQ.eyJpc3MiOiJkaWQ6ZXhhbXBsZTo0NTYifQ.sig"
+
+    vi.mocked(baseCreateJWT).mockResolvedValueOnce(expectedJwt)
+
+    const result = await createJwt(mockPayload, mockOptions, {
+      typ: "kya+JWT",
+      alg: "ES256",
+    })
+
+    expect(result).toBe(expectedJwt)
+    expect(baseCreateJWT).toHaveBeenCalledWith(mockPayload, mockOptions, {
+      typ: "kya+JWT",
+      alg: "ES256",
+    })
+  })
 })

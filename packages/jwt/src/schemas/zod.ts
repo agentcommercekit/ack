@@ -22,7 +22,7 @@ export const jwtPayloadSchema = JwtPayloadSchema
  */
 export const jwtHeaderSchema = z
   .looseObject({
-    typ: z.literal("JWT"),
+    typ: z.string().optional(),
     alg: z.enum(jwtAlgorithms),
   })
   .refine((_val): _val is JwtHeader => true)
