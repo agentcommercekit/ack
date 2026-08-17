@@ -9,137 +9,174 @@ This example demonstrates an [ACK-ID](https://agentcommercekit.com/ack-id) and [
 
 The API supports issuing, verifying, and revoking two primary credential types:
 
-- **`ControllerCredential`**: proves ownership of DIDs (part of ACK-ID).
-- **`PaymentReceiptCredential`**: provides proof of payment meeting a Payment Request (part of ACK-Pay).
+- **`ControllerCredential`**: Proves ownership of DIDs as part of ACK-ID.
+- **`PaymentReceiptCredential`**: Provides proof of payment that satisfies a Payment Request as part of ACK-Pay.
 
-The issuer implements credential revocation using [Bitstring Status List](https://www.w3.org/TR/vc-bitstring-status-list/), a privacy-preserving and efficient revocation list method.
+The issuer implements credential revocation using [Bitstring Status List](https://www.w3.org/TR/vc-bitstring-status-list/), a privacy-preserving and efficient revocation-list method.
 
 ## Installation and Setup
 
-Install dependencies and prepare your environment.
-
-From within the issuer example directory (e.g., from project root: `./examples/issuer`) execute the setup:
+Install dependencies and prepare your environment. From within the issuer example directory (for example, `./examples/issuer` from the project root), execute:
 
 ```sh
 pnpm run setup
+```
 
-Running the Server
+## Running the Server
+
 Start the API server locally:
 
-Bash
+```sh
 pnpm run dev
+```
 
-The server runs at: http://localhost:3456
+The server runs at <http://localhost:3456>.
 
-API Endpoints
-Authentication
-Mutation endpoints require a signed payload (JWT) proving DID ownership.
+## API Endpoints
 
-Response Format
+### Authentication
+
+Mutation endpoints require a signed payload (JWT) proving DID ownership. Read-only GET endpoints do not require a signed payload.
+
+### Response Format
+
 Credential endpoints use this JSON structure:
 
-JSON
+```json
 {
   "ok": true,
-  "data": <data>
+  "data": "<data>"
 }
+```
 
-or
+or:
 
-JSON
+```json
 {
   "ok": false,
   "error": "Error message"
 }
+```
 
-GET /status/:listId returns a bare BitstringStatusListCredential and GET /.well-known/did.json returns a bare DID document without the { ok, data } envelope.
+`GET /status/:listId` returns a bare `BitstringStatusListCredential`, and `GET /.well-known/did.json` returns a bare DID document without the `{ ok, data }` envelope.
 
-Controller Credential Endpoints
-POST /credentials/controller
-Issue a ControllerCredential proving DID control.
+## Controller Credential Endpoints
 
-Sample cURL:
+### POST /credentials/controller
 
-Bash
+Issue a `ControllerCredential` proving DID control.
+
+#### Sample cURL
+
+```sh
+# NOTE: Replace this non-runnable placeholder with a valid signed JWT.
 curl --request POST \
   --url http://localhost:3456/credentials/controller \
   --header 'Content-Type: application/json' \
   --data '{
   "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-GET /credentials/controller/:id
-Retrieve a ControllerCredential by ID.
+```
 
-Sample cURL:
+### GET /credentials/controller/:id
 
-Bash
+Retrieve a `ControllerCredential` by ID.
+
+#### Sample cURL
+
+```sh
 curl --request GET \
   --url http://localhost:3456/credentials/controller/abc123
-DELETE /credentials/controller
-Revoke a ControllerCredential by ID.
+```
 
-Sample cURL:
+### DELETE /credentials/controller
 
-Bash
+Revoke a `ControllerCredential` by ID.
+
+#### Sample cURL
+
+```sh
+# NOTE: Replace this non-runnable placeholder with a valid signed JWT.
 curl --request DELETE \
   --url http://localhost:3456/credentials/controller \
   --header 'Content-Type: application/json' \
   --data '{
   "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-Payment Receipt Endpoints  
-POST /credentials/receipts  
-Issue a PaymentReceiptCredential.  
+```
 
-Sample cURL:  
+## Payment Receipt Endpoints
 
-Bash
+### POST /credentials/receipts
+
+Issue a `PaymentReceiptCredential`.
+
+#### Sample cURL
+
+```sh
+# NOTE: Replace this non-runnable placeholder with a valid signed JWT.
 curl --request POST \
   --url http://localhost:3456/credentials/receipts \
   --header 'Content-Type: application/json' \
   --data '{
   "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-GET /credentials/receipts/:id  
-Retrieve a PaymentReceiptCredential by ID.  
+```
 
-Sample cURL:
+### GET /credentials/receipts/:id
 
-Bash
+Retrieve a `PaymentReceiptCredential` by ID.
+
+#### Sample cURL
+
+```sh
 curl --request GET \
   --url http://localhost:3456/credentials/receipts/abc123
-DELETE /credentials/receipts
-Revoke a PaymentReceiptCredential by ID.
+```
 
-Sample cURL:
+### DELETE /credentials/receipts
 
-Bash
+Revoke a `PaymentReceiptCredential` by ID.
+
+#### Sample cURL
+
+```sh
+# NOTE: Replace this non-runnable placeholder with a valid signed JWT.
 curl --request DELETE \
   --url http://localhost:3456/credentials/receipts \
   --header 'Content-Type: application/json' \
   --data '{
   "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-Status List Endpoint
-GET /status/:listId
-Retrieve Bitstring Status List credential for revocation checks.
+```
 
-Sample cURL:
+## Status List Endpoint
 
-Bash
+### GET /status/:listId
+
+Retrieve the Bitstring Status List credential for revocation checks.
+
+#### Sample cURL
+
+```sh
 curl --request GET \
   --url http://localhost:3456/status/0
-DID Document Endpoint
-GET /.well-known/did.json
+```
+
+## DID Document Endpoint
+
+### GET /.well-known/did.json
+
 Retrieve the issuer's DID Document.
 
-Sample cURL:
+#### Sample cURL
 
-Bash
+```sh
 curl --request GET \
   --url http://localhost:3456/.well-known/did.json
-  
-References
-Verifiable Credentials Data Model Specification
+```
 
-This Example's Source Code
+## References
+
+- [Verifiable Credentials Data Model Specification](https://www.w3.org/TR/vc-data-model/)
+- [This example's source code](https://github.com/agentcommercekit/ack/tree/main/examples/issuer)
