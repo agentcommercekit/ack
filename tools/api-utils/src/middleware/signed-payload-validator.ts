@@ -2,10 +2,10 @@ import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import type { MiddlewareHandler, ValidationTargets } from "hono"
 import { validator } from "hono/validator"
-// SECURITY FIX: Removed 'env' import from 'hono/adapter' as environment-based authentication bypasses are explicitly forbidden.
 import * as v from "valibot"
 
 import { validatePayload } from "../validate-payload"
+import { unauthorized } from "../exceptions"
 
 interface SignedPayloadEnv {
   Variables: {
@@ -53,9 +53,6 @@ export const signedPayloadValidator = <S extends v.GenericSchema>(
     async (value, c): Promise<ValidatedSignedPayload<v.InferOutput<S>>> => {
       const didResolver = c.get("resolver")
 
-      // SECURITY FIX: Removed the try-catch block and the `ALLOW_UNSIGNED_PAYLOADS` escape hatch.
-      // We now strictly require a cryptographically signed JWT envelope for all protected routes.
-      // Spoofed `X-Payload-Issuer` headers with raw bodies are no longer accepted under any environment condition.
       const data = v.parse(signedPayloadSchema, value)
       const { parsed, body } = await validatePayload(
         data.payload,
@@ -65,7 +62,7 @@ export const signedPayloadValidator = <S extends v.GenericSchema>(
 
       // Enforces a DID for the issuer
       if (!isDidUri(parsed.issuer)) {
-        throw new Error("Invalid issuer")
+        throw unauthorized("Invalid issuer")
       }
 
       return {

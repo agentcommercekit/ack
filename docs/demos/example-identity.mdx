@@ -22,165 +22,124 @@ From within the issuer example directory (e.g., from project root: `./examples/i
 
 ```sh
 pnpm run setup
-```
 
-## Running the Server
-
+Running the Server
 Start the API server locally:
 
-```sh
+Bash
 pnpm run dev
-```
 
-The server runs at: [http://localhost:3456](http://localhost:3456)
+The server runs at: http://localhost:3456
 
-## API Endpoints
+API Endpoints
+Authentication
+Mutation endpoints require a signed payload (JWT) proving DID ownership.
 
-### Authentication
+Response Format
+Credential endpoints use this JSON structure:
 
-All endpoints require a **signed payload** (JWT) proving DID ownership. During local development, include the `X-Payload-Issuer` header with a resolvable DID-URI to bypass signature verification.
-
-### Response Format
-
-All API responses use this JSON structure:
-
-```json
+JSON
 {
   "ok": true,
   "data": <data>
 }
-```
 
 or
 
-```json
+JSON
 {
   "ok": false,
   "error": "Error message"
 }
-```
 
-### Controller Credential Endpoints
+GET /status/:listId returns a bare BitstringStatusListCredential and GET /.well-known/did.json returns a bare DID document without the { ok, data } envelope.
 
-#### `POST /credentials/controller`
-
+Controller Credential Endpoints
+POST /credentials/controller
 Issue a ControllerCredential proving DID control.
 
-**Sample cURL:**
+Sample cURL:
 
-```sh
+Bash
 curl --request POST \
   --url http://localhost:3456/credentials/controller \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:controller' \
   --data '{
-  "controller": "did:web:0.0.0.0%3A3458:controller",
-  "subject": "did:web:0.0.0.0%3A3458:agent"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
-
-#### `GET /credentials/controller/:id`
-
+GET /credentials/controller/:id
 Retrieve a ControllerCredential by ID.
 
-**Sample cURL:**
+Sample cURL:
 
-```sh
+Bash
 curl --request GET \
   --url http://localhost:3456/credentials/controller/abc123
-```
-
-#### `DELETE /credentials/controller`
-
+DELETE /credentials/controller
 Revoke a ControllerCredential by ID.
 
-**Sample cURL:**
+Sample cURL:
 
-```sh
+Bash
 curl --request DELETE \
   --url http://localhost:3456/credentials/controller \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:controller' \
   --data '{
-  "id": "abc123"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
+Payment Receipt Endpoints  
+POST /credentials/receipts  
+Issue a PaymentReceiptCredential.  
 
-### Payment Receipt Endpoints
+Sample cURL:  
 
-#### `POST /credentials/receipts`
-
-Issue a PaymentReceiptCredential.
-
-**Sample cURL:**
-
-```sh
+Bash
 curl --request POST \
   --url http://localhost:3456/credentials/receipts \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:wallet' \
   --data '{
-  "metadata": { "txHash": "0x123abc456def" },
-  "payerDid": "did:web:0.0.0.0%3A3458:wallet",
-  "paymentRequestToken": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "paymentOptionId": "option1"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
+GET /credentials/receipts/:id  
+Retrieve a PaymentReceiptCredential by ID.  
 
-#### `GET /credentials/receipts/:id`
+Sample cURL:
 
-Retrieve a PaymentReceiptCredential by ID.
-
-**Sample cURL:**
-
-```sh
+Bash
 curl --request GET \
   --url http://localhost:3456/credentials/receipts/abc123
-```
-
-#### `DELETE /credentials/receipts`
-
+DELETE /credentials/receipts
 Revoke a PaymentReceiptCredential by ID.
 
-**Sample cURL:**
+Sample cURL:
 
-```sh
+Bash
 curl --request DELETE \
   --url http://localhost:3456/credentials/receipts \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:payee' \
   --data '{
-  "id": "abc123"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
-
-### Status List Endpoint
-
-#### `GET /status/:listId`
-
+Status List Endpoint
+GET /status/:listId
 Retrieve Bitstring Status List credential for revocation checks.
 
-**Sample cURL:**
+Sample cURL:
 
-```sh
+Bash
 curl --request GET \
-  --url http://localhost:3456/status/1
-```
-
-### DID Document Endpoint
-
-#### `GET /.well-known/did.json`
-
+  --url http://localhost:3456/status/0
+DID Document Endpoint
+GET /.well-known/did.json
 Retrieve the issuer's DID Document.
 
-**Sample cURL:**
+Sample cURL:
 
-```sh
+Bash
 curl --request GET \
   --url http://localhost:3456/.well-known/did.json
-```
+  
+References
+Verifiable Credentials Data Model Specification
 
-## References
-
-- [Verifiable Credentials Data Model Specification](https://www.w3.org/TR/vc-data-model/)
-- [This Example's Source Code](https://github.com/agentcommercekit/ack/tree/main/examples/issuer)
+This Example's Source Code

@@ -1,3 +1,4 @@
+```markdown
 # ACK: Credential Issuer Example
 
 This example showcases a **Credential Issuer** for [ACK-ID](https://www.agentcommercekit.com/ack-id) and [ACK-Pay](https://www.agentcommercekit.com/ack-pay) Verifiable Credentials. This API is built with [Hono](https://hono.dev).
@@ -13,66 +14,47 @@ This issuer supports credential revocation using [Bitstring Status List](https:/
 
 ```sh
 pnpm run setup
-```
-
-## Running the server
-
-```sh
+Running the server
+Bash
 pnpm run dev
-```
+The server will be available at http://localhost:3456
 
-The server will be available at <http://localhost:3456>
-
-### Database
-
+Database
 To simplify the development experience, this API uses a SQLite database. In a production environment, we recommend using a database with native bitwise operations like PostgreSQL.
 
-## API Endpoints
+API Endpoints
+Authentication
+All API endpoints require a signed payload to prove ownership of the DIDs involved. This payload is a JWT of the request parameters, signed using your DID.
 
-### Authentication
-
-All API endpoints require a **signed payload** to prove ownership of the DIDs involved. This payload is a JWT of the request parameters, signed using your DID.
-
-In local development, you can bypass the signed payload requirement by setting `ALLOW_UNSIGNED_PAYLOADS="true"` in your `.env` and sending an `X-Payload-Issuer` header with a DID-URI as its value. This simulates that you signed the payload, and is **off by default** — never enable it outside local development, as it disables authentication. NOTE: This `did` MUST be resolvable, which makes using the [`local-did-host`](../local-did-host/) server helpful.
-
-### Response format
-
+Response format
 All API responses respond as JSON objects with the following format:
 
-```json
+JSON
 {
   "ok": true,
   "data": <anything>
 }
-```
-
 or
 
-```json
+JSON
 {
   "ok": false,
   "error": "string error message"
 }
-```
-
-### Controller Credential Endpoints
-
-#### POST /credentials/controller
-
+Controller Credential Endpoints
+POST /credentials/controller
 Create a new ControllerCredential that proves one DID controls another
 
-**Request Payload**, signed by the controller
+Request Payload, signed by the controller
 
-```ts
+TypeScript
 SignedPayload<{
   controller: "did:..."
   subject: "did:..."
 }>
-```
+Response Body
 
-**Response Body**
-
-```json
+JSON
 {
   "ok": true,
   "data": {
@@ -82,28 +64,21 @@ SignedPayload<{
     "jwt": "credential-jwt"
   }
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request POST \
   --url http://localhost:3456/credentials/controller \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:controller' \
   --data '{
-  "controller": "did:web:0.0.0.0%3A3458:controller",
-  "subject": "did:web:0.0.0.0%3A3458:agent"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
-
-#### GET /credentials/controller/:id
-
+GET /credentials/controller/:id
 Retrieve a credential by its identifier
 
-**Response Body**
+Response Body
 
-```json
+JSON
 {
   "ok": true,
   "data": {
@@ -113,57 +88,43 @@ Retrieve a credential by its identifier
     "jwt": "credential-jwt"
   }
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request GET \
   --url http://localhost:3456/credentials/controller/abc123
-```
-
-#### DELETE /credentials/controller
-
+DELETE /credentials/controller
 Revoke a credential by its identifier
 
-**Request Payload**, signed by the controller
+Request Payload, signed by the controller
 
-```ts
+TypeScript
 SignedPayload<{
   id: "credential-id"
 }>
-```
+Response Body
 
-**Response Body**
-
-```json
+JSON
 {
   "ok": true,
   "data": null
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request DELETE \
   --url http://localhost:3456/credentials/controller \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:controller' \
   --data '{
-  "id": "abc123"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
-
-### Payment Receipt Endpoints
-
-#### POST /credentials/receipts
-
+Payment Receipt Endpoints
+POST /credentials/receipts
 Generate a payment receipt credential that proves a payment was made
 
-**Request Payload**, signed by the wallet that made the payment:
+Request Payload, signed by the wallet that made the payment:
 
-```ts
+TypeScript
 SignedPayload<{
   metadata: {
     txHash: "0x123..."
@@ -172,11 +133,9 @@ SignedPayload<{
   paymentRequestToken: "jwt-token"
   paymentOptionId: "option-id"
 }>
-```
+Response Body
 
-**Response Body**
-
-```json
+JSON
 {
   "ok": true,
   "data": {
@@ -186,32 +145,21 @@ SignedPayload<{
     "jwt": "credential-jwt"
   }
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request POST \
   --url http://localhost:3456/credentials/receipts \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:wallet' \
   --data '{
-  "metadata": {
-    "txHash": "0x123abc456def"
-  },
-  "payerDid": "did:web:0.0.0.0%3A3458:wallet",
-  "paymentRequestToken": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9...",
-  "paymentOptionId": "option1"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
-
-#### GET /credentials/receipts/:id
-
+GET /credentials/receipts/:id
 Retrieve a payment receipt credential by its identifier
 
-**Response Body**
+Response Body
 
-```json
+JSON
 {
   "ok": true,
   "data": {
@@ -221,95 +169,75 @@ Retrieve a payment receipt credential by its identifier
     "jwt": "credential-jwt"
   }
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request GET \
   --url http://localhost:3456/credentials/receipts/abc123
-```
-
-#### DELETE /credentials/receipts
-
+DELETE /credentials/receipts
 Revokes a payment receipt credential by flipping the bit on the credential's Status List.
 
 For demo purposes, we only allow the original payment request token issuer to revoke the receipt.
 
-**Request Payload**, signed by the original payment request token issuer
+Request Payload, signed by the original payment request token issuer
 
-```ts
+TypeScript
 SignedPayload<{
   id: "receipt-id"
 }>
-```
+Response Body
 
-**Response Body**
-
-```json
+JSON
 {
   "ok": true,
   "data": null
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request DELETE \
   --url http://localhost:3456/credentials/receipts \
   --header 'Content-Type: application/json' \
-  --header 'X-Payload-Issuer: did:web:0.0.0.0%3A3458:payee' \
   --data '{
-  "id": "abc123"
+  "payload": "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6d2ViOmV4YW1wbGUuY29tIn0.signature"
 }'
-```
-
-### Status Endpoints
-
-#### GET /status/:listId
-
+Status Endpoints
+GET /status/:listId
 Retrieve a Bitstring Status List credential for checking revocation status.
 
 Unlike the other endpoints, this one returns the signed credential directly
-rather than in the `{ ok, data }` envelope. Verifiers dereference this URL as
-the credential's `statusListCredential` and expect the credential itself; a
+rather than in the { ok, data } envelope. Verifiers dereference this URL as
+the credential's statusListCredential and expect the credential itself; a
 wrapped body cannot be verified, so revocation checks would fail.
 
-**Response Body**
+Response Body
 
-```json
+JSON
 {
-  "@context": ["https://www.w3.org/2018/credentials/v1"],
-  "id": "http://localhost:3456/status/1",
+  "@context": ["[https://www.w3.org/2018/credentials/v1](https://www.w3.org/2018/credentials/v1)"],
+  "id": "http://localhost:3456/status/0",
   "type": ["VerifiableCredential", "BitstringStatusListCredential"],
   "issuer": { "id": "did:web:..." },
   "credentialSubject": {
-    "id": "http://localhost:3456/status/1#list",
+    "id": "http://localhost:3456/status/0#list",
     "type": "BitstringStatusList",
     "statusPurpose": "revocation",
     "encodedList": "..."
   },
   "proof": { "type": "JwtProof2020", "jwt": "jwt-string" }
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request GET \
-  --url http://localhost:3456/status/1
-```
-
-### DID Endpoints
-
-#### GET /.well-known/did.json
-
+  --url http://localhost:3456/status/0
+DID Endpoints
+GET /.well-known/did.json
 Return the DID document for the issuer
 
-**Response Body**
+Response Body
 
-```json
+JSON
 {
   "@context": [...],
   "id": "did:web:...",
@@ -317,15 +245,10 @@ Return the DID document for the issuer
   "authentication": [...],
   "assertionMethod": [...]
 }
-```
+Sample cURL
 
-**Sample cURL**
-
-```sh
+Bash
 curl --request GET \
   --url http://localhost:3456/.well-known/did.json
-```
-
-## License (MIT)
-
-Copyright (c) 2025 [Catena Labs, Inc](https://catenalabs.com).
+License (MIT)
+Copyright (c) 2025 Catena Labs, Inc.
