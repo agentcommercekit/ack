@@ -11,12 +11,10 @@ on:
 jobs:
   check:
     runs-on: ubuntu-latest
-    env:
-      ANTHROPIC_API_KEY: secret
-      ISSUER_PRIVATE_KEY: "0xa45f5c566918ef954e8c200a96b14092cabcd69cb8a1a132804a2b8cbb8489a1"
-      VERIFIER_PRIVATE_KEY: "0xeeca8f89b2f5196126f7d9199e739153bd43a13f9cdd1099e7191a33143a2059"
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
       - uses: ./.github/actions/setup
       - run: pnpm run build
       - run: pnpm run check
