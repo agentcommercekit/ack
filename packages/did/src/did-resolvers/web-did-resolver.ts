@@ -74,6 +74,7 @@ async function fetchDidDocumentAtUrl(
 ): Promise<DidDocument> {
   const res = await fetch(url, {
     mode: "cors",
+    redirect: "error", // Following a redirect would send the request to a host the check never saw, which is how a status list URL becomes a probe for internal addresses (same threat model as is-revoked.ts).
     ...(timeout !== undefined ? { signal: AbortSignal.timeout(timeout) } : {}),
   })
 
