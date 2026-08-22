@@ -16,6 +16,16 @@ export function unauthorized(message = "Unauthorized"): never {
   })
 }
 
+export function paymentRequired(
+  response?: Response,
+  message = "Payment Required",
+): never {
+  throw new HTTPException(402, {
+    res: response,
+    message,
+  })
+}
+
 export function notFound(message = "Not Found"): never {
   throw new HTTPException(404, {
     message,
