@@ -26,6 +26,7 @@ describe.each(Object.entries(schemasBySource))(
           "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
           "bitcoin:mainnet",
           "cosmos:cosmoshub-4",
+          "eip-155:1", // hyphen allowed in namespace
         ]
 
         for (const chainId of validChainIds) {
@@ -43,7 +44,7 @@ describe.each(Object.entries(schemasBySource))(
           "ab:1", // too short namespace
           "verylongnamespace:1", // too long namespace
           "EIP155:1", // uppercase not allowed in namespace
-          "eip-155:1", // hyphen not allowed in namespace
+          "eip_155:1", // underscore not allowed in namespace
         ]
 
         for (const chainId of invalidChainIds) {

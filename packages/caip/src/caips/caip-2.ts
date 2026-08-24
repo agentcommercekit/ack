@@ -3,7 +3,7 @@
  * @see {@link https://github.com/ChainAgnostic/CAIPs/blob/main/CAIPs/caip-2.md}
  *
  * chain_id:    namespace + ":" + reference
- * namespace:   [a-z0-9]{3,8}
+ * namespace:   [-a-z0-9]{3,8}
  * reference:   [-_a-zA-Z0-9]{1,32}
  */
 
@@ -13,7 +13,7 @@ export type Caip2ChainIdParts = {
   reference: string
 }
 
-export const caip2NamespacePattern = "[a-z0-9]{3,8}"
+export const caip2NamespacePattern = "[-a-z0-9]{3,8}"
 export const caip2ReferencePattern = "[-_a-zA-Z0-9]{1,32}"
 export const caip2ChainIdPattern = `${caip2NamespacePattern}:${caip2ReferencePattern}`
 
