@@ -27,10 +27,10 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@inquirer/prompts": "8.5.2",
-    "figlet": "1.11.0",
+    "@inquirer/prompts": "8.6.0",
+    "figlet": "1.11.4",
     "strip-ansi": "7.2.0",
-    "wrap-ansi": "10.0.0",
-    "yoctocolors": "2.1.2"
+    "wrap-ansi": "10.0.1",
+    "yoctocolors": "2.2.0"
   }
 }

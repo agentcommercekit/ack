@@ -55,9 +55,9 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@noble/curves": "2.2.0",
-    "@solana/codecs-strings": "6.10.0",
-    "multiformats": "14.0.0",
+    "@noble/curves": "2.3.0",
+    "@solana/codecs-strings": "8.0.0",
+    "multiformats": "14.0.5",
     "uint8arrays": "6.1.1"
   }
 }

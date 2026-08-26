@@ -23,15 +23,15 @@
     "test": "vitest"
   },
   "dependencies": {
-    "@ai-sdk/anthropic": "3.0.85",
-    "@ai-sdk/openai": "3.0.74",
-    "@ai-sdk/valibot": "2.0.31",
+    "@ai-sdk/anthropic": "4.0.42",
+    "@ai-sdk/openai": "4.0.47",
+    "@ai-sdk/valibot": "3.0.30",
     "@hono/node-server": "catalog:",
     "@hono/standard-validator": "catalog:",
     "@repo/api-utils": "workspace:*",
     "@repo/cli-tools": "workspace:*",
     "agentcommercekit": "workspace:*",
-    "ai": "6.0.209",
+    "ai": "7.0.79",
     "hono": "catalog:",
     "valibot": "catalog:",
     "zod": "catalog:"
