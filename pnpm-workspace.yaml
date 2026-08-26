@@ -31,29 +31,23 @@ catalog:
   zod: 4.4.3
 
 # Force patched versions of vulnerable transitive dependencies (pnpm audit).
-# Scoped by major where multiple vulnerable lines coexist in the tree.
+# Scoped by major or range so only the vulnerable lines move.
 # https://pnpm.io/settings#overrides
 overrides:
-  "body-parser@1": "^1.20.3"
-  "body-parser@2": "^2.2.1"
-  "path-to-regexp@0.1": "^0.1.13"
+  # drizzle-kit -> @esbuild-kit/esm-loader (deprecated) pins esbuild 0.18.x.
+  "esbuild@<0.24.3": "^0.25.0"
+  # vite 7.3.5 pins esbuild ^0.27 (vulnerable); 7.3.6 allows ^0.28.
+  "vite@7": "^7.3.6"
+  # express 4 (via mintlify) pins qs 6.14.x.
   "qs@6": "^6.15.2"
-  "picomatch@2": "^2.3.2"
-  "picomatch@4": "^4.0.4"
-  "js-yaml@4": "^4.2.0"
-  # read-yaml-file@1.x pins js-yaml 3.x (vulnerable, uses removed safeLoad);
-  # 2.1.0 is the latest CommonJS line and uses js-yaml 4.x.
-  "read-yaml-file@1": "^2.1.0"
-  "ws@8": "^8.20.1"
-  "uuid@11": "^11.1.1"
-  "tar@7": "^7.5.16"
-  rollup: "^4.59.0"
-  vite: "^7.3.5"
-  postcss: "^8.5.10"
-  esbuild: "^0.25.0"
-  jsondiffpatch: "^0.7.2"
-  js-yaml@<3.15.0: ^3.15.0
-  adm-zip@<0.6.0: ^0.6.0
+  # mintlify pins sharp 0.33.x (libvips CVEs). sharp is never built here
+  # (allowBuilds: false), so the bump is inert at runtime.
+  "sharp@<0.35.0": "^0.35.0"
+  # @mintlify/scraping pins puppeteer 24.x, whose @puppeteer/browsers 2.x depends
+  # on extract-zip <=2.0.1 (no patched release exists). puppeteer 25 moves to
+  # @puppeteer/browsers 3.x, which drops extract-zip. puppeteer is never built
+  # here (allowBuilds: false).
+  "puppeteer@24": "^25.0.0"
 
 allowBuilds:
   "@scarf/scarf": false
@@ -62,7 +56,3 @@ allowBuilds:
   keytar: false
   puppeteer: false
   sharp: false
-
-minimumReleaseAgeExclude:
-  - js-yaml@3.15.0
-  - adm-zip@0.6.0
