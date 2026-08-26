@@ -366,10 +366,6 @@ describe("web-did-resolver", () => {
     })
 
     it("refuses redirects by default and reports the redirect target", async () => {
-      // The allowedHttpHosts check applies to the resolved URL only, so a
-      // followed redirect could reach a host or scheme it would reject. With
-      // `redirect: "manual"` the redirect resolves instead of throwing, so
-      // the error can name the target from the Location header.
       mockFetch.mockResolvedValueOnce({
         status: 302,
         headers: {
@@ -413,8 +409,6 @@ describe("web-did-resolver", () => {
     })
 
     it("refuses an opaque browser redirect without a target", async () => {
-      // Browsers surface manual redirects as an opaque response with no
-      // readable status or headers.
       mockFetch.mockResolvedValueOnce({
         type: "opaqueredirect",
         status: 0,

@@ -52,6 +52,8 @@ export interface DidWebResolverOptions {
    * would have rejected. did:web documents are served directly at a
    * well-known path, so redirects are refused by default.
    *
+   * The policy is applied via `init.redirect` on the request. A custom
+   * `fetch` must honour `init.redirect` for it to take effect.
    * @default false
    */
   followRedirects?: boolean
@@ -94,9 +96,7 @@ async function fetchDidDocumentAtUrl(
     ...(timeout !== undefined ? { signal: AbortSignal.timeout(timeout) } : {}),
   })
 
-  // With `redirect: "manual"` a redirect resolves instead of throwing, so we
-  // can report it precisely. Node exposes the 3xx status and Location header;
-  // browsers return an opaque redirect (type "opaqueredirect", status 0).
+  // browsers surface manual redirects as an opaque response with status 0
   if (
     !followRedirects &&
     (res.type === "opaqueredirect" || (res.status >= 300 && res.status < 400))
