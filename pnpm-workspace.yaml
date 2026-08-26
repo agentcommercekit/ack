@@ -40,8 +40,9 @@ overrides:
   "vite@7": "^7.3.6"
   # express 4 (via mintlify) pins qs 6.14.x.
   "qs@6": "^6.15.2"
-  # mintlify pins sharp 0.33.x (libvips CVEs). sharp is never built here
-  # (allowBuilds: false), so the bump is inert at runtime.
+  # mintlify pins sharp 0.33.x (libvips CVEs). sharp 0.35 has no install
+  # script and loads prebuilt @img/sharp-* binaries, so 0.35 runs at docs
+  # build time; verified with `mintlify dev`.
   "sharp@<0.35.0": "^0.35.0"
   # @mintlify/scraping pins puppeteer 24.x, whose @puppeteer/browsers 2.x depends
   # on extract-zip <=2.0.1 (no patched release exists). puppeteer 25 moves to
