@@ -17,7 +17,7 @@ minimumReleaseAge: 1440
 # https://pnpm.io/catalogs
 catalog:
   "@a2a-js/sdk": 0.3.13
-  "@hono/node-server": 2.0.6
+  "@hono/node-server": 2.0.10
   "@hono/standard-validator": 0.2.2
   bit-buffers: 1.0.2
   hono: 4.12.34
