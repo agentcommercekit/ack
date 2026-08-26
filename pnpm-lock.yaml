@@ -10,8 +10,8 @@ catalogs:
       specifier: 0.3.13
       version: 0.3.13
     '@hono/node-server':
-      specifier: 2.0.6
-      version: 2.0.6
+      specifier: 2.0.10
+      version: 2.0.10
     '@hono/standard-validator':
       specifier: 0.2.2
       version: 0.2.2
@@ -138,7 +138,7 @@ importers:
         version: 2.0.31(@valibot/to-json-schema@1.7.1(valibot@1.4.2(typescript@6.0.3)))(valibot@1.4.2(typescript@6.0.3))(zod@4.4.3)
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.0.6(hono@4.12.34)
+        version: 2.0.10(hono@4.12.34)
       '@hono/standard-validator':
         specifier: 'catalog:'
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.34)
@@ -193,7 +193,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.0.6(hono@4.12.34)
+        version: 2.0.10(hono@4.12.34)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -244,7 +244,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.0.6(hono@4.12.34)
+        version: 2.0.10(hono@4.12.34)
       '@libsql/client':
         specifier: 0.17.4
         version: 0.17.4
@@ -287,7 +287,7 @@ importers:
         version: link:../../packages/keys
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.0.6(hono@4.12.34)
+        version: 2.0.10(hono@4.12.34)
       '@hono/standard-validator':
         specifier: 'catalog:'
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.34)
@@ -305,7 +305,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.0.6(hono@4.12.34)
+        version: 2.0.10(hono@4.12.34)
       '@hono/standard-validator':
         specifier: 'catalog:'
         version: 0.2.2(@standard-schema/spec@1.1.0)(hono@4.12.34)
@@ -937,8 +937,8 @@ packages:
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
 
-  '@hono/node-server@2.0.6':
-    resolution: {integrity: sha512-7DeRlKG57JDBNZ5Qj2jwVdgwQy4b0tLubRLl3zCf91/rCf9i7p1V5FtW/yWibm1uUHE493ts9ZXH/7g/LQWl+g==}
+  '@hono/node-server@2.0.10':
+    resolution: {integrity: sha512-ZcnNVhKTmyDJeg0UlnZjvM73JBsTAuhrH/J4fjwGOw59PwOW51r4J+p6CsKZWXdKSme4MFqU62CZMOsdDrU4CA==}
     engines: {node: '>=20'}
     peerDependencies:
       hono: ^4
@@ -7424,7 +7424,7 @@ snapshots:
 
   '@floating-ui/utils@0.2.11': {}
 
-  '@hono/node-server@2.0.6(hono@4.12.34)':
+  '@hono/node-server@2.0.10(hono@4.12.34)':
     dependencies:
       hono: 4.12.34
 
