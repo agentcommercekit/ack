@@ -37,9 +37,7 @@ describe("caip2Parts", () => {
   })
 
   it("throws when the reference is missing after the colon", () => {
-    expect(() => caip2Parts("eip155:" as `${string}:${string}`)).toThrow(
-      "Invalid CAIP-2 chain ID",
-    )
+    expect(() => caip2Parts("eip155:")).toThrow("Invalid CAIP-2 chain ID")
   })
 })
 

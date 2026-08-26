@@ -112,7 +112,7 @@ export function getBuyerDidFromVC(
 export function getSellerDidFromVC(
   vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): DidWebUri {
-  return `did:web:api.skyfire.xyz:seller:${vc.credentialSubject.ssi}` as DidWebUri
+  return `did:web:api.skyfire.xyz:seller:${vc.credentialSubject.ssi}`
 }
 
 /**
@@ -122,7 +122,7 @@ export function getOwnerDidFromVC(
   vc: Verifiable<W3CCredential<SkyfireKyaCredentialSubject>>,
 ): DidWebUri | undefined {
   return vc.credentialSubject.bid.ownerId
-    ? (`did:web:api.skyfire.xyz:owner:${vc.credentialSubject.bid.ownerId}` as DidWebUri)
+    ? `did:web:api.skyfire.xyz:owner:${vc.credentialSubject.bid.ownerId}`
     : undefined
 }
 
