@@ -20,7 +20,7 @@ catalog:
   "@hono/node-server": 2.0.6
   "@hono/standard-validator": 0.2.2
   bit-buffers: 1.0.2
-  hono: 4.12.27
+  hono: 4.12.34
   jose: 6.2.3
   safe-stable-stringify: 2.5.0
   standard-matchers: 0.1.0
