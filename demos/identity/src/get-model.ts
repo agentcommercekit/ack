@@ -8,7 +8,7 @@ export const getModel = () => {
   if (process.env.ANTHROPIC_API_KEY) {
     return createAnthropic({
       apiKey: process.env.ANTHROPIC_API_KEY,
-    })("claude-3-7-sonnet-20250219")
+    })("claude-sonnet-5")
   } else if (process.env.OPENAI_API_KEY) {
     return createOpenAI({
       apiKey: process.env.OPENAI_API_KEY,
