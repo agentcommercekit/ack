@@ -22,7 +22,7 @@ export class HaikuAgent extends Agent {
 
     return {
       text: result.text,
-      responseMessages: result.response.messages,
+      responseMessages: result.responseMessages,
     }
   }
 }
