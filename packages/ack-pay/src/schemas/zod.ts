@@ -4,6 +4,8 @@ import * as z from "zod"
 
 const urlOrDidUri = z.union([z.url(), didUriSchema])
 
+const nonEmptyString = z.string().min(1)
+
 const timestampSchema = z
   .union([z.date(), z.string()])
   .transform((val, ctx) => {
@@ -21,18 +23,18 @@ const timestampSchema = z
   })
 
 export const paymentOptionSchema = z.object({
-  id: z.string(),
+  id: nonEmptyString,
   amount: z.union([z.number().int().positive(), z.string()]),
   decimals: z.number().int().nonnegative(),
-  currency: z.string(),
-  recipient: z.string(),
+  currency: nonEmptyString,
+  recipient: nonEmptyString,
   network: z.string().optional(),
   paymentService: urlOrDidUri.optional(),
   receiptService: urlOrDidUri.optional(),
 })
 
 export const paymentRequestSchema = z.object({
-  id: z.string(),
+  id: nonEmptyString,
   description: z.string().optional(),
   serviceCallback: z.url().optional(),
   expiresAt: timestampSchema.optional(),
