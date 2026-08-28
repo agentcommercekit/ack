@@ -183,6 +183,37 @@ describe("verifyPaymentRequestToken", () => {
     expect(error.cause).toBeInstanceOf(Error)
   })
 
+  it("throws when sub does not match id without cause", async () => {
+    const mismatchedToken = await createJwt(
+      {
+        ...paymentRequest,
+        id: paymentRequest.id,
+        sub: "different-subject",
+      },
+      {
+        issuer: issuerDid,
+        signer,
+      },
+      {
+        alg: curveToJwtAlgorithm(keypair.curve),
+      },
+    )
+
+    const resolver = getDidResolver()
+    resolver.addToCache(issuerDid, issuerDidDocument)
+
+    const error = await verifyPaymentRequestToken(mismatchedToken, {
+      resolver,
+      verifyExpiry: false,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.message).toBe(
+      "Payment Request token subject does not match its id",
+    )
+    expect(error.cause).toBeUndefined()
+  })
+
   it("throws for a JWT that does not contain a payment config without cause", async () => {
     // Create a JWT with valid format but missing payment config
     const invalidToken = await createJwt(
