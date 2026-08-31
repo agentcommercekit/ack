@@ -1,6 +1,7 @@
 import { isDidUri, type DidUri, type Resolvable } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import type { MiddlewareHandler, ValidationTargets } from "hono"
+import { env } from "hono/adapter"
 import { validator } from "hono/validator"
 import * as v from "valibot"
 
@@ -53,21 +54,45 @@ export const signedPayloadValidator = <S extends v.GenericSchema>(
     async (value, c): Promise<ValidatedSignedPayload<v.InferOutput<S>>> => {
       const didResolver = c.get("resolver")
 
-      const data = v.parse(signedPayloadSchema, value)
-      const { parsed, body } = await validatePayload(
-        data.payload,
-        schema,
-        didResolver,
-      )
+      try {
+        const data = v.parse(signedPayloadSchema, value)
+        const { parsed, body } = await validatePayload(
+          data.payload,
+          schema,
+          didResolver,
+        )
 
-      // Enforces a DID for the issuer
-      if (!isDidUri(parsed.issuer)) {
-        throw unauthorized("Invalid issuer")
-      }
+        // Enforces a DID for the issuer
+        if (!isDidUri(parsed.issuer)) {
+          throw unauthorized("Invalid issuer")
+        }
 
-      return {
-        issuer: parsed.issuer,
-        body,
+        return {
+          issuer: parsed.issuer,
+          body,
+        }
+      } catch (error) {
+        // Fallback for development/testing environments where unsigned payloads are allowed
+        const { ALLOW_UNSIGNED_PAYLOADS } = env<{
+          ALLOW_UNSIGNED_PAYLOADS?: string
+        }>(c)
+
+        if (ALLOW_UNSIGNED_PAYLOADS === "true") {
+          const issuer = c.req.header("X-Payload-Issuer")
+
+          if (!issuer || !isDidUri(issuer)) {
+            throw unauthorized("Invalid issuer")
+          }
+
+          const body = v.parse(schema, value)
+
+          return {
+            issuer,
+            body,
+          }
+        }
+
+        throw error
       }
     },
   )
