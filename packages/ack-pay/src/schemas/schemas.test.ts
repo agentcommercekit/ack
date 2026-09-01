@@ -1,8 +1,8 @@
 import * as v from "valibot"
 import { describe, expect, it } from "vitest"
 
-import { paymentRequestSchema as valibotPaymentRequestSchema } from "./schemas/valibot"
-import { paymentRequestSchema as zodPaymentRequestSchema } from "./schemas/zod"
+import { paymentRequestSchema as valibotPaymentRequestSchema } from "./valibot"
+import { paymentRequestSchema as zodPaymentRequestSchema } from "./zod"
 
 const paymentRequest = {
   id: "test-payment-request-id",
