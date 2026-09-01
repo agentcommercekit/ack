@@ -60,7 +60,11 @@ describe("web-did-resolver", () => {
       })
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/.well-known/did.json",
-        { mode: "cors", signal: expect.any(AbortSignal) },
+        {
+          mode: "cors",
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
       )
     })
 
@@ -92,7 +96,11 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/custom/path/did.json",
-        { mode: "cors", signal: expect.any(AbortSignal) },
+        {
+          mode: "cors",
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
       )
     })
 
@@ -125,7 +133,11 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/.well-known/did.json",
-        { mode: "cors", signal: expect.any(AbortSignal) },
+        {
+          mode: "cors",
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
       )
     })
 
@@ -161,7 +173,11 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "https://example.com/issuers/v1/did.json",
-        { mode: "cors", signal: expect.any(AbortSignal) },
+        {
+          mode: "cors",
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
       )
     })
 
@@ -197,7 +213,11 @@ describe("web-did-resolver", () => {
 
       expect(mockFetch).toHaveBeenCalledWith(
         "http://localhost:8787/issuers/v1/did.json",
-        { mode: "cors", signal: expect.any(AbortSignal) },
+        {
+          mode: "cors",
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
       )
     })
 
@@ -343,6 +363,118 @@ describe("web-did-resolver", () => {
             "resolver_error: DID document id does not match requested did",
         },
       })
+    })
+
+    it("refuses redirects by default and reports the redirect target", async () => {
+      mockFetch.mockResolvedValueOnce({
+        status: 302,
+        headers: {
+          get: (name: string) =>
+            name === "location" ? "http://internal.host/did.json" : null,
+        },
+      })
+
+      const did = "did:web:example.com"
+      const resolver = getResolver()
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com",
+      }
+      const result = await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://example.com/.well-known/did.json",
+        {
+          mode: "cors",
+          redirect: "manual",
+          signal: expect.any(AbortSignal),
+        },
+      )
+      expect(result.didResolutionMetadata.error).toBe("notFound")
+      expect(result.didResolutionMetadata.message).toBe(
+        "resolver_error: DID resolution refused a redirect to http://internal.host/did.json. Set followRedirects: true to allow redirects.",
+      )
+    })
+
+    it("refuses an opaque browser redirect without a target", async () => {
+      mockFetch.mockResolvedValueOnce({
+        type: "opaqueredirect",
+        status: 0,
+        headers: { get: () => null },
+      })
+
+      const did = "did:web:example.com"
+      const resolver = getResolver()
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com",
+      }
+      const result = await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
+
+      expect(result.didResolutionMetadata.error).toBe("notFound")
+      expect(result.didResolutionMetadata.message).toBe(
+        "resolver_error: DID resolution refused a redirect. Set followRedirects: true to allow redirects.",
+      )
+    })
+
+    it("follows redirects when followRedirects is true", async () => {
+      mockFetch.mockResolvedValueOnce({
+        ok: true,
+        json: () => Promise.resolve(mockDidDocument),
+      })
+
+      const did = "did:web:example.com"
+      const resolver = getResolver({ followRedirects: true })
+      const parsedDid: ParsedDID = {
+        did,
+        didUrl: did,
+        method: "web",
+        id: "example.com",
+      }
+      await resolver.web(
+        did,
+        parsedDid,
+        {
+          resolve:
+            vi.fn<
+              (didUrl: string, options?: object) => Promise<DIDResolutionResult>
+            >(),
+        },
+        {},
+      )
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://example.com/.well-known/did.json",
+        {
+          mode: "cors",
+          redirect: "follow",
+          signal: expect.any(AbortSignal),
+        },
+      )
     })
 
     it("uses custom fetch function when provided", async () => {
