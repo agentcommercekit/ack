@@ -187,7 +187,6 @@ describe("verifyPaymentRequestToken", () => {
     const mismatchedToken = await createJwt(
       {
         ...paymentRequest,
-        id: paymentRequest.id,
         sub: "different-subject",
       },
       {
