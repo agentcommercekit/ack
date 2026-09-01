@@ -61,4 +61,28 @@ describe("isDidKeyUri", () => {
   it("returns false for invalid did:key", () => {
     expect(isDidKeyUri("invalid-did-key")).toBe(false)
   })
+
+  it("returns false for a multibase prefix with no key material", () => {
+    expect(isDidKeyUri("did:key:z")).toBe(false)
+    expect(isDidKeyUri("did:key:")).toBe(false)
+  })
+
+  it("returns false for characters outside the base58btc alphabet", () => {
+    for (const char of ["0", "O", "I", "l"]) {
+      expect(isDidKeyUri(`did:key:z${char}`)).toBe(false)
+    }
+  })
+
+  it("returns false for a non-string", () => {
+    expect(isDidKeyUri(undefined)).toBe(false)
+    expect(isDidKeyUri(123)).toBe(false)
+  })
+
+  it("does not vouch for a did:key the resolver rejects", async () => {
+    const resolver = getDidResolver()
+    const resolved = await resolver.resolve("did:key:z")
+
+    expect(resolved.didResolutionMetadata.error).toBe("invalidDid")
+    expect(isDidKeyUri("did:key:z")).toBe(false)
+  })
 })
