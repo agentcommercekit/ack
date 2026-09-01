@@ -34,8 +34,10 @@ describe("pkh-did-resolver", () => {
     },
   )
 
-  it("returns an error for unknown did:pkh URIs", async () => {
-    const result = await resolve("did:pkh:eip-155:1:invalid")
+  it("returns an error for a structurally invalid did:pkh URI", async () => {
+    // Uppercase is not a valid CAIP-2 namespace character, independent of
+    // the hyphen allowance.
+    const result = await resolve("did:pkh:EIP155:1:invalid")
 
     expect(result).toEqual({
       didDocument: null,
