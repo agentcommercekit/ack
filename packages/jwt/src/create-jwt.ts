@@ -15,7 +15,7 @@ export type JwtOptions = JWTOptions
  * JWT header that only contains valid JWT algorithms
  */
 export interface JwtHeader extends Omit<JWTHeader, "alg" | "typ"> {
-  typ: "JWT"
+  typ?: string
   alg: JwtAlgorithm
 }
 
@@ -35,10 +35,11 @@ export async function createJwt(
   options: JwtOptions,
   { alg = "ES256K", ...header }: Partial<JwtHeader> = {},
 ): Promise<JwtString> {
+  // oxlint-disable-next-line typescript/no-unsafe-type-assertion
   const result = await baseCreateJWT(payload, options, {
     ...header,
     alg,
-  })
+  } as Partial<JWTHeader>)
 
   if (!isJwtString(result)) {
     throw new Error("Failed to create JWT")
