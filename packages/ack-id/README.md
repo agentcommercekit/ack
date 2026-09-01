@@ -126,12 +126,15 @@ const handshake = await createA2AHandshakeMessage(
 #### 2. Counterparty Agent verifies and responds
 
 ```ts
-import { verifyA2AHandshakeMessage, createA2AHandshakeMessage } from "@agentcommercekit/ack-id/a2a"
+import {
+  verifyA2AHandshakeMessage,
+  createA2AHandshakeMessage,
+} from "@agentcommercekit/ack-id/a2a"
 
 // On receiving handshake message from customer
 const payload = await verifyA2AHandshakeMessage(handshake.message, {
   did: "did:web:bank.example.com",
-  counterparty: "did:web:customer.example.com"
+  counterparty: "did:web:customer.example.com",
 })
 // payload.nonce is the customer's nonce
 
@@ -143,8 +146,7 @@ const response = await createA2AHandshakeMessage(
     did: "did:web:bank.example.com",
     requestNonce: payload.nonce,
     // ...
-
-  }
+  },
 )
 // Send response to the customer
 ```
