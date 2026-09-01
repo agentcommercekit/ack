@@ -12,7 +12,7 @@ interface ValidatePaymentRequestTokenOptions {
    */
   resolver?: Resolvable
   /**
-   * Whether to verify the expiry of the payment request token
+   * Whether to verify JWT `exp` and PaymentRequest `expiresAt`
    */
   verifyExpiry?: boolean
   /**
@@ -56,6 +56,15 @@ export async function verifyPaymentRequestToken(
     throw new InvalidPaymentRequestTokenError(
       "Payment Request token is not a valid PaymentRequest",
     )
+  }
+
+  // `expiresAt` is a business-level expiry distinct from JWT `exp`.
+  if (
+    options.verifyExpiry !== false &&
+    output.expiresAt !== undefined &&
+    Date.parse(output.expiresAt) <= Date.now()
+  ) {
+    throw new InvalidPaymentRequestTokenError("Payment request has expired")
   }
 
   return {
