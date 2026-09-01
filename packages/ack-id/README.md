@@ -63,16 +63,10 @@ try {
 ### Type Guards for Credential Validation
 
 ```ts
-import {
-  isControllerClaim,
-  isControllerCredential,
-} from "@agentcommercekit/ack-id"
+import { isControllerCredential } from "@agentcommercekit/ack-id"
 
 // Check if a credential is specifically a controller credential
 isControllerCredential(credential)
-
-// Check if a credential subject has the controller claim structure
-isControllerClaim(credential.credentialSubject)
 ```
 
 ## API Reference
@@ -81,7 +75,6 @@ isControllerClaim(credential.credentialSubject)
 
 - `createControllerCredential(params: CreateControllerCredentialParams): W3CCredential` - Creates a verifiable credential that establishes a controller relationship
 - `isControllerCredential(credential: unknown): credential is ControllerCredential` - Type guard for controller credentials
-- `isControllerClaim(credentialSubject: CredentialSubject): boolean` - Type guard for controller claims
 - `getControllerClaimVerifier(): ClaimVerifier` - Returns a verifier that can validate controller claims
 
 ### Schema Validation
@@ -97,7 +90,7 @@ import { controllerClaimSchema } from "@agentcommercekit/ack-id/schemas/zod"
 
 ## A2A Support
 
-This package includes utilities for building secure, mutually authenticated agent-to-agent (A2A) flows using DIDs and JWTs, as demonstrated in the [demo-identity-a2a](../docs/demos/demo-identity-a2a.mdx).
+This package includes utilities for building secure, mutually authenticated agent-to-agent (A2A) flows using DIDs and JWTs, as demonstrated in the [demo-identity-a2a](../../docs/demos/demo-identity-a2a.mdx).
 
 ### Key Exports from `@agentcommercekit/ack-id/a2a`
 
@@ -133,25 +126,27 @@ const handshake = await createA2AHandshakeMessage(
 #### 2. Counterparty Agent verifies and responds
 
 ```ts
-import { verifyA2AHandshakeMessage, createA2AHandshakeMessage } from "@agentcommercekit/ack-id/a2a"
+import {
+  verifyA2AHandshakeMessage,
+  createA2AHandshakeMessage,
+} from "@agentcommercekit/ack-id/a2a"
 
 // On receiving handshake message from customer
 const payload = await verifyA2AHandshakeMessage(handshake.message, {
   did: "did:web:bank.example.com",
-  counterparty: "did:web:customer.example.com"
+  counterparty: "did:web:customer.example.com",
 })
 // payload.nonce is the customer's nonce
 
 // Respond with a handshake message including the received nonce
-t const response = await createA2AHandshakeMessage(
+const response = await createA2AHandshakeMessage(
   "agent",
   "did:web:customer.example.com",
   {
     did: "did:web:bank.example.com",
     requestNonce: payload.nonce,
     // ...
-
-  }
+  },
 )
 // Send response to the customer
 ```
