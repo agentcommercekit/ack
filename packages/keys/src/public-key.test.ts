@@ -65,6 +65,24 @@ describe("public-key methods", () => {
       expect(bytes.length - prefixLength).toBe(curve === "Ed25519" ? 32 : 33)
     })
 
+    test("throws when the bytes are not a public key on the curve", async () => {
+      const keypair = await generateKeypair(curve)
+
+      // The message asserts the rejection comes from the curve check, rather
+      // than incidentally from decoding an EC point
+      const message = `Invalid ${curve} public key`
+
+      // Wrong length for every curve
+      expect(() => publicKeyToMultikey(new Uint8Array(20), curve)).toThrow(
+        message,
+      )
+
+      // Right length for the curve, but not a point on it
+      const notOnCurve = new Uint8Array(keypair.publicKey.length).fill(0xff)
+      expect(isValidPublicKey(notOnCurve, curve)).toBe(false)
+      expect(() => publicKeyToMultikey(notOnCurve, curve)).toThrow(message)
+    })
+
     test("encodes public key to base58", async () => {
       const keypair = await generateKeypair(curve)
       const publicKey = encodePublicKeyFromKeypair("base58", keypair)

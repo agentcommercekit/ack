@@ -21,11 +21,11 @@ method, so they carry the same value. Documents built with the default `jwk`
 encoding are unaffected. A document published with the old value keeps whatever
 it was published with; re-generating it produces the corrected value.
 
-`encodePublicKey("multibase", bytes, curve)` now throws for `secp256k1` and
-`secp256r1` when `bytes` is not a point on that curve, since compressing it
-requires decoding it. It previously accepted any bytes and encoded them, which
-is how a value that was not a key could end up in a `Multikey`. Ed25519 is
-unaffected: it has a single 32-byte encoding and no compression step.
+`encodePublicKey("multibase", bytes, curve)` now throws when `bytes` is not a
+public key on `curve`, for every curve. It previously accepted any bytes and
+encoded them, which is how a value that was not a key could end up in a
+`Multikey` — and a Multikey states which curve its key is on, so bytes that are
+not a key on that curve must not carry one of these prefixes.
 
 Adds `publicKeyToMultikey(publicKey, curve)` and `keyCurveMulticodecs` to
 `@agentcommercekit/keys`, plus `compressPublicKey` on the `secp256k1` and

@@ -102,11 +102,18 @@ function compressPublicKey(publicKey: Uint8Array, curve: KeyCurve): Uint8Array {
  * @param publicKey - The raw public key bytes
  * @param curve - The curve the key belongs to
  * @returns The Multikey string
+ * @throws If `publicKey` is not a valid public key on `curve`
  */
 export function publicKeyToMultikey(
   publicKey: Uint8Array,
   curve: KeyCurve,
 ): string {
+  // A Multikey says which curve its key is on, so bytes that are not a key on
+  // that curve must not get one of these prefixes.
+  if (!isValidPublicKey(publicKey, curve)) {
+    throw new Error(`Invalid ${curve} public key`)
+  }
+
   const compressed = compressPublicKey(publicKey, curve)
   const code = keyCurveMulticodecs[curve]
   const prefix = new Uint8Array(varint.encodingLength(code))
