@@ -19,7 +19,7 @@
     "docs": "mintlify dev"
   },
   "devDependencies": {
-    "mintlify": "4.2.637"
+    "mintlify": "4.2.824"
   },
-  "packageManager": "pnpm@11.8.0"
+  "packageManager": "pnpm@11.24.0"
 }

@@ -41,8 +41,8 @@ import { verifyJwt } from "@agentcommercekit/jwt"
 
 const resolver = getDidResolver()
 
-const parsed = await verifyJwt(payload, {
-  resolver: didResolver,
+const parsed = await verifyJwt(jwt, {
+  resolver,
 })
 
 console.log(parsed.payload)

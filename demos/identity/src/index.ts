@@ -148,7 +148,7 @@ Owner DID (Unique Identifier):`,
     ),
   )
   log("Owner DID Document (Public Keys & Metadata):")
-  logJson(clientOwner.didDocument as Record<string, unknown>, colors.magenta)
+  logJson(clientOwner.didDocument, colors.magenta)
   log(
     colors.italic(
       "\n  This document contains cryptographic public keys that allow others to verify signatures made by this owner.",
@@ -194,7 +194,7 @@ Client Agent DID (Unique Identifier for the Agent):`,
     ),
   )
   log("Client Agent DID Document (Agent's Public Keys & Metadata):")
-  logJson(clientAgent.didDocument as Record<string, unknown>, colors.magenta)
+  logJson(clientAgent.didDocument, colors.magenta)
   log(
     colors.italic(
       "\n  This document allows the client agent to prove its identity and sign messages.",
@@ -271,7 +271,7 @@ Owner DID (Unique Identifier):`,
     colors.italic("\n  Another unique DID, this time for the server's owner."),
   )
   log("Owner DID Document (Public Keys & Metadata):")
-  logJson(serverOwner.didDocument as Record<string, unknown>, colors.magenta)
+  logJson(serverOwner.didDocument, colors.magenta)
 
   await waitForEnter("Press Enter to create Server Agent...")
 
@@ -305,7 +305,7 @@ Server Agent DID (Unique Identifier for the Agent):`,
     ),
   )
   log("Server Agent DID Document (Agent's Public Keys & Metadata):")
-  logJson(serverAgent.didDocument as Record<string, unknown>, colors.magenta)
+  logJson(serverAgent.didDocument, colors.magenta)
 
   await waitForEnter(
     "Press Enter to issue Server Agent Ownership Credential...",

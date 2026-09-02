@@ -3,10 +3,27 @@ import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod"
 import * as z from "zod"
 
 const urlOrDidUri = z.union([z.url(), didUriSchema])
+const positiveIntegerString = z.string().regex(/^[1-9]\d*$/)
+
+const timestampSchema = z
+  .union([z.date(), z.string()])
+  .transform((val, ctx) => {
+    const date = new Date(val)
+    if (Number.isNaN(date.getTime())) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Invalid date",
+        input: val,
+      })
+      return z.NEVER
+    }
+
+    return date.toISOString()
+  })
 
 export const paymentOptionSchema = z.object({
   id: z.string(),
-  amount: z.union([z.number().int().positive(), z.string()]),
+  amount: z.union([z.number().int().positive(), positiveIntegerString]),
   decimals: z.number().int().nonnegative(),
   currency: z.string(),
   recipient: z.string(),
@@ -19,10 +36,7 @@ export const paymentRequestSchema = z.object({
   id: z.string(),
   description: z.string().optional(),
   serviceCallback: z.url().optional(),
-  expiresAt: z
-    .union([z.date(), z.string()])
-    .transform((val) => new Date(val).toISOString())
-    .optional(),
+  expiresAt: timestampSchema.optional(),
   paymentOptions: z.array(paymentOptionSchema).nonempty(),
 })
 
