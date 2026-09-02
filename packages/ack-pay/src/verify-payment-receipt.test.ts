@@ -56,6 +56,7 @@ describe("verifyPaymentReceipt()", () => {
           currency: "USD",
           network: "eip155:84532",
           recipient: "0x592D4858DE40BC81A77E5B373238B70D7C79D3C79",
+          receiptService: receiptIssuerDid,
         },
       ],
     }
@@ -237,6 +238,31 @@ describe("verifyPaymentReceipt()", () => {
       verifyPaymentReceipt(signedReceiptJwt, {
         resolver,
         trustedReceiptIssuers: ["did:example:wrong-issuer"],
+      }),
+    ).rejects.toThrow(UntrustedIssuerError)
+  })
+
+  it("throws when the receipt issuer does not match the selected payment option receiptService", async () => {
+    const otherReceiptIssuerKeypair = await generateKeypair("secp256k1")
+    const otherReceiptIssuerDid = createDidKeyUri(otherReceiptIssuerKeypair)
+    const mismatchedReceipt = createPaymentReceipt({
+      paymentRequestToken,
+      paymentOptionId: "test-payment-option-id",
+      issuer: otherReceiptIssuerDid,
+      payerDid: createDidPkhUri(
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
+      ),
+    })
+    const signedMismatchedReceipt = await signCredential(mismatchedReceipt, {
+      did: otherReceiptIssuerDid,
+      signer: createJwtSigner(otherReceiptIssuerKeypair),
+    })
+
+    await expect(
+      verifyPaymentReceipt(signedMismatchedReceipt, {
+        resolver,
+        trustedReceiptIssuers: [receiptIssuerDid, otherReceiptIssuerDid],
       }),
     ).rejects.toThrow(UntrustedIssuerError)
   })

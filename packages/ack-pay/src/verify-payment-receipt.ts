@@ -1,10 +1,11 @@
-import type { Resolvable } from "@agentcommercekit/did"
+import { isDidUri, type Resolvable } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import {
   InvalidCredentialError,
   InvalidCredentialSubjectError,
   isCredential,
   parseJwtCredential,
+  UntrustedIssuerError,
   verifyParsedCredential,
   type Verifiable,
   type W3CCredential,
@@ -127,6 +128,26 @@ export async function verifyPaymentReceipt(
       issuer: paymentRequestIssuer,
     },
   )
+
+  const selectedPaymentOption = paymentRequest.paymentOptions.find(
+    (paymentOption) =>
+      paymentOption.id === verifiedReceipt.credentialSubject.paymentOptionId,
+  )
+
+  if (!selectedPaymentOption) {
+    throw new InvalidCredentialSubjectError(
+      "Payment option ID was not found in the Payment Request",
+    )
+  }
+
+  if (
+    isDidUri(selectedPaymentOption.receiptService) &&
+    selectedPaymentOption.receiptService !== verifiedReceipt.issuer.id
+  ) {
+    throw new UntrustedIssuerError(
+      "Receipt issuer does not match the selected payment option receiptService",
+    )
+  }
 
   return {
     receipt: verifiedReceipt,
