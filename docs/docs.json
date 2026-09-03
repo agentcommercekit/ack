@@ -69,6 +69,7 @@
               "ack-pay/receipt-verification",
               "ack-pay/hitl",
               "ack-pay/operational-considerations",
+              "ack-pay/interoperability",
               "ack-pay/summary"
             ]
           },
