@@ -181,11 +181,21 @@ describe("JWK encoding", () => {
         crv: "Ed25519" as const,
         x: "base64x",
       }
+      const secp256k1Jwk = {
+        kty: "EC" as const,
+        crv: "secp256k1" as const,
+        x: "base64x",
+        y: "base64y",
+      }
 
       expect(isPrivateKeyJwk({ ...baseJwk, d: 1 })).toBe(false)
       expect(isPrivateKeyJwk({ ...baseJwk, d: "" })).toBe(false)
       expect(isJwk({ ...baseJwk, d: 1 })).toBe(false)
       expect(isJwk({ ...baseJwk, d: "" })).toBe(false)
+      expect(isPrivateKeyJwk({ ...secp256k1Jwk, d: 1 })).toBe(false)
+      expect(isPrivateKeyJwk({ ...secp256k1Jwk, d: "" })).toBe(false)
+      expect(isJwk({ ...secp256k1Jwk, d: 1 })).toBe(false)
+      expect(isJwk({ ...secp256k1Jwk, d: "" })).toBe(false)
     })
   })
 
