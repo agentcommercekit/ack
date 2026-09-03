@@ -6,6 +6,10 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
+function hasValidPrivateKey(jwk: Record<string, unknown>): boolean {
+  return !("d" in jwk) || (typeof jwk.d === "string" && jwk.d.length > 0)
+}
+
 /**
  * JWK-encoding
  */
@@ -96,7 +100,7 @@ function isJwkSecp256(
     return false
   }
 
-  return true
+  return hasValidPrivateKey(jwk)
 }
 
 /**
@@ -142,7 +146,7 @@ export function isJwkEd25519(jwk: unknown): jwk is JwkEd25519 {
     return false
   }
 
-  return true
+  return hasValidPrivateKey(jwk)
 }
 
 export function isJwk(jwk: unknown): jwk is Jwk {
@@ -178,7 +182,7 @@ export function isPublicKeyJwkEd25519(
  * Check if an object is a valid private key JWK
  */
 export function isPrivateKeyJwk(jwk: unknown): jwk is PrivateKeyJwk {
-  return isJwk(jwk) && !!jwk.d
+  return isJwk(jwk) && "d" in jwk
 }
 
 export function isPrivateKeyJwkSecp256k1(
