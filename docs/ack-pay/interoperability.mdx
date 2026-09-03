@@ -1,100 +1,107 @@
----
-title: "Interoperability with MPP and x402"
-description: "Non-normative mapping between ACK-Pay concepts and emerging HTTP 402 payment protocols."
----
-
-ACK-Pay is rail-neutral: it defines payment requests, execution evidence, and
-verifiable receipts without requiring a specific settlement network or transport.
-[MPP](https://modelcontextprotocol.io) and [x402](https://x402.org) are both
-evolving quickly around HTTP 402 flows. This page maps ACK-Pay primitives to
-those protocols so builders can compose them without coupling ACK to either one.
-
-<Warning>
-  This mapping is **non-normative**. It explains where ACK can compose with
-  MPP/x402 and what ACK adds beyond rail-specific payment execution. Field names
-  and wire formats may change as those protocols evolve.
-</Warning>
-
-## Concept mapping
-
-| ACK-Pay | MPP | x402 |
-| --- | --- | --- |
-| Payment Request | Challenge | `PaymentRequired` / `PaymentRequirements` |
-| Payment option | Payment method / payment request | `scheme` + `network` + requirements |
-| Payment execution proof | Credential | `PaymentPayload` / `Payment-Signature` |
-| Payment receipt VC | Receipt | Payment Response / signed receipt extension |
-| Receipt issuer | Server / payment verifier | Facilitator / resource server |
-| Human oversight / policy | Client / payment-service policy | Client / facilitator policy layer |
-
-## What ACK adds
-
-ACK-Pay keeps the **receipt** layer stable regardless of how funds move:
-
-- **Verifiable Credentials** — receipts are signed VCs that any relying party can
-  verify with standard DID resolution, not just the original HTTP server.
-- **Transport-agnostic requests** — the same payment request shape works over
-  HTTP 402, MCP, WebSockets, or A2A; MPP and x402 today focus primarily on HTTP.
-- **Policy and HITL hooks** — spend limits, approvals, and compliance metadata
-  live in ACK's payment-service layer and can wrap MPP/x402 execution underneath.
-
-MPP and x402 remain the right choice when you need rail-specific execution
-(exact stablecoin transfer, facilitator verification, MCP tool billing). ACK
-sits above or beside them as the **audit and identity layer**.
-
-## Composition pattern
-
-A typical stack:
-
-1. **Server** issues an ACK-Pay Payment Request (signed JWT) in a 402 response.
-2. **Client** pays via an x402 facilitator or MPP credential exchange.
-3. **Receipt Service** issues an ACK Receipt VC whose `credentialSubject.metadata`
-   carries opaque references to the rail-specific proof — settlement hash,
-   facilitator receipt ID, MPP session ID, etc.
-4. **Server** verifies the ACK Receipt (signature + bound payment request) and
-   optionally checks required metadata fields for its own policy.
-
-The core VC shape does not change when the settlement rail changes; only
-`metadata` extensions differ.
-
-### Example metadata extensions
-
-```json
-{
-  "credentialSubject": {
-    "paymentRequestToken": "<signed-ack-payment-request-jwt>",
-    "paymentOptionId": "usdc-base-sepolia",
-    "metadata": {
-      "settlementNetwork": "eip155:8453",
-      "settlementReference": "0xabc123...",
-      "x402": {
-        "scheme": "exact",
-        "paymentSignature": "<base64-payment-signature>"
-      },
-      "mpp": {
-        "sessionId": "mpp-session-abc",
-        "credentialId": "cred-xyz"
-      }
-    }
-  }
-}
-```
-
-Servers should treat `x402` and `mpp` blocks as **opaque extension metadata**:
-ACK-Pay verification covers the receipt signature and payment-request binding;
-applications decide which extension fields are required for their policy.
-
-## When to use which layer
-
-| Need | Start with |
-| --- | --- |
-| HTTP 402 paywall on a single API | x402 or MPP transport + ACK receipt for audit |
-| Multi-rail options (card + stablecoin) | ACK Payment Request with multiple `paymentOptions` |
-| Agent-to-agent commerce with DID identity | ACK-ID + ACK-Pay end-to-end |
-| MCP tool billing | MPP challenge flow; ACK receipt for cross-service proof |
-
-## Related reading
-
-- [Receipt Verification](/ack-pay/receipt-verification) — ACK Receipt format and
-  metadata extension points
-- [Payment Service](/ack-pay/payment-service) — bridging to other protocols
-- [Future Directions](/overview/future-directions) — planned x402 interop work
+---
+title: "Interoperability with MPP and x402"
+description: "Non-normative mapping between ACK-Pay concepts and emerging HTTP 402 payment protocols."
+---
+
+ACK-Pay is rail-neutral: it defines payment requests, execution evidence, and
+verifiable receipts without requiring a specific settlement network or transport.
+[MPP](https://mpp.dev) and [x402](https://x402.org) are both evolving quickly
+around HTTP 402 flows. This page maps ACK-Pay primitives to those protocols so
+builders can compose them without coupling ACK to either one.
+
+<Warning>
+  This mapping is **non-normative**. It explains where ACK can compose with
+  MPP/x402 and what ACK adds beyond rail-specific payment execution. Field names
+  and wire formats may change as those protocols evolve.
+</Warning>
+
+## Concept mapping
+
+| ACK-Pay | MPP | x402 |
+| --- | --- | --- |
+| Payment Request | Challenge | `PaymentRequired` / `PaymentRequirements` |
+| Payment option | Payment method / payment request | `scheme` + `network` + requirements |
+| Payment execution proof | Credential | `PaymentPayload` / `PAYMENT-SIGNATURE` |
+| Payment receipt VC | Receipt | `PAYMENT-RESPONSE` settlement result; optional signed-receipt extension |
+| Receipt issuer | Server / payment verifier | Facilitator and/or resource server |
+| Human oversight / policy | Client / payment-service policy | Client / facilitator policy layer |
+
+## What ACK adds
+
+ACK-Pay keeps the **receipt** layer stable regardless of how funds move:
+
+- **Verifiable Credentials** — receipts are signed VCs that any relying party can
+  verify with standard DID resolution, not just the original HTTP server.
+- **Transport-agnostic requests** — the same payment request shape works over
+  HTTP 402, MCP, WebSockets, or A2A; MPP and x402 today focus primarily on HTTP.
+- **Policy and HITL hooks** — spend limits, approvals, and compliance metadata
+  live in ACK's payment-service layer and can wrap MPP/x402 execution underneath.
+
+MPP and x402 remain the right choice when you need rail-specific execution
+(exact stablecoin transfer, facilitator verification, MCP tool billing). ACK
+sits above or beside them as the **audit and identity layer**.
+
+## Composition pattern
+
+A typical stack:
+
+1. **Server** issues an HTTP 402 response whose JSON body is an ACK-Pay
+   **Payment Request payload**. That payload includes a signed
+   `paymentRequestToken` JWT — clients must handle the full JSON body, not a bare
+   token alone.
+2. **Client** pays via an x402 facilitator or MPP credential exchange.
+3. **Receipt Service** issues an ACK Receipt VC whose `credentialSubject.metadata`
+   carries opaque references to the rail-specific proof — settlement hash,
+   facilitator receipt ID, MPP session ID, etc.
+4. **Server** verifies the ACK Receipt with the full trust checks: signature,
+   trusted issuer, revocation status, payment-request binding, and matching
+   payment option/details. Rail-specific `metadata` fields remain optional and
+   policy-specific.
+
+The core VC shape does not change when the settlement rail changes; only
+`metadata` extensions differ.
+
+### Example metadata extensions
+
+```json
+{
+  "credentialSubject": {
+    "paymentRequestToken": "<signed-ack-payment-request-jwt>",
+    "paymentOptionId": "usdc-base-sepolia",
+    "metadata": {
+      "settlementNetwork": "eip155:8453",
+      "settlementReference": "0xabc123...",
+      "x402": {
+        "scheme": "exact",
+        "paymentSignature": "<base64-payment-signature>"
+      },
+      "mpp": {
+        "sessionId": "mpp-session-abc",
+        "credentialId": "cred-xyz"
+      }
+    }
+  }
+}
+```
+
+Servers should treat `x402` and `mpp` blocks as **opaque extension metadata**:
+ACK-Pay verification covers signature, issuer trust, revocation, and
+payment-request binding; applications decide which extension fields are required
+for their policy.
+
+## When to use which layer
+
+| Need | Start with |
+| --- | --- |
+| HTTP 402 paywall on a single API | x402 or MPP transport + ACK receipt for audit |
+| Multi-rail options (card + stablecoin) | ACK Payment Request with multiple `paymentOptions` |
+| Agent-to-agent commerce with DID identity | ACK-ID + ACK-Pay end-to-end |
+| MCP tool billing | MPP challenge flow; ACK receipt for cross-service proof |
+
+## Related reading
+
+- [Receipt Verification](/ack-pay/receipt-verification) — ACK Receipt format and
+  metadata extension points
+- [Payment Service](/ack-pay/payment-service) — bridging to other protocols
+- [Future Directions](/overview/future-directions) — planned x402 interop work
+
