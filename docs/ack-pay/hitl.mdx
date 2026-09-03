@@ -27,3 +27,42 @@ Human oversight may be integrated at three key points in the payment lifecycle:
 !["Example Human Intervention"](/images/human.png)
 
 Integrating these Human-in-the-Loop mechanisms allows organizations to balance the efficiency of automation with the accountability and guardrails provided by human oversight.
+
+## Approval request and decision
+
+ACK-Pay does not run a policy engine. Demos and Payment Services that need a shared object model for pre-execution sign-off can use the optional types exported from `@agentcommercekit/ack-pay`:
+
+```ts
+import type {
+  PaymentApprovalDecision,
+  PaymentApprovalRequest,
+} from "@agentcommercekit/ack-pay"
+
+const approvalRequest: PaymentApprovalRequest = {
+  id: "approval-1",
+  paymentRequestId: "payment-123",
+  paymentOptionId: "usdc-base",
+  requesterDid: "did:web:agent.example.com",
+  reason: "Amount exceeds agent spend policy",
+  expiresAt: "2026-09-03T12:00:00.000Z",
+}
+
+const approvalDecision: PaymentApprovalDecision = {
+  requestId: approvalRequest.id,
+  decision: "approved",
+  approverDid: "did:web:owner.example.com",
+  decidedAt: "2026-09-03T12:01:00.000Z",
+}
+```
+
+`isPaymentApprovalRequest` / `isPaymentApprovalDecision` are type guards for the same shapes.
+
+### Example flow
+
+1. Client or agent constructs a Payment Request.
+2. Policy (outside ACK) requires human sign-off → emit a `PaymentApprovalRequest`.
+3. Owner or operator records a `PaymentApprovalDecision`.
+4. On `approved`, the Payment Service executes and issues a Payment Receipt as usual.
+5. On `denied`, skip execution; do not issue a receipt.
+
+This is a documentation and type boundary, not a workflow runtime. Wire `id` / `paymentRequestId` in your own store.
