@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest"
 
 import { bytesToBase64url, isBase64url } from "./base64"
 import {
+  isJwk,
   isPrivateKeyJwk,
   isPublicKeyJwk,
   isPublicKeyJwkEd25519,
@@ -172,6 +173,29 @@ describe("JWK encoding", () => {
         // missing d
       }
       expect(isPrivateKeyJwk(invalidJwk)).toBe(false)
+    })
+
+    test("rejects private key JWKs with invalid d values", () => {
+      const baseJwk = {
+        kty: "OKP" as const,
+        crv: "Ed25519" as const,
+        x: "base64x",
+      }
+      const secp256k1Jwk = {
+        kty: "EC" as const,
+        crv: "secp256k1" as const,
+        x: "base64x",
+        y: "base64y",
+      }
+
+      expect(isPrivateKeyJwk({ ...baseJwk, d: 1 })).toBe(false)
+      expect(isPrivateKeyJwk({ ...baseJwk, d: "" })).toBe(false)
+      expect(isJwk({ ...baseJwk, d: 1 })).toBe(false)
+      expect(isJwk({ ...baseJwk, d: "" })).toBe(false)
+      expect(isPrivateKeyJwk({ ...secp256k1Jwk, d: 1 })).toBe(false)
+      expect(isPrivateKeyJwk({ ...secp256k1Jwk, d: "" })).toBe(false)
+      expect(isJwk({ ...secp256k1Jwk, d: 1 })).toBe(false)
+      expect(isJwk({ ...secp256k1Jwk, d: "" })).toBe(false)
     })
   })
 
