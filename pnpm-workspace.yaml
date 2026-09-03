@@ -49,6 +49,8 @@ overrides:
   # @puppeteer/browsers 3.x, which drops extract-zip. puppeteer is never built
   # here (allowBuilds: false).
   "puppeteer@24": "^25.0.0"
+  qs@>=2.2.5 <6.16.0: ^6.16.0
+  qs@>=6.14.2 <=6.15.3: ^6.16.0
 
 allowBuilds:
   "@scarf/scarf": false
