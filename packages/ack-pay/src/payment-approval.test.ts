@@ -38,6 +38,15 @@ describe("isPaymentApprovalRequest", () => {
   it("rejects missing paymentRequestId", () => {
     expect(isPaymentApprovalRequest({ id: "a" })).toBe(false)
   })
+
+  it("rejects date-only expiresAt values", () => {
+    expect(
+      isPaymentApprovalRequest({
+        ...request,
+        expiresAt: "2026-09-03",
+      }),
+    ).toBe(false)
+  })
 })
 
 describe("isPaymentApprovalDecision", () => {
@@ -58,6 +67,9 @@ describe("isPaymentApprovalDecision", () => {
     )
     expect(
       isPaymentApprovalDecision({ ...decision, decidedAt: "not-a-date" }),
+    ).toBe(false)
+    expect(
+      isPaymentApprovalDecision({ ...decision, decidedAt: "2026-09-03" }),
     ).toBe(false)
   })
 })
