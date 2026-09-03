@@ -61,4 +61,24 @@ describe("isExpired", () => {
 
     expect(isExpired(credential)).toBe(true)
   })
+
+  it("treats a non-string expiration date as expired (fail closed)", () => {
+    // `parseJwtCredential` does not validate that `expirationDate` is a
+    // string, so a malformed or untrusted credential can carry a number
+    // (or another non-string JSON value) here at runtime, bypassing the
+    // type system. `new Date(epochMs)` parses to a valid date, so without
+    // an explicit typeof check, a numeric value corresponding to a *future*
+    // date would incorrectly pass as "not expired" via the normal
+    // date-comparison path below - this must be rejected before it gets
+    // that far, regardless of which date it happens to encode.
+    const tenYearsFromNowMs = Date.now() + 10 * 365 * 24 * 60 * 60 * 1000
+
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- models an untyped/malformed JWT payload
+    const credential = {
+      ...buildCredential(),
+      expirationDate: tenYearsFromNowMs,
+    } as unknown as W3CCredential
+
+    expect(isExpired(credential)).toBe(true)
+  })
 })

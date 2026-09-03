@@ -16,6 +16,16 @@ export function isExpired(credential: W3CCredential): boolean {
     return false
   }
 
+  // `parseJwtCredential` does not validate that `expirationDate` is a
+  // string, so a malformed or malicious credential could carry a number
+  // (which `Date()` accepts as epoch milliseconds) or another non-string
+  // JSON value here. Reject anything that isn't a string outright, rather
+  // than letting it reach `new Date()`, which would silently accept types
+  // the {@link W3CCredential} type only documents as a string.
+  if (typeof credential.expirationDate !== "string") {
+    return true
+  }
+
   const expirationDate = new Date(credential.expirationDate)
 
   if (isNaN(expirationDate.getTime())) {
