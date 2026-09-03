@@ -1,9 +1,7 @@
 import * as v from "valibot"
 
-const isoTimestamp = v.pipe(
-  v.string(),
-  v.check((input) => !Number.isNaN(new Date(input).getTime()), "Invalid date"),
-)
+/** ISO-8601 date-time strings only — not date-only (`YYYY-MM-DD`). */
+const isoTimestamp = v.pipe(v.string(), v.isoTimestamp())
 
 export const paymentApprovalRequestSchema = v.object({
   id: v.string(),
