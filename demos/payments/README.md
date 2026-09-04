@@ -70,7 +70,10 @@ Two details are what make the budget hold rather than merely look right:
   so reservations are keyed by payment request id plus payment option id. The
   second authorization then re-checks the window without counting the payment
   twice. A reservation is committed once the receipt is issued, and released if
-  signing or the Receipt Service call fails.
+  signing or the Receipt Service call fails. The Stripe callback only sets
+  `allowOverBudget` after consuming a pending settlement issued with the
+  payment URL (demo stand-in for verifying a signed Stripe event), and the
+  Receipt Service `fetch` uses a timeout so a hung call releases the reservation.
 
 > [!IMPORTANT]
 > This is still a demo, not production spend control. The ledger lives in
