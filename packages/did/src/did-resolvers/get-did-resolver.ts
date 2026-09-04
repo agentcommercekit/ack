@@ -4,6 +4,7 @@ import { getResolver as getKeyDidResolver } from "key-did-resolver"
 
 import { DidResolver } from "./did-resolver"
 import { getResolver as getPkhDidResolver } from "./pkh-did-resolver"
+import { createPolicyEnforcedFetch } from "./url-policy"
 import {
   getResolver as getWebDidResolver,
   type DidWebResolverOptions,
@@ -33,7 +34,15 @@ export function getDidResolver({
   const webResolver = getWebDidResolver(webOptions)
   const jwksResolver = getJwksDidResolver({
     ...webOptions,
-    fetch: webFetch ? (input, init) => webFetch(input, init) : globalThis.fetch,
+    // `jwks-did-resolver`'s OIDC discovery fallback fetches a `jwks_uri` it
+    // reads out of a discovery document - a target not derived from the DID
+    // itself, unlike did:web's deterministic URL. Every fetch this resolver
+    // makes (the direct jwks.json try, the discovery document, and the
+    // discovered jwks_uri) goes through this one function, so wrapping it
+    // here covers all three call sites uniformly.
+    fetch: createPolicyEnforcedFetch(
+      webFetch ? (input, init) => webFetch(input, init) : globalThis.fetch,
+    ),
   })
   const pkhResolver = getPkhDidResolver()
 
