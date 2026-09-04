@@ -17,6 +17,10 @@ import * as v from "valibot"
 import { PAYMENT_SERVICE_URL } from "./constants"
 import { authorizePayment, demoPaymentPolicy } from "./payment-policy"
 import { createSpendLedger, spendReference } from "./spend-ledger"
+import {
+  createStripeSettlementTracker,
+  fetchWithTimeout,
+} from "./stripe-settlement"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
@@ -27,6 +31,13 @@ app.use(logger())
  * policy's rolling window. In-memory, so it resets with the demo process.
  */
 const spendLedger = createSpendLedger()
+
+/**
+ * Demo stand-in for Stripe settlement verification. Payment URLs register a
+ * pending attempt; the callback may only set `allowOverBudget` after that
+ * attempt is consumed with a Stripe-shaped event id.
+ */
+const stripeSettlements = createStripeSettlementTracker()
 
 const bodySchema = v.object({
   paymentOptionId: v.string(),
@@ -67,6 +78,13 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
   try {
     log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
+    // Register the attempt before returning the URL so the later callback can
+    // prove this payment was initiated here (demo stand-in for Stripe Events).
+    stripeSettlements.issue(reference, {
+      paymentRequestId: paymentRequest.id,
+      paymentOptionId,
+    })
+
     // This is a placeholder for an actual Strip Payment URL which would
     // have webhook callbacks already set up
     const paymentUrl = `https://payments.stripe.com/payment-url/?return_to=${PAYMENT_SERVICE_URL}/stripe-callback`
@@ -77,6 +95,7 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
   } catch (error) {
     // No payment was started, so it must not hold the window budget.
     spendLedger.release(reference)
+    stripeSettlements.release(reference)
     throw error
   }
 })
@@ -108,11 +127,29 @@ app.post(
       throw new Error(errorMessage("Receipt service URL is required"))
     }
 
-    // Re-authorizing under the same payment-attempt reference re-checks the
-    // window without counting this payment a second time. Stripe has already
-    // charged the payer by this point, so a rolling-window breach is recorded
-    // and receipt issuance continues rather than returning 403.
+    // Only treat the charge as settled (and allow over-budget receipting)
+    // after verifying this attempt was issued a payment URL and carries a
+    // Stripe-shaped event id. A real service would validate a signed webhook.
     const reference = spendReference(paymentRequest.id, paymentOptionId)
+    const settlement = stripeSettlements.consumeVerified(
+      reference,
+      metadata.eventId,
+      {
+        paymentRequestId: paymentRequest.id,
+        paymentOptionId,
+      },
+    )
+    if (!settlement.ok) {
+      log(errorMessage(`${name} ${settlement.reason}`))
+      throw new HTTPException(401, {
+        message: settlement.reason,
+      })
+    }
+
+    // Re-authorizing under the same payment-attempt reference re-checks the
+    // window without counting this payment a second time. Settlement is
+    // verified above, so a rolling-window breach is recorded and receipt
+    // issuance continues rather than returning 403.
     await enforcePaymentPolicy(c, paymentOption, {
       subject: payerIdentity.did,
       reference,
@@ -138,7 +175,7 @@ app.post(
         signer: payerIdentity.jwtSigner,
       })
 
-      const response = await fetch(receiptServiceUrl, {
+      const response = await fetchWithTimeout(receiptServiceUrl, {
         method: "POST",
         body: JSON.stringify({
           payload: signedPayload,
