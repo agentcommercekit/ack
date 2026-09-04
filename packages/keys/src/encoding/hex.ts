@@ -47,6 +47,9 @@ export function isHexString(value: unknown): value is string {
     return false
   }
 
-  const hexWithoutPrefix = value.startsWith("0x") ? value.slice(2) : value
+  // Match `hexStringToBytes`: accept both `0x` and `0X` prefixes.
+  const hexWithoutPrefix = value.toLowerCase().startsWith("0x")
+    ? value.slice(2)
+    : value
   return /^[0-9A-Fa-f]+$/.test(hexWithoutPrefix)
 }

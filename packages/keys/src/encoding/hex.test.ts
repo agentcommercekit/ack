@@ -40,6 +40,11 @@ describe("isHexString", () => {
     expect(isHexString("0x1234567890abcdef")).toBe(true)
   })
 
+  test("returns true for valid hex strings with uppercase 0X prefix", () => {
+    // `hexStringToBytes` already accepts this form; the guard must agree.
+    expect(isHexString("0XABCDEF")).toBe(true)
+  })
+
   test("returns true for valid hex strings without 0x prefix", () => {
     expect(isHexString("1234567890abcdef")).toBe(true)
   })
