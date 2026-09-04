@@ -20,7 +20,7 @@ This interactive command-line demo showcases a common use case: the **Server-Ini
   - Handling currency conversions.
   - Integrating compliance checks (KYC/AML).
   - Facilitating complex payment routing.
-  - Enforcing local payment policy before returning an execution URL or signing a receipt-service payload.
+  - Enforcing local payment policy, including a cumulative spend budget, before returning an execution URL or signing a receipt-service payload.
 
 You can learn more about the full ACK-Pay protocol at [www.agentcommercekit.com](https://www.agentcommercekit.com).
 
@@ -36,9 +36,10 @@ Payment Services should replace it with their own owner, risk, compliance, or
 human-approval system. The important safety boundary is that policy enforcement
 happens before execution or signing:
 
-- known low-value recipient: continue automatically
+- known low-value recipient, within budget: continue automatically
 - unknown recipient: return `approval_required`
-- amount above the illustrative per-transaction cap: deny before payment
+- amount above the per-transaction cap: deny before payment execution
+- amount that would exceed the rolling spend budget: deny before payment
   execution
 
 The per-currency cap is expressed in each currency's smallest subunit, so a
@@ -46,12 +47,40 @@ single flat threshold is never compared across currencies with different
 decimals (e.g. USD at 2dp vs USDC at 6dp). Currencies without a configured
 limit are denied outright.
 
+### Rolling spend budget
+
+A per-transaction cap on its own is not a spend control: it is trivially
+defeated by splitting one payment into many smaller ones (`cap × N`). The demo
+policy therefore also carries a cumulative budget over a rolling window,
+enforced against the small in-memory ledger in `src/spend-ledger.ts`.
+
+- `maxAutonomousAmount` bounds a single payment.
+- `budget.maxWindowAmount` bounds their sum over `budget.windowMs`, in the same
+  per-currency subunits.
+
+Two details are what make the budget hold rather than merely look right:
+
+- **The check and the reservation are one synchronous step.** The request
+  handler awaits token verification before policy runs, so a guard that read the
+  running total and then wrote to it would let two concurrent payments both
+  observe the pre-payment total and both pass. `SpendLedger.reserve` does both
+  at once.
+- **Reservations are keyed by payment attempt.** The Stripe path authorizes
+  twice for a single payment — once for the payment URL, once on the callback —
+  so reservations are keyed by payment request id plus payment option id. The
+  second authorization then re-checks the window without counting the payment
+  twice. A reservation is committed once the receipt is issued, and released if
+  signing or the Receipt Service call fails.
+
 > [!IMPORTANT]
-> The amount check is an **illustrative per-transaction cap, not a real spend
-> control.** A per-transaction limit is trivially defeated by splitting one
-> payment into many smaller ones (`cap × N`). A production policy needs a
-> cumulative and/or rate-limited budget (e.g. per-payer spend over a rolling
-> window), not just a single-transaction threshold.
+> This is still a demo, not production spend control. The ledger lives in
+> process memory, so it resets with the demo and is not shared between Payment
+> Service instances; a real budget needs durable storage and an atomic
+> check-and-reserve (a transactional `UPDATE ... WHERE`, or a distributed lock)
+> across every instance that can authorize payments. A real service would also
+> route a budget breach to human approval rather than denying outright, and
+> would key the budget on its authenticated payer — ACK-Pay carries no payer
+> identity on the payment execution request today.
 
 The demo allowlist is based on the configured server identity, not the issuer
 claimed by each incoming Payment Request token. A real Payment Service should
