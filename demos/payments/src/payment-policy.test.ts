@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 
-import { evaluatePaymentPolicy } from "./payment-policy"
+import { authorizePayment, evaluatePaymentPolicy } from "./payment-policy"
+import { createSpendLedger } from "./spend-ledger"
 
 const basePaymentOption = {
   id: "base-usdc",
@@ -158,5 +159,176 @@ describe("evaluatePaymentPolicy", () => {
       status: "denied",
       reason: "Payment amount must be a positive integer in subunits",
     })
+  })
+})
+
+describe("authorizePayment", () => {
+  const budgetPolicy = {
+    allowedRecipients: [basePaymentOption.recipient],
+    maxAutonomousAmount: { USDC: 1_000n },
+    budget: {
+      windowMs: 60_000,
+      maxWindowAmount: { USDC: 3_000n },
+    },
+  }
+
+  it("denies the split attack once the window budget is exhausted", () => {
+    const ledger = createSpendLedger()
+    const payment = { ...basePaymentOption, amount: 1_000 }
+
+    for (let i = 0; i < 3; i++) {
+      expect(
+        authorizePayment(payment, budgetPolicy, {
+          subject: "did:example:payer",
+          reference: `attempt-${i}`,
+          ledger,
+        }),
+      ).toEqual({ status: "approved" })
+    }
+
+    expect(
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer",
+        reference: "attempt-3",
+        ledger,
+      }),
+    ).toEqual({
+      status: "denied",
+      reason:
+        "Payment exceeds the autonomous spend budget for the current window",
+    })
+  })
+
+  it("does not consume budget for denied or approval-required payments", () => {
+    const ledger = createSpendLedger()
+
+    expect(
+      authorizePayment(
+        { ...basePaymentOption, amount: 10_000 },
+        budgetPolicy,
+        {
+          subject: "did:example:payer",
+          reference: "too-large",
+          ledger,
+        },
+      ).status,
+    ).toBe("denied")
+
+    expect(
+      authorizePayment(
+        basePaymentOption,
+        { ...budgetPolicy, allowedRecipients: [] },
+        {
+          subject: "did:example:payer",
+          reference: "unknown-recipient",
+          ledger,
+        },
+      ).status,
+    ).toBe("approval_required")
+
+    expect(ledger.spentWithin("did:example:payer", "USDC", 60_000)).toBe(0n)
+  })
+
+  it("re-authorizes the same reference without double-counting", () => {
+    const ledger = createSpendLedger()
+    const payment = { ...basePaymentOption, amount: 1_000 }
+    const auth = {
+      subject: "did:example:payer",
+      reference: "stripe-attempt",
+      ledger,
+    }
+
+    expect(authorizePayment(payment, budgetPolicy, auth)).toEqual({
+      status: "approved",
+    })
+    expect(authorizePayment(payment, budgetPolicy, auth)).toEqual({
+      status: "approved",
+    })
+    expect(ledger.spentWithin("did:example:payer", "USDC", 60_000)).toBe(
+      1_000n,
+    )
+  })
+
+  it("isolates subjects and currencies", () => {
+    const ledger = createSpendLedger()
+    const payment = { ...basePaymentOption, amount: 1_000 }
+
+    for (let i = 0; i < 3; i++) {
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer-a",
+        reference: `a-${i}`,
+        ledger,
+      })
+    }
+
+    expect(
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer-b",
+        reference: "b-0",
+        ledger,
+      }),
+    ).toEqual({ status: "approved" })
+
+    expect(
+      authorizePayment(
+        { ...payment, currency: "USD", decimals: 2, amount: 500 },
+        {
+          ...budgetPolicy,
+          maxAutonomousAmount: { USDC: 1_000n, USD: 500n },
+          budget: {
+            windowMs: 60_000,
+            maxWindowAmount: { USDC: 3_000n, USD: 2_000n },
+          },
+        },
+        {
+          subject: "did:example:payer-a",
+          reference: "usd-0",
+          ledger,
+        },
+      ),
+    ).toEqual({ status: "approved" })
+  })
+
+  it("expires spend out of the rolling window", () => {
+    let now = 1_000_000
+    const ledger = createSpendLedger({ now: () => now })
+    const payment = { ...basePaymentOption, amount: 1_000 }
+
+    for (let i = 0; i < 3; i++) {
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer",
+        reference: `old-${i}`,
+        ledger,
+      })
+    }
+
+    now += 60_001
+
+    expect(
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer",
+        reference: "after-expiry",
+        ledger,
+      }),
+    ).toEqual({ status: "approved" })
+  })
+
+  it("skips the window check when no budget is configured", () => {
+    const ledger = createSpendLedger()
+    const decision = authorizePayment(
+      basePaymentOption,
+      {
+        allowedRecipients: [basePaymentOption.recipient],
+        maxAutonomousAmount: { USDC: 1_000n },
+      },
+      {
+        subject: "did:example:payer",
+        reference: "no-budget",
+        ledger,
+      },
+    )
+
+    expect(decision).toEqual({ status: "approved" })
+    expect(ledger.spentWithin("did:example:payer", "USDC", 60_000)).toBe(0n)
   })
 })

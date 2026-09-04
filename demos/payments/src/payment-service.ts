@@ -5,6 +5,7 @@ import {
   createJwt,
   getDidResolver,
   verifyPaymentRequestToken,
+  type DidUri,
   type JwtString,
 } from "agentcommercekit"
 import { jwtStringSchema } from "agentcommercekit/schemas/valibot"
@@ -14,11 +15,18 @@ import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 
 import { PAYMENT_SERVICE_URL } from "./constants"
-import { demoPaymentPolicy, evaluatePaymentPolicy } from "./payment-policy"
+import { authorizePayment, demoPaymentPolicy } from "./payment-policy"
+import { createSpendLedger, spendReference } from "./spend-ledger"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
 app.use(logger())
+
+/**
+ * Tracks how much this Payment Service has already authorized inside the
+ * policy's rolling window. In-memory, so it resets with the demo process.
+ */
+const spendLedger = createSpendLedger()
 
 const bodySchema = v.object({
   paymentOptionId: v.string(),
@@ -45,11 +53,15 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
 
   // Verify the payment request token and payment option are valid before
   // returning an execution URL.
-  const { paymentOption } = await validatePaymentOption(
+  const { paymentRequest, paymentOption } = await validatePaymentOption(
     paymentOptionId,
     paymentRequestToken,
   )
-  enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
+  const payerIdentity = await getPayerIdentity(c)
+  await enforcePaymentPolicy(c, paymentOption, {
+    subject: payerIdentity.did,
+    reference: spendReference(paymentRequest.id, paymentOptionId),
+  })
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
@@ -72,9 +84,7 @@ const callbackSchema = v.object({
 app.post(
   "/stripe-callback",
   async (c): Promise<TypedResponse<{ receipt: string }>> => {
-    const serverIdentity = await getKeypairInfo(
-      env(c).PAYMENT_SERVICE_PRIVATE_KEY_HEX,
-    )
+    const payerIdentity = await getPayerIdentity(c)
 
     const { paymentOptionId, paymentRequestToken, metadata } = v.parse(
       callbackSchema,
@@ -82,7 +92,7 @@ app.post(
     )
 
     // Verify the payment request token and payment option are valid
-    const { paymentOption } = await validatePaymentOption(
+    const { paymentRequest, paymentOption } = await validatePaymentOption(
       paymentOptionId,
       paymentRequestToken,
     )
@@ -90,7 +100,14 @@ app.post(
     if (!receiptServiceUrl) {
       throw new Error(errorMessage("Receipt service URL is required"))
     }
-    enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
+
+    // Re-authorizing under the same payment-attempt reference re-checks the
+    // window without counting this payment a second time.
+    const reference = spendReference(paymentRequest.id, paymentOptionId)
+    await enforcePaymentPolicy(c, paymentOption, {
+      subject: payerIdentity.did,
+      reference,
+    })
 
     const payload = {
       paymentRequestToken,
@@ -99,31 +116,36 @@ app.post(
         network: "stripe",
         eventId: metadata.eventId,
       },
-      payerDid: serverIdentity.did,
+      payerDid: payerIdentity.did,
     }
 
-    const signedPayload = await createJwt(payload, {
-      issuer: serverIdentity.did,
-      signer: serverIdentity.jwtSigner,
-    })
-
     log(colors.dim(`${name} Getting receipt from Receipt Service...`))
-    const response = await fetch(receiptServiceUrl, {
-      method: "POST",
-      body: JSON.stringify({
-        payload: signedPayload,
-      }),
-    })
 
-    const { receipt, details } = v.parse(
-      receiptResponseSchema,
-      await response.json(),
-    )
+    let receiptResponse: v.InferOutput<typeof receiptResponseSchema>
+    try {
+      const signedPayload = await createJwt(payload, {
+        issuer: payerIdentity.did,
+        signer: payerIdentity.jwtSigner,
+      })
 
-    return c.json({
-      receipt,
-      details,
-    })
+      const response = await fetch(receiptServiceUrl, {
+        method: "POST",
+        body: JSON.stringify({
+          payload: signedPayload,
+        }),
+      })
+
+      receiptResponse = v.parse(receiptResponseSchema, await response.json())
+    } catch (error) {
+      // The payment never produced a receipt, so it should not keep consuming
+      // the window budget.
+      spendLedger.release(reference)
+      throw error
+    }
+
+    spendLedger.commit(reference)
+
+    return c.json(receiptResponse)
   },
 )
 
@@ -159,16 +181,25 @@ async function validatePaymentOption(
   }
 }
 
-function enforcePaymentPolicy(
+async function enforcePaymentPolicy(
+  c: Context<Env>,
   paymentOption: Awaited<
     ReturnType<typeof validatePaymentOption>
   >["paymentOption"],
-  allowedRecipients: readonly string[],
+  { subject, reference }: { subject: DidUri; reference: string },
 ) {
-  const decision = evaluatePaymentPolicy(paymentOption, {
-    ...demoPaymentPolicy,
-    allowedRecipients,
-  })
+  const decision = authorizePayment(
+    paymentOption,
+    {
+      ...demoPaymentPolicy,
+      allowedRecipients: await getTrustedRecipients(c),
+    },
+    {
+      subject,
+      reference,
+      ledger: spendLedger,
+    },
+  )
 
   if (decision.status !== "approved") {
     log(errorMessage(`${name} ${decision.reason}`))
@@ -176,6 +207,15 @@ function enforcePaymentPolicy(
       message: decision.reason,
     })
   }
+}
+
+/**
+ * The identity this Payment Service signs and spends as. The demo has a single
+ * autonomous payer, so it is also the subject the spend budget is tracked
+ * against.
+ */
+function getPayerIdentity(c: Context<Env>) {
+  return getKeypairInfo(env(c).PAYMENT_SERVICE_PRIVATE_KEY_HEX)
 }
 
 async function getTrustedRecipients(c: Context<Env>) {
