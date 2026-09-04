@@ -58,20 +58,27 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
     paymentRequestToken,
   )
   const payerIdentity = await getPayerIdentity(c)
+  const reference = spendReference(paymentRequest.id, paymentOptionId)
   await enforcePaymentPolicy(c, paymentOption, {
     subject: payerIdentity.did,
-    reference: spendReference(paymentRequest.id, paymentOptionId),
+    reference,
   })
 
-  log(colors.dim(`${name} Generating Stripe payment URL ...`))
+  try {
+    log(colors.dim(`${name} Generating Stripe payment URL ...`))
 
-  // This is a placeholder for an actual Strip Payment URL which would
-  // have webhook callbacks already set up
-  const paymentUrl = `https://payments.stripe.com/payment-url/?return_to=${PAYMENT_SERVICE_URL}/stripe-callback`
+    // This is a placeholder for an actual Strip Payment URL which would
+    // have webhook callbacks already set up
+    const paymentUrl = `https://payments.stripe.com/payment-url/?return_to=${PAYMENT_SERVICE_URL}/stripe-callback`
 
-  return c.json({
-    paymentUrl,
-  })
+    return c.json({
+      paymentUrl,
+    })
+  } catch (error) {
+    // No payment was started, so it must not hold the window budget.
+    spendLedger.release(reference)
+    throw error
+  }
 })
 
 const callbackSchema = v.object({
