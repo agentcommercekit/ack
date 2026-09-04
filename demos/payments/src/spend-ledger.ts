@@ -64,6 +64,12 @@ export interface SpendLedger {
    * payments would both observe the pre-payment total and both pass.
    */
   reserve(reservation: SpendReservation): SpendReservationResult
+  /**
+   * Records a reservation even when it exceeds the window limit. Used by the
+   * Stripe callback after the payer has already been charged: the overspend is
+   * an accounting fact to keep, not a reason to withhold the receipt.
+   */
+  recordOverBudget(reservation: Omit<SpendReservation, "limit">): void
   /** Marks a reservation as settled, so it can no longer be released. */
   commit(reference: string): void
   /** Drops an unsettled reservation, e.g. when execution failed. */
@@ -168,6 +174,24 @@ export function createSpendLedger({
       })
 
       return { status: "reserved", spent: spent + amount }
+    },
+
+    recordOverBudget({ reference, subject, currency, amount, windowMs }) {
+      const cutoff = now() - windowMs
+      for (const [key, entry] of entries) {
+        if (entry.at <= cutoff) {
+          entries.delete(key)
+        }
+      }
+
+      const existing = entries.get(reference)
+      entries.set(reference, {
+        subject,
+        currency,
+        amount,
+        at: existing?.at ?? now(),
+        committed: existing?.committed ?? false,
+      })
     },
 
     commit(reference) {

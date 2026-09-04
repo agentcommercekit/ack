@@ -161,6 +161,13 @@ export interface SpendAuthorization {
    */
   reference: string
   ledger: SpendLedger
+  /**
+   * When true, a rolling-window budget breach still records the spend and
+   * returns approved. Use on the Stripe callback after the payer has already
+   * been charged — withholding the receipt would leave them paying with no
+   * proof of settlement.
+   */
+  allowOverBudget?: boolean
 }
 
 /**
@@ -219,6 +226,18 @@ export function authorizePayment(
   })
 
   if (result.status === "exceeded") {
+    if (authorization.allowOverBudget) {
+      authorization.ledger.recordOverBudget({
+        reference: authorization.reference,
+        subject: authorization.subject,
+        currency: paymentOption.currency,
+        amount,
+        windowMs: policy.budget.windowMs,
+      })
+      return {
+        status: "approved",
+      }
+    }
     return {
       status: "denied",
       reason:
