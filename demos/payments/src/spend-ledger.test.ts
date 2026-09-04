@@ -160,4 +160,40 @@ describe("createSpendLedger", () => {
       }).status,
     ).toBe("reserved")
   })
+
+  it("recordOverBudget keeps the spend even when the window is full", () => {
+    const ledger = createSpendLedger()
+
+    expect(
+      ledger.reserve({
+        reference: "first",
+        subject: "payer",
+        currency: "USDC",
+        amount: 200n,
+        windowMs: 60_000,
+        limit: 250n,
+      }).status,
+    ).toBe("reserved")
+
+    expect(
+      ledger.reserve({
+        reference: "second",
+        subject: "payer",
+        currency: "USDC",
+        amount: 200n,
+        windowMs: 60_000,
+        limit: 250n,
+      }).status,
+    ).toBe("exceeded")
+
+    ledger.recordOverBudget({
+      reference: "second",
+      subject: "payer",
+      currency: "USDC",
+      amount: 200n,
+      windowMs: 60_000,
+    })
+
+    expect(ledger.spentWithin("payer", "USDC", 60_000)).toBe(400n)
+  })
 })

@@ -331,4 +331,44 @@ describe("authorizePayment", () => {
     expect(decision).toEqual({ status: "approved" })
     expect(ledger.spentWithin("did:example:payer", "USDC", 60_000)).toBe(0n)
   })
+
+  it("records and approves an over-budget payment when allowOverBudget is set", () => {
+    const ledger = createSpendLedger()
+    const payment = { ...basePaymentOption, amount: 1_000 }
+
+    for (let i = 0; i < 3; i++) {
+      expect(
+        authorizePayment(payment, budgetPolicy, {
+          subject: "did:example:payer",
+          reference: `fill-${i}`,
+          ledger,
+        }),
+      ).toEqual({ status: "approved" })
+    }
+
+    expect(
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer",
+        reference: "settled-callback",
+        ledger,
+      }),
+    ).toEqual({
+      status: "denied",
+      reason:
+        "Payment exceeds the autonomous spend budget for the current window",
+    })
+
+    expect(
+      authorizePayment(payment, budgetPolicy, {
+        subject: "did:example:payer",
+        reference: "settled-callback",
+        ledger,
+        allowOverBudget: true,
+      }),
+    ).toEqual({ status: "approved" })
+
+    expect(ledger.spentWithin("did:example:payer", "USDC", 60_000)).toBe(
+      4_000n,
+    )
+  })
 })

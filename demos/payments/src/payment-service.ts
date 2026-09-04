@@ -102,11 +102,14 @@ app.post(
     }
 
     // Re-authorizing under the same payment-attempt reference re-checks the
-    // window without counting this payment a second time.
+    // window without counting this payment a second time. Stripe has already
+    // charged the payer by this point, so a rolling-window breach is recorded
+    // and receipt issuance continues rather than returning 403.
     const reference = spendReference(paymentRequest.id, paymentOptionId)
     await enforcePaymentPolicy(c, paymentOption, {
       subject: payerIdentity.did,
       reference,
+      allowOverBudget: true,
     })
 
     const payload = {
@@ -186,7 +189,11 @@ async function enforcePaymentPolicy(
   paymentOption: Awaited<
     ReturnType<typeof validatePaymentOption>
   >["paymentOption"],
-  { subject, reference }: { subject: DidUri; reference: string },
+  {
+    subject,
+    reference,
+    allowOverBudget,
+  }: { subject: DidUri; reference: string; allowOverBudget?: boolean },
 ) {
   const decision = authorizePayment(
     paymentOption,
@@ -198,6 +205,7 @@ async function enforcePaymentPolicy(
       subject,
       reference,
       ledger: spendLedger,
+      allowOverBudget,
     },
   )
 
