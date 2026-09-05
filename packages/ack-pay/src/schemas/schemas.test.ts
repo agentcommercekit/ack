@@ -1,8 +1,14 @@
 import * as v from "valibot"
 import { describe, expect, it } from "vitest"
 
-import { paymentRequestSchema as valibotPaymentRequestSchema } from "./valibot"
-import { paymentRequestSchema as zodPaymentRequestSchema } from "./zod"
+import {
+  paymentOptionSchema as valibotPaymentOptionSchema,
+  paymentRequestSchema as valibotPaymentRequestSchema,
+} from "./valibot"
+import {
+  paymentOptionSchema as zodPaymentOptionSchema,
+  paymentRequestSchema as zodPaymentRequestSchema,
+} from "./zod"
 
 const paymentRequest = {
   id: "test-payment-request-id",
@@ -16,6 +22,8 @@ const paymentRequest = {
     },
   ],
 }
+
+const paymentOption = paymentRequest.paymentOptions[0]
 
 describe("paymentRequestSchema", () => {
   it("rejects invalid expiresAt strings instead of throwing", () => {
@@ -42,5 +50,47 @@ describe("paymentRequestSchema", () => {
       const zod = zodPaymentRequestSchema.safeParse(input)
       expect(zod.success && zod.data.expiresAt).toBe(expected)
     }
+  })
+})
+
+describe.each([
+  [
+    "valibot",
+    {
+      paymentRequest: (input: unknown) =>
+        v.safeParse(valibotPaymentRequestSchema, input).success,
+      paymentOption: (input: unknown) =>
+        v.safeParse(valibotPaymentOptionSchema, input).success,
+    },
+  ],
+  [
+    "zod",
+    {
+      paymentRequest: (input: unknown) =>
+        zodPaymentRequestSchema.safeParse(input).success,
+      paymentOption: (input: unknown) =>
+        zodPaymentOptionSchema.safeParse(input).success,
+    },
+  ],
+] as const)("%s rejects empty required payment fields", (_name, schema) => {
+  it.each(["id", "currency", "recipient"] as const)(
+    "rejects a payment option with an empty %s",
+    (field) => {
+      expect(
+        schema.paymentOption({
+          ...paymentOption,
+          [field]: "",
+        }),
+      ).toBe(false)
+    },
+  )
+
+  it("rejects a payment request with an empty id", () => {
+    expect(
+      schema.paymentRequest({
+        ...paymentRequest,
+        id: "",
+      }),
+    ).toBe(false)
   })
 })
