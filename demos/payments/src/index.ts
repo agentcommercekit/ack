@@ -58,6 +58,8 @@ import {
   solana,
   usdcAddress,
 } from "./constants"
+import { spendReference } from "./spend-ledger"
+import { signDemoStripeEvent } from "./stripe-settlement"
 import {
   ensureNonZeroBalances,
   ensureSolanaSolBalance,
@@ -217,6 +219,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
         clientKeypairInfo,
         option,
         paymentRequestToken,
+        paymentRequest.id,
       )
     }
     if (option.network?.startsWith("solana:")) {
@@ -606,6 +609,7 @@ async function performStripePayment(
   _client: KeypairInfo,
   paymentOption: PaymentRequest["paymentOptions"][number],
   paymentRequestToken: JwtString,
+  paymentRequestId: string,
 ) {
   const paymentServiceUrl = paymentOption.paymentService
   if (!paymentServiceUrl) {
@@ -674,14 +678,18 @@ This flow is simulated in this example.
 
   await waitForEnter("Press Enter to simulate payment completion...")
 
-  // Step 2: Simulate the callback from Stripe with payment confirmation
+  // Step 2: Simulate the callback from Stripe with payment confirmation.
+  // The demo HMAC stands in for a real Stripe-Signature webhook check.
+  const eventId = "evt_" + Math.random().toString(36).substring(7)
+  const reference = spendReference(paymentRequestId, paymentOption.id)
   const response2 = await fetch(returnToUrl, {
     method: "POST",
     body: JSON.stringify({
       paymentOptionId: paymentOption.id,
       paymentRequestToken,
       metadata: {
-        eventId: "evt_" + Math.random().toString(36).substring(7), // Simulated Stripe event ID
+        eventId,
+        signature: signDemoStripeEvent(eventId, reference),
       },
     }),
   })

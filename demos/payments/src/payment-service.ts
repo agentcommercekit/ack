@@ -35,7 +35,7 @@ const spendLedger = createSpendLedger()
 /**
  * Demo stand-in for Stripe settlement verification. Payment URLs register a
  * pending attempt; the callback may only set `allowOverBudget` after that
- * attempt is consumed with a Stripe-shaped event id.
+ * attempt is verified with a Stripe-shaped event id and HMAC signature.
  */
 const stripeSettlements = createStripeSettlementTracker()
 
@@ -104,6 +104,8 @@ const callbackSchema = v.object({
   ...bodySchema.entries,
   metadata: v.object({
     eventId: v.string(),
+    /** Demo HMAC (`eventId.reference`); production uses Stripe-Signature. */
+    signature: v.string(),
   }),
 })
 
@@ -128,12 +130,14 @@ app.post(
     }
 
     // Only treat the charge as settled (and allow over-budget receipting)
-    // after verifying this attempt was issued a payment URL and carries a
-    // Stripe-shaped event id. A real service would validate a signed webhook.
+    // after verifying this attempt was issued a payment URL and the Stripe
+    // event is authenticated with the demo webhook HMAC. Settlement state is
+    // retained until receipt issuance succeeds so retries remain possible.
     const reference = spendReference(paymentRequest.id, paymentOptionId)
-    const settlement = stripeSettlements.consumeVerified(
+    const settlement = stripeSettlements.verify(
       reference,
       metadata.eventId,
+      metadata.signature,
       {
         paymentRequestId: paymentRequest.id,
         paymentOptionId,
@@ -185,12 +189,13 @@ app.post(
       receiptResponse = v.parse(receiptResponseSchema, await response.json())
     } catch (error) {
       // The payment never produced a receipt, so it should not keep consuming
-      // the window budget.
+      // the window budget. Settlement stays verified for an idempotent retry.
       spendLedger.release(reference)
       throw error
     }
 
     spendLedger.commit(reference)
+    stripeSettlements.commit(reference)
 
     return c.json(receiptResponse)
   },
