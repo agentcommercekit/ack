@@ -1,6 +1,5 @@
 import { generateKeypair } from "@agentcommercekit/keys"
 import { describe, expect, test } from "vitest"
-
 import { createJwtSigner } from "./signer"
 
 describe("createJwtSigner", () => {
@@ -66,6 +65,24 @@ describe("createJwtSigner", () => {
     const signature2 = await signer2(data)
 
     expect(signature1).not.toBe(signature2)
+  })
+
+  test("throws a descriptive error for an unsupported curve", async () => {
+    const keypair = await generateKeypair("secp256k1")
+    // Simulate a Keypair with an invalid/unsupported curve, e.g. one that
+    // arrived from untrusted or future data and was never runtime-validated.
+    const invalidKeypair = {
+      ...keypair,
+      curve: "invalid-curve",
+    }
+    // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
+    const signerInput = invalidKeypair as unknown as Parameters
+      typeof createJwtSigner
+    >[0]
+
+    expect(() => createJwtSigner(signerInput)).toThrow(
+      "Unsupported algorithm: invalid-curve",
+    )
   })
 
   test("handles both string and Uint8Array input", async () => {
