@@ -17,7 +17,7 @@ export const paymentOptionSchema = v.object({
     v.pipe(v.number(), v.integer(), v.gtValue(0)),
     positiveIntegerString,
   ]),
-  decimals: v.pipe(v.number(), v.integer(), v.toMinValue(0)),
+  decimals: v.pipe(v.number(), v.integer(), v.minValue(0)),
   currency: v.string(),
   recipient: v.string(),
   network: v.optional(v.string()),
