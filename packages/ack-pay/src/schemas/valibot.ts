@@ -3,6 +3,7 @@ import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/valibot"
 import * as v from "valibot"
 
 const urlOrDidUri = v.union([v.pipe(v.string(), v.url()), didUriSchema])
+const positiveIntegerString = v.pipe(v.string(), v.regex(/^[1-9]\d*$/))
 
 const nonEmptyString = v.pipe(v.string(), v.minLength(1))
 
@@ -14,7 +15,10 @@ const timestampSchema = v.pipe(
 
 export const paymentOptionSchema = v.object({
   id: nonEmptyString,
-  amount: v.union([v.pipe(v.number(), v.integer(), v.gtValue(0)), v.string()]),
+  amount: v.union([
+    v.pipe(v.number(), v.integer(), v.gtValue(0)),
+    positiveIntegerString,
+  ]),
   decimals: v.pipe(v.number(), v.integer(), v.toMinValue(0)),
   currency: nonEmptyString,
   recipient: nonEmptyString,

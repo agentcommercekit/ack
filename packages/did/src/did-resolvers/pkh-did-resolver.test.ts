@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest"
 
-import fixtureEthereumMainnet from "../../test-fixtures/did-pkh/did:pkh:eip155:1:0xb9c5714089478a327f09197987f16f9e5d936e8a.json"
-import fixtureBaseSepolia from "../../test-fixtures/did-pkh/did:pkh:eip155:84532:0xa0ae58da58dfa46fa55c3b86545e7065f90ff011.json"
-import fixtureSolana from "../../test-fixtures/did-pkh/did:pkh:solana:4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ:CKg5d12Jhpej1JqtmxLJgaFqqeYjxgPqToJ4LBdvG9Ev.json"
+import fixtureEthereumMainnet from "../../test-fixtures/did-pkh/eip155-1-0xb9c5714089478a327f09197987f16f9e5d936e8a.json"
+import fixtureBaseSepolia from "../../test-fixtures/did-pkh/eip155-84532-0xa0ae58da58dfa46fa55c3b86545e7065f90ff011.json"
+import fixtureSolana from "../../test-fixtures/did-pkh/solana-4sGjMW1sUnHzSxGspuhpqLDx6wiyjNtZ-CKg5d12Jhpej1JqtmxLJgaFqqeYjxgPqToJ4LBdvG9Ev.json"
 import { resolve } from "./pkh-did-resolver"
 
 /**
@@ -34,8 +34,10 @@ describe("pkh-did-resolver", () => {
     },
   )
 
-  it("returns an error for unknown did:pkh URIs", async () => {
-    const result = await resolve("did:pkh:eip-155:1:invalid")
+  it("returns an error for a structurally invalid did:pkh URI", async () => {
+    // Uppercase is not a valid CAIP-2 namespace character, independent of
+    // the hyphen allowance.
+    const result = await resolve("did:pkh:EIP155:1:invalid")
 
     expect(result).toEqual({
       didDocument: null,

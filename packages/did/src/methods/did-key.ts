@@ -37,6 +37,13 @@ export const KEY_CONFIG = {
 } as const
 
 /**
+ * The `did:key` grammar documented on {@link isDidKeyUri}, as a single pattern.
+ * The `+` applies to the base58btc value that follows the `z`, so the multibase
+ * prefix on its own is not a `did:key` URI.
+ */
+const didKeyUriRegex = /^did:key:z[a-km-zA-HJ-NP-Z1-9]+$/
+
+/**
  * Checks if a given item is a valid did:key URI, according to the following format:
  *  did-key-format := did:key:<mb-value>
  *  mb-value       := z[a-km-zA-HJ-NP-Z1-9]+
@@ -45,12 +52,7 @@ export const KEY_CONFIG = {
  * @returns `true` if the value is a did:key URI, `false` otherwise
  */
 export function isDidKeyUri(did: unknown): did is DidKeyUri {
-  if (typeof did !== "string" || !did.startsWith("did:key:z")) {
-    return false
-  }
-
-  const mbValue = did.slice(8) // Get everything after "did:key:z"
-  return /^[a-km-zA-HJ-NP-Z1-9]+$/.test(mbValue)
+  return typeof did === "string" && didKeyUriRegex.test(did)
 }
 
 /**

@@ -3,6 +3,7 @@ import { jwtStringSchema } from "@agentcommercekit/jwt/schemas/zod"
 import * as z from "zod"
 
 const urlOrDidUri = z.union([z.url(), didUriSchema])
+const positiveIntegerString = z.string().regex(/^[1-9]\d*$/)
 
 const nonEmptyString = z.string().min(1)
 
@@ -24,7 +25,7 @@ const timestampSchema = z
 
 export const paymentOptionSchema = z.object({
   id: nonEmptyString,
-  amount: z.union([z.number().int().positive(), z.string()]),
+  amount: z.union([z.number().int().positive(), positiveIntegerString]),
   decimals: z.number().int().nonnegative(),
   currency: nonEmptyString,
   recipient: nonEmptyString,

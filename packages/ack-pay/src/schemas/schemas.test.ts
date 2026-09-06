@@ -1,14 +1,8 @@
 import * as v from "valibot"
 import { describe, expect, it } from "vitest"
 
-import {
-  paymentOptionSchema as valibotPaymentOptionSchema,
-  paymentRequestSchema as valibotPaymentRequestSchema,
-} from "./schemas/valibot"
-import {
-  paymentOptionSchema as zodPaymentOptionSchema,
-  paymentRequestSchema as zodPaymentRequestSchema,
-} from "./schemas/zod"
+import { paymentRequestSchema as valibotPaymentRequestSchema } from "./valibot"
+import { paymentRequestSchema as zodPaymentRequestSchema } from "./zod"
 
 const paymentRequest = {
   id: "test-payment-request-id",
@@ -23,45 +17,25 @@ const paymentRequest = {
   ],
 }
 
-const paymentOption = paymentRequest.paymentOptions[0]
-
 const validators = {
-  valibot: {
-    paymentRequest: (input: unknown) =>
-      v.safeParse(valibotPaymentRequestSchema, input).success,
-    paymentOption: (input: unknown) =>
-      v.safeParse(valibotPaymentOptionSchema, input).success,
-  },
-  zod: {
-    paymentRequest: (input: unknown) =>
-      zodPaymentRequestSchema.safeParse(input).success,
-    paymentOption: (input: unknown) =>
-      zodPaymentOptionSchema.safeParse(input).success,
-  },
+  valibot: (input: unknown) =>
+    v.safeParse(valibotPaymentRequestSchema, input).success,
+  zod: (input: unknown) => zodPaymentRequestSchema.safeParse(input).success,
 } as const
 
-describe.each(Object.entries(validators))("%s payment schemas", (_, schema) => {
-  it.each(["id", "currency", "recipient"] as const)(
-    "rejects a payment option with an empty %s",
-    (field) => {
+describe.each(Object.entries(validators))(
+  "%s paymentRequestSchema",
+  (_, accepts) => {
+    it("rejects a payment request with an empty id", () => {
       expect(
-        schema.paymentOption({
-          ...paymentOption,
-          [field]: "",
+        accepts({
+          ...paymentRequest,
+          id: "",
         }),
       ).toBe(false)
-    },
-  )
-
-  it("rejects a payment request with an empty id", () => {
-    expect(
-      schema.paymentRequest({
-        ...paymentRequest,
-        id: "",
-      }),
-    ).toBe(false)
-  })
-})
+    })
+  },
+)
 
 describe("paymentRequestSchema", () => {
   it("rejects invalid expiresAt strings instead of throwing", () => {

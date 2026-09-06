@@ -19,10 +19,10 @@ export const jwtPayloadSchema = JwtPayloadSchema
  */
 export const jwtHeaderSchema = v.pipe(
   v.looseObject({
-    typ: v.literal("JWT"),
+    typ: v.optional(v.string()),
     alg: v.picklist(jwtAlgorithms),
   }),
-  v.custom<JwtHeader>(() => true),
+  v.custom<JwtHeader>((_val): _val is JwtHeader => true),
 )
 
 /**

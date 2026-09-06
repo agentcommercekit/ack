@@ -80,6 +80,14 @@ describe("caip2ChainIdRegex", () => {
   it("rejects a chain ID without a colon", () => {
     expect(caip2ChainIdRegex.test("eip1551")).toBe(false)
   })
+
+  it("matches a chain ID with a hyphenated namespace", () => {
+    expect(caip2ChainIdRegex.test("foo-bar:1")).toBe(true)
+  })
+
+  it("rejects a namespace with an invalid character", () => {
+    expect(caip2ChainIdRegex.test("foo_bar:1")).toBe(false)
+  })
 })
 
 describe("caip2NamespaceRegex", () => {
@@ -87,8 +95,16 @@ describe("caip2NamespaceRegex", () => {
     expect(caip2NamespaceRegex.test("eip155")).toBe(true)
   })
 
+  it("matches a namespace with a hyphen", () => {
+    expect(caip2NamespaceRegex.test("foo-bar")).toBe(true)
+  })
+
   it("rejects a namespace with uppercase letters", () => {
     expect(caip2NamespaceRegex.test("EIP155")).toBe(false)
+  })
+
+  it("rejects a namespace with an underscore", () => {
+    expect(caip2NamespaceRegex.test("foo_bar")).toBe(false)
   })
 })
 
