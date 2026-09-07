@@ -9,6 +9,7 @@ import {
   createA2AHandshakePayload,
   createSignedA2AMessage,
 } from "./sign-message"
+import { generateRandomNonce } from "./random"
 import {
   agentDid,
   makeTextMessage,
@@ -136,6 +137,22 @@ describe("createA2AHandshakeMessage", () => {
     expect(result.jti).toBe("test-jti-1234")
     expect(result.nonce).toBe("test-nonce-1234")
     expect(result.message.role).toBe("agent")
+  })
+
+  it("returns the fresh reply nonce when responding to a handshake", async () => {
+    vi.mocked(generateRandomNonce).mockReturnValueOnce("fresh-reply-nonce")
+
+    const result = await createA2AHandshakeMessage(
+      "agent",
+      {
+        recipient: userDid,
+        vc: testCredential,
+        requestNonce: "initiator-nonce",
+      },
+      { did: agentDid, jwtSigner },
+    )
+
+    expect(result.nonce).toBe("fresh-reply-nonce")
   })
 
   it("returns the signed JWT in the message data part", async () => {
