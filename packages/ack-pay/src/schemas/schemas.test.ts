@@ -3,10 +3,12 @@ import { describe, expect, it } from "vitest"
 
 import {
   paymentOptionSchema as valibotPaymentOptionSchema,
+  paymentReceiptClaimSchema as valibotPaymentReceiptClaimSchema,
   paymentRequestSchema as valibotPaymentRequestSchema,
 } from "./valibot"
 import {
   paymentOptionSchema as zodPaymentOptionSchema,
+  paymentReceiptClaimSchema as zodPaymentReceiptClaimSchema,
   paymentRequestSchema as zodPaymentRequestSchema,
 } from "./zod"
 
@@ -24,6 +26,14 @@ const paymentRequest = {
 }
 
 const paymentOption = paymentRequest.paymentOptions[0]
+
+const paymentRequestToken =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+const paymentReceiptClaim = {
+  paymentRequestToken,
+  paymentOptionId: "test-payment-option-id",
+}
 
 describe("paymentRequestSchema", () => {
   it("rejects invalid expiresAt strings instead of throwing", () => {
@@ -61,6 +71,8 @@ describe.each([
         v.safeParse(valibotPaymentRequestSchema, input).success,
       paymentOption: (input: unknown) =>
         v.safeParse(valibotPaymentOptionSchema, input).success,
+      paymentReceiptClaim: (input: unknown) =>
+        v.safeParse(valibotPaymentReceiptClaimSchema, input).success,
     },
   ],
   [
@@ -70,6 +82,8 @@ describe.each([
         zodPaymentRequestSchema.safeParse(input).success,
       paymentOption: (input: unknown) =>
         zodPaymentOptionSchema.safeParse(input).success,
+      paymentReceiptClaim: (input: unknown) =>
+        zodPaymentReceiptClaimSchema.safeParse(input).success,
     },
   ],
 ] as const)("%s rejects empty required payment fields", (_name, schema) => {
@@ -90,6 +104,15 @@ describe.each([
       schema.paymentRequest({
         ...paymentRequest,
         id: "",
+      }),
+    ).toBe(false)
+  })
+
+  it("rejects a payment receipt claim with an empty paymentOptionId", () => {
+    expect(
+      schema.paymentReceiptClaim({
+        ...paymentReceiptClaim,
+        paymentOptionId: "",
       }),
     ).toBe(false)
   })
