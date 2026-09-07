@@ -76,7 +76,7 @@ describe("createJwtSigner", () => {
       curve: "invalid-curve",
     }
     // oxlint-disable-next-line typescript/no-unsafe-type-assertion -- intentionally passing invalid input to exercise runtime validation
-    const signerInput = invalidKeypair as unknown as Parameters
+    const signerInput = invalidKeypair as unknown as Parameters<
       typeof createJwtSigner
     >[0]
 
