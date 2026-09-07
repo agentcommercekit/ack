@@ -3,13 +3,13 @@ import { createJwtSigner } from "@agentcommercekit/jwt"
 import { generateKeypair } from "@agentcommercekit/keys"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
+import { generateRandomNonce } from "./random"
 import {
   createA2AHandshakeMessage,
   createA2AHandshakeMessageFromJwt,
   createA2AHandshakePayload,
   createSignedA2AMessage,
 } from "./sign-message"
-import { generateRandomNonce } from "./random"
 import {
   agentDid,
   makeTextMessage,
