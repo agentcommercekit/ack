@@ -28,7 +28,7 @@ export const paymentOptionSchema = v.object({
 export const paymentRequestSchema = v.object({
   id: v.string(),
   description: v.optional(v.string()),
-  serviceCallback: v.optional(v.pipe(v.string(), v.url())),
+  serviceCallback: v.optional(urlOrDidUri),
   expiresAt: v.optional(timestampSchema),
   paymentOptions: v.pipe(
     v.tupleWithRest([paymentOptionSchema], paymentOptionSchema),
