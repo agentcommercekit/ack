@@ -1,4 +1,5 @@
 import type { Resolvable } from "@agentcommercekit/did"
+import { isDidUri } from "@agentcommercekit/did"
 import { isJwtString, type JwtString } from "@agentcommercekit/jwt"
 import {
   InvalidCredentialError,
@@ -132,14 +133,37 @@ export async function verifyPaymentReceipt(
   // Bind the receipt's selected option back to an option actually offered by
   // the verified Payment Request. Reads from `verifiedReceipt` (proof-decoded),
   // so a mutated outer credential cannot smuggle in an unoffered option.
-  const paymentOptionExists = paymentRequest.paymentOptions.some(
+  const selectedPaymentOption = paymentRequest.paymentOptions.find(
     (paymentOption) =>
       paymentOption.id === verifiedReceipt.credentialSubject.paymentOptionId,
   )
 
-  if (!paymentOptionExists) {
+  if (!selectedPaymentOption) {
     throw new InvalidPaymentReceiptError(
       "Receipt paymentOptionId does not match any payment option in the Payment Request token",
+    )
+  }
+
+  // A payment option can name a specific receiptService (typically to
+  // support multi-rail deployments where different payment options delegate
+  // receipt issuance to different services). When it's a DID, the verified
+  // receipt's issuer must be that exact DID - otherwise a receipt issued by
+  // *any* trusted issuer (from a global `trustedReceiptIssuers` list) would
+  // be accepted for an option that named a different, specific issuer,
+  // defeating the per-option trust separation the deployment relies on.
+  //
+  // URL-form receiptService values are left unenforced here, since binding a
+  // DID-based receipt issuer to a URL isn't well-defined without an
+  // application-level policy for what "matches" means; callers that need
+  // this can compare `selectedPaymentOption.receiptService` against
+  // `verifiedReceipt.issuer.id` themselves.
+  if (
+    selectedPaymentOption.receiptService !== undefined &&
+    isDidUri(selectedPaymentOption.receiptService) &&
+    selectedPaymentOption.receiptService !== verifiedReceipt.issuer.id
+  ) {
+    throw new InvalidPaymentReceiptError(
+      "Receipt issuer does not match the selected payment option's receiptService",
     )
   }
 

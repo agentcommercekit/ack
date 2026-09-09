@@ -265,3 +265,168 @@ describe("verifyPaymentReceipt()", () => {
     ).rejects.toThrow(UntrustedIssuerError)
   })
 })
+
+describe("verifyPaymentReceipt() - receiptService binding", () => {
+  let resolver: Resolvable
+  let legitReceiptIssuerDid: DidUri
+  let legitReceiptIssuerKeypair: Awaited<ReturnType<typeof generateKeypair>>
+  let otherTrustedReceiptIssuerDid: DidUri
+  let otherTrustedReceiptIssuerKeypair: Awaited<
+    ReturnType<typeof generateKeypair>
+  >
+  let paymentRequestToken: JwtString
+
+  beforeEach(async () => {
+    legitReceiptIssuerKeypair = await generateKeypair("secp256k1")
+    legitReceiptIssuerDid = createDidKeyUri(legitReceiptIssuerKeypair)
+
+    otherTrustedReceiptIssuerKeypair = await generateKeypair("secp256k1")
+    otherTrustedReceiptIssuerDid = createDidKeyUri(
+      otherTrustedReceiptIssuerKeypair,
+    )
+
+    const paymentRequestIssuerKeypair = await generateKeypair("secp256k1")
+    const paymentRequestIssuerDid = createDidKeyUri(paymentRequestIssuerKeypair)
+
+    resolver = getDidResolver()
+
+    // A payment option that names a specific receiptService (the legit
+    // issuer), per the issue's minimal reproduction.
+    const paymentRequestInit: PaymentRequestInit = {
+      id: "test-request-id",
+      paymentOptions: [
+        {
+          id: "card-option",
+          amount: 100,
+          decimals: 2,
+          currency: "USD",
+          network: "eip155:84532",
+          recipient: "0x592D4858DE40BC81A77E5B373238B70D7C79D3C79",
+          receiptService: legitReceiptIssuerDid,
+        },
+      ],
+    }
+
+    const paymentRequiredBody = await createSignedPaymentRequest(
+      paymentRequestInit,
+      {
+        issuer: paymentRequestIssuerDid,
+        signer: createJwtSigner(paymentRequestIssuerKeypair),
+        algorithm: curveToJwtAlgorithm(paymentRequestIssuerKeypair.curve),
+      },
+    )
+    paymentRequestToken = paymentRequiredBody.paymentRequestToken
+  })
+
+  async function signReceiptAs(
+    issuerDid: DidUri,
+    issuerKeypair: Awaited<ReturnType<typeof generateKeypair>>,
+  ): Promise<JwtString> {
+    const unsignedReceipt = createPaymentReceipt({
+      paymentRequestToken,
+      paymentOptionId: "card-option",
+      issuer: issuerDid,
+      payerDid: createDidPkhUri(
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
+      ),
+    })
+
+    return signCredential(unsignedReceipt, {
+      did: issuerDid,
+      signer: createJwtSigner(issuerKeypair),
+    })
+  }
+
+  it("rejects a receipt from a different trusted issuer than the option's receiptService", async () => {
+    // The receipt is issued and signed by otherTrustedReceiptIssuerDid, not
+    // by legitReceiptIssuerDid (the DID the selected payment option names as
+    // its receiptService). Both are in trustedReceiptIssuers, so the old
+    // "is the issuer trusted at all, globally" check alone would accept
+    // this - the fix must bind to the option's own receiptService instead.
+    const receiptJwt = await signReceiptAs(
+      otherTrustedReceiptIssuerDid,
+      otherTrustedReceiptIssuerKeypair,
+    )
+
+    await expect(
+      verifyPaymentReceipt(receiptJwt, {
+        resolver,
+        trustedReceiptIssuers: [
+          legitReceiptIssuerDid,
+          otherTrustedReceiptIssuerDid,
+        ],
+      }),
+    ).rejects.toThrow(InvalidPaymentReceiptError)
+  })
+
+  it("accepts a receipt from the option's own receiptService", async () => {
+    const receiptJwt = await signReceiptAs(
+      legitReceiptIssuerDid,
+      legitReceiptIssuerKeypair,
+    )
+
+    const result = await verifyPaymentReceipt(receiptJwt, {
+      resolver,
+      trustedReceiptIssuers: [
+        legitReceiptIssuerDid,
+        otherTrustedReceiptIssuerDid,
+      ],
+    })
+
+    expect(result.receipt).toBeDefined()
+  })
+
+  it("does not enforce receiptService binding when the option doesn't specify one", async () => {
+    // Re-run createSignedPaymentRequest without receiptService on the option,
+    // to confirm the binding check is a no-op (opt-in) rather than requiring
+    // every payment option to declare a receiptService.
+    const paymentRequestIssuerKeypair = await generateKeypair("secp256k1")
+    const paymentRequestIssuerDid = createDidKeyUri(paymentRequestIssuerKeypair)
+
+    const paymentRequestInit: PaymentRequestInit = {
+      id: "test-request-id-no-receipt-service",
+      paymentOptions: [
+        {
+          id: "card-option",
+          amount: 100,
+          decimals: 2,
+          currency: "USD",
+          network: "eip155:84532",
+          recipient: "0x592D4858DE40BC81A77E5B373238B70D7C79D3C79",
+          // no receiptService
+        },
+      ],
+    }
+
+    const paymentRequiredBody = await createSignedPaymentRequest(
+      paymentRequestInit,
+      {
+        issuer: paymentRequestIssuerDid,
+        signer: createJwtSigner(paymentRequestIssuerKeypair),
+        algorithm: curveToJwtAlgorithm(paymentRequestIssuerKeypair.curve),
+      },
+    )
+
+    const unsignedReceipt = createPaymentReceipt({
+      paymentRequestToken: paymentRequiredBody.paymentRequestToken,
+      paymentOptionId: "card-option",
+      issuer: otherTrustedReceiptIssuerDid,
+      payerDid: createDidPkhUri(
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
+      ),
+    })
+    const receiptJwt = await signCredential(unsignedReceipt, {
+      did: otherTrustedReceiptIssuerDid,
+      signer: createJwtSigner(otherTrustedReceiptIssuerKeypair),
+    })
+
+    const result = await verifyPaymentReceipt(receiptJwt, {
+      resolver,
+      trustedReceiptIssuers: [otherTrustedReceiptIssuerDid],
+    })
+
+    expect(result.receipt).toBeDefined()
+  })
+})
