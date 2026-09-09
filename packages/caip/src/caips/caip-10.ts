@@ -48,6 +48,15 @@ export function createCaip10AccountId(
 }
 
 export function caip10Parts(caip: Caip10AccountId): Caip10AccountIdParts {
+  // Validate the full string against the CAIP-10 pattern rather than just
+  // splitting on ":". A naive split silently drops any segments after the
+  // third colon (e.g. "eip155:1:0xabc:extra" would parse as if it were
+  // just "eip155:1:0xabc"), so malformed input could pass through
+  // undetected instead of being rejected.
+  if (!caip10AccountIdRegex.test(caip)) {
+    throw new Error("Invalid CAIP-10 account ID")
+  }
+
   const [namespace, reference, accountId] = caip.split(":")
   if (!namespace || !reference || !accountId) {
     throw new Error("Invalid CAIP-10 account ID")
