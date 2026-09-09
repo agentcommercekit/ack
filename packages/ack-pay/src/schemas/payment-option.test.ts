@@ -35,3 +35,24 @@ describe("paymentOptionSchema amount", () => {
     },
   )
 })
+
+describe.each([
+  [
+    "valibot",
+    (input: unknown) => v.safeParse(valibotPaymentOptionSchema, input).success,
+  ],
+  ["zod", (input: unknown) => zodPaymentOptionSchema.safeParse(input).success],
+] as const)("%s paymentOptionSchema empty fields", (_, accepts) => {
+  it.each(["id", "currency", "recipient"] as const)(
+    "rejects a payment option with an empty %s",
+    (field) => {
+      expect(
+        accepts({
+          ...paymentOption,
+          amount: 1,
+          [field]: "",
+        }),
+      ).toBe(false)
+    },
+  )
+})
