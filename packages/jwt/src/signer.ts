@@ -22,6 +22,6 @@ export function createJwtSigner(keypair: Keypair): JwtSigner {
     case "Ed25519":
       return EdDSASigner(keypair.privateKey)
     default:
-      throw new Error("Unsupported algorithm", keypair.curve)
+      throw new Error(`Unsupported algorithm: ${String(keypair.curve)}`)
   }
 }
