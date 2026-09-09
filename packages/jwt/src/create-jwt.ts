@@ -25,9 +25,7 @@ export interface JwtHeader extends Omit<JWTHeader, "alg" | "typ"> {
  * @param payload - The payload to create the JWT from
  * @param options - The options to create the JWT from
  * @param header - Optional header overrides
- * @param header.alg - The algorithm to use for the JWT. Accepts `secp256k1` and
- *  `Ed25519` as aliases for `ES256K` and `EdDSA` respectively. Defaults to
- *  `ES256K`.
+ * @param header.alg - The algorithm to use for the JWT. Defaults to `ES256K`.
  * @returns The JWT
  */
 export async function createJwt(
