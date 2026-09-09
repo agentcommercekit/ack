@@ -411,9 +411,12 @@ async function resolveStatusListCredential(
     )
   }
 
-  // Check the expiry directly rather than through `isExpired`, which reads an
-  // unparseable date as "not expired". The expiry is the main bound on status
-  // list replay, so a malformed one must not quietly remove it.
+  // Check the expiry directly rather than through `isExpired`: this path
+  // must throw `undetermined()` with a URL-specific message (isExpired only
+  // returns a boolean), and must reject a list that expires at exactly `now`
+  // (`<=`), whereas isExpired's own bound is strict (`<`). The expiry is the
+  // main bound on status list replay, so a malformed one must not quietly
+  // remove it.
   if (verified.expirationDate !== undefined) {
     const expiresAt = Date.parse(verified.expirationDate)
 
