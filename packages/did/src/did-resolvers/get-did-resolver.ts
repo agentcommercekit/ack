@@ -28,12 +28,17 @@ export function getDidResolver({
   },
   ...options
 }: GetDidResolverOptions = {}): DidResolver {
-  const webFetch = webOptions.fetch
+  const webFetch = webOptions.fetch ?? globalThis.fetch
   const keyResolver = getKeyDidResolver()
   const webResolver = getWebDidResolver(webOptions)
+  // did-jwks calls fetch with no init, so inject the redirect policy here
   const jwksResolver = getJwksDidResolver({
     ...webOptions,
-    fetch: webFetch ? (input, init) => webFetch(input, init) : globalThis.fetch,
+    fetch: (input, init) =>
+      webFetch(input, {
+        ...init,
+        redirect: webOptions.followRedirects ? "follow" : "manual",
+      }),
   })
   const pkhResolver = getPkhDidResolver()
 

@@ -45,6 +45,19 @@ export interface DidWebResolverOptions {
    */
   allowedHttpHosts?: string[]
   /**
+   * Whether to follow HTTP redirects while fetching the did document.
+   *
+   * The `allowedHttpHosts` check applies to the resolved URL only, so a
+   * followed redirect can move the request to a host or scheme that check
+   * would have rejected. did:web documents are served directly at a
+   * well-known path, so redirects are refused by default.
+   *
+   * The policy is applied via `init.redirect` on the request. A custom
+   * `fetch` must honour `init.redirect` for it to take effect.
+   * @default false
+   */
+  followRedirects?: boolean
+  /**
    * Milliseconds to wait for the DID document fetch before aborting. Must
    * be a positive integer of at most 2147483647 (the 32-bit timer limit).
    *
@@ -69,13 +82,31 @@ async function fetchDidDocumentAtUrl(
   url: string | URL,
   {
     fetch = globalThis.fetch,
+    followRedirects = false,
     timeout,
-  }: { fetch?: FetchLike; timeout?: number } = {},
+  }: {
+    fetch?: FetchLike
+    followRedirects?: boolean
+    timeout?: number
+  } = {},
 ): Promise<DidDocument> {
   const res = await fetch(url, {
     mode: "cors",
+    redirect: followRedirects ? "follow" : "manual",
     ...(timeout !== undefined ? { signal: AbortSignal.timeout(timeout) } : {}),
   })
+
+  // browsers surface manual redirects as an opaque response with status 0
+  if (
+    !followRedirects &&
+    (res.type === "opaqueredirect" || (res.status >= 300 && res.status < 400))
+  ) {
+    const location = res.headers.get("location")
+    const target = location ? ` to ${location}` : ""
+    throw new Error(
+      `DID resolution refused a redirect${target}. Set followRedirects: true to allow redirects.`,
+    )
+  }
 
   if (!res.ok) {
     throw new Error(
@@ -157,6 +188,7 @@ export function getResolver({
   docPath = DEFAULT_DOC_PATH,
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
+  followRedirects = false,
   timeout = 5000,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
   // Fail fast on a bad timeout rather than surfacing it later as a
@@ -184,7 +216,11 @@ export function getResolver({
     let didDocument: DIDDocument | null = null
 
     try {
-      didDocument = await fetchDidDocumentAtUrl(url, { fetch, timeout })
+      didDocument = await fetchDidDocumentAtUrl(url, {
+        fetch,
+        followRedirects,
+        timeout,
+      })
 
       if (!isDidDocumentForDid(didDocument, did)) {
         throw new Error("DID document id does not match requested did")
