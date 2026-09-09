@@ -25,6 +25,7 @@ import {
 } from "@/db/queries/credentials"
 import { buildSignedCredential } from "@/lib/credentials/build-signed-credential"
 import type { CredentialResponse } from "@/lib/types"
+import { parseIdParam } from "@/lib/utils/parse-id-param"
 import { database } from "@/middleware/database"
 import { didResolver } from "@/middleware/did-resolver"
 import { issuer as issuerMiddleware } from "@/middleware/issuer"
@@ -120,13 +121,18 @@ app.post(
  * }
  */
 app.get("/:id", async (c): Promise<ApiResponse<CredentialResponse>> => {
-  const { id } = c.req.param()
   const db = c.get("db")
   const issuer = c.get("issuer")
   const resolver = c.get("resolver")
   const { BASE_URL } = env(c)
 
-  const credential = await getCredential(db, parseInt(id))
+  const id = parseIdParam(c.req.param("id"))
+
+  if (id === undefined) {
+    return notFound("Credential not found")
+  }
+
+  const credential = await getCredential(db, id)
 
   if (!credential) {
     return notFound("Credential not found")
