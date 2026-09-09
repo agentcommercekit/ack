@@ -122,7 +122,7 @@ export async function createA2AHandshakeMessage(
   return {
     sig: jwt,
     jti,
-    nonce: payload.nonce,
+    nonce: payload.replyNonce ?? payload.nonce,
     message,
   }
 }
