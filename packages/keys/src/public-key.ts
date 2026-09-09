@@ -1,3 +1,5 @@
+import { varint } from "multiformats"
+
 import * as ed25519 from "./curves/ed25519"
 import * as secp256k1 from "./curves/secp256k1"
 import * as secp256r1 from "./curves/secp256r1"
@@ -5,7 +7,7 @@ import { bytesToBase58 } from "./encoding/base58"
 import { bytesToHexString } from "./encoding/hex"
 import { publicKeyBytesToJwk, type PublicKeyJwk } from "./encoding/jwk"
 import { bytesToMultibase } from "./encoding/multibase"
-import type { KeyCurve } from "./key-curves"
+import { keyCurveMulticodecs, type KeyCurve } from "./key-curves"
 import type { Keypair } from "./keypair"
 
 /**
@@ -74,6 +76,57 @@ export function isValidPublicKey(
 }
 
 /**
+ * Compress a public key, for curves that have a compressed point encoding.
+ * Ed25519 keys have a single 32-byte encoding and are returned unchanged.
+ */
+function compressPublicKey(publicKey: Uint8Array, curve: KeyCurve): Uint8Array {
+  if (curve === "secp256k1") {
+    return secp256k1.compressPublicKey(publicKey)
+  }
+
+  if (curve === "secp256r1") {
+    return secp256r1.compressPublicKey(publicKey)
+  }
+
+  return publicKey
+}
+
+/**
+ * Encode a public key as a Multikey: the curve's multicodec code as a varint,
+ * followed by the key bytes, multibase-encoded with base58-btc.
+ *
+ * This is the value a `Multikey` verification method's `publicKeyMultibase`
+ * holds, and it is the same value that follows `did:key:` in a `did:key` URI
+ * for the same key.
+ *
+ * @param publicKey - The raw public key bytes
+ * @param curve - The curve the key belongs to
+ * @returns The Multikey string
+ * @throws If `publicKey` is not a valid public key on `curve`
+ */
+export function publicKeyToMultikey(
+  publicKey: Uint8Array,
+  curve: KeyCurve,
+): string {
+  // A Multikey says which curve its key is on, so bytes that are not a key on
+  // that curve must not get one of these prefixes.
+  if (!isValidPublicKey(publicKey, curve)) {
+    throw new Error(`Invalid ${curve} public key`)
+  }
+
+  const compressed = compressPublicKey(publicKey, curve)
+  const code = keyCurveMulticodecs[curve]
+  const prefix = new Uint8Array(varint.encodingLength(code))
+  varint.encodeTo(code, prefix, 0)
+
+  const prefixed = new Uint8Array(prefix.length + compressed.length)
+  prefixed.set(prefix)
+  prefixed.set(compressed, prefix.length)
+
+  return bytesToMultibase(prefixed)
+}
+
+/**
  * Convert a public key to a multibase string (used for DID:key)
  */
 function encodePublicKeyMultibase(
@@ -83,7 +136,7 @@ function encodePublicKeyMultibase(
   return {
     encoding: "multibase",
     curve,
-    value: bytesToMultibase(publicKey),
+    value: publicKeyToMultikey(publicKey, curve),
   }
 }
 

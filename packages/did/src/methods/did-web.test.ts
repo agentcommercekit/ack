@@ -1,7 +1,6 @@
-import { generateKeypair } from "@agentcommercekit/keys"
+import { generateKeypair, publicKeyToMultikey } from "@agentcommercekit/keys"
 import {
   bytesToHexString,
-  bytesToMultibase,
   publicKeyBytesToJwk,
 } from "@agentcommercekit/keys/encoding"
 import { describe, expect, it } from "vitest"
@@ -66,7 +65,10 @@ describe("createDidWebDocument", () => {
   it("generates a valid DidUri and DidDocument, upgrading legacy hex to multibase", async () => {
     const keypair = await generateKeypair("secp256k1")
     const publicKeyHex = bytesToHexString(keypair.publicKey)
-    const publicKeyMultibase = bytesToMultibase(keypair.publicKey)
+    const publicKeyMultibase = publicKeyToMultikey(
+      keypair.publicKey,
+      keypair.curve,
+    )
 
     const { did, didDocument } = createDidWebDocument({
       publicKey: {

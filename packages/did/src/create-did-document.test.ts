@@ -3,19 +3,18 @@ import {
   generateKeypair,
   keyCurves,
   publicKeyEncodings,
+  publicKeyToMultikey,
   type Keypair,
   type PublicKeyEncoding,
 } from "@agentcommercekit/keys"
-import {
-  bytesToMultibase,
-  publicKeyBytesToJwk,
-} from "@agentcommercekit/keys/encoding"
+import { publicKeyBytesToJwk } from "@agentcommercekit/keys/encoding"
 import { beforeEach, describe, expect, test } from "vitest"
 
 import {
   createDidDocument,
   createDidDocumentFromKeypair,
 } from "./create-did-document"
+import { createDidKeyUri } from "./methods/did-key"
 
 const keyTypeMap = {
   jwk: "JsonWebKey2020",
@@ -87,7 +86,10 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
                   id: keyId,
                   type: keyTypeMap[encoding],
                   controller: did,
-                  publicKeyMultibase: bytesToMultibase(keypair.publicKey),
+                  publicKeyMultibase: publicKeyToMultikey(
+                    keypair.publicKey,
+                    curve,
+                  ),
                 }
 
           const expectedDocument = {
@@ -105,6 +107,28 @@ describe("createDidDocument() and createDidDocumentFromKeypair()", () => {
         })
       },
     )
+  })
+
+  describe.each(keyCurves)("Multikey encoding: %s", (curve) => {
+    test("publicKeyMultibase matches the did:key identifier for the key", () => {
+      const keypair = keypairMap[curve]()
+      const expected = createDidKeyUri(keypair).slice("did:key:".length)
+
+      // A Multikey and a did:key identifier are the same construction, so
+      // every encoding that resolves to a Multikey must produce this value
+      for (const encoding of ["multibase", "hex", "base58"] as const) {
+        const document = createDidDocumentFromKeypair({
+          did,
+          keypair,
+          encoding,
+        })
+
+        expect(document.verificationMethod?.[0]?.type).toBe("Multikey")
+        expect(document.verificationMethod?.[0]?.publicKeyMultibase).toBe(
+          expected,
+        )
+      }
+    })
   })
 
   test("includes controller when provided", () => {
