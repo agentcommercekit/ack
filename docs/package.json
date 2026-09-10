@@ -16,7 +16,8 @@
   },
   "scripts": {
     "clean": "git clean -fdX .turbo dist",
-    "docs": "mintlify dev"
+    "docs": "mintlify dev",
+    "test": "vitest run"
   },
   "devDependencies": {
     "mintlify": "4.2.637"
