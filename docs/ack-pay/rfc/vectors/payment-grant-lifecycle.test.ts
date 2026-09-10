@@ -98,7 +98,7 @@ describe("single-use payment grant lifecycle", () => {
 
   it("allows only one concurrent paid request to begin execution", async () => {
     const merchant = createMerchant()
-    let release = () => {}
+    let release: (() => void) | undefined
     const pending = new Promise<void>((resolve) => {
       release = resolve
     })
@@ -107,7 +107,7 @@ describe("single-use payment grant lifecycle", () => {
       expect(await merchant.handle(paid)).toBe("already-claimed")
       expect(merchant.started()).toBe(1)
     } finally {
-      release()
+      release?.()
     }
     expect(await first).toBe("completed")
   })
