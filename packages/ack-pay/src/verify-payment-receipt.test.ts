@@ -31,6 +31,9 @@ import type { PaymentRequestInit } from "./payment-request"
 import { isPaymentReceiptCredential } from "./receipt-claim-verifier"
 import { verifyPaymentReceipt } from "./verify-payment-receipt"
 
+/** A clearly past ISO 8601 timestamp, fixed for determinism. */
+const PAST_EXPIRES_AT = "2000-01-01T00:00:00.000Z"
+
 describe("verifyPaymentReceipt()", () => {
   let resolver: Resolvable
   let unsignedReceipt: W3CCredential
@@ -95,6 +98,57 @@ describe("verifyPaymentReceipt()", () => {
     const result = await verifyPaymentReceipt(signedReceiptJwt, { resolver })
     expect(result.receipt).toBeDefined()
     expect(result.paymentRequestToken).toBeDefined()
+    expect(result.paymentRequest).toBeDefined()
+  })
+
+  it("validates a receipt over an expired payment request", async () => {
+    const expiredRequestIssuerKeypair = await generateKeypair("secp256k1")
+    const expiredRequestIssuerDid = createDidKeyUri(expiredRequestIssuerKeypair)
+
+    const expiredRequest = await createSignedPaymentRequest(
+      {
+        id: "test-expired-request-id",
+        paymentOptions: [
+          {
+            id: "test-payment-option-id",
+            amount: 100,
+            decimals: 2,
+            currency: "USD",
+            network: "eip155:84532",
+            recipient: "0x592D4858DE40BC81A77E5B373238B70D7C79D3C79",
+          },
+        ],
+        expiresAt: PAST_EXPIRES_AT,
+      },
+      {
+        issuer: expiredRequestIssuerDid,
+        signer: createJwtSigner(expiredRequestIssuerKeypair),
+        algorithm: curveToJwtAlgorithm(expiredRequestIssuerKeypair.curve),
+      },
+    )
+
+    const unsignedExpiredReceipt = createPaymentReceipt({
+      paymentRequestToken: expiredRequest.paymentRequestToken,
+      paymentOptionId: expiredRequest.paymentRequest.paymentOptions[0].id,
+      issuer: receiptIssuerDid,
+      payerDid: createDidPkhUri(
+        "eip155:84532",
+        "0x7B3D8F2E1C9A4B5D6E7F8A9B0C1D2E3F4A5B6C",
+      ),
+    })
+    const signedExpiredReceiptJwt = await signCredential(
+      unsignedExpiredReceipt,
+      {
+        did: receiptIssuerDid,
+        signer: createJwtSigner(receiptIssuerKeypair),
+      },
+    )
+
+    const result = await verifyPaymentReceipt(signedExpiredReceiptJwt, {
+      resolver,
+    })
+    expect(result.receipt).toBeDefined()
+    expect(result.paymentRequestToken).toBe(expiredRequest.paymentRequestToken)
     expect(result.paymentRequest).toBeDefined()
   })
 
