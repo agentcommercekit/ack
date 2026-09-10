@@ -367,6 +367,10 @@ ext-revocation.
   exposure with no revocation check at all.
 - **Single-use grants.** For one-shot authority, the RP records the `jti`
   at first acceptance and rejects reuse; the grant is spent when used.
+  For a single-use payment grant, checking the grant before issuing a
+  payment challenge is not acceptance of the paid operation and MUST NOT
+  redeem that grant. ACK-Pay core Section 4.1 defines the ordering between
+  grant checks, challenges, redemption, and paid execution.
   Which actions need single-use authority is the RP's call (a payment
   authorization, a one-shot registration); core supplies the mechanism.
   Redemption MUST be atomic: a check-and-set keyed by (`iss`, `jti`). A

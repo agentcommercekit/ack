@@ -101,6 +101,39 @@ proofs). This is the full trail from a payment event to the legal entity
 behind the paying agent, walkable by a third party with no callback to any
 participant.
 
+### 4.1 Single-use payment grants and payment challenges
+
+This section applies when a seller verifies a single-use payment grant
+before returning a payment challenge. It distinguishes validation of
+permission from acceptance of the paid operation that consumes it.
+
+- A request that only produces a `402 Payment Required` challenge, without
+  performing the operation authorized by the payment grant, MUST NOT
+  redeem that grant. A separately authorized paid quote-generation
+  operation may consume its own grant; it is not a challenge-only request.
+- The paid retry MUST carry a new request signature and pass the current
+  ACK-ID request and grant checks. A successful earlier check is neither
+  a reservation nor a promise of later acceptance. The seller MUST
+  validate the payment payload before redeeming the grant; validation
+  here does not itself submit settlement or perform the paid operation.
+- Before the first authorized effect, the seller MUST atomically and
+  durably redeem the selected grant by (`iss`, `jti`), using ACK-ID core
+  Section 8's single-use mechanism. Authorized effects include submitting
+  settlement, accepting a deferred payment obligation, executing the paid
+  operation, and delivering the protected resource. Only the request that
+  wins redemption may start those effects. Coordination MUST cover every
+  server accepting that grant for the same RP.
+- Once an authorized effect has started or been submitted, a timeout or
+  uncertain outcome MUST NOT make the grant available for another
+  operation. Recovery must reconcile the existing operation. A redemption
+  record is not a lease that expires on a request timeout.
+
+This ordering adds no wire fields. Request-signature replay checks still
+apply to both attempts. A production implementation needs durable state
+and rail-specific recovery; these rules do not promise exactly-once
+settlement or successful delivery after a crash. The executable examples
+in `vectors/payment-grant-lifecycle.test.ts` model the ordering only.
+
 ## 5. Third-party verification
 
 A third party verifies a receipt (with its offer, when presented together)
