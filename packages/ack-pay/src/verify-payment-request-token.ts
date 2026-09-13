@@ -58,6 +58,14 @@ export async function verifyPaymentRequestToken(
     )
   }
 
+  const { sub } = parsedPaymentRequestToken.payload
+
+  if (typeof sub !== "string" || sub !== output.id) {
+    throw new InvalidPaymentRequestTokenError(
+      "Payment Request token subject does not match its id",
+    )
+  }
+
   return {
     paymentRequest: output,
     parsed: parsedPaymentRequestToken,
