@@ -183,3 +183,12 @@ draft sections they extract.
    reserved; ext-delegation's attenuation wildcards apply to
    parent-to-child containment inside chains, which core-only verifiers
    never accept anyway.
+10. **did:jwks is superseded by ext-web's discovery profile.** The SDK's
+    `packages/did` resolves `did:jwks` through `jwks-did-resolver`, whose
+    algorithm tries `/.well-known/jwks.json` and then falls back to OIDC
+    discovery. That is the fallback chain core forbids: a miss at one
+    location must never widen the key set (core Section 3.2). The need it
+    served, keys that live behind an OIDC `jwks_uri`, is met by ext-web's
+    opt-in profile, which a verifier configures per identity and which no
+    404 ever triggers. The method is not carried into v2; the resolver
+    retires when the packages are recut against this RFC.
