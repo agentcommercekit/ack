@@ -111,8 +111,10 @@ draft sections they extract.
    hosted document then serves ACK-ID, ACK-Pay receipts, and x402
    offer-receipt verification. (Earlier drafts used separate `jwks.json`
    paths; that meant a second document for no added capability.) Fetches
-   follow redirects, with the SSRF checks applied to every hop: the fixed
-   path is where resolution starts, not a constraint on serving topology.
+   refuse redirects by default. A fetcher may opt in, and then it walks
+   every hop itself with the SSRF checks applied to each; platform HTTP
+   clients hide the hops, so following on their default would skip the
+   checks. The SDK resolver made the same change in #133.
 3. **Control grants live in ext-controller.** Core verifiers pin owner
    keys at onboarding and never consume a control grant, so moving them
    into core would add surface with no core consumer. The counterargument
@@ -158,10 +160,9 @@ draft sections they extract.
    list needed the consistency rule to be enforced correctly; delegation is
    local (a holder extends the chain knowing only its parent); and pairwise
    hashing is the AP2 mandate-chain convention, so grants slot into AP2/UCP
-   flows without redesign. Field-tested in the id.sh reference
-   implementation, whose panel regressions include the decoy-hash rejection.
-   Known limit, true of any hash-linked format: an ancestor can never be
-   inserted above an issued root without reissuing everything below it.
+   flows without redesign. Known limit, true of any hash-linked format: an
+   ancestor can never be inserted above an issued root without reissuing
+   everything below it.
 8. **Unknown grant claims are ignored; `crit` marks the exceptions.**
    Earlier drafts closed the claim table: a core verifier rejected any
    top-level claim it did not recognize. PR #9 review argued that JWT

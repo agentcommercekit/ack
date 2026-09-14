@@ -151,8 +151,13 @@ verification.
 Resolution rules:
 
 - All fetches MUST use HTTPS, MUST time out, and MUST cap response size.
-  Fetchers MAY follow redirects to a bounded depth (RECOMMENDED limit 3).
-  Every hop MUST use HTTPS and MUST pass the address checks below.
+  Fetchers MUST NOT follow redirects by default: a redirect response ends
+  resolution with failure. A fetcher MAY opt in to following redirects to a
+  bounded depth (RECOMMENDED limit 3) only if it handles each hop itself, so
+  that every hop uses HTTPS and passes the address checks below. Platform
+  HTTP clients (browser `fetch`, undici, Workers) follow redirects without
+  exposing the hops, so a fetcher on their default never sees the hop it
+  would have to check.
 - The identity URL is attacker-influenced until a signature verifies.
   Fetchers MUST NOT connect to loopback, private (RFC 1918), link-local,
   or unique-local addresses, on any hop. Deployments that face hostile
@@ -454,11 +459,11 @@ There are no numbered conformance levels.
   therefore also give their artifacts a second rejection surface where
   ignoring a claim would widen authority: a distinct `typ`, a reserved
   scope token, or an `aud` shape core rejects.
-- **Redirected key fetches.** Key resolution follows redirects (Section
-  3.2), so whoever can set a redirect at the identity's origin chooses
-  where keys are read from. Publishers SHOULD serve `did.json` directly.
-  An RP MAY refuse redirected resolution where its policy needs the
-  stronger property.
+- **Redirected key fetches.** Key resolution refuses redirects by default
+  (Section 3.2). A fetcher that opts in accepts that whoever can set a
+  redirect at the identity's origin chooses where keys are read from, and
+  it takes on checking every hop itself. Publishers SHOULD serve `did.json`
+  directly at the fixed path.
 - **Shared key sets.** A key set shared across identities (a root
   identity's `/.well-known/did.json` serving a whole org) weakens what a
   request signature proves. A passing signature proves possession of some
