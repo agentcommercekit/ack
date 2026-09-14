@@ -58,11 +58,15 @@ did:key needs no hosted document at all.
   anchor ownership. It exists to be the short-lived `sub` of a chained leaf
   (owner signs the intermediate; an orchestrator mints a leaf whose subject
   is the worker's did:key), and the worker dies with its grant. Encodes an
-  Ed25519 or P-256 key (core Section 4). Open item: signed-request carriage.
-  `Signature-Agent` requires a URL (core Section 6) and a did:key has none,
-  so the presentation profile for did:key subjects (key resolution directly
-  from the identifier, `Signature-Agent` absent or repurposed) needs
-  definition here.
+  Ed25519 or P-256 key (core Section 4). Signed-request carriage for did:key
+  subjects, the intended shape (normative text is a drafting requirement):
+  `Signature-Agent` is absent, because Web Bot Auth requires a URL there
+  (core Section 6) and a did:key has none. The agent's identity is the
+  leaf's `sub`. The verifier decodes the public key from that identifier,
+  so core Section 7 step 1 runs with no fetch, and `keyid` MUST equal the
+  thumbprint of the decoded key, which MUST equal the leaf's `cnf.jkt`. The
+  `sub` check in step 2 compares against the leaf's own `sub`; possession
+  of the pinned key is what ties the request to it.
 - **Registration grants.** `scope: "register"` (reserved in core):
   single-use, key-pinned, one-hour authority to create a named identity at a
   hosted directory, with namespace-derivation checks so an owner's signature
