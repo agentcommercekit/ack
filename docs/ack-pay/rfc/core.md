@@ -61,9 +61,13 @@ stated in this section explicitly:
   key discovery: one hosted document serves both protocols. ACK-ID core's
   resolution rules (one fixed location, SSRF protections, freshness)
   apply.
-- **Algorithms.** EdDSA and ES256, per ACK-ID core Section 4. Whether ACK
-  verifiers also accept ES256K for wallet-adjacent deployments is an open
-  decision (Section 8).
+- **Algorithms.** EdDSA and ES256, per ACK-ID core Section 4. The x402 JWS
+  scheme also allows ES256K; this profile rejects it. WebCrypto has no
+  secp256k1, so an ES256K receipt would not verify with native crypto on
+  browser and edge runtimes. The key-separation rule below already forbids
+  the signing key being the `payTo` account, so accepting ES256K would buy
+  no wallet-key reuse anyway. The cost, stated openly: an EVM seller
+  provisions one non-wallet signing key.
 - **Key separation.** The offer/receipt signing key MUST NOT be the `payTo`
   account and SHOULD NOT be an owner grant-signing key. A dedicated
   signing key bounds what a compromise can mint.
@@ -177,9 +181,6 @@ never define conformance.
    learn to display the binding. This should be pursued now, while the
    extension is young; the answer decides whether the member stays
    namespaced or migrates to upstream-native fields.
-2. **ES256K.** The x402 JWS scheme allows secp256k1. Accepting it widens
-   wallet-key reuse; rejecting it keeps ACK-ID core's two-algorithm
-   discipline. Current draft: reject, revisit on deployment evidence.
-3. **Offer presentation.** Receipts verify without their offer; disputes
+2. **Offer presentation.** Receipts verify without their offer; disputes
    want both. Should the profile require buyers to retain offers
    (evidence-bundle style, ACK-ID ext-audit) or leave retention to policy?
