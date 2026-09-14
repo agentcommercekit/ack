@@ -24,6 +24,11 @@ never implicitly. Everything else ACK-Pay describes
 (roles, payment flows, human oversight, rails other than x402) is design
 language: non-normative patterns that define no conformance.
 
+The profile describes one shape: one grant, one request, one receipt, one
+settlement. It does not fix that relationship. Subscriptions, sessions,
+`upto`, and batch settlement may relate the four differently; they are
+tracked as follow-ups, and nothing here rules them out.
+
 This document layers on ACK-ID core: identities and key resolution (ACK-ID
 Sections 3.1-3.2), keys and thumbprints (Section 4), grants (Section 5),
 and signed requests (Section 6) are used here without redefinition.
@@ -162,6 +167,19 @@ Verifiable Intent pilots carry signed, key-bound SD-JWT mandates, so a
 mapping there is translation rather than invention. This section is the design-language boundary: flows,
 oversight points, and rail mappings live in the ACK-Pay pattern docs and
 never define conformance.
+
+The binding Section 4 defines is rail-independent in shape too. Named on
+its own it is an attribution: the agent's DID, the artifact reference of
+the authorizing grant, and the rail's settlement reference, signed by
+whoever issues that rail's receipt. The x402 profile is the case where the
+attribution embeds in the receipt payload as `ack`, with the receipt's own
+`transaction` member as the settlement reference. A mapping for another
+rail carries the same members, so a verifier that walks the trail consumes
+one shape whatever moved the money.
+
+One rule survives every translation: converting a grant into a wallet's or
+a rail's native authority never widens it. A grant constraint the rail
+cannot enforce refuses the payment; it is never dropped.
 
 ## 7. Relationship to the existing ACK-Pay spec
 
