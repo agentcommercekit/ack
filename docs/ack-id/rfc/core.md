@@ -296,7 +296,10 @@ is defined by this document.
 
 - The signature MUST cover `@method`, `@target-uri`, `content-digest` when a
   body is present, the `Signature-Agent` field, and the `Grant` field with
-  the `sf` parameter when grants are presented.
+  the `sf` parameter when grants are presented. Coverage binds the
+  `content-digest` header value only. A verifier MUST recompute the digest
+  over the body it received and MUST reject the request on mismatch;
+  without that step a middlebox can swap the body under a valid signature.
 - `Signature-Agent` carries the agent's identity URL (the URL spelling of
   its DID, Section 3.1; Web Bot Auth requires a URL here). It is an
   untrusted hint until the signature verifies. Because it is under the
@@ -305,7 +308,9 @@ is defined by this document.
   used) bound replay. Verifiers MUST enforce a maximum `created` age
   (RECOMMENDED default 300 seconds); the maximum is the RP's
   replay-exposure ceiling, a policy choice like the Section 8 lifetime
-  maximum. When `expires` is present, it MUST be covered by the signature,
+  maximum. Verifiers MUST also reject a `created` in the future beyond the
+  Section 5 `skew`, the same bound `iat` carries. When `expires` is
+  present, it MUST be covered by the signature,
   and a verifier MUST reject a request past it (the Section 5 `skew`
   applies). `expires` only ever narrows the window: an `expires` beyond
   the maximum `created` age does not extend acceptance. A captured request
