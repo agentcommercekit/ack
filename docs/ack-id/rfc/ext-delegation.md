@@ -76,7 +76,7 @@ did:key needs no hosted document at all.
   is byte-exact against the owner's identity after core Section 3.1
   validation (which already rejects names that would need escaping).
   Redemption at the directory is an atomic check-and-set keyed by
-  (`iss`, `jti`), retained through `exp`.
+  (`iss`, `jti`), retained through `exp + skew` (core Section 8).
 
 ## Registers
 

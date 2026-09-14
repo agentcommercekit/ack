@@ -387,7 +387,9 @@ ext-revocation.
   authorization, a one-shot registration); core supplies the mechanism.
   Redemption MUST be atomic: a check-and-set keyed by (`iss`, `jti`). A
   separate read-then-write lets two concurrent presentations both pass.
-  The RP keeps the record until the grant's `exp` has passed.
+  The RP keeps the record until `exp + skew` has passed: acceptance runs
+  to `exp + skew` (Section 5), so a record dropped at `exp` leaves a
+  skew-sized window in which a spent grant passes again.
 - **Key removal.** Removing an agent's keys from its DID document
   invalidates everything the agent signs within the cache bound (Section
   3.2).
