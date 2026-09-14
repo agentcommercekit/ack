@@ -11,10 +11,16 @@ can present to third parties, and a binding from that receipt to the ACK-ID
 grant that authorized the payment. It defines no wire protocol, no
 settlement mechanism, and no new artifact formats. The artifacts are the
 x402 [offer-receipt extension](https://docs.x402.org/extensions/offer-receipt),
-adopted as published and profiled here. This profile pins the extension as
-shipped in `@x402/extensions` 2.22.0 (x402 repo, offer-receipt source at
-commit `59ac597`, 2026-06-17). Upstream changes flow into this profile only
-by re-pinning here, never implicitly. Everything else ACK-Pay describes
+adopted as published and profiled here. This profile pins the extension's
+source as it stands at `x402-foundation/x402` commit `59ac597`
+(2026-06-17), the last change to
+`typescript/packages/extensions/src/offer-receipt`; that source first
+shipped in `@x402/extensions` 2.15.0 and is unchanged through 2.25.0. The
+code (`types.ts` at that commit) is the source of truth for field names.
+The extension's documentation page disagrees with it in two places
+(`offerType` for `scheme`, `txHash` for `transaction`); this profile follows
+the code. Upstream changes flow into this profile only by re-pinning here,
+never implicitly. Everything else ACK-Pay describes
 (roles, payment flows, human oversight, rails other than x402) is design
 language: non-normative patterns that define no conformance.
 
@@ -39,10 +45,12 @@ and signed requests (Section 6) are used here without redefinition.
 
 The offer and receipt payloads, their placement (offers in the 402 response's
 `extensions` member; receipts in the `PAYMENT-RESPONSE` `extensions`), their
-field sets (`resourceUrl`, `offerType`, `network`, `amount`, `payTo`,
-`validUntil`; `resourceUrl`, `payer`, `network`, `issuedAt`, optional
-`txHash`), and their signature encodings are as defined by the x402
-offer-receipt extension. This profile constrains them:
+field sets (offer: `version`, `resourceUrl`, `scheme`, `network`, `asset`,
+`payTo`, `amount`, `validUntil`; receipt: `version`, `resourceUrl`, `payer`,
+`network`, `issuedAt`, optional `transaction`), and their signature
+encodings are as defined by the x402 offer-receipt extension. This profile
+constrains them and deviates from none of them; a future deviation is
+stated in this section explicitly:
 
 - **Signature scheme.** ACK-Pay conformance requires the JWS scheme. An
   EIP-712/did:pkh signature MAY additionally be present; it carries no
@@ -114,7 +122,7 @@ terms; check 5 is this profile's addition.
 3. **Matching**: receipt and offer agree on `resourceUrl` and `network`; the
    offer's `validUntil` had not passed at `issuedAt`.
 4. **Freshness**: `issuedAt` is sane for the claimed transaction; where
-   `txHash` is present, it MAY be checked against the named network.
+   `transaction` is present, it MAY be checked against the named network.
 5. **The trail**: when the `ack` member is present and the named grant is
    presented alongside the receipt (presenters retain and supply it;
    ext-audit's evidence bundles are the retention shape), verify the grant
@@ -129,7 +137,7 @@ What a passing verification proves: the named seller quoted these terms,
 acknowledged payment for this resource, and attributed the payment to this
 agent under this owner's grant. The receipt carries no amount or `payTo`.
 The offer's signature proves the terms. The seller's signed acknowledgment
-attests their satisfaction, and `txHash` (check 4) is the on-chain
+attests their satisfaction, and `transaction` (check 4) is the on-chain
 corroboration where present. It does not prove the resource was
 delivered or fit for purpose, that settlement is final on any particular
 rail, or that a human approved the payment.
