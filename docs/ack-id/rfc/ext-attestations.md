@@ -27,6 +27,29 @@ results), distinct from grants: an attestation asserts, a grant authorizes.
   never the session. Whether absent evidence downgrades or rejects is RP
   policy, declared in advance. Exact binding and failure semantics are a
   drafting requirement for this extension's normative text.
+- **Request carriage.** The `Grant` field carries grants only: core
+  Section 7 rejects any token in it whose `typ` is not `grant+jwt`, so an
+  attestation has no slot in a signed request, and an RP that wants one at
+  decision time would have to fetch it out of band. Drafting requirement:
+  a request field for attestations with the same RFC 9651 List-of-Tokens
+  grammar as `Grant`, covered by the request signature under the same
+  coverage rule, each token evaluated independently under this extension.
+  Core-only verifiers ignore the field. It carries evidence, never
+  authority, so it needs no `crit` entry and opens no downgrade.
+- **Subjects in delegation chains.** A behavioral attestation (a rating
+  built from decision and settlement history) can never attach to an
+  ephemeral did:key leaf (ext-delegation): the leaf has no history and is
+  gone before it earns any. Drafting requirement: an attestation MAY name
+  as `sub` any verified ancestor in the presented chain, typically the
+  durable agent or owner behind the leaf. A verifier that has walked the
+  chain accepts an attestation whose `sub` equals an ancestor's `sub`, with
+  `cnf` compared against that ancestor's key rather than the leaf's.
+- **Revocation.** An attestation is the artifact most likely to need
+  pulling back inside its lifetime (a rating downgraded after an incident,
+  a compliance status withdrawn). SD-JWT VC defines a `status` claim over
+  the IETF Token Status List, the same list ext-revocation profiles for
+  grants. A verifier implementing this extension MUST check `status` when
+  present, mirroring ext-revocation's obligation.
 
 ## VC bridge (non-normative)
 
