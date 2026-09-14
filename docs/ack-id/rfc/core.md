@@ -113,9 +113,15 @@ layouts should read that document's Section 2.
 Before a verifier uses an identity for comparison or URL construction, it
 MUST reject the identity if its URL form contains any of: a userinfo
 component, a port, a query, a fragment, a trailing slash, a dot-segment
-(`.` or `..`), an empty path segment, percent-encoding, or `.well-known`
-as its first path segment. The `.well-known` rule closes an aliasing hole.
-The path identity `https://acme.com/.well-known` would publish its keys at
+(`.` or `..`), an empty path segment, percent-encoding, a path segment
+with any character outside `A-Z`, `a-z`, `0-9`, `.`, `-`, and `_`, or
+`.well-known` as its first path segment. The segment alphabet is the
+did:web `idchar` set with percent-encoding removed, and it is what keeps
+the mapping bijective: `:` is the DID spelling's segment separator, so
+without the rule `https://acme.com/a:b` and `https://acme.com/a/b` would
+both spell `did:web:acme.com:a:b`, and one key document would answer for
+two identities. The `.well-known` rule closes an aliasing hole of the same
+kind. The path identity `https://acme.com/.well-known` would publish its keys at
 `https://acme.com/.well-known/did.json`. That is the same location that
 serves the root identity `https://acme.com`, so one document would answer
 for two identities. To compare two identities, a verifier MUST map both to
