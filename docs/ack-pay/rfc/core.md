@@ -142,7 +142,11 @@ acknowledged payment for this resource, and attributed the payment to this
 agent under this owner's grant. The receipt carries no amount or `payTo`.
 The offer's signature proves the terms. The seller's signed acknowledgment
 attests their satisfaction, and `transaction` (check 4) is the on-chain
-corroboration where present. It does not prove the resource was
+corroboration where present. The profile therefore covers fixed-price
+flows: the receipt acknowledges payment of exactly the offered terms.
+Where the settled amount can differ from the offered one (x402's `upto`
+scheme, metered and session flows), the receipt has no slot for what was
+settled; open decision 1 tracks it. It does not prove the resource was
 delivered or fit for purpose, that settlement is final on any particular
 rail, or that a human approved the payment.
 
@@ -178,9 +182,17 @@ never define conformance.
    collision risk with upstream evolution, but upstreaming is still the
    durable answer. Propose to the x402 extension either the `ack` member as
    an extension point or native attribution fields, so non-ACK verifiers
-   learn to display the binding. This should be pursued now, while the
-   extension is young; the answer decides whether the member stays
-   namespaced or migrates to upstream-native fields.
-2. **Offer presentation.** Receipts verify without their offer; disputes
-   want both. Should the profile require buyers to retain offers
-   (evidence-bundle style, ACK-ID ext-audit) or leave retention to policy?
+   learn to display the binding. Propose a settled-amount field alongside
+   it, so attribution and outcome land upstream together and `upto` and
+   metered receipts can state what was paid (Section 5). This should be
+   pursued now, while the extension is young; the answer decides whether
+   the member stays namespaced or migrates to upstream-native fields.
+2. **Offer presentation and receipt recovery.** Receipts verify without
+   their offer; disputes want both. Should the profile require buyers to
+   retain offers (evidence-bundle style, ACK-ID ext-audit) or leave
+   retention to policy? The buyer side has a mirror gap: an agent that
+   pays and loses the `200` before storing it holds no proof, and
+   re-issuance is undefined here and upstream. A seller that re-issues
+   idempotently for an already-settled payment (same content, `issuedAt`
+   preserved, keyed by a stable settlement reference) would close it, but
+   that needs a request surface this profile does not define.
