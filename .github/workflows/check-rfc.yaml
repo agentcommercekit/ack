@@ -1,0 +1,35 @@
+name: Check RFC
+
+on:
+  push:
+    paths:
+      - "docs/ack-id/rfc/**"
+      - "docs/ack-pay/rfc/**"
+      - "docs/package.json"
+      - "docs/vitest.config.ts"
+      - ".github/workflows/check-rfc.yaml"
+  pull_request:
+    branches:
+      - ack-id-core-rfc
+    paths:
+      - "docs/ack-id/rfc/**"
+      - "docs/ack-pay/rfc/**"
+      - "docs/package.json"
+      - "docs/vitest.config.ts"
+      - ".github/workflows/check-rfc.yaml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: secret
+      ISSUER_PRIVATE_KEY: "0xa45f5c566918ef954e8c200a96b14092cabcd69cb8a1a132804a2b8cbb8489a1"
+      VERIFIER_PRIVATE_KEY: "0xeeca8f89b2f5196126f7d9199e739153bd43a13f9cdd1099e7191a33143a2059"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup
+      - run: pnpm run build
+      - run: pnpm run check
