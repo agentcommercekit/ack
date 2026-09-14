@@ -11,9 +11,9 @@ did:key needs no hosted document at all.
 
 ## Adds
 
-- **The `chain` claim** (reserved in core): exactly one entry, the SHA-256
-  hash (over the ASCII bytes of the compact serialization) of the immediate
-  parent. Each parent carries its own `chain`, so the ancestry is a walked
+- **The `chain` claim** (reserved in core): exactly one entry, the artifact
+  reference (core Section 4.2) of the immediate parent. Each parent carries
+  its own `chain`, so the ancestry is a walked
   linked list, and the full ancestry is pinned transitively: a parent's hash
   covers the parent's own `chain` claim. Presenters carry every ancestor,
   and every chained artifact names `chain` in `crit` (core Section 5), so

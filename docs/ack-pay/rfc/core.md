@@ -88,12 +88,17 @@ artifact:
 
 - When the paid request was ACK-verified (signed request plus grant, ACK-ID
   core Sections 6-7), the seller SHOULD include in the receipt payload a
-  single profile-owned member, `ack`, carrying the agent's DID and the `jti`
-  of the grant presented:
+  single profile-owned member, `ack`, carrying the agent's DID and the
+  artifact reference (ACK-ID core Section 4.2) of the grant presented:
 
   ```json
-  "ack": { "agent": "did:web:acme.com:shopper", "grantId": "grn_4kq8" }
+  "ack": { "agent": "did:web:acme.com:shopper", "grant": "kQ3v8Zt..." }
   ```
+
+  The reference binds the grant by content. A `jti` would not: `jti` is
+  unique per issuer only, and `ack` names no issuer, so a second owner
+  could mint a grant with the same `sub` and `jti` and the trail would walk
+  to the wrong party. The reference names the exact bytes the seller saw.
 
 - The `ack` member rides inside the extension's JWS receipt payload and is
   covered by its signature. It has no EIP-712 representation: that schema
@@ -111,8 +116,8 @@ artifact:
   unbound receipts as a policy choice.
 
 The resulting chain, each link independently verifiable: receipt names the
-agent (`ack.agent`, signed by the seller); the grant named by
-`ack.grantId` binds that agent to its owner (`iss`, signed by the owner);
+agent (`ack.agent`, signed by the seller); the grant referenced by
+`ack.grant` binds that agent to its owner (`iss`, signed by the owner);
 the owner's legal identity is anchored per ACK-ID ext-controller (ownership
 proofs). This is the full trail from a payment event to the legal entity
 behind the paying agent, walkable by a third party with no callback to any
@@ -132,11 +137,12 @@ terms; check 5 is this profile's addition.
    offer's `validUntil` had not passed at `issuedAt`.
 4. **Freshness**: `issuedAt` is sane for the claimed transaction; where
    `transaction` is present, it MAY be checked against the named network.
-5. **The trail**: when the `ack` member is present and the named grant is
-   presented alongside the receipt (presenters retain and supply it;
-   ext-audit's evidence bundles are the retention shape), verify the grant
+5. **The trail**: when the `ack` member is present and the referenced grant
+   is presented alongside the receipt (presenters retain and supply it;
+   ext-audit's evidence bundles are the retention shape), check that the
+   grant's artifact reference equals `ack.grant`, then verify the grant
    per ACK-ID core Section 7 rules: signature against the owner's keys,
-   `sub` equals `ack.agent`, `jti` equals `ack.grantId`. Where
+   `sub` equals `ack.agent`. Where
    legal-entity assurance is required, verify the owner's anchors per
    ext-controller. A receipt whose `ack` member arrives without the grant
    attributes the payment but proves no authorization; RPs that need the

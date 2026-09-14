@@ -205,6 +205,17 @@ or fragment is a label, never the selector, so a published entry cannot
 claim another key's name. Exactly one entry may match. Zero matches, or
 more than one, is a rejection.
 
+### 4.2 Artifact references
+
+An artifact that refers to another artifact commits to it by content. The
+reference is the base64url encoding (no padding) of the SHA-256 digest
+over the ASCII bytes of the referenced artifact's compact serialization.
+This is the one reference construction ACK documents use (ext-delegation's
+`chain`, ACK-Pay's `ack.grant`), so one test vector covers every link in
+a trail. A reference names exactly one set of bytes and nothing else: it
+carries no issuer, so a verifier that needs the referenced artifact's
+meaning obtains the artifact itself and checks that its reference matches.
+
 ## 5. Grants
 
 A grant is a JWT: header `alg` per Section 4, `typ: "grant+jwt"`, `kid` the
