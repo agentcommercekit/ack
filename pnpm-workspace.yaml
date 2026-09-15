@@ -20,7 +20,7 @@ catalog:
   "@hono/node-server": 2.1.1
   "@hono/standard-validator": 0.4.0
   bit-buffers: 1.0.2
-  hono: 4.13.4
+  hono: 4.13.5
   jose: 6.2.10
   safe-stable-stringify: 2.5.0
   standard-matchers: 0.1.0
@@ -49,6 +49,12 @@ overrides:
   # @puppeteer/browsers 3.x, which drops extract-zip. puppeteer is never built
   # here (allowBuilds: false).
   "puppeteer@24": "^25.0.0"
+  qs@>=2.2.5 <6.16.0: ^6.16.0
+  qs@>=6.14.2 <=6.15.3: ^6.16.0
+  hono@<4.13.5: ^4.13.5
+  js-yaml@>=3.0.0 <3.15.2: ^3.15.2
+  js-yaml@>=4.0.0 <4.3.2: ^4.3.2
+  sharp@<0.35.4: ^0.35.4
 
 allowBuilds:
   "@scarf/scarf": false

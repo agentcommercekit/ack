@@ -103,17 +103,20 @@ export function caip10AccountIdFromDidPkhUri(
 /**
  * Create a did:pkh URI
  *
+ * @param chainId - The full CAIP-2 chain ID (e.g. `eip155:1`, `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`)
  * @param address - The address to create the did:pkh URI for
- * @param chainId - The full CAIP-2 chain ID (e.g. `eip155:1`, `solana`)
  * @returns The did:pkh URI
  *
  * @example
  * ```ts
- * const did = createDidPkhUri("0x1234567890123456789012345678901234567890", "eip155:1")
+ * const did = createDidPkhUri("eip155:1", "0x1234567890123456789012345678901234567890")
  * // did:pkh:eip155:1:0x1234567890123456789012345678901234567890
  *
- * const did = createDidPkhUri("FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P", "solana")
- * // did:pkh:solana:FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P
+ * const did = createDidPkhUri(
+ *   "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+ *   "FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P",
+ * )
+ * // did:pkh:solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp:FNoGHiv7DKPLXHfuhiEWpJ8qYitawGkuaYwfYkuvFk1P
  * ```
  */
 export function createDidPkhUri(
