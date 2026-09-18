@@ -47,9 +47,21 @@ describe("isExpired", () => {
     expect(isExpired(credential)).toBe(false)
   })
 
-  it("handles invalid date strings gracefully", () => {
+  it("returns true when expiration date cannot be parsed", () => {
     const credential = buildCredential("invalid-date")
 
-    expect(isExpired(credential)).toBe(false)
+    expect(isExpired(credential)).toBe(true)
+  })
+
+  it("returns true for empty-string expiration dates", () => {
+    const credential = buildCredential("")
+
+    expect(isExpired(credential)).toBe(true)
+  })
+
+  it("returns true for non-ISO numeric strings that Date cannot parse as expiry", () => {
+    const credential = buildCredential("not-a-real-timestamp")
+
+    expect(isExpired(credential)).toBe(true)
   })
 })
