@@ -4,6 +4,7 @@ import * as v from "valibot"
 
 const urlOrDidUri = v.union([v.pipe(v.string(), v.url()), didUriSchema])
 const positiveIntegerString = v.pipe(v.string(), v.regex(/^[1-9]\d*$/))
+const nonEmptyString = v.pipe(v.string(), v.minLength(1))
 
 const timestampSchema = v.pipe(
   v.union([v.date(), v.string()]),
@@ -20,7 +21,7 @@ export const paymentOptionSchema = v.object({
   decimals: v.pipe(v.number(), v.integer(), v.toMinValue(0)),
   currency: v.string(),
   recipient: v.string(),
-  network: v.optional(v.string()),
+  network: v.optional(nonEmptyString),
   paymentService: v.optional(urlOrDidUri),
   receiptService: v.optional(urlOrDidUri),
 })

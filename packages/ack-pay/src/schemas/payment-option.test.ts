@@ -35,3 +35,40 @@ describe("paymentOptionSchema amount", () => {
     },
   )
 })
+
+describe.each([
+  [
+    "valibot",
+    (input: unknown) => v.safeParse(valibotPaymentOptionSchema, input).success,
+  ],
+  ["zod", (input: unknown) => zodPaymentOptionSchema.safeParse(input).success],
+] as const)("%s paymentOptionSchema network", (_, accepts) => {
+  it("accepts a payment option with network omitted", () => {
+    expect(
+      accepts({
+        ...paymentOption,
+        amount: 1,
+      }),
+    ).toBe(true)
+  })
+
+  it("accepts a payment option with a non-empty network", () => {
+    expect(
+      accepts({
+        ...paymentOption,
+        amount: 1,
+        network: "eip155:8453",
+      }),
+    ).toBe(true)
+  })
+
+  it("rejects a payment option with an empty network", () => {
+    expect(
+      accepts({
+        ...paymentOption,
+        amount: 1,
+        network: "",
+      }),
+    ).toBe(false)
+  })
+})
