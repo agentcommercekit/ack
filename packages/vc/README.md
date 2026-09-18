@@ -132,7 +132,7 @@ the request does not follow redirects, so serve the credential at the URL the
 
 - `verifyParsedCredential(credential, options)` - Verify a credential's proof, expiration, and other claims
 - `verifyProof(proof, resolver)` - Verify a credential's proof
-- `isExpired(credential)` - Check if a credential is expired
+- `isExpired(credential)` - Check if a credential is expired. A present but unparseable `expirationDate` is treated as expired (fail closed).
 - `isRevoked(credential, options)` - Check if a credential has been revoked, against a verified status list credential
 - `parsedJwtCredential(jwt, resolver)` - Parse a JWT credential string into a W3C Credential
 
