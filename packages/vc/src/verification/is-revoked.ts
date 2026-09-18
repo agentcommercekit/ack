@@ -411,9 +411,10 @@ async function resolveStatusListCredential(
     )
   }
 
-  // Check the expiry directly rather than through `isExpired`, which reads an
-  // unparseable date as "not expired". The expiry is the main bound on status
-  // list replay, so a malformed one must not quietly remove it.
+  // Check the expiry directly rather than through `isExpired`, which returns a
+  // boolean and would map an unreadable date to "expired". Status-list fetch
+  // needs a distinct undetermined error so callers can tell malformed expiry
+  // from a list that has genuinely lapsed.
   if (verified.expirationDate !== undefined) {
     const expiresAt = Date.parse(verified.expirationDate)
 
