@@ -48,6 +48,14 @@ describe("isHexString", () => {
     expect(isHexString("0x")).toBe(true)
   })
 
+  test("returns true for valid hex strings with an uppercase 0X prefix", () => {
+    expect(isHexString("0XABCDEF")).toBe(true)
+  })
+
+  test("returns true for a bare uppercase 0X prefix with an empty body", () => {
+    expect(isHexString("0X")).toBe(true)
+  })
+
   test("returns false for an empty string with no prefix", () => {
     expect(isHexString("")).toBe(false)
   })

@@ -47,7 +47,7 @@ export function isHexString(value: unknown): value is string {
     return false
   }
 
-  const hasPrefix = value.startsWith("0x")
+  const hasPrefix = value.toLowerCase().startsWith("0x")
   const hexWithoutPrefix = hasPrefix ? value.slice(2) : value
 
   // A bare "0x" prefix has an empty body and is a valid (zero-length) hex
