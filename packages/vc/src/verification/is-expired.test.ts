@@ -74,4 +74,11 @@ describe("isExpired", () => {
     )
     expect(isExpired(credential)).toBe(true)
   })
+
+  it("returns false for a future timestamp whose offset crosses a UTC day boundary", () => {
+    // 2099-01-01T00:00:00+14:00 is 2098-12-31 in UTC; calendar fields are still valid.
+    const credential = buildCredential("2099-01-01T00:00:00+14:00")
+
+    expect(isExpired(credential)).toBe(false)
+  })
 })
