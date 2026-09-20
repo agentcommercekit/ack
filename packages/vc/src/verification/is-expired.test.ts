@@ -64,4 +64,14 @@ describe("isExpired", () => {
 
     expect(isExpired(credential)).toBe(true)
   })
+
+  it("returns true for ISO overflow calendar dates that Date would normalize", () => {
+    // JS Date turns 2099-02-30 into a valid March date; fail closed instead.
+    const credential = buildCredential("2099-02-30T00:00:00.000Z")
+
+    expect(Number.isNaN(new Date("2099-02-30T00:00:00.000Z").getTime())).toBe(
+      false
+    )
+    expect(isExpired(credential)).toBe(true)
+  })
 })
