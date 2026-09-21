@@ -167,7 +167,7 @@ import { getDidResolver, verifyPaymentReceipt } from "agentcommercekit"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
-  trustedReceiptIssuers: ["did:web:merchant.example.com"],
+  trustedReceiptIssuers: ["did:web:receipt-service.example.com"],
 })
 ```
 
