@@ -84,13 +84,10 @@ try {
 #### Type Guards for Credential Validation
 
 ```ts
-import { isControllerClaim, isControllerCredential } from "agentcommercekit"
+import { isControllerCredential } from "agentcommercekit"
 
 // Check if a credential is specifically a controller credential
 isControllerCredential(credential)
-
-// Check if a credential subject has the controller claim structure
-isControllerClaim(credential.credentialSubject)
 ```
 
 #### A2A Methods
@@ -115,7 +112,7 @@ import {
   createDidWebUri,
   createJwtSigner,
   curveToJwtAlgorithm,
-  generateKeypair
+  generateKeypair,
 } from "agentcommercekit"
 
 // Create a payment request
@@ -129,9 +126,9 @@ const paymentRequest = {
       decimals: 6,
       currency: "USDC",
       recipient: "did:web:payment.example.com",
-      paymentService: "https://pay.example.com"
-    }
-  ]
+      paymentService: "https://pay.example.com",
+    },
+  ],
 }
 
 const keypair = await generateKeypair("secp256k1")
@@ -140,14 +137,13 @@ const keypair = await generateKeypair("secp256k1")
 const paymentRequestBody = await createSignedPaymentRequest(paymentRequest, {
   issuer: createDidWebUri("https://server.example.com"),
   signer: createJwtSigner(keypair),
-  algorithm: curveToJwtAlgorithm(keypair.curve)
+  algorithm: curveToJwtAlgorithm(keypair.curve),
 })
 
 // Create a 402 Payment Required response
-// Create a 402 Payment Required response
-const response = new Response(JSON.stringify(paymentRequestBody, {
+const response = new Response(JSON.stringify(paymentRequestBody), {
   status: 402,
-  contentType: "application/json"
+  headers: { "Content-Type": "application/json" },
 })
 ```
 
@@ -171,27 +167,20 @@ import { getDidResolver, verifyPaymentReceipt } from "agentcommercekit"
 
 const verified = await verifyPaymentReceipt(receipt, {
   resolver: getDidResolver(),
-  trustedIssuers: ["did:web:merchant.example.com"],
+  trustedReceiptIssuers: ["did:web:merchant.example.com"],
 })
 ```
 
 #### Type Guards for Validation
 
 ```ts
-import {
-  isPaymentReceiptClaim,
-  isPaymentReceiptCredential,
-  isPaymentRequest,
-} from "agentcommercekit"
+import { isPaymentReceiptCredential, isPaymentRequest } from "agentcommercekit"
 
 // Check if a value is a valid payment request
 isPaymentRequest(unknownObject)
 
 // Check if a credential is specifically a payment receipt credential
 isPaymentReceiptCredential(credential)
-
-// Check if a credential subject has the payment receipt claim structure
-isPaymentReceiptClaim(credential.credentialSubject)
 ```
 
 ## Agent Commerce Kit Version
