@@ -159,7 +159,7 @@ import {
   verifyA2ASignedMessage,
 } from "@agentcommercekit/ack-id/a2a"
 
-// To send a signed message:
+// To send a signed message bound to the recipient:
 const signed = await createSignedA2AMessage(
   {
     role: "user",
@@ -170,12 +170,13 @@ const signed = await createSignedA2AMessage(
   },
   {
     did: "did:web:customer.example.com",
+    recipient: "did:web:bank.example.com",
     // ...
   },
 )
 // Send signed.message
 
-// To verify a signed message:
+// To verify a signed message (requires matching aud when recipient was set):
 const verified = await verifyA2ASignedMessage(signed.message, {
   did: "did:web:bank.example.com",
   counterparty: "did:web:customer.example.com",
