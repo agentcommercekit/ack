@@ -182,9 +182,8 @@ describe("verifyA2ASignedMessage", () => {
       counterparty: userDid,
     })
 
-    // Signed messages carry no aud claim today, so no audience is expected;
-    // the handshake flow embeds and verifies aud.
     expect(verifyJwt).toHaveBeenCalledWith("the.sig", {
+      audience: agentDid,
       issuer: userDid,
       resolver: expect.anything(),
     })
@@ -232,6 +231,21 @@ describe("verifyA2ASignedMessage", () => {
     await expect(
       verifyA2ASignedMessage(signedMessage(), { did: agentDid }),
     ).rejects.toThrow("Signature invalid")
+  })
+
+
+  it("passes audience=did so recipient-bound messages are enforced", async () => {
+    mockValidSignature()
+
+    await verifyA2ASignedMessage(signedMessage(), {
+      did: agentDid,
+      counterparty: userDid,
+    })
+
+    expect(verifyJwt).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.objectContaining({ audience: agentDid, issuer: userDid }),
+    )
   })
 
   it("returns verified when server-injected contextId is present", async () => {
