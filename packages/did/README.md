@@ -107,6 +107,9 @@ const { did, didDocument } = createDidWebDocumentFromKeypair({
 ### Resolution
 
 - `getDidResolver(options?: GetDidResolverOptions): DidResolver` - Create a resolver supporting multiple DID methods
+  - did:web and did:jwks documents are fetched over `https` only. To resolve
+    over plain `http` (for example against a local development server), opt in
+    with `getDidResolver({ webOptions: { allowedHttpHosts: ["localhost"] } })`
 - `resolveDid(didUri: string, resolver: Resolvable): Promise<DidUriWithDocument>` - Resolve a DID to its document
 - `resolveDidWithController(didUri: string, resolver: Resolvable): Promise<DidUriWithControlledDidDocument>` - Resolve a DID and its controller
 

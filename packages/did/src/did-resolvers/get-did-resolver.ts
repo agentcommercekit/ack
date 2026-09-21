@@ -11,7 +11,11 @@ import {
 
 interface GetDidResolverOptions extends ResolverOptions {
   /**
-   * The options for the did:web resolver
+   * The options for the did:web and did:jwks resolvers.
+   *
+   * By default only `https` is used. To resolve a DID over plain `http` (for
+   * example against a local development server), opt in explicitly with
+   * `allowedHttpHosts: ["localhost"]`.
    */
   webOptions?: DidWebResolverOptions
 }
@@ -23,9 +27,7 @@ interface GetDidResolverOptions extends ResolverOptions {
  * @returns A new {@link DidResolver} instance
  */
 export function getDidResolver({
-  webOptions = {
-    allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"],
-  },
+  webOptions = {},
   ...options
 }: GetDidResolverOptions = {}): DidResolver {
   const webFetch = webOptions.fetch ?? globalThis.fetch
