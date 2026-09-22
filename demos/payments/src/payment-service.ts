@@ -14,7 +14,11 @@ import { HTTPException } from "hono/http-exception"
 import * as v from "valibot"
 
 import { PAYMENT_SERVICE_URL } from "./constants"
-import { demoPaymentPolicy, evaluatePaymentPolicy } from "./payment-policy"
+import {
+  demoPaymentPolicy,
+  evaluatePaymentPolicy,
+  evaluateSpendBudget,
+} from "./payment-policy"
 import { getKeypairInfo } from "./utils/keypair-info"
 
 const app = new Hono<Env>()
@@ -49,6 +53,7 @@ app.post("/", async (c): Promise<TypedResponse<{ paymentUrl: string }>> => {
     paymentOptionId,
     paymentRequestToken,
   )
+  // Reads the rolling budget without charging it: nothing has been paid yet.
   enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
 
   log(colors.dim(`${name} Generating Stripe payment URL ...`))
@@ -90,7 +95,10 @@ app.post(
     if (!receiptServiceUrl) {
       throw new Error(errorMessage("Receipt service URL is required"))
     }
-    enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c))
+    // The callback is where the payment settles, so this is the call that
+    // charges the rolling budget. The payment-URL handler only reads it, so
+    // one payment is counted once.
+    enforcePaymentPolicy(paymentOption, await getTrustedRecipients(c), true)
 
     const payload = {
       paymentRequestToken,
@@ -164,11 +172,20 @@ function enforcePaymentPolicy(
     ReturnType<typeof validatePaymentOption>
   >["paymentOption"],
   allowedRecipients: readonly string[],
+  recordSpend = false,
 ) {
-  const decision = evaluatePaymentPolicy(paymentOption, {
+  const policy = {
     ...demoPaymentPolicy,
     allowedRecipients,
-  })
+  }
+
+  // Run the per-transaction rules first, so a payment denied by the cap or the
+  // allowlist never consumes the window budget.
+  const perPayment = evaluatePaymentPolicy(paymentOption, policy)
+  const decision =
+    perPayment.status === "approved"
+      ? evaluateSpendBudget(paymentOption, policy, recordSpend)
+      : perPayment
 
   if (decision.status !== "approved") {
     log(errorMessage(`${name} ${decision.reason}`))

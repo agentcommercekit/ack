@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { evaluatePaymentPolicy } from "./payment-policy"
+import {
+  evaluatePaymentPolicy,
+  evaluateSpendBudget,
+  resetSpendBudget,
+} from "./payment-policy"
 
 const basePaymentOption = {
   id: "base-usdc",
@@ -158,5 +162,89 @@ describe("evaluatePaymentPolicy", () => {
       status: "denied",
       reason: "Payment amount must be a positive integer in subunits",
     })
+  })
+})
+
+describe("evaluateSpendBudget", () => {
+  const policy = {
+    allowedRecipients: [basePaymentOption.recipient],
+    maxAutonomousAmount: { USDC: 1_000n },
+    budget: {
+      windowMs: 60_000,
+      maxWindowAmount: { USD: 300n, USDC: 300n },
+    },
+  }
+
+  const spend = (amount: number, record = true) =>
+    evaluateSpendBudget({ ...basePaymentOption, amount }, policy, record)
+
+  beforeEach(() => {
+    resetSpendBudget()
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it("denies the payment that would cross the window budget", () => {
+    // The split attack: each payment is under the per-transaction cap, so only
+    // the cumulative budget stops the fourth one.
+    expect(spend(100)).toEqual({ status: "approved" })
+    expect(spend(100)).toEqual({ status: "approved" })
+    expect(spend(100)).toEqual({ status: "approved" })
+
+    expect(spend(100)).toEqual({
+      status: "denied",
+      reason:
+        "Payment exceeds the autonomous spend budget for the current window",
+    })
+  })
+
+  it("does not record the amount it denied", () => {
+    expect(spend(200)).toEqual({ status: "approved" })
+    expect(spend(200)).toMatchObject({ status: "denied" })
+
+    // The denied 200 must not sit in the window: 200 is still spent, so a
+    // payment of exactly the remaining 100 is approved.
+    expect(spend(100)).toEqual({ status: "approved" })
+  })
+
+  it("does not charge the budget when it is only checking", () => {
+    expect(spend(300, false)).toEqual({ status: "approved" })
+    expect(spend(300)).toEqual({ status: "approved" })
+  })
+
+  it("allows the payment again once the window has passed", () => {
+    vi.useFakeTimers()
+
+    expect(spend(300)).toEqual({ status: "approved" })
+    expect(spend(100)).toMatchObject({ status: "denied" })
+
+    vi.advanceTimersByTime(60_001)
+
+    expect(spend(300)).toEqual({ status: "approved" })
+  })
+
+  it("tracks each currency separately", () => {
+    expect(spend(300)).toEqual({ status: "approved" })
+
+    // USDC is exhausted; the USD window is untouched.
+    expect(
+      evaluateSpendBudget(
+        { ...basePaymentOption, currency: "USD", amount: 300 },
+        policy,
+        true,
+      ),
+    ).toEqual({ status: "approved" })
+  })
+
+  it("approves when the policy configures no budget", () => {
+    expect(
+      evaluateSpendBudget(
+        { ...basePaymentOption, amount: 1_000_000 },
+        { allowedRecipients: [], maxAutonomousAmount: { USDC: 1_000n } },
+        true,
+      ),
+    ).toEqual({ status: "approved" })
   })
 })
