@@ -176,7 +176,7 @@ const signed = await createSignedA2AMessage(
 )
 // Send signed.message
 
-// To verify a signed message (requires matching aud when recipient was set):
+// To verify a signed message (always requires aud matching did):
 const verified = await verifyA2ASignedMessage(signed.message, {
   did: "did:web:bank.example.com",
   counterparty: "did:web:customer.example.com",
