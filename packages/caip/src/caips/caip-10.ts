@@ -30,8 +30,8 @@ export const caip10AccountIdRegex = new RegExp(`^${caip10AccountIdPattern}$`)
 /**
  * Create a CAIP-10 Account ID
  *
+ * @param chainId - The full CAIP-2 chain ID (e.g. `eip155:1`, `solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp`)
  * @param address - The address to create the CAIP-10 Account ID for
- * @param chainId - The CAIP-2 chain ID (e.g. `eip155:1`, `solana`) for this address
  * @returns The CAIP-10 Account ID
  */
 export function createCaip10AccountId(
