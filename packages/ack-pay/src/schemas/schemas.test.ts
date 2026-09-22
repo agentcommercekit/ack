@@ -43,4 +43,23 @@ describe("paymentRequestSchema", () => {
       expect(zod.success && zod.data.expiresAt).toBe(expected)
     }
   })
+
+  it("accepts URL and DID URI serviceCallback values", () => {
+    for (const serviceCallback of [
+      "https://service.example.com/webhook/payment-complete",
+      "did:web:merchant.example",
+    ]) {
+      const input = { ...paymentRequest, serviceCallback }
+
+      expect(v.safeParse(valibotPaymentRequestSchema, input).success).toBe(true)
+      expect(zodPaymentRequestSchema.safeParse(input).success).toBe(true)
+    }
+  })
+
+  it("rejects invalid serviceCallback values", () => {
+    const input = { ...paymentRequest, serviceCallback: "not-a-url-or-did" }
+
+    expect(v.safeParse(valibotPaymentRequestSchema, input).success).toBe(false)
+    expect(zodPaymentRequestSchema.safeParse(input).success).toBe(false)
+  })
 })
