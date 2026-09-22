@@ -40,6 +40,18 @@ Default served identities:
 | `agent`      | did\:web:0.0.0.0%3A3458\:agent      | [http://0.0.0.0:3458/agent/.well-known/did.json](http://0.0.0.0:3458/agent/.well-known/did.json)           |
 | `controller` | did\:web:0.0.0.0%3A3458\:controller | [http://0.0.0.0:3458/controller/.well-known/did.json](http://0.0.0.0:3458/controller/.well-known/did.json) |
 
+## Resolving these DIDs
+
+These DIDs are served over plain `http`, and `getDidResolver()` fetches
+`did:web` documents over `https` only by default. To resolve them locally, opt in
+to the host explicitly:
+
+```ts
+const resolver = getDidResolver({
+  webOptions: { allowedHttpHosts: ["0.0.0.0"] },
+})
+```
+
 ## How `did:web` Resolution Works
 
 Resolving a `did:web` DID involves fetching `.well-known/did.json` from the indicated domain or subpath. Examples:
