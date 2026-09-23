@@ -70,7 +70,7 @@ const resolver = getDidResolver()
 
 // Verify the credential using verification logic from vc package.
 try {
-  await verifyParsedCredential(controllerCredential, {
+  await verifyParsedCredential(credential, {
     resolver,
     verifiers: [verifier],
     trustedIssuers: [controllerDid], // Optional: list of trusted issuers
