@@ -50,7 +50,8 @@ app.post(
     }),
   ),
   async (c) => {
-    const { signer, did, alg } = c.get("identities").agent
+    const { entity } = c.req.valid("param")
+    const { signer, did, alg } = c.get("identities")[entity]
     const { subject, payload, audience, expiresIn } = c.req.valid("json")
 
     const jwt = await createJwt(
@@ -60,11 +61,13 @@ app.post(
         aud: audience,
       },
       {
-        alg,
         issuer: did,
         expiresIn,
         signer,
         canonicalize: true,
+      },
+      {
+        alg,
       },
     )
 
