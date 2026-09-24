@@ -29,5 +29,8 @@
     "agentcommercekit": "workspace:*",
     "hono": "catalog:",
     "valibot": "catalog:"
+  },
+  "devDependencies": {
+    "vite-tsconfig-paths": "6.1.1"
   }
 }
