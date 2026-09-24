@@ -424,3 +424,38 @@ describe("DELETE /credentials/receipts", () => {
     })
   })
 })
+
+describe("GET /credentials/receipts/:id", () => {
+  beforeEach(async () => {
+    const resolver = new DidResolver()
+    vi.mocked(getDidResolver).mockReturnValue(resolver)
+
+    const issuer = await createDidWebWithSigner("https://issuer.example.com", {
+      resolver,
+    })
+
+    process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
+    process.env.BASE_URL = "https://issuer.example.com"
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it("looks up the credential the id names", async () => {
+    const res = await app.request("/credentials/receipts/1")
+
+    expect(res.status).toBe(200)
+    expect(vi.mocked(getCredential)).toHaveBeenCalledWith(expect.anything(), 1)
+  })
+
+  it.each(["abc", "1abc", "0x1", "1e3", "1.9", "999999999999999999999"])(
+    "responds 404 to '%s' without querying for it",
+    async (id) => {
+      const res = await app.request(`/credentials/receipts/${id}`)
+
+      expect(res.status).toBe(404)
+      expect(vi.mocked(getCredential)).not.toHaveBeenCalled()
+    },
+  )
+})

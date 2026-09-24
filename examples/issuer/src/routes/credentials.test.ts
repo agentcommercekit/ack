@@ -335,6 +335,46 @@ describe("POST /credentials/controller", () => {
   })
 })
 
+describe("GET /credentials/controller/:id", () => {
+  let issuer: DidWithSigner
+
+  beforeAll(async () => {
+    issuer = await createDidWebWithSigner("https://issuer.example.com")
+
+    process.env.ISSUER_PRIVATE_KEY = bytesToHexString(issuer.keypair.privateKey)
+    process.env.BASE_URL = "https://issuer.example.com"
+  })
+
+  afterEach(() => {
+    vi.clearAllMocks()
+  })
+
+  function get(id: string) {
+    const resolver = new DidResolver()
+    resolver.addToCache(issuer.did, issuer.didDocument)
+    vi.mocked(getDidResolver).mockReturnValue(resolver)
+
+    return app.request(`/credentials/controller/${id}`)
+  }
+
+  it("looks up the credential the id names", async () => {
+    const res = await get("1")
+
+    expect(res.status).toBe(200)
+    expect(vi.mocked(getCredential)).toHaveBeenCalledWith(expect.anything(), 1)
+  })
+
+  it.each(["abc", "1abc", "0x1", "1e3", "1.9", "999999999999999999999"])(
+    "responds 404 to '%s' without querying for it",
+    async (id) => {
+      const res = await get(id)
+
+      expect(res.status).toBe(404)
+      expect(vi.mocked(getCredential)).not.toHaveBeenCalled()
+    },
+  )
+})
+
 describe("DELETE /credentials/controller", () => {
   let controller: DidWithSigner
   let signedPayload: string
