@@ -206,4 +206,33 @@ describe("verifyPaymentRequestToken", () => {
     )
     expect(error.cause).toBeUndefined()
   })
+
+  it("throws when paymentRequest.expiresAt is in the past even without JWT exp", async () => {
+    const expiredPayload = {
+      ...paymentRequest,
+      sub: paymentRequest.id,
+      expiresAt: new Date(Date.now() - 60_000).toISOString(),
+    }
+
+    const expiredToken = await createJwt(
+      expiredPayload,
+      {
+        issuer: issuerDid,
+        signer,
+      },
+      {
+        alg: curveToJwtAlgorithm(keypair.curve),
+      },
+    )
+
+    const resolver = getDidResolver()
+    resolver.addToCache(issuerDid, issuerDidDocument)
+
+    const error = await verifyPaymentRequestToken(expiredToken, {
+      resolver,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.message).toMatch(/expired/i)
+  })
 })

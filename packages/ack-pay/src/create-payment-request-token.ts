@@ -34,12 +34,29 @@ export async function createPaymentRequestToken(
   paymentRequest: PaymentRequest,
   { issuer, signer, algorithm }: PaymentRequestTokenOptions,
 ): Promise<JwtString> {
+  const options: {
+    issuer: DidUri
+    signer: JwtSigner
+    expiresIn?: number
+  } = {
+    issuer,
+    signer,
+  }
+
+  // Mirror paymentRequest.expiresAt into the JWT `exp` claim so verifiers that
+  // only check JWT expiry still reject stale quotes.
+  if (paymentRequest.expiresAt) {
+    const expiresAtMs = new Date(paymentRequest.expiresAt).getTime()
+    const expiresIn = Math.floor((expiresAtMs - Date.now()) / 1000)
+    if (expiresIn <= 0) {
+      throw new Error("Payment request expiresAt must be in the future")
+    }
+    options.expiresIn = expiresIn
+  }
+
   return createJwt(
     { ...paymentRequest, sub: paymentRequest.id },
-    {
-      issuer,
-      signer,
-    },
+    options,
     {
       alg: algorithm,
     },

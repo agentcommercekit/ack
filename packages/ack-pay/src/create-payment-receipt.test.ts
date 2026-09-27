@@ -20,7 +20,7 @@ describe("createPaymentReceipt", () => {
 
     const paymentRequest: PaymentRequestInit = {
       id: "test-payment-request-id",
-      expiresAt: new Date("2024-12-31T23:59:59Z"),
+      expiresAt: new Date("2025-01-01T00:00:00Z"),
       paymentOptions: [
         {
           id: "test-payment-option-id",
