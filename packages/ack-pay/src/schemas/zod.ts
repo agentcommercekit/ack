@@ -27,7 +27,7 @@ export const paymentOptionSchema = z.object({
   decimals: z.number().int().nonnegative(),
   currency: z.string(),
   recipient: z.string(),
-  network: z.string().optional(),
+  network: z.string().min(1).optional(),
   paymentService: urlOrDidUri.optional(),
   receiptService: urlOrDidUri.optional(),
 })

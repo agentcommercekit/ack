@@ -35,3 +35,23 @@ describe("paymentOptionSchema amount", () => {
     },
   )
 })
+
+describe("paymentOptionSchema network", () => {
+  it("accepts omitted network", () => {
+    const value = { ...paymentOption, amount: 1 }
+    expect(v.safeParse(valibotPaymentOptionSchema, value).success).toBe(true)
+    expect(zodPaymentOptionSchema.safeParse(value).success).toBe(true)
+  })
+
+  it("accepts non-empty network", () => {
+    const value = { ...paymentOption, amount: 1, network: "eip155:84532" }
+    expect(v.safeParse(valibotPaymentOptionSchema, value).success).toBe(true)
+    expect(zodPaymentOptionSchema.safeParse(value).success).toBe(true)
+  })
+
+  it("rejects empty network", () => {
+    const value = { ...paymentOption, amount: 1, network: "" }
+    expect(v.safeParse(valibotPaymentOptionSchema, value).success).toBe(false)
+    expect(zodPaymentOptionSchema.safeParse(value).success).toBe(false)
+  })
+})
