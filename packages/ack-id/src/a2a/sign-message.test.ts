@@ -149,4 +149,19 @@ describe("createA2AHandshakeMessage", () => {
       expect.objectContaining({ kind: "data", data: { jwt: result.sig } }),
     )
   })
+
+  it("returns the fresh replyNonce when requestNonce is provided", async () => {
+    const result = await createA2AHandshakeMessage(
+      "agent",
+      {
+        recipient: userDid,
+        vc: testCredential,
+        requestNonce: "initiator-nonce",
+      },
+      { did: agentDid, jwtSigner },
+    )
+
+    expect(result.nonce).toBe("test-nonce-1234")
+    expect(result.nonce).not.toBe("initiator-nonce")
+  })
 })

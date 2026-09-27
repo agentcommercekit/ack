@@ -122,7 +122,9 @@ export async function createA2AHandshakeMessage(
   return {
     sig: jwt,
     jti,
-    nonce: payload.nonce,
+    // When replying, callers need the freshly generated replyNonce for the next
+    // handshake leg — not the peer's original request nonce in payload.nonce.
+    nonce: payload.replyNonce ?? payload.nonce,
     message,
   }
 }
