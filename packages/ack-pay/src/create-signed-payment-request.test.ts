@@ -104,5 +104,26 @@ describe("createSignedPaymentRequest()", () => {
     )
 
     expect(result.paymentRequest.expiresAt).toBe(expiresAt.toISOString())
+
+    const resolver = getDidResolver()
+    resolver.addToCache(
+      issuerDid,
+      createDidDocumentFromKeypair({
+        did: issuerDid,
+        keypair,
+      }),
+    )
+
+    const verified = await verifyPaymentRequestToken(
+      result.paymentRequestToken,
+      { resolver },
+    )
+    const expectedExp = Math.floor(expiresAt.getTime() / 1000)
+
+    expect(verified.parsed.payload.exp).toBeDefined()
+    // Allow a few seconds of clock skew between mint and assertion.
+    expect(
+      Math.abs((verified.parsed.payload.exp as number) - expectedExp),
+    ).toBeLessThan(5)
   })
 })
