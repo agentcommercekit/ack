@@ -5,8 +5,10 @@ import {
   type JwtSigner,
   type JwtString,
 } from "@agentcommercekit/jwt"
+import * as v from "valibot"
 
 import type { PaymentRequest } from "./payment-request"
+import { paymentRequestSchema } from "./schemas/valibot"
 
 export interface PaymentRequestTokenOptions {
   /**
@@ -34,6 +36,10 @@ export async function createPaymentRequestToken(
   paymentRequest: PaymentRequest,
   { issuer, signer, algorithm }: PaymentRequestTokenOptions,
 ): Promise<JwtString> {
+  // Project through the schema so reserved JWT claims (exp/iat/nbf/…) cannot
+  // ride along on an untyped caller object and override `expiresIn`-derived exp.
+  const request = v.parse(paymentRequestSchema, paymentRequest)
+
   const options: {
     issuer: DidUri
     signer: JwtSigner
@@ -43,10 +49,10 @@ export async function createPaymentRequestToken(
     signer,
   }
 
-  // Mirror paymentRequest.expiresAt into the JWT `exp` claim so verifiers that
+  // Mirror request.expiresAt into the JWT `exp` claim so verifiers that
   // only check JWT expiry still reject stale quotes.
-  if (paymentRequest.expiresAt) {
-    const expiresAtMs = new Date(paymentRequest.expiresAt).getTime()
+  if (request.expiresAt) {
+    const expiresAtMs = new Date(request.expiresAt).getTime()
     const expiresIn = Math.floor((expiresAtMs - Date.now()) / 1000)
     if (expiresIn <= 0) {
       throw new Error("Payment request expiresAt must be in the future")
@@ -55,7 +61,7 @@ export async function createPaymentRequestToken(
   }
 
   return createJwt(
-    { ...paymentRequest, sub: paymentRequest.id },
+    { ...request, sub: request.id },
     options,
     {
       alg: algorithm,
