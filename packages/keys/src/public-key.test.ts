@@ -59,7 +59,7 @@ describe("public-key methods", () => {
       expect(isValidEcJwk).toBe(true)
       expect(jwk).toEqual({
         kty: "EC",
-        crv: curve,
+        crv: curve === "secp256r1" ? "P-256" : curve,
         x: expect.any(String),
         y: expect.any(String),
       })
