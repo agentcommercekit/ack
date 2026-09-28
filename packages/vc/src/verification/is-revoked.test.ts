@@ -486,6 +486,25 @@ describe("isRevoked", () => {
     expect(error.detail).toMatch(/unreadable encodedList/)
   })
 
+  it("throws when a multibase encodedList has an impossible length", async () => {
+    // The specification example plus one character: 69 base64url characters
+    // cannot encode any byte string.
+    mockFetch.mockResolvedValueOnce(
+      Response.json(
+        await signedStatusList({
+          encodedList:
+            "uH4sIAAAAAAAAA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAAA",
+        }),
+      ),
+    )
+
+    const error = await captureRevocationError(
+      isRevoked(buildCredential(statusEntry()), { resolver }),
+    )
+
+    expect(error.detail).toMatch(/unreadable encodedList/)
+  })
+
   it("throws when the encoded list cannot be decoded", async () => {
     mockFetch.mockResolvedValueOnce(
       Response.json(await signedStatusList({ encodedList: "not-a-bitstring" })),

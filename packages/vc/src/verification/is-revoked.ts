@@ -65,7 +65,9 @@ function decodeEncodedList(encodedList: string): BitBuffer {
   }
 
   const base64url = encodedList.slice(1)
-  if (!/^[A-Za-z0-9_-]+$/.test(base64url)) {
+  // A length of 1 modulo 4 cannot come from any byte string; base64-js would
+  // otherwise drop the trailing character and read the rest.
+  if (!/^[A-Za-z0-9_-]+$/.test(base64url) || base64url.length % 4 === 1) {
     throw new Error("Multibase encodedList is not base64url without padding")
   }
 
