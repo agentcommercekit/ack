@@ -19,8 +19,8 @@ catalogs:
       specifier: 1.0.2
       version: 1.0.2
     hono:
-      specifier: 4.13.5
-      version: 4.13.5
+      specifier: 4.13.7
+      version: 4.13.7
     jose:
       specifier: 6.2.10
       version: 6.2.10
@@ -156,10 +156,10 @@ importers:
         version: 3.0.30(@valibot/to-json-schema@1.7.1(valibot@1.4.2(typescript@7.0.2)))(valibot@1.4.2(typescript@7.0.2))(zod@4.4.3)
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.5)
+        version: 2.1.1(hono@4.13.7)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.5)
+        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.7)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -174,7 +174,7 @@ importers:
         version: 7.0.79(zod@4.4.3)
       hono:
         specifier: 'catalog:'
-        version: 4.13.5
+        version: 4.13.7
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -211,7 +211,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.5)
+        version: 2.1.1(hono@4.13.7)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -229,7 +229,7 @@ importers:
         version: link:../../packages/agentcommercekit
       hono:
         specifier: 'catalog:'
-        version: 4.13.5
+        version: 4.13.7
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -262,7 +262,7 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.5)
+        version: 2.1.1(hono@4.13.7)
       '@libsql/client':
         specifier: 0.17.4
         version: 0.17.4
@@ -280,7 +280,7 @@ importers:
         version: 0.45.2(@libsql/client@0.17.4)(@opentelemetry/api@1.9.1)
       hono:
         specifier: 'catalog:'
-        version: 4.13.5
+        version: 4.13.7
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -305,16 +305,16 @@ importers:
         version: link:../../packages/keys
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.5)
+        version: 2.1.1(hono@4.13.7)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.5)
+        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.7)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
       hono:
         specifier: 'catalog:'
-        version: 4.13.5
+        version: 4.13.7
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -323,10 +323,10 @@ importers:
     dependencies:
       '@hono/node-server':
         specifier: 'catalog:'
-        version: 2.1.1(hono@4.13.5)
+        version: 2.1.1(hono@4.13.7)
       '@hono/standard-validator':
         specifier: 'catalog:'
-        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.5)
+        version: 0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.7)
       '@repo/api-utils':
         specifier: workspace:*
         version: link:../../tools/api-utils
@@ -335,7 +335,7 @@ importers:
         version: link:../../packages/agentcommercekit
       hono:
         specifier: 'catalog:'
-        version: 4.13.5
+        version: 4.13.7
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -557,7 +557,7 @@ importers:
         version: link:../../packages/vc
       hono:
         specifier: 'catalog:'
-        version: 4.13.5
+        version: 4.13.7
       valibot:
         specifier: 'catalog:'
         version: 1.4.2(typescript@7.0.2)
@@ -4759,8 +4759,8 @@ packages:
   hastscript@9.0.1:
     resolution: {integrity: sha512-g7df9rMFX/SPi34tyGCyUBREQoKkapwdY/T04Qn9TDWfHhAYt4/I0gMVirzK5wEzeUqIjEB+LXC/ypb7Aqno5w==}
 
-  hono@4.13.5:
-    resolution: {integrity: sha512-O6+/eCYRkzzzy0rPWwKLiGBR1nFuUPZynnwjxN1MBA62NNqbT0wQEzQyK2gSO5yDIDB336sXQleAhOHrzlYyKw==}
+  hono@4.13.7:
+    resolution: {integrity: sha512-c8/gF9ac8Y78/agExVocyLevgR+JlpNB444Py0FSX8pJoPdYUfUzRcXtYEYGwt6l19qIlVZPN5Mfsw9jFShmQQ==}
     engines: {node: '>=16.9.0'}
 
   hookable@6.1.1:
@@ -7451,14 +7451,14 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@hono/node-server@2.1.1(hono@4.13.5)':
+  '@hono/node-server@2.1.1(hono@4.13.7)':
     dependencies:
-      hono: 4.13.5
+      hono: 4.13.7
 
-  '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.5)':
+  '@hono/standard-validator@0.4.0(@standard-schema/spec@1.1.0)(hono@4.13.7)':
     dependencies:
       '@standard-schema/spec': 1.1.0
-      hono: 4.13.5
+      hono: 4.13.7
 
   '@img/colour@1.1.0': {}
 
@@ -11184,7 +11184,7 @@ snapshots:
       property-information: 7.2.0
       space-separated-tokens: 2.0.2
 
-  hono@4.13.5: {}
+  hono@4.13.7: {}
 
   hookable@6.1.1: {}
 
