@@ -222,6 +222,11 @@ app.delete(
       credential.credentialSubject.paymentRequestToken,
       {
         resolver,
+        // The receipt can remain valid after the embedded payment-request JWT expires.
+        // Use the embedded token to authenticate the original issuer;
+        // signedPayloadValidator separately authenticates the revocation command,
+        // including expiry when supplied.
+        verifyExpiry: false,
       },
     )
 
