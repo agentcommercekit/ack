@@ -40,18 +40,32 @@ happens before execution or signing:
 - unknown recipient: return `approval_required`
 - amount above the illustrative per-transaction cap: deny before payment
   execution
+- total above the rolling window budget: deny, even when each payment is under
+  the per-transaction cap
 
 The per-currency cap is expressed in each currency's smallest subunit, so a
 single flat threshold is never compared across currencies with different
 decimals (e.g. USD at 2dp vs USDC at 6dp). Currencies without a configured
 limit are denied outright.
 
+The window budget exists because a per-transaction cap on its own is trivially
+defeated by splitting one payment into many smaller ones (`cap × N`). The demo
+budget is three payments at the cap per hour. The Payment Service reads the
+window before returning a payment URL, and charges it when the callback
+settles, so one payment is counted once. That check and the write are a single
+synchronous step: the handler awaits before policy runs, so a guard that read
+the total and then wrote it would let two concurrent payments both see the
+pre-payment total and both pass.
+
 > [!IMPORTANT]
-> The amount check is an **illustrative per-transaction cap, not a real spend
-> control.** A per-transaction limit is trivially defeated by splitting one
-> payment into many smaller ones (`cap × N`). A production policy needs a
-> cumulative and/or rate-limited budget (e.g. per-payer spend over a rolling
-> window), not just a single-transaction threshold.
+> The budget is an **illustration of where a spend control belongs, not a spend
+> control.** It lives in process memory, so it resets on restart and is not
+> shared between instances; a second instance has its own budget. It counts the
+> demo's single autonomous payer, since ACK-Pay carries no payer identity on
+> the execution request. It denies rather than escalating to a human. And
+> because the callback settles after the card is captured, a payment that goes
+> over budget between the two calls stops the receipt without stopping the
+> charge — a real service would settle it and flag it for reconciliation.
 
 The demo allowlist is based on the configured server identity, not the issuer
 claimed by each incoming Payment Request token. A real Payment Service should
