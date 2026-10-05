@@ -85,6 +85,19 @@ describe("keypairToJwk and jwkToKeypair", () => {
     expect(reconstructedKeypair.privateKey).toEqual(keypair.privateKey)
   })
 
+  test("converts secp256r1 keypair to JWK and back", async () => {
+    const keypair = await generateKeypair("secp256r1")
+    const jwk = keypairToJwk(keypair)
+
+    expect(jwk.kty).toBe("EC")
+    expect(jwk.crv).toBe("P-256")
+
+    const reconstructedKeypair = jwkToKeypair(jwk)
+    expect(reconstructedKeypair.curve).toBe("secp256r1")
+    expect(reconstructedKeypair.publicKey).toEqual(keypair.publicKey)
+    expect(reconstructedKeypair.privateKey).toEqual(keypair.privateKey)
+  })
+
   test("converts Ed25519 keypair to JWK and back", async () => {
     const keypair = await generateKeypair("Ed25519")
     const jwk = keypairToJwk(keypair)

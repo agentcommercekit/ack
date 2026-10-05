@@ -29,9 +29,13 @@ export type PrivateKeyJwkSecp256k1 = JwkSecp256k1 & {
   d: string // base64url encoded private key
 }
 
+/**
+ * JWK for a secp256r1 key. JOSE registers this curve as "P-256" (RFC 7518,
+ * Section 6.2.1.1), and that is the name other JOSE implementations look for.
+ */
 export type JwkSecp256r1 = {
   kty: "EC"
-  crv: "secp256r1"
+  crv: "P-256"
   x: string // base64url encoded x-coordinate
   y: string // base64url encoded y-coordinate
   d?: string // base64url encoded private key
@@ -82,7 +86,7 @@ export type PrivateKeyJwk =
  */
 function isJwkSecp256(
   jwk: unknown,
-  crv: "secp256k1" | "secp256r1",
+  crv: "secp256k1" | "P-256",
 ): jwk is JwkSecp256k1 | JwkSecp256r1 {
   if (!isRecord(jwk)) {
     return false
@@ -120,7 +124,7 @@ export function isJwkSecp256k1(jwk: unknown): jwk is JwkSecp256k1 {
  * @returns True if the JWK is a valid secp256r1 public key JWK
  */
 export function isJwkSecp256r1(jwk: unknown): jwk is JwkSecp256r1 {
-  return isJwkSecp256(jwk, "secp256r1")
+  return isJwkSecp256(jwk, "P-256")
 }
 
 /**
@@ -246,7 +250,7 @@ export function publicKeyBytesToJwk(
       const yBytes = bytes.slice(33)
       return {
         kty: "EC",
-        crv: curve,
+        crv: curve === "secp256r1" ? "P-256" : curve,
         x: bytesToBase64url(xBytes),
         y: bytesToBase64url(yBytes),
       } as const
@@ -278,7 +282,7 @@ export function publicKeyJwkToBytes(jwk: PublicKeyJwk): Uint8Array {
   const xBytes = base64urlToBytes(jwk.x)
 
   // For secp256k1 and secp256r1, we need to reconstruct the full public key
-  if (jwk.crv === "secp256k1" || jwk.crv === "secp256r1") {
+  if (jwk.crv === "secp256k1" || jwk.crv === "P-256") {
     if ("y" in jwk && jwk.y) {
       const fullKey = new Uint8Array(65)
       fullKey[0] = 0x04 // Add the prefix byte

@@ -104,6 +104,42 @@ it("parseJwtCredential should parse a valid credential", async () => {
   expect(vc.type).toContain("TestCredential")
 })
 
+it("parses a credential signed with a secp256r1 key published as a JWK", async () => {
+  const resolver = getDidResolver()
+
+  // A secp256r1 issuer whose DID document carries its key as a JWK, which is
+  // the default encoding for createDidDocumentFromKeypair
+  const issuerKeypair = await generateKeypair("secp256r1")
+  const issuerDid = createDidWebUri("https://issuer.example.com")
+  resolver.addToCache(
+    issuerDid,
+    createDidDocumentFromKeypair({
+      did: issuerDid,
+      keypair: issuerKeypair,
+    }),
+  )
+
+  const credential = createCredential({
+    id: "test-credential",
+    type: "TestCredential",
+    issuer: issuerDid,
+    subject: createDidWebUri("https://subject.example.com"),
+    attestation: {
+      test: "test",
+    },
+  })
+
+  const jwt = await signCredential(credential, {
+    did: issuerDid,
+    signer: createJwtSigner(issuerKeypair),
+    alg: "ES256",
+  })
+
+  const vc = await parseJwtCredential(jwt, resolver)
+
+  expect(vc.issuer.id).toBe(issuerDid)
+})
+
 it("verifyCredentialJwt should throw for invalid credential", async () => {
   const resolver = getDidResolver()
   const invalidCredential = "invalid.jwt.token"

@@ -7,6 +7,7 @@ import {
   isPublicKeyJwk,
   isPublicKeyJwkEd25519,
   isPublicKeyJwkSecp256k1,
+  isPublicKeyJwkSecp256r1,
   publicKeyBytesToJwk,
   publicKeyJwkToBytes,
   type PublicKeyJwkEd25519,
@@ -210,6 +211,35 @@ describe("JWK encoding", () => {
       const jwk = publicKeyBytesToJwk(secp256k1Bytes, "secp256k1")
       const bytes = publicKeyJwkToBytes(jwk)
       expect(bytes).toEqual(secp256k1Bytes)
+    })
+  })
+
+  describe("secp256r1", () => {
+    // The P-256 public key from RFC 7515, Appendix A.3.1
+    const rfc7515PublicKeyJwk = {
+      kty: "EC",
+      crv: "P-256",
+      x: "f83OJ3D2xF1Bg8vub9tLe1gHMzV76e8Tus9uPHvRVEU",
+      y: "x_FEzRu9m36HLN_tue659LNpXW6pCyStikYjKIWI5a0",
+    } as const
+
+    // RFC 7518, Section 6.2.1.1 registers the curve as "P-256"
+    test("names the curve P-256", () => {
+      const bytes = publicKeyJwkToBytes(rfc7515PublicKeyJwk)
+      expect(publicKeyBytesToJwk(bytes, "secp256r1")).toEqual(
+        rfc7515PublicKeyJwk,
+      )
+    })
+
+    test("accepts a P-256 public key JWK", () => {
+      expect(isPublicKeyJwk(rfc7515PublicKeyJwk)).toBe(true)
+      expect(isPublicKeyJwkSecp256r1(rfc7515PublicKeyJwk)).toBe(true)
+    })
+
+    test("rejects the curve name secp256r1, which JOSE does not register", () => {
+      expect(isPublicKeyJwk({ ...rfc7515PublicKeyJwk, crv: "secp256r1" })).toBe(
+        false,
+      )
     })
   })
 })

@@ -72,6 +72,6 @@ export function jwkToKeypair(jwk: PrivateKeyJwk): Keypair {
   return {
     publicKey: publicKeyJwkToBytes(publicKeyJwk),
     privateKey: base64urlToBytes(jwk.d),
-    curve: jwk.crv,
+    curve: jwk.crv === "P-256" ? "secp256r1" : jwk.crv,
   }
 }
