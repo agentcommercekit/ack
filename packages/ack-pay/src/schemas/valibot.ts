@@ -14,7 +14,8 @@ const timestampSchema = v.pipe(
 export const paymentOptionSchema = v.object({
   id: v.string(),
   amount: v.union([
-    v.pipe(v.number(), v.integer(), v.gtValue(0)),
+    // Unsafe integers are not exact; use the string arm for large amounts.
+    v.pipe(v.number(), v.safeInteger(), v.gtValue(0)),
     positiveIntegerString,
   ]),
   decimals: v.pipe(v.number(), v.integer(), v.toMinValue(0)),

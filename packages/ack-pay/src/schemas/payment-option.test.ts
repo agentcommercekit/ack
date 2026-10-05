@@ -34,4 +34,11 @@ describe("paymentOptionSchema amount", () => {
       expect(acceptsAmount(amount)).toEqual({ valibot: false, zod: false })
     },
   )
+
+  it.each([Number.MAX_SAFE_INTEGER + 1, 1e21])(
+    "rejects an unsafe integer number amount %s",
+    (amount) => {
+      expect(acceptsAmount(amount)).toEqual({ valibot: false, zod: false })
+    },
+  )
 })
