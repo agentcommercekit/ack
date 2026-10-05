@@ -17,6 +17,11 @@ type SignMessageOptions = {
   jwtSigner: JwtSigner
   alg?: JwtAlgorithm
   expiresIn?: number
+  /**
+   * Intended recipient DID. When set, the signed JWT includes an `aud` claim
+   * so `verifyA2ASignedMessage` can bind the message to that recipient.
+   */
+  recipient?: DidUri
 }
 
 type SignedA2AMessage = {
@@ -33,8 +38,13 @@ export async function createSignedA2AMessage(
   { metadata, ...message }: Message,
   options: SignMessageOptions,
 ): Promise<SignedA2AMessage> {
-  // Sign everything in the message, excluding the metadata
-  const { jwt: sig, jti } = await createMessageSignature({ message }, options)
+  // Sign everything in the message, excluding the metadata. Bind `aud` when a
+  // recipient is provided so verification can require the intended audience.
+  const payload =
+    options.recipient !== undefined
+      ? { message, aud: options.recipient }
+      : { message }
+  const { jwt: sig, jti } = await createMessageSignature(payload, options)
 
   const metadataWithSig = {
     ...metadata,

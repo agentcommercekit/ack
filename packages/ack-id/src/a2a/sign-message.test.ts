@@ -115,6 +115,20 @@ describe("createSignedA2AMessage", () => {
     expect(result.message.metadata?.sig).toBe(result.sig)
     expect(result.message.metadata?.traceId).toBe("abc")
   })
+
+  it("embeds aud when a recipient is provided", async () => {
+    const result = await createSignedA2AMessage(makeTextMessage(), {
+      did: agentDid,
+      jwtSigner,
+      recipient: userDid,
+    })
+
+    const payloadPart = result.sig.split(".")[1]
+    const payload = JSON.parse(
+      Buffer.from(payloadPart, "base64url").toString("utf8"),
+    ) as { aud?: string }
+    expect(payload.aud).toBe(userDid)
+  })
 })
 
 describe("createA2AHandshakeMessage", () => {
