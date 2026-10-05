@@ -46,6 +46,37 @@ const MAX_STATUS_LIST_BYTES = 5_000_000
  */
 const DEFAULT_MAX_ENCODED_LIST_BYTES = 64 * 1024
 
+/**
+ * Decode an `encodedList` into its bitstring.
+ *
+ * Bitstring Status List v1.0 encodes the list as the Multibase base64url form
+ * (`u` prefix, no padding) of the GZIP-compressed bitstring. `bit-buffers`
+ * reads plain, padded base64 and inflates both GZIP and zlib streams, so a
+ * Multibase list is rewritten into that alphabet first. A list without the
+ * `u` prefix is read as before: plain base64 of a compressed stream never
+ * starts with `u`, since that would need a first byte of 0xB8 to 0xBB, which
+ * is neither a GZIP nor a valid zlib header.
+ *
+ * @see {@link https://www.w3.org/TR/vc-bitstring-status-list/#bitstring-expansion-algorithm}
+ */
+function decodeEncodedList(encodedList: string): BitBuffer {
+  if (!encodedList.startsWith("u")) {
+    return BitBuffer.fromBitstring(encodedList)
+  }
+
+  const base64url = encodedList.slice(1)
+  // A length of 1 modulo 4 cannot come from any byte string; base64-js would
+  // otherwise drop the trailing character and read the rest.
+  if (!/^[A-Za-z0-9_-]+$/.test(base64url) || base64url.length % 4 === 1) {
+    throw new Error("Multibase encodedList is not base64url without padding")
+  }
+
+  const base64 = base64url.replaceAll("-", "+").replaceAll("_", "/")
+  return BitBuffer.fromBitstring(
+    base64.padEnd(Math.ceil(base64.length / 4) * 4, "="),
+  )
+}
+
 export type RevocationCheckOptions = {
   /**
    * The resolver used to verify the status list credential's proof.
@@ -514,7 +545,7 @@ export async function isRevoked(
   let bits: BitBuffer
 
   try {
-    bits = BitBuffer.fromBitstring(encodedList)
+    bits = decodeEncodedList(encodedList)
   } catch (error) {
     throw undetermined(
       `Status list at '${statusListCredential}' has an unreadable encodedList`,

@@ -1,3 +1,5 @@
+import { gzipSync } from "node:zlib"
+
 import {
   createDidDocumentFromKeypair,
   createDidWebUri,
@@ -435,6 +437,72 @@ describe("isRevoked", () => {
     ).rejects.toThrow(UnsupportedCredentialStatusError)
 
     expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  // Bitstring Status List v1.0, Section 2.2: `encodedList` is the Multibase
+  // base64url (no padding) form of the GZIP-compressed bitstring, and the
+  // bitstring is at least 16KB with index 0 at the left-most bit.
+  it("reads an encodedList in the form the specification defines", async () => {
+    const bitstring = new Uint8Array(16 * 1024)
+    bitstring[0] = 0b0000_0100 // index 5
+
+    mockFetch.mockResolvedValueOnce(
+      Response.json(
+        await signedStatusList({
+          encodedList: `u${gzipSync(bitstring).toString("base64url")}`,
+        }),
+      ),
+    )
+
+    await expect(
+      isRevoked(buildCredential(statusEntry()), { resolver }),
+    ).resolves.toBe(true)
+  })
+
+  it("reads the example encodedList from the specification", async () => {
+    mockFetch.mockResolvedValueOnce(
+      Response.json(
+        await signedStatusList({
+          encodedList:
+            "uH4sIAAAAAAAAA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAA",
+        }),
+      ),
+    )
+
+    await expect(
+      isRevoked(buildCredential(statusEntry()), { resolver }),
+    ).resolves.toBe(false)
+  })
+
+  it("throws when a multibase encodedList is not base64url", async () => {
+    mockFetch.mockResolvedValueOnce(
+      Response.json(await signedStatusList({ encodedList: "uH4sI+AAA/" })),
+    )
+
+    const error = await captureRevocationError(
+      isRevoked(buildCredential(statusEntry()), { resolver }),
+    )
+
+    expect(error.detail).toMatch(/unreadable encodedList/)
+  })
+
+  it("throws when a multibase encodedList has an impossible length", async () => {
+    // The specification example plus one character: 69 base64url characters
+    // cannot encode any byte string.
+    mockFetch.mockResolvedValueOnce(
+      Response.json(
+        await signedStatusList({
+          encodedList:
+            "uH4sIAAAAAAAAA-3BMQEAAADCoPVPbQwfoAAAAAAAAAAAAAAAAAAAAIC3AYbSVKsAQAAAA",
+        }),
+      ),
+    )
+
+    const error = await captureRevocationError(
+      isRevoked(buildCredential(statusEntry()), { resolver }),
+    )
+
+    expect(error.detail).toMatch(/unreadable encodedList/)
   })
 
   it("throws when the encoded list cannot be decoded", async () => {
