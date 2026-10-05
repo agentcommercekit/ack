@@ -35,7 +35,7 @@ export const paymentOptionSchema = z.object({
 export const paymentRequestSchema = z.object({
   id: z.string(),
   description: z.string().optional(),
-  serviceCallback: z.url().optional(),
+  serviceCallback: urlOrDidUri.optional(),
   expiresAt: timestampSchema.optional(),
   paymentOptions: z.array(paymentOptionSchema).nonempty(),
 })
