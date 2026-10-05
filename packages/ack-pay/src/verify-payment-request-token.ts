@@ -58,6 +58,15 @@ export async function verifyPaymentRequestToken(
     )
   }
 
+  // Enforce payload expiresAt even when the JWT was minted without an `exp`
+  // claim (historical tokens) or when callers only set expiresAt on the request.
+  if ((options.verifyExpiry ?? true) && output.expiresAt) {
+    const expiresAtMs = new Date(output.expiresAt).getTime()
+    if (Number.isNaN(expiresAtMs) || expiresAtMs <= Date.now()) {
+      throw new InvalidPaymentRequestTokenError("Payment request has expired")
+    }
+  }
+
   return {
     paymentRequest: output,
     parsed: parsedPaymentRequestToken,

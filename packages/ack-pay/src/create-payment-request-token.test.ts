@@ -85,4 +85,42 @@ describe("createPaymentRequestToken()", () => {
     expect(result.payload.iss).toBe(issuerDid)
     expect(result.payload.sub).toBe(paymentRequest.id)
   })
+
+  it("does not let a smuggled exp claim override expiresAt-derived JWT exp", async () => {
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
+    const farFutureExp = Math.floor(Date.now() / 1000) + 60 * 60 * 24 * 365
+    const requestWithSmuggledExp = {
+      ...v.parse(paymentRequestSchema, { ...paymentRequestInit, expiresAt }),
+      exp: farFutureExp,
+    } as PaymentRequestInit & { exp: number }
+
+    const paymentRequestToken = await createPaymentRequestToken(
+      // Simulate an unprojected caller object that includes reserved JWT claims.
+      requestWithSmuggledExp as unknown as typeof paymentRequest,
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
+    )
+
+    const resolver = getDidResolver()
+    resolver.addToCache(
+      issuerDid,
+      createDidDocumentFromKeypair({
+        did: issuerDid,
+        keypair,
+      }),
+    )
+
+    const result = await verifyJwt(paymentRequestToken, { resolver })
+    const expectedExp = Math.floor(expiresAt.getTime() / 1000)
+
+    expect(result.payload.exp).toBeDefined()
+    expect(result.payload.exp).not.toBe(farFutureExp)
+    // Allow a few seconds of clock skew between mint and assertion.
+    expect(Math.abs((result.payload.exp as number) - expectedExp)).toBeLessThan(
+      5,
+    )
+  })
 })

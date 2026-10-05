@@ -93,7 +93,7 @@ describe("createSignedPaymentRequest()", () => {
   })
 
   it("includes expiresAt in ISO string format when provided", async () => {
-    const expiresAt = new Date("2024-12-31T23:59:59Z")
+    const expiresAt = new Date(Date.now() + 60 * 60 * 1000)
     const result = await createSignedPaymentRequest(
       { ...paymentRequest, expiresAt },
       {
@@ -103,6 +103,27 @@ describe("createSignedPaymentRequest()", () => {
       },
     )
 
-    expect(result.paymentRequest.expiresAt).toBe("2024-12-31T23:59:59.000Z")
+    expect(result.paymentRequest.expiresAt).toBe(expiresAt.toISOString())
+
+    const resolver = getDidResolver()
+    resolver.addToCache(
+      issuerDid,
+      createDidDocumentFromKeypair({
+        did: issuerDid,
+        keypair,
+      }),
+    )
+
+    const verified = await verifyPaymentRequestToken(
+      result.paymentRequestToken,
+      { resolver },
+    )
+    const expectedExp = Math.floor(expiresAt.getTime() / 1000)
+
+    expect(verified.parsed.payload.exp).toBeDefined()
+    // Allow a few seconds of clock skew between mint and assertion.
+    expect(
+      Math.abs((verified.parsed.payload.exp as number) - expectedExp),
+    ).toBeLessThan(5)
   })
 })
