@@ -5,6 +5,8 @@ import * as v from "valibot"
 const urlOrDidUri = v.union([v.pipe(v.string(), v.url()), didUriSchema])
 const positiveIntegerString = v.pipe(v.string(), v.regex(/^[1-9]\d*$/))
 
+const nonEmptyString = v.pipe(v.string(), v.minLength(1))
+
 const timestampSchema = v.pipe(
   v.union([v.date(), v.string()]),
   v.check((input) => !Number.isNaN(new Date(input).getTime()), "Invalid date"),
@@ -12,21 +14,21 @@ const timestampSchema = v.pipe(
 )
 
 export const paymentOptionSchema = v.object({
-  id: v.string(),
+  id: nonEmptyString,
   amount: v.union([
     v.pipe(v.number(), v.integer(), v.gtValue(0)),
     positiveIntegerString,
   ]),
   decimals: v.pipe(v.number(), v.integer(), v.toMinValue(0)),
-  currency: v.string(),
-  recipient: v.string(),
+  currency: nonEmptyString,
+  recipient: nonEmptyString,
   network: v.optional(v.string()),
   paymentService: v.optional(urlOrDidUri),
   receiptService: v.optional(urlOrDidUri),
 })
 
 export const paymentRequestSchema = v.object({
-  id: v.string(),
+  id: nonEmptyString,
   description: v.optional(v.string()),
   serviceCallback: v.optional(v.pipe(v.string(), v.url())),
   expiresAt: v.optional(timestampSchema),

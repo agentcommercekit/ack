@@ -17,6 +17,26 @@ const paymentRequest = {
   ],
 }
 
+const validators = {
+  valibot: (input: unknown) =>
+    v.safeParse(valibotPaymentRequestSchema, input).success,
+  zod: (input: unknown) => zodPaymentRequestSchema.safeParse(input).success,
+} as const
+
+describe.each(Object.entries(validators))(
+  "%s paymentRequestSchema",
+  (_, accepts) => {
+    it("rejects a payment request with an empty id", () => {
+      expect(
+        accepts({
+          ...paymentRequest,
+          id: "",
+        }),
+      ).toBe(false)
+    })
+  },
+)
+
 describe("paymentRequestSchema", () => {
   it("rejects invalid expiresAt strings instead of throwing", () => {
     const input = {
