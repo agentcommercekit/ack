@@ -41,15 +41,27 @@ const credential = createControllerCredential({
 ```ts
 import { getControllerClaimVerifier } from "@agentcommercekit/ack-id"
 import { getDidResolver } from "@agentcommercekit/did"
-import { verifyParsedCredential } from "@agentcommercekit/vc"
+import { createJwtSigner } from "@agentcommercekit/jwt"
+import { generateKeypair } from "@agentcommercekit/keys"
+import {
+  parseJwtCredential,
+  signCredential,
+  verifyParsedCredential,
+} from "@agentcommercekit/vc"
 
 // Get the verifier for controller credentials
 const verifier = getControllerClaimVerifier()
 const resolver = getDidResolver()
 
+// Sign the credential, then parse the resulting JWT back into a
+// verifiable credential — verifyParsedCredential requires a proof.
+const keypair = await generateKeypair("secp256k1")
+const jwt = await signCredential(credential, createJwtSigner(keypair))
+const parsedCredential = await parseJwtCredential(jwt, resolver)
+
 // Verify the credential using verification logic from vc package.
 try {
-  await verifyParsedCredential(credential, {
+  await verifyParsedCredential(parsedCredential, {
     resolver,
     verifiers: [verifier],
     trustedIssuers: [controllerDid], // Optional: list of trusted issuers
