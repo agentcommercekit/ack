@@ -138,6 +138,20 @@ describe("createA2AHandshakeMessage", () => {
     expect(result.message.role).toBe("agent")
   })
 
+  it("returns the fresh reply nonce when responding to a handshake", async () => {
+    const result = await createA2AHandshakeMessage(
+      "agent",
+      {
+        recipient: userDid,
+        vc: testCredential,
+        requestNonce: "original-nonce",
+      },
+      { did: agentDid, jwtSigner },
+    )
+
+    expect(result.nonce).toBe("test-nonce-1234")
+  })
+
   it("returns the signed JWT in the message data part", async () => {
     const result = await createA2AHandshakeMessage(
       "agent",
