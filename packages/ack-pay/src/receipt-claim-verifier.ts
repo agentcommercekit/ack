@@ -41,7 +41,25 @@ async function verifyPaymentReceiptClaim(
     throw new InvalidCredentialSubjectError()
   }
 
-  return Promise.resolve()
+  // TODO: The schema check above confirms the credential subject is
+  // structurally valid (paymentRequestToken is a JWT string, paymentOptionId
+  // is present). Deeper semantic checks that could be added here:
+  //
+  //   1. Verify that paymentRequestToken is not expired (call
+  //      verifyPaymentRequestToken with verifyExpiry: true). Note that
+  //      verifyPaymentReceipt already does this on the outer credential, but
+  //      the ClaimVerifier runs against the proof-decoded subject and could
+  //      enforce it independently.
+  //
+  //   2. Verify that paymentOptionId matches one of the options in the
+  //      decoded paymentRequestToken. verifyPaymentReceipt already performs
+  //      this check, but centralising it here would make the ClaimVerifier
+  //      self-contained and usable outside of verifyPaymentReceipt.
+  //
+  // Both checks require the resolver (or at minimum the decoded payment
+  // request), so the ClaimVerifier interface would need to be extended to pass
+  // additional context, or the checks should remain in verifyPaymentReceipt
+  // where that context is already available.
 }
 
 /**
@@ -52,7 +70,6 @@ async function verifyPaymentReceiptClaim(
 export function getReceiptClaimVerifier(): ClaimVerifier {
   return {
     accepts: (type: string[]) => type.includes("PaymentReceiptCredential"),
-    // For now, we just verify the credential subject matches the expected schema
     verify: verifyPaymentReceiptClaim,
   }
 }
