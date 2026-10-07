@@ -20,10 +20,17 @@ pnpm add @agentcommercekit/ack-id
 
 ```ts
 import { createControllerCredential } from "@agentcommercekit/ack-id"
-import { createDidWebUri } from "@agentcommercekit/did"
+import { createDidWebDocumentFromKeypair, createDidWebUri } from "@agentcommercekit/did"
+import { generateKeypair } from "@agentcommercekit/keys"
 
-// Create DIDs for agent and controller
-const controllerDid = createDidWebUri("https://controller.example.com")
+// Create a keypair and a did:web document for the controller, and a
+// plain DID for the agent (no keypair needed on this side for this example)
+const controllerKeypair = await generateKeypair("secp256k1")
+const { did: controllerDid, didDocument: controllerDidDocument } =
+  createDidWebDocumentFromKeypair({
+    keypair: controllerKeypair,
+    baseUrl: "https://controller.example.com",
+  })
 const agentDid = createDidWebUri("https://agent.example.com")
 
 // Create a credential establishing the controller relationship
@@ -41,8 +48,7 @@ const credential = createControllerCredential({
 ```ts
 import { getControllerClaimVerifier } from "@agentcommercekit/ack-id"
 import { getDidResolver } from "@agentcommercekit/did"
-import { createJwtSigner } from "@agentcommercekit/jwt"
-import { generateKeypair } from "@agentcommercekit/keys"
+import { createJwtSigner, curveToJwtAlgorithm } from "@agentcommercekit/jwt"
 import {
   parseJwtCredential,
   signCredential,
@@ -53,10 +59,17 @@ import {
 const verifier = getControllerClaimVerifier()
 const resolver = getDidResolver()
 
+// Register the controller's DID document so the resolver can find its
+// key when verifying the signature below.
+resolver.addToCache(controllerDid, controllerDidDocument)
+
 // Sign the credential, then parse the resulting JWT back into a
 // verifiable credential — verifyParsedCredential requires a proof.
-const keypair = await generateKeypair("secp256k1")
-const jwt = await signCredential(credential, createJwtSigner(keypair))
+const jwt = await signCredential(credential, {
+  did: controllerDid,
+  signer: createJwtSigner(controllerKeypair),
+  alg: curveToJwtAlgorithm(controllerKeypair.curve),
+})
 const parsedCredential = await parseJwtCredential(jwt, resolver)
 
 // Verify the credential using verification logic from vc package.
