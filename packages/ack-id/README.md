@@ -20,18 +20,25 @@ pnpm add @agentcommercekit/ack-id
 
 ```ts
 import { createControllerCredential } from "@agentcommercekit/ack-id"
-import { createDidWebDocumentFromKeypair, createDidWebUri } from "@agentcommercekit/did"
+import { createDidWebDocumentFromKeypair } from "@agentcommercekit/did"
 import { generateKeypair } from "@agentcommercekit/keys"
 
-// Create a keypair and a did:web document for the controller, and a
-// plain DID for the agent (no keypair needed on this side for this example)
+// Create keypairs and did:web documents for the controller and agent.
+// The agent's document declares controllerDid as its controller.
 const controllerKeypair = await generateKeypair("secp256k1")
 const { did: controllerDid, didDocument: controllerDidDocument } =
   createDidWebDocumentFromKeypair({
     keypair: controllerKeypair,
     baseUrl: "https://controller.example.com",
   })
-const agentDid = createDidWebUri("https://agent.example.com")
+
+const agentKeypair = await generateKeypair("secp256k1")
+const { did: agentDid, didDocument: agentDidDocument } =
+  createDidWebDocumentFromKeypair({
+    keypair: agentKeypair,
+    baseUrl: "https://agent.example.com",
+    controller: controllerDid,
+  })
 
 // Create a credential establishing the controller relationship
 const credential = createControllerCredential({
@@ -59,8 +66,9 @@ import {
 const verifier = getControllerClaimVerifier()
 const resolver = getDidResolver()
 
-// Register the controller's DID document so the resolver can find its
-// key when verifying the signature below.
+// Register both DID documents so the resolver can find them when
+// verifying the credential's subject (agent) and issuer (controller).
+resolver.addToCache(agentDid, agentDidDocument)
 resolver.addToCache(controllerDid, controllerDidDocument)
 
 // Sign the credential, then parse the resulting JWT back into a
