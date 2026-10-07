@@ -10,7 +10,7 @@ declare module "hono" {
 export function didResolver(): MiddlewareHandler<Env> {
   return async (c, next) => {
     const issuer = c.get("issuer")
-    const resolver = getDidResolver()
+    const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
     // There are certain points where we need to resolve our own DID (when we parse a JWT that we signed, for example).
     // However, CF workers cannot invoke themselves, so an attempt to resolve our own DID will fail. To get around this,
     // we pre-populate the cache with our own DID document.

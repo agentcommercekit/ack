@@ -382,7 +382,7 @@ class BankClientAgent extends Agent {
     try {
       logger.log("🔍 Resolving bank teller DID document...")
 
-      const resolver = getDidResolver()
+      const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
       const didResult = await resolveDid(serverDid, resolver)
       const didDocument = didResult.didDocument
 

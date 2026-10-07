@@ -244,7 +244,7 @@ The Client attempts to access a protected resource on the Server. Since no valid
     ),
     colors.bold("📄 Receipt Details (Verifiable Credential):"),
   )
-  const resolver = getDidResolver()
+  const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
   const parsedDetails =
     typeof details === "string"
       ? await parseJwtCredential(details, resolver)

@@ -32,7 +32,7 @@ import { serveAgent } from "./serve-agent"
 
 const currentDir = dirname(fileURLToPath(import.meta.url))
 
-const resolver = getDidResolver()
+const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
 
 const welcomeMessage = `${colors.bold("\n🔐 Welcome to the Agent Commerce Kit Identity (ACK-ID) Demo! 🔐")}
 This interactive demo will guide you through the fundamental concepts of ACK-ID.  We'll demonstrate how to establish verifiable identities for AI agents and their owners, and how agents can securely verify each other's identities before interacting.

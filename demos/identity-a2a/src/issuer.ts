@@ -20,7 +20,7 @@ const issuerDidDocument = createDidDocumentFromKeypair({
 
 const signer = createJwtSigner(issuerKeypair)
 
-const resolver = getDidResolver()
+const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
 resolver.addToCache(issuerDid, issuerDidDocument)
 
 export const didResolverWithIssuer = resolver

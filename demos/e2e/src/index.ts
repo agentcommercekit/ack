@@ -41,7 +41,7 @@ const CHAIN_ID = caip2ChainIds.baseSepolia
  * Their constructor adds their own DIDs to the resolver cache to
  * ensure they are always resolvable.
  */
-const resolver = getDidResolver()
+const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
 
 const credentialIssuer = await CredentialIssuer.create({
   baseUrl: "https://issuer.example.com",

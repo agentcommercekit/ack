@@ -66,7 +66,7 @@ app.post("/", async (c) => {
   const serverIdentity = await getKeypairInfo(
     env(c).RECEIPT_SERVICE_PRIVATE_KEY_HEX,
   )
-  const didResolver = getDidResolver()
+  const didResolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
 
   const { payload } = v.parse(bodySchema, await c.req.json())
 

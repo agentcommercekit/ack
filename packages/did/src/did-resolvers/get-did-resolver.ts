@@ -21,10 +21,17 @@ interface GetDidResolverOptions extends ResolverOptions {
  *
  * @param options - The {@link GetDidResolverOptions} to use for the did resolver
  * @returns A new {@link DidResolver} instance
+ *
+ * @remarks
+ * By default no hosts are allowed to serve DID documents over plain HTTP —
+ * all resolution uses HTTPS. Pass `webOptions.allowedHttpHosts` to permit
+ * specific hosts (e.g. `["localhost", "127.0.0.1"]` during local development).
+ * Allowing HTTP in production exposes DID documents to man-in-the-middle
+ * substitution, so the default is intentionally restrictive.
  */
 export function getDidResolver({
   webOptions = {
-    allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"],
+    allowedHttpHosts: [],
   },
   ...options
 }: GetDidResolverOptions = {}): DidResolver {

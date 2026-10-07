@@ -131,7 +131,7 @@ async function validatePaymentOption(
   paymentOptionId: string,
   paymentRequestToken: JwtString,
 ) {
-  const didResolver = getDidResolver()
+  const didResolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
 
   log(colors.dim(`${name} Verifying payment request token...`))
   const { paymentRequest } = await verifyPaymentRequestToken(

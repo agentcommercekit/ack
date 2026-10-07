@@ -41,7 +41,7 @@ app.onError((e, c) => {
  */
 app.get("/", async (c): Promise<TypedResponse<{ message: string }>> => {
   const serverIdentity = await getKeypairInfo(env(c).SERVER_PRIVATE_KEY_HEX)
-  const didResolver = getDidResolver()
+  const didResolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
 
   const { publicKey: solanaServerPublicKey } = await ensureSolanaKeys(
     "SOLANA_SERVER_PUBLIC_KEY",

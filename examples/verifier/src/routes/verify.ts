@@ -34,7 +34,7 @@ app.post(
   "/",
   sValidator("json", bodySchema),
   async (c): Promise<ApiResponse<null>> => {
-    const resolver = getDidResolver()
+    const resolver = getDidResolver({ webOptions: { allowedHttpHosts: ["localhost", "127.0.0.1", "0.0.0.0"] } })
     let { credential } = c.req.valid("json")
 
     if (isJwtString(credential)) {
