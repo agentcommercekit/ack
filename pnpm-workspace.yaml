@@ -80,6 +80,15 @@ overrides:
   undici@>=7.15.0 <7.29.1: ^7.29.1
   undici@>=7.24.1 <7.29.1: ^7.29.1
   undici@>=7.28.0 <7.29.1: ^7.29.1
+  katex@>=0.11.0 <0.18.2: ^0.18.2
+  postcss-selector-parser@<7.1.6: ^7.1.6
+  proxy-addr@>=1.1.0 <2.0.8: ^2.0.8
+  sharp@<0.35.5: ^0.35.5
+  shell-quote@>=1.8.4 <1.11.0: ^1.11.0
+  smol-toml@<=1.8.0: ^1.9.0
+  source-map-js@>=1.0.0 <1.2.2: ^1.2.2
+  tinypool@<2.1.2: ^2.1.2
+  tinypool@<=2.1.0: ^2.1.1
 
 allowBuilds:
   "@scarf/scarf": false
