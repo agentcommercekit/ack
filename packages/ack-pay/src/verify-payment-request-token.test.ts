@@ -19,6 +19,11 @@ import { InvalidPaymentRequestTokenError } from "./errors"
 import type { PaymentRequestInit } from "./payment-request"
 import { verifyPaymentRequestToken } from "./verify-payment-request-token"
 
+/** A clearly past ISO 8601 timestamp, fixed for determinism. */
+const PAST_EXPIRES_AT = "2000-01-01T00:00:00.000Z"
+/** A clearly future ISO 8601 timestamp, fixed for determinism. */
+const FUTURE_EXPIRES_AT = "2999-12-31T23:59:59.000Z"
+
 /**
  * Removes undefined values from the payment request
  */
@@ -205,5 +210,67 @@ describe("verifyPaymentRequestToken", () => {
       "Payment Request token is not a valid PaymentRequest",
     )
     expect(error.cause).toBeUndefined()
+  })
+
+  it("throws for a payment request whose expiresAt has passed", async () => {
+    const body = await createSignedPaymentRequest(
+      { ...paymentRequest, expiresAt: PAST_EXPIRES_AT },
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
+    )
+
+    const resolver = getDidResolver()
+    resolver.addToCache(issuerDid, issuerDidDocument)
+
+    const error = await verifyPaymentRequestToken(body.paymentRequestToken, {
+      resolver,
+    }).catch((e) => e)
+
+    expect(error).toBeInstanceOf(InvalidPaymentRequestTokenError)
+    expect(error.message).toBe("Payment request has expired")
+  })
+
+  it("accepts a payment request whose expiresAt is in the future", async () => {
+    const body = await createSignedPaymentRequest(
+      { ...paymentRequest, expiresAt: FUTURE_EXPIRES_AT },
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
+    )
+
+    const resolver = getDidResolver()
+    resolver.addToCache(issuerDid, issuerDidDocument)
+
+    const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
+      resolver,
+    })
+
+    expect(result.paymentRequest.id).toBe(paymentRequest.id)
+  })
+
+  it("accepts an expired payment request when expiry verification is disabled", async () => {
+    const body = await createSignedPaymentRequest(
+      { ...paymentRequest, expiresAt: PAST_EXPIRES_AT },
+      {
+        issuer: issuerDid,
+        signer,
+        algorithm: curveToJwtAlgorithm(keypair.curve),
+      },
+    )
+
+    const resolver = getDidResolver()
+    resolver.addToCache(issuerDid, issuerDidDocument)
+
+    const result = await verifyPaymentRequestToken(body.paymentRequestToken, {
+      resolver,
+      verifyExpiry: false,
+    })
+
+    expect(result.paymentRequest.id).toBe(paymentRequest.id)
   })
 })
