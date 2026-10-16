@@ -38,6 +38,15 @@ export const caip2ChainIds = {
 } as const
 
 export function caip2Parts(caip: Caip2ChainId): Caip2ChainIdParts {
+  // Validate the full string against the CAIP-2 pattern rather than just
+  // splitting on ":". A naive split silently drops any segments after the
+  // second colon (e.g. "eip155:1:extra" would parse as if it were just
+  // "eip155:1"), so malformed input could pass through undetected instead
+  // of being rejected.
+  if (!caip2ChainIdRegex.test(caip)) {
+    throw new Error("Invalid CAIP-2 chain ID")
+  }
+
   const [namespace, reference] = caip.split(":")
 
   if (!namespace || !reference) {
