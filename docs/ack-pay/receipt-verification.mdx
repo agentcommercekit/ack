@@ -66,8 +66,9 @@ _Example ACK Receipt Verifiable Credential:_
 
 `credentialSubject.metadata` is optional and should be treated as an extension
 point for verifier-specific payment evidence. Keep the core receipt fields
-stable, and put references or hashes to external policy, mandate, execution,
-and settlement records in metadata when a deployment needs a richer audit trail.
+stable, and put references or hashes to external policy, AP2 mandate,
+execution, and settlement records in metadata when a deployment needs a richer
+audit trail.
 
 Metadata fields are non-normative: ACK-Pay verifies the receipt signature and
 the bound payment request token, but applications decide which metadata fields
