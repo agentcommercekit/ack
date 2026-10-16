@@ -35,6 +35,17 @@ export async function generateKeypair(
 }
 
 /**
+ * Compress a public key to its 33-byte form. Already-compressed keys are
+ * returned unchanged.
+ *
+ * @param pubkey - The public key bytes to compress
+ * @returns The compressed public key bytes
+ */
+export function compressPublicKey(pubkey: Uint8Array): Uint8Array {
+  return secp256k1.Point.fromBytes(pubkey).toBytes(true)
+}
+
+/**
  * Check if a public key is a valid secp256k1 public key (either compressed or
  * uncompressed)
  * @param pubkey - The public key bytes to check
