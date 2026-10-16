@@ -66,7 +66,8 @@ stated in this section explicitly:
   key discovery: one hosted document serves both protocols. ACK-ID core's
   resolution rules (one fixed location, SSRF protections, freshness)
   apply.
-- **Algorithms.** EdDSA and ES256, per ACK-ID core Section 4. The x402 JWS
+- **Algorithms.** Ed25519 (also spelled `EdDSA`) and ES256, per ACK-ID
+  core Section 4. The x402 JWS
   scheme also allows ES256K; this profile rejects it. WebCrypto has no
   secp256k1, so an ES256K receipt would not verify with native crypto on
   browser and edge runtimes. The key-separation rule below already forbids

@@ -178,9 +178,13 @@ Resolution rules:
 
 ## 4. Keys
 
-- **Algorithms.** A verifier MUST accept both `EdDSA` (Ed25519,
-  `kty: "OKP"`, `crv: "Ed25519"`) and `ES256` (P-256, `kty: "EC"`,
-  `crv: "P-256"`), and MUST reject any other `alg`. A verifier MUST select
+- **Algorithms.** A verifier MUST accept `Ed25519` (`kty: "OKP"`,
+  `crv: "Ed25519"`) and `ES256` (P-256, `kty: "EC"`, `crv: "P-256"`). It
+  MUST also accept `EdDSA` as another name for `Ed25519`, with the same key
+  rule, and MUST reject any other `alg`. Issuers SHOULD write `Ed25519`:
+  RFC 9864 deprecates `EdDSA`, because `EdDSA` does not name a curve.
+  Verifiers keep accepting `EdDSA` because JOSE libraries and the x402
+  extension still emit it. A verifier MUST select
   the verification key by `kid` and MUST confirm the selected key's
   `kty`/`crv` matches the asserted `alg`. Keys outside this set MUST be
   ignored: a co-hosted DID document may carry RSA keys for other
