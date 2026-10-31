@@ -28,7 +28,7 @@ catalog:
   valibot: 1.4.2
   viem: 2.55.19
   web-identity-schemas: 0.3.0
-  zod: 4.4.3
+  zod: 4.6.6
 
 # Force patched versions of vulnerable transitive dependencies (pnpm audit).
 # Scoped by major or range so only the vulnerable lines move.
