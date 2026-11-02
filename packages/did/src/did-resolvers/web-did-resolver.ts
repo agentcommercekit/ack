@@ -73,6 +73,11 @@ const DEFAULT_DOC_PATH = "/.well-known/did.json"
 const MAX_TIMEOUT_MS = 2147483647
 
 /**
+ * Default milliseconds to wait for a DID document fetch.
+ */
+export const DEFAULT_TIMEOUT_MS = 5000
+
+/**
  * Get a did document from a url and validate that it is a DidDocument
  *
  * @throws If the response is not ok or the did document is invalid
@@ -189,7 +194,7 @@ export function getResolver({
   fetch = globalThis.fetch,
   allowedHttpHosts = DEFAULT_ALLOWED_HTTP_HOSTS,
   followRedirects = false,
-  timeout = 5000,
+  timeout = DEFAULT_TIMEOUT_MS,
 }: DidWebResolverOptions = {}): { web: DIDResolver } {
   // Fail fast on a bad timeout rather than surfacing it later as a
   // misleading `notFound` resolution error. `AbortSignal.timeout` throws on
