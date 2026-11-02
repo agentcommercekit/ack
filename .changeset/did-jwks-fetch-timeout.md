@@ -12,4 +12,4 @@ on it, open with no bound from this library. Each of the up to three requests a
 `did:jwks` resolution makes (the JWKS, the OpenID configuration and its
 `jwks_uri`) is now aborted after the timeout, and the resolution reports an
 error. A custom `fetch` must honour `init.signal` for the timeout to take
-effect.
+effect. A timed-out `did:jwks` resolution is reported as `notFound`, like a `did:web` timeout, so it is not kept in the resolver cache when `cache: true` is set.

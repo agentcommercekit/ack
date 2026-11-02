@@ -80,7 +80,46 @@ describe("getDidResolver", () => {
         expect.objectContaining({ signal: expect.any(AbortSignal) }),
       )
       expect(result.didDocument).toBeNull()
-      expect(result.didResolutionMetadata.error).toBeDefined()
+      expect(result.didResolutionMetadata.error).toBe("notFound")
+    })
+
+    it("does not cache a timed-out did:jwks resolution when caching is enabled", async () => {
+      const jwks = {
+        keys: [
+          {
+            kty: "OKP",
+            crv: "Ed25519",
+            x: "11qYAYKxCrfVS_7TyWQHOg7hcvPapiMlrwIaaPcHURo",
+          },
+        ],
+      }
+      let hostIsUp = false
+      const mockFetch = vi.fn<FetchLike>((input, init) => {
+        const url = input instanceof Request ? input.url : input.toString()
+        if (hostIsUp && url.endsWith("/.well-known/jwks.json")) {
+          return Promise.resolve(Response.json(jwks))
+        }
+        if (hostIsUp) {
+          return Promise.resolve(new Response(null, { status: 404 }))
+        }
+        return new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener("abort", () => {
+            reject(init.signal?.reason)
+          })
+        })
+      })
+
+      const resolver = getDidResolver({
+        cache: true,
+        webOptions: { fetch: mockFetch, timeout: 50 },
+      })
+      const first = await resolver.resolve("did:jwks:example.com")
+      expect(first.didDocument).toBeNull()
+
+      hostIsUp = true
+      const second = await resolver.resolve("did:jwks:example.com")
+      expect(second.didResolutionMetadata.error).toBeUndefined()
+      expect(second.didDocument).not.toBeNull()
     })
 
     it("applies the 5000ms default timeout to did:jwks fetches", async () => {
