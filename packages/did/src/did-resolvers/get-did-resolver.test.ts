@@ -83,6 +83,34 @@ describe("getDidResolver", () => {
       expect(result.didResolutionMetadata.error).toBe("notFound")
     })
 
+    it("reports a later non-timeout failure as internalError after an earlier fetch's timer fires", async () => {
+      // The JWKS request answers 404 at 100ms, so did-jwks moves on to the
+      // OpenID configuration, which fails at ~250ms: after the first
+      // request's timer fired (200ms) but before its own (~300ms).
+      const mockFetch = vi.fn<FetchLike>(
+        (input) =>
+          new Promise<Response>((resolve, reject) => {
+            const url = input instanceof Request ? input.url : input.toString()
+            if (url.endsWith("/.well-known/jwks.json")) {
+              setTimeout(() => {
+                resolve(new Response(null, { status: 404 }))
+              }, 100)
+            } else {
+              setTimeout(() => {
+                reject(new TypeError("fetch failed"))
+              }, 150)
+            }
+          }),
+      )
+
+      const resolver = getDidResolver({
+        webOptions: { fetch: mockFetch, timeout: 200 },
+      })
+      const result = await resolver.resolve("did:jwks:example.com")
+
+      expect(result.didResolutionMetadata.error).toBe("internalError")
+    })
+
     it("does not cache a timed-out did:jwks resolution when caching is enabled", async () => {
       const jwks = {
         keys: [

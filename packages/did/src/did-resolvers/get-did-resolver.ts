@@ -52,19 +52,19 @@ export function getDidResolver({
       ...webOptions,
       fetch: (input, init) => {
         const timeoutSignal = AbortSignal.timeout(timeout)
-        timeoutSignal.addEventListener(
-          "abort",
-          () => {
-            timedOut = true
-          },
-          { once: true },
-        )
         return webFetch(input, {
           ...init,
           redirect: webOptions.followRedirects ? "follow" : "manual",
           signal: init?.signal
             ? AbortSignal.any([init.signal, timeoutSignal])
             : timeoutSignal,
+        }).catch((error: unknown) => {
+          // Only a fetch that failed because its own timeout fired counts:
+          // the timer keeps running after a fetch settles.
+          if (timeoutSignal.aborted) {
+            timedOut = true
+          }
+          throw error
         })
       },
     })
