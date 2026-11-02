@@ -56,4 +56,55 @@ describe("getDidResolver", () => {
       }
     })
   })
+
+  describe("did:jwks timeout", () => {
+    it("aborts a did:jwks fetch that exceeds the configured timeout", async () => {
+      // A host that never answers: the request settles only when its signal
+      // aborts.
+      const mockFetch = vi.fn<FetchLike>(
+        (_input, init) =>
+          new Promise<Response>((_resolve, reject) => {
+            init?.signal?.addEventListener("abort", () => {
+              reject(init.signal?.reason)
+            })
+          }),
+      )
+
+      const resolver = getDidResolver({
+        webOptions: { fetch: mockFetch, timeout: 50 },
+      })
+      const result = await resolver.resolve("did:jwks:example.com")
+
+      expect(mockFetch).toHaveBeenCalledWith(
+        "https://example.com/.well-known/jwks.json",
+        expect.objectContaining({ signal: expect.any(AbortSignal) }),
+      )
+      expect(result.didDocument).toBeNull()
+      expect(result.didResolutionMetadata.error).toBeDefined()
+    })
+
+    it("applies the 5000ms default timeout to did:jwks fetches", async () => {
+      const mockFetch = vi
+        .fn<FetchLike>()
+        .mockResolvedValue(new Response(null, { status: 404 }))
+      const timeoutSpy = vi.spyOn(AbortSignal, "timeout")
+
+      try {
+        const resolver = getDidResolver({ webOptions: { fetch: mockFetch } })
+        await resolver.resolve("did:jwks:example.com")
+
+        expect(timeoutSpy).toHaveBeenCalledWith(5000)
+        expect(mockFetch).toHaveBeenCalledWith(
+          "https://example.com/.well-known/jwks.json",
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        )
+        expect(mockFetch).toHaveBeenCalledWith(
+          "https://example.com/.well-known/openid-configuration",
+          expect.objectContaining({ signal: expect.any(AbortSignal) }),
+        )
+      } finally {
+        timeoutSpy.mockRestore()
+      }
+    })
+  })
 })
