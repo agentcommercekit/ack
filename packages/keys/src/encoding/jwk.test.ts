@@ -39,6 +39,15 @@ describe("JWK encoding", () => {
       expect(isBase64url(jwk.x)).toBe(true)
     })
 
+    test("throws for an Ed25519 public key that is not 32 bytes", () => {
+      expect(() => publicKeyBytesToJwk(new Uint8Array(2), "Ed25519")).toThrow(
+        "Invalid Ed25519 public key length",
+      )
+      expect(() => publicKeyBytesToJwk(new Uint8Array(33), "Ed25519")).toThrow(
+        "Invalid Ed25519 public key length",
+      )
+    })
+
     test("converts secp256k1 public key to JWK", () => {
       const jwk = publicKeyBytesToJwk(secp256k1Bytes, "secp256k1")
       if (!isPublicKeyJwkSecp256k1(jwk)) {

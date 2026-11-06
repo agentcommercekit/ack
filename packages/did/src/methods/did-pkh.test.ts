@@ -187,6 +187,15 @@ describe("createDidPkhDocument", () => {
     )
   })
 
+  it("throws for a Solana address that is not a 32-byte Ed25519 key", () => {
+    expect(() =>
+      createDidPkhDocument({
+        address: "abc",
+        chainId: "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      }),
+    ).toThrow("Invalid Ed25519 public key length")
+  })
+
   it("creates did:pkh document with custom controller", () => {
     const result = createDidPkhDocument({
       address: "0x1234567890123456789012345678901234567890",

@@ -229,6 +229,10 @@ export function publicKeyBytesToJwk(
 ): PublicKeyJwk {
   switch (curve) {
     case "Ed25519":
+      if (bytes.length !== 32) {
+        throw new Error(`Invalid ${curve} public key length`)
+      }
+
       return {
         kty: "OKP",
         crv: "Ed25519",
