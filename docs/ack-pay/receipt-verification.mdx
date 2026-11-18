@@ -46,12 +46,9 @@ _Example ACK Receipt Verifiable Credential:_
     }
   },
   "proof": {
-    // Standard VC proof (digital signature)
-    "type": "Ed25519Signature2020",
-    "created": "2025-04-04T14:22:18Z",
-    "verificationMethod": "did:web:receipts.example.com#key-1",
-    "proofPurpose": "assertionMethod",
-    "proofValue": "z3..." // Signature value
+    // ACK verifies JwtProof2020 proofs: the credential signed as a JWT by the issuer
+    "type": "JwtProof2020",
+    "jwt": "eyJhbGciOi..." // Signed JWT encoding this credential
   }
 }
 ```
@@ -129,6 +126,15 @@ When an ACK Receipt is presented by a Client Agent to a Server Agent (e.g., when
     - Does the `id` match the one originally issued (if applicable in a Server-Initiated flow)?
 
     - Are the credential `issuanceDate` and settlement `timestamp` values recent enough, or has the receipt potentially expired based on policy?
+
+    By default, `verifyPaymentReceipt` performs the first two checks. It
+    verifies the signed `paymentRequestToken` and confirms that `paymentOptionId`
+    names one of its payment options. It does not read
+    `credentialSubject.metadata`, so the recipient, amount, request `id` and
+    recency checks are left to the caller. To check the request `id`, compare the
+    returned `paymentRequest.id` with the one you issued. The request token is
+    verified without its expiry, because a receipt outlives the request, so apply
+    your own recency policy.
 
   </Step>
 </Steps>
