@@ -1,0 +1,63 @@
+---
+title: "Listing verification preflight"
+description: "Optional third-party check that a discovered product or listing still supports the claim before an agent pays or acts."
+---
+
+Agent commerce often has a reliability gap between **discovery** and **action**:
+
+1. Search or discovery returns a marketplace, classified, auction, or retail URL.
+2. The agent is about to recommend, purchase, or otherwise rely on that listing.
+3. Meanwhile the listing may be stale, removed, blocked, repriced, or otherwise unable to support the claim.
+
+ACK does not require a built-in listing verifier. It does benefit from a small, optional **preflight** hop so agents refuse to invent facts when the source no longer supports them.
+
+## Suggested flow
+
+```
+discover / search
+  → obtain candidate listing URL + claim
+  → call verify_listing (optional third-party)
+  → if supported: continue the commerce / payment workflow
+  → if removed / blocked / unreachable / insufficient: do not rely on the stale claim
+```
+
+This sits **before** payment or other irreversible agent actions. It complements human-in-the-loop controls described in [Human Oversight Integration](/ack-pay/hitl); it does not replace ACK-Pay receipt verification.
+
+## What a verifier should return
+
+A useful verifier returns **source-supported** listing information when retrievable, or an explicit non-success state such as:
+
+- `removed`
+- `blocked`
+- `unreachable`
+- `unsupported`
+- `insufficient_evidence`
+
+The important rule: **do not invent a fact** when verification fails. Prefer an explicit failure state over a guessed price, availability, or title.
+
+## Integration shape
+
+Keep the ACK-facing surface small and optional:
+
+- Input: public listing URL + the claim being checked (for example price, SKU, or availability).
+- Output: structured support status and any retrieved fields the source still backs.
+- Transport: any HTTP / MCP / A2A endpoint the agent already knows how to call; x402-style paid verification is fine but not required by ACK.
+
+ACK should not take a hard dependency on any one verifier. An example integration may show how to plug in a third-party service; production agents choose their own provider or skip the hop.
+
+## Relation to ACK-Pay
+
+| Step | Role |
+| --- | --- |
+| Discovery | Outside ACK (search, catalogs, other agents) |
+| Listing preflight | Optional third-party check (this pattern) |
+| Payment | ACK-Pay request / paywall / receipt |
+| Oversight | HITL thresholds as needed |
+
+Use preflight when the agent's next action would assert or spend against an external listing. Skip it for flows that already hold a fresh, trusted quote from the merchant.
+
+## See also
+
+- [Human Oversight Integration](/ack-pay/hitl)
+- [Core Payment Sequences](/ack-pay/core-payment-sequences)
+- Issue discussion: [#170](https://github.com/agentcommercekit/ack/issues/170)
