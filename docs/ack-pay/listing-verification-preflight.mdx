@@ -45,6 +45,47 @@ Keep the ACK-facing surface small and optional:
 
 ACK should not take a hard dependency on any one verifier. An example integration may show how to plug in a third-party service; production agents choose their own provider or skip the hop.
 
+## Example agent hop
+
+This is a vendor-neutral sketch. Swap in any HTTP / MCP / A2A verifier you trust, or skip the hop.
+
+**Candidate**
+
+- Listing URL: `https://example-market.test/listings/42`
+- Claim to check: price is `19.00 USDC`
+
+**Supported response (continue)**
+
+```json
+{
+  "status": "supported",
+  "listing_url": "https://example-market.test/listings/42",
+  "fields": {
+    "price": "19.00",
+    "currency": "USDC",
+    "title": "Example listing"
+  },
+  "source": "https://example-market.test/listings/42"
+}
+```
+
+The agent may proceed into the commerce / ACK-Pay flow using only fields the verifier still backs.
+
+**Removed response (stop relying on the claim)**
+
+```json
+{
+  "status": "removed",
+  "listing_url": "https://example-market.test/listings/42",
+  "fields": {},
+  "reason": "listing no longer published at source"
+}
+```
+
+Do not invent a replacement price or availability. Prefer an explicit non-success status and halt or escalate (for example HITL) instead of paying against a stale claim.
+
+A third-party verifier endpoint is one optional way to implement this hop. ACK does not require any specific provider.
+
 ## Relation to ACK-Pay
 
 | Step | Role |
